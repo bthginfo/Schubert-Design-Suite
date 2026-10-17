@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Wall translation form respects the existing distance binding without saving",
+    "Wall form moves both actual shared nodes and both room boundaries atomically",
+    "Undo restores the wall geometry and explicit distance binding after save",
+    "Wall split through an actual door is rejected and keeps the draft editable",
+    "Shared wall split rebinds the real niche offset and preserves both room areas",
+    "Wall split undo after save restores original wall niche measurement and room topology"
+  ],
+  "passed": 6,
+  "realBrowserAndPostgres": true,
+  "finalRevisionId": "444ccb32-f94a-43e9-acfc-47b69b7d8a83"
+}

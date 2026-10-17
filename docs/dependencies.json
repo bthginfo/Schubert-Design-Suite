@@ -1,0 +1,465 @@
+{
+  "checkedAt": "2026-10-17",
+  "packages": [
+    {
+      "name": "@aws-sdk/client-s3",
+      "version": "3.1152.0",
+      "license": "Apache-2.0",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/aws/aws-sdk-js-v3.git",
+        "directory": "clients/client-s3"
+      }
+    },
+    {
+      "name": "@fontsource/inter",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/fontsource/font-files.git",
+        "directory": "fonts/google/inter"
+      }
+    },
+    {
+      "name": "@lucide/svelte",
+      "version": "1.58.0",
+      "license": "ISC",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/lucide-icons/lucide.git",
+        "directory": "packages/svelte"
+      }
+    },
+    {
+      "name": "@pdf-lib/fontkit",
+      "version": "1.1.1",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/Hopding/fontkit.git"
+      }
+    },
+    {
+      "name": "@threlte/core",
+      "version": "8.6.1",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/threlte/threlte",
+        "directory": "packages/core"
+      }
+    },
+    {
+      "name": "@vercel/blob",
+      "version": "2.8.2",
+      "license": "Apache-2.0",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/vercel/storage.git",
+        "directory": "packages/blob"
+      }
+    },
+    {
+      "name": "@vercel/functions",
+      "version": "3.10.1",
+      "license": "Apache-2.0",
+      "repository": {
+        "directory": "packages/functions",
+        "type": "git",
+        "url": "git+https://github.com/vercel/vercel.git"
+      }
+    },
+    {
+      "name": "@vercel/oidc",
+      "version": "4.0.1",
+      "license": "Apache-2.0",
+      "repository": {
+        "directory": "packages/oidc",
+        "type": "git",
+        "url": "git+https://github.com/vercel/vercel.git"
+      }
+    },
+    {
+      "name": "@vercel/queue",
+      "version": "0.8.0",
+      "license": "MIT",
+      "repository": null
+    },
+    {
+      "name": "archiver",
+      "version": "8.0.0",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/archiverjs/node-archiver.git"
+      }
+    },
+    {
+      "name": "better-auth",
+      "version": "1.7.10",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/better-auth/better-auth.git",
+        "directory": "packages/better-auth"
+      }
+    },
+    {
+      "name": "csv-parse",
+      "version": "7.0.3",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/adaltas/node-csv.git",
+        "directory": "packages/csv-parse"
+      }
+    },
+    {
+      "name": "decimal.js",
+      "version": "10.6.0",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/MikeMcl/decimal.js.git"
+      }
+    },
+    {
+      "name": "dotenv",
+      "version": "18.0.8",
+      "license": "BSD-2-Clause",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/motdotla/dotenv.git"
+      }
+    },
+    {
+      "name": "drizzle-orm",
+      "version": "0.45.4",
+      "license": "Apache-2.0",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/drizzle-team/drizzle-orm.git"
+      }
+    },
+    {
+      "name": "fast-xml-parser",
+      "version": "5.11.2",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NaturalIntelligence/fast-xml-parser.git"
+      }
+    },
+    {
+      "name": "fflate",
+      "version": "0.8.3",
+      "license": "MIT",
+      "repository": "https://github.com/101arrowz/fflate"
+    },
+    {
+      "name": "file-type",
+      "version": "22.2.0",
+      "license": "MIT",
+      "repository": "sindresorhus/file-type"
+    },
+    {
+      "name": "iconv-lite",
+      "version": "0.7.3",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/pillarjs/iconv-lite.git"
+      }
+    },
+    {
+      "name": "idb",
+      "version": "8.0.4",
+      "license": "ISC",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/jakearchibald/idb.git"
+      }
+    },
+    {
+      "name": "ipaddr.js",
+      "version": "2.5.0",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/whitequark/ipaddr.js.git"
+      }
+    },
+    {
+      "name": "nodemailer",
+      "version": "10.1.2",
+      "license": "MIT-0",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/nodemailer/nodemailer.git"
+      }
+    },
+    {
+      "name": "openai",
+      "version": "7.34.0",
+      "license": "Apache-2.0",
+      "repository": "github:openai/openai-node"
+    },
+    {
+      "name": "pdf-lib",
+      "version": "1.17.1",
+      "license": "MIT",
+      "repository": "git+https://github.com/Hopding/pdf-lib.git"
+    },
+    {
+      "name": "pg",
+      "version": "8.23.1",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/brianc/node-postgres.git",
+        "directory": "packages/pg"
+      }
+    },
+    {
+      "name": "qrcode",
+      "version": "1.5.4",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/soldair/node-qrcode.git"
+      }
+    },
+    {
+      "name": "read-excel-file",
+      "version": "9.3.12",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://gitlab.com/catamphetamine/read-excel-file"
+      }
+    },
+    {
+      "name": "three",
+      "version": "0.186.1",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/mrdoob/three.js"
+      }
+    },
+    {
+      "name": "zod",
+      "version": "4.6.7",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/colinhacks/zod.git"
+      }
+    },
+    {
+      "name": "@axe-core/playwright",
+      "version": "4.14.0",
+      "license": "MPL-2.0",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dequelabs/axe-core-npm.git"
+      }
+    },
+    {
+      "name": "@playwright/test",
+      "version": "1.64.1",
+      "license": "Apache-2.0",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/microsoft/playwright.git"
+      }
+    },
+    {
+      "name": "@types/archiver",
+      "version": "8.0.0",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/archiver"
+      }
+    },
+    {
+      "name": "@types/node",
+      "version": "26.6.5",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/node"
+      }
+    },
+    {
+      "name": "@types/nodemailer",
+      "version": "8.0.2",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/nodemailer"
+      }
+    },
+    {
+      "name": "@types/pg",
+      "version": "8.23.1",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/pg"
+      }
+    },
+    {
+      "name": "@types/qrcode",
+      "version": "1.5.6",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/qrcode"
+      }
+    },
+    {
+      "name": "@types/three",
+      "version": "0.186.0",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/three"
+      }
+    },
+    {
+      "name": "esbuild",
+      "version": "0.28.2",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/evanw/esbuild.git"
+      }
+    },
+    {
+      "name": "prettier",
+      "version": "3.9.10",
+      "license": "MIT",
+      "repository": "prettier/prettier"
+    },
+    {
+      "name": "prettier-plugin-svelte",
+      "version": "4.1.1",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sveltejs/prettier-plugin-svelte.git"
+      }
+    },
+    {
+      "name": "tsx",
+      "version": "4.23.15",
+      "license": "MIT",
+      "repository": "privatenumber/tsx"
+    },
+    {
+      "name": "typescript",
+      "version": "6.0.3",
+      "license": "Apache-2.0",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/TypeScript.git"
+      }
+    },
+    {
+      "name": "vitest",
+      "version": "5.0.5",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/vitest-dev/vitest.git",
+        "directory": "packages/vitest"
+      }
+    },
+    {
+      "name": "@sveltejs/kit",
+      "version": "3.1.0",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sveltejs/kit.git",
+        "directory": "packages/kit"
+      }
+    },
+    {
+      "name": "svelte",
+      "version": "5.57.2",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sveltejs/svelte.git",
+        "directory": "packages/svelte"
+      }
+    },
+    {
+      "name": "@sveltejs/adapter-node",
+      "version": "6.0.0",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sveltejs/kit.git",
+        "directory": "packages/adapter-node"
+      }
+    },
+    {
+      "name": "@sveltejs/adapter-vercel",
+      "version": "7.0.1",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sveltejs/kit.git",
+        "directory": "packages/adapter-vercel"
+      }
+    },
+    {
+      "name": "@sveltejs/vite-plugin-svelte",
+      "version": "7.3.1",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sveltejs/vite-plugin-svelte.git",
+        "directory": "packages/vite-plugin-svelte"
+      }
+    },
+    {
+      "name": "svelte-check",
+      "version": "4.7.7",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sveltejs/language-tools.git"
+      }
+    },
+    {
+      "name": "vite",
+      "version": "8.3.4",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/vitejs/vite.git",
+        "directory": "packages/vite"
+      }
+    }
+  ],
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0
+  },
+  "note": "Direct installed JavaScript dependencies; exact transitive graph is in pnpm-lock.yaml. Container packages are documented separately."
+}

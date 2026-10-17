@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-17T20:49:43.196Z",
+  "checks": [
+    "Historical invoice preserves source bytes, original date/number and separate snapshot hash without reissuing",
+    "Repeated actual DIESTEIN-mapped source produces one historical invoice and documented duplicate",
+    "Historical source totals and unpaid opening balance reconcile before controlled release"
+  ],
+  "invoiceId": "94b8f0f1-e935-4df6-9eb6-dc8f339094c7",
+  "cutoverId": "431c7b55-7665-47f3-8ca3-ea5ad98c4474",
+  "productionModified": false
+}

@@ -1,0 +1,4 @@
+PASS Changing tax foundation revokes inherited approval; only explicit fresh confirmation restores it
+PASS Changed DATEV foundation needs fresh approval and never alters an issued frozen invoice
+PASS Disabled module blocks direct custom commands before payload handling
+PASS Completed inventory metadata cannot be silently edited

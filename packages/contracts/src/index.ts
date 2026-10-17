@@ -1,0 +1,9 @@
+import { z } from 'zod';
+export * from './modules.js';
+export * from './planning.js';
+export const decimalString=z.union([z.string(),z.number()]).transform(String).refine(v=>/^-?\d+(?:[.,]\d+)?$/.test(v),'Eindeutige Dezimalzahl eingeben.').transform(v=>v.replace(',','.'));
+export const commandSchema=z.object({name:z.string().regex(/^[a-z][a-z0-9_.]+$/),id:z.uuid().optional(),expectedVersion:z.number().int().nonnegative().optional(),idempotencyKey:z.string().min(8).max(200),payload:z.record(z.string(),z.unknown()).default({})}).strict();
+export type Command=z.infer<typeof commandSchema>;
+export const lineSchema=z.object({id:z.uuid().optional(),description:z.string().min(1).max(10000),quantity:decimalString,unit:z.enum(['piece','mm','m','m2','m3','kg','h','day','package']),unit_price:decimalString,tax_rate:decimalString,tax_category:z.enum(['S','Z','E','AE','K','G','O']).nullable().optional(),tax_exemption_reason:z.string().max(2000).nullable().optional(),discount_percent:decimalString.default('0'),line_type:z.enum(['item','heading','text','subtotal']).default('item'),optional:z.boolean().default(false),selected:z.boolean().default(true),product_id:z.uuid().nullable().optional(),price_version_id:z.uuid().nullable().optional(),cost_unit:decimalString.nullable().optional()}).strict();
+export type SalesLine=z.infer<typeof lineSchema>;
+export type ActorContext={tenantId:string;legalEntityId:string;actorId:string;role:string;permissions:string[];permissionVersion:number;employeeId:string|null;correlationId:string;actorType:'employee'|'portal_contact'|'portal_shared'|'service';portalAccessId?:string;identityAssurance:'individual_session'|'shared_access'|'service_identity';reauthenticatedAt?:Date|null};

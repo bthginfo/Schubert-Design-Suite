@@ -1,0 +1,11 @@
+{
+  "tenantId": "4b4faa39-4ffe-4c0b-8247-d4fead95d67a",
+  "actorId": "73ef61dd-c879-4c43-b0e2-7c06e39d694e",
+  "orderId": "9be1b578-e51b-4b1e-8a50-f1e00339bf77",
+  "unknownMessageId": "3e01e94c-a576-485e-abc1-3e3d669e9389",
+  "unknownVersion": 2,
+  "evidenceVersionId": "b42b8653-1502-4b59-8b2b-536860bdd073",
+  "draftId": "e47edd2b-8142-498a-9750-ff828ec993f6",
+  "passed": 22,
+  "transportCalls": 0
+}

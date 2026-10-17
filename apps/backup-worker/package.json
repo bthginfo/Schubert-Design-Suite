@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "dependencies": {
+    "@vercel/blob": "2.8.2",
+    "pg": "8.23.1",
+    "esbuild": "0.28.2"
+  }
+}

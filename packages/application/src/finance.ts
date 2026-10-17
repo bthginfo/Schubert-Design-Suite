@@ -1,0 +1,90 @@
+import {z} from 'zod';
+import {rows,one} from '@schubert/db';
+import {assertFreshAuth,assertVersion,dec,money,requireRule} from '@schubert/domain';
+import {register,getRecord,hash,nextNumber,type Runtime} from './core.js';
+import {allocatePayment} from './sales.js';
+import {datevPostings} from './datev-postings.js';
+const date=z.iso.date(),amount=z.string().transform(v=>v.replace(',','.')).refine(v=>/^-?\d+(?:\.\d{1,6})?$/.test(v));
+const locked=async(r:Runtime,table:string)=>{const record=await getRecord(r.db,table,r.command.id,true);assertVersion(record.version,r.command.expectedVersion);return record;};
+async function openPeriod(r:Runtime,on:string){const blocked=await one(r.db,'SELECT id FROM accounting_periods WHERE locked AND starts_on<=$1::date AND ends_on>=$1::date LIMIT 1',[on]);requireRule(!blocked,'ACCOUNTING_PERIOD_LOCKED','Die Buchungsperiode ist gesperrt. Die Kanzlei muss eine Änderung ausdrücklich freigeben.');}
+register('finance.bank.import.create','finance',async r=>{
+ const p=z.object({name:z.string().min(1).max(250),document_id:z.uuid(),bank_account_id:z.uuid(),mapping:z.record(z.string(),z.string()).default({})}).parse(r.payload);
+ const doc=await getRecord(r.db,'documents',p.document_id),account=await getRecord(r.db,'bank_account_versions',p.bank_account_id);
+ requireRule(doc.status==='available'&&['text/csv','application/xml','text/xml'].includes(doc.mime_type),'BANK_SOURCE','Einen geprüften CSV- oder CAMT-Kontoauszug auswählen.');
+ requireRule(!account.party_id&&account.verified_at,'BANK_ACCOUNT','Ein eigenes bestätigtes Bankkonto auswählen.');
+ const prior=await one<any>(r.db,'SELECT * FROM bank_statement_imports WHERE bank_account_id=$1 AND content_hash=$2',[account.id,doc.content_hash]);if(prior)return{...prior,command_noop:true};
+ return r.insert('bank_statement_imports',{...p,source_document_version_id:doc.current_version_id,content_hash:doc.content_hash,status:'draft'});
+});
+register('finance.bank.import.stage','finance',async r=>{
+ const batch=await locked(r,'bank_statement_imports');const mapping=z.record(z.string(),z.string()).optional().parse(r.payload.mapping);requireRule(batch.status==='draft','BANK_IMPORT_STATE','Dieser Auszug wurde bereits eingelesen.');
+ await r.insert('job_runs',{name:'Kontoauszug mit Dublettenprüfung einlesen',job_type:'bank.statement.stage',payload:{batchId:batch.id},status:'pending'});
+ return r.update('bank_statement_imports',batch.id,{status:'processing',...(mapping?{mapping}: {})},batch.version);
+});
+register('finance.bank.transaction.confirm','finance',async r=>{
+ const tx=await locked(r,'bank_transactions');requireRule(tx.status==='needs_review'&&!tx.payment_id,'BANK_REVIEW','Diese Transaktion wurde bereits entschieden.');
+ const p=z.object({party_id:z.uuid(),target_kind:z.enum(['unallocated','receivable','payable']).default('unallocated'),target_id:z.uuid().nullable().optional(),reason:z.string().min(5).max(2000),duplicate_confirmed:z.boolean().default(false),tax_splits:z.unknown().optional(),tax_basis:z.string().max(2000).optional()}).parse(r.payload);
+ await getRecord(r.db,'parties',p.party_id);await openPeriod(r,new Date(tx.booking_date).toISOString().slice(0,10));
+ requireRule(dec(tx.amount).abs().gt(0),'BANK_AMOUNT','Eine Nullbuchung wird nicht als Zahlung übernommen.');
+ requireRule(!tx.duplicate_review||p.duplicate_confirmed,'BANK_DUPLICATE_REVIEW','Mögliche Dublette zuerst prüfen und ausdrücklich als eigenständige Bankbuchung bestätigen.');
+ const batch=await getRecord(r.db,'bank_statement_imports',tx.import_id),external=tx.external_id??'bank:'+tx.fingerprint+(p.duplicate_confirmed?':'+tx.id:'');
+ await r.db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[r.ctx.tenantId+':bank:'+batch.bank_account_id+':'+external]);
+ const exists=await one(r.db,'SELECT id FROM payments WHERE bank_account_id=$1 AND bank_reference=$2',[batch.bank_account_id,external]);requireRule(!exists,'BANK_DUPLICATE','Diese Bankbuchung wurde bereits als Zahlung übernommen.',409);
+ let payment=await r.insert('payments',{number:await nextNumber(r.db,r.ctx,'payments','ZA'),party_id:p.party_id,direction:dec(tx.amount).gt(0)?'incoming':'outgoing',amount:money(dec(tx.amount).abs()),currency:tx.currency,booking_date:tx.booking_date,reference:tx.reference,bank_account_id:batch.bank_account_id,bank_reference:external,source:'bank_statement',status:'unallocated',notes:p.reason});
+ if(p.target_kind!=='unallocated'){requireRule(p.target_id,'PAYMENT_TARGET','Den bestätigten offenen Beleg auswählen.');payment=await allocatePayment(r,payment,{target_kind:p.target_kind,target_id:p.target_id,amount:payment.amount,tax_splits:p.tax_splits,tax_basis:p.tax_basis});}
+ return r.update('bank_transactions',tx.id,{payment_id:payment.id,status:'confirmed',duplicate_review:false,review_reason:p.reason},tx.version);
+});
+register('finance.bank.transaction.ignore','finance',async r=>{const tx=await locked(r,'bank_transactions');requireRule(tx.status==='needs_review'&&String(r.payload.reason??'').trim().length>=5,'BANK_REVIEW','Offene Bankbuchung und nachvollziehbaren Grund auswählen.');return r.update('bank_transactions',tx.id,{status:'ignored',review_reason:r.payload.reason},tx.version);});
+register('finance.credit_offset.create','finance',async r=>{
+ const p=z.object({target_kind:z.enum(['receivable','payable']),positive_id:z.uuid(),negative_id:z.uuid(),amount,effective_on:date.optional(),reason:z.string().min(5).max(2000)}).parse(r.payload),table=p.target_kind==='receivable'?'receivables':'payables';
+ requireRule(p.positive_id!==p.negative_id&&dec(p.amount).gt(0),'OFFSET_SCOPE','Zwei verschiedene Belege und einen positiven Betrag auswählen.');
+ const items=await rows<any>(r.db,`SELECT * FROM ${table} WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE`,[[p.positive_id,p.negative_id]]),positive=items.find(x=>x.id===p.positive_id),negative=items.find(x=>x.id===p.negative_id);
+ requireRule(positive&&negative&&positive.party_id===negative.party_id&&positive.currency===negative.currency,'OFFSET_SCOPE','Beide Belege müssen demselben Geschäftspartner und derselben Währung gehören.');
+ requireRule(dec(positive.open_amount).gt(0)&&dec(negative.open_amount).lt(0)&&!positive.transferred_to_id&&!negative.transferred_to_id,'OFFSET_BALANCE','Eine offene Forderung und eine offene negative Gutschrift auswählen.');
+ requireRule(dec(p.amount).lte(positive.open_amount)&&dec(p.amount).lte(dec(negative.open_amount).abs()),'OFFSET_AMOUNT','Betrag übersteigt einen offenen Beleg.');await openPeriod(r,p.effective_on??new Date().toISOString().slice(0,10));
+ const offset=await r.insert('open_item_offsets',{...p,party_id:positive.party_id,currency:positive.currency,number:await nextNumber(r.db,r.ctx,'credit-offsets','VR'),status:'confirmed'});
+ for(const [item,sign]of [[positive,-1],[negative,1]] as const){const open=money(dec(item.open_amount).add(dec(p.amount).mul(sign)));await r.update(table,item.id,{open_amount:open,status:dec(open).eq(0)?'paid':'partially_paid'},item.version);await r.update(p.target_kind==='receivable'?'invoices':'supplier_invoices',item.invoice_id,{payment_status:dec(open).eq(0)?'paid':'partially_paid'});}return offset;
+});
+register('finance.receivable.dispute','finance',async r=>{const item=await locked(r,'receivables'),p=z.object({disputed:z.boolean(),reason:z.string().min(5)}).parse(r.payload);await r.db.query('UPDATE dunning_cases SET blocked=$1,reason=$2,version=version+1,updated_at=now() WHERE receivable_id=$3',[p.disputed,p.reason,item.id]);return r.update('receivables',item.id,{disputed:p.disputed,notes:p.reason},item.version);});
+register('finance.dunning.case.create','finance',async r=>{
+ const p=z.object({receivable_id:z.uuid(),next_due_date:date,fee:amount.optional().default('0'),rule_version_id:z.uuid().optional(),reason:z.string().min(5)}).parse(r.payload),item=await getRecord(r.db,'receivables',p.receivable_id,true);
+ const credit=await one(r.db,"SELECT id FROM receivables WHERE party_id=$1 AND currency=$2 AND open_amount<0 AND transferred_to_id IS NULL LIMIT 1",[item.party_id,item.currency]);requireRule(!credit,'DUNNING_OPEN_CREDIT','Für diesen Kunden besteht eine offene Gutschrift. Zuerst Verrechnung oder Rückzahlung klären.');
+ requireRule(dec(item.open_amount).gt(0)&&!item.disputed&&!item.transferred_to_id,'DUNNING_BLOCKED','Nur eine unstrittige offene Forderung kann erinnert werden.');requireRule(dec(p.fee).gte(0),'DUNNING_FEE','Mahngebühr darf nicht negativ sein.');
+ if(dec(p.fee).gt(0)){requireRule(p.rule_version_id,'DUNNING_FEE_RULE','Für eine Mahngebühr eine fachlich freigegebene Regel auswählen.');const rule=await getRecord(r.db,'rule_versions',p.rule_version_id);requireRule(rule.status==='approved'&&rule.domain==='dunning'&&rule.approved_by,'DUNNING_FEE_RULE','Eine freigegebene Regel aus dem Bereich dunning mit belegter Anspruchsgrundlage verwenden.');}return r.insert('dunning_cases',{...p,name:'Zahlungserinnerung',stage:0,status:'draft'});
+});
+register('finance.dunning.case.advance','finance',async r=>{
+ const c=await locked(r,'dunning_cases'),item=await getRecord(r.db,'receivables',c.receivable_id,true),invoice=await getRecord(r.db,'invoices',item.invoice_id),party=await getRecord(r.db,'parties',item.party_id),issuer=await getRecord(r.db,'legal_entities',r.ctx.legalEntityId);
+ const credit=await one(r.db,"SELECT id FROM receivables WHERE party_id=$1 AND currency=$2 AND open_amount<0 AND transferred_to_id IS NULL LIMIT 1",[item.party_id,item.currency]);requireRule(!credit,'DUNNING_OPEN_CREDIT','Offene Gutschrift zuerst verrechnen oder zurückzahlen.');
+ requireRule(['draft','ready'].includes(c.status)&&!c.blocked&&!item.disputed&&!item.transferred_to_id&&dec(item.open_amount).gt(0),'DUNNING_BLOCKED','Forderung ist bezahlt, strittig oder für Mahnungen gesperrt.');
+ const today=new Date().toISOString().slice(0,10);requireRule(item.due_date&&new Date(item.due_date).toISOString().slice(0,10)<today&&c.next_due_date&&new Date(c.next_due_date).toISOString().slice(0,10)>today,'DUNNING_DATE','Ursprüngliche Fälligkeit muss überschritten sein; neue Zahlungsfrist in der Zukunft festlegen.');
+ const stage=Number(c.stage)+1;requireRule(stage<=10,'DUNNING_STAGE','Weitere Schritte fachlich abstimmen.');
+ const snapshot={invoice:{number:invoice.number,title:invoice.title,due_date:invoice.due_date},issuer:{name:issuer.company_name,street:issuer.street,postal_code:issuer.postal_code,city:issuer.city,iban:issuer.iban},customer:{name:party.name,street:party.street,postal_code:party.postal_code,city:party.city},stage,open_amount:item.open_amount,currency:item.currency,fee:c.fee??'0',next_due_date:c.next_due_date,reason:c.reason,createdAt:new Date().toISOString()};
+ const event=await r.insert('dunning_events',{case_id:c.id,stage,snapshot,content_hash:hash(snapshot),status:'confirmed'});await r.insert('job_runs',{name:'Geprüfte Zahlungserinnerung als PDF',job_type:'dunning.pdf',payload:{eventId:event.id},status:'pending'});
+ return r.update('dunning_cases',c.id,{stage,snapshot,status:'generating',document_id:null},c.version);
+});
+register('finance.dunning.case.block','finance',async r=>{const c=await locked(r,'dunning_cases'),p=z.object({blocked:z.boolean(),reason:z.string().min(5)}).parse(r.payload);requireRule(c.status!=='closed','DUNNING_CLOSED','Abgeschlossenes Mahnverfahren bleibt geschlossen.');return r.update('dunning_cases',c.id,{...p,status:p.blocked?'blocked':c.document_id?'ready':'draft'},c.version);});
+register('finance.dunning.case.close','finance',async r=>{const c=await locked(r,'dunning_cases');requireRule(String(r.payload.reason??'').length>=5,'REASON_REQUIRED','Abschlussgrund angeben.');return r.update('dunning_cases',c.id,{status:'closed',reason:r.payload.reason},c.version);});
+register('finance.datev.create','finance',async r=>{const p=z.object({name:z.string().min(1),starts_on:date,ends_on:date}).parse(r.payload);requireRule(p.starts_on<=p.ends_on&&p.starts_on.slice(0,4)===p.ends_on.slice(0,4),'DATEV_RANGE','Einen gültigen Zeitraum innerhalb desselben Wirtschaftsjahres wählen.');return r.insert('datev_export_batches',{...p,status:'draft'});});
+register('finance.datev.prepare','finance',async r=>{
+ assertFreshAuth(r.ctx.reauthenticatedAt);await r.db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[r.ctx.tenantId+':datev-export']);const batch=await locked(r,'datev_export_batches'),issuer=await getRecord(r.db,'legal_entities',r.ctx.legalEntityId);
+ requireRule(batch.status==='draft'&&issuer.datev_approved&&issuer.datev_mapping&&issuer.datev_advisor&&issuer.datev_client,'DATEV_PROFILE','Zeitraum und durch die Kanzlei bestätigte DATEV-Grundlagen fehlen.');
+ const invoices=await rows<any>(r.db,"SELECT i.* FROM invoices i WHERE issued_at>=$1::date AND issued_at<$2::date+interval '1 day' AND NOT EXISTS(SELECT 1 FROM datev_export_items x JOIN datev_export_batches b ON b.id=x.batch_id WHERE x.invoice_id=i.id AND b.status<>'cancelled') ORDER BY issued_at,id FOR SHARE",[batch.starts_on,batch.ends_on]);
+ const suppliers=await rows<any>(r.db,"SELECT i.* FROM supplier_invoices i WHERE invoice_date>=$1::date AND invoice_date<=$2::date AND status='approved_for_accounting' AND NOT EXISTS(SELECT 1 FROM datev_export_items x JOIN datev_export_batches b ON b.id=x.batch_id WHERE x.supplier_invoice_id=i.id AND b.status<>'cancelled') ORDER BY invoice_date,id FOR SHARE",[batch.starts_on,batch.ends_on]);
+ const payments=await rows<any>(r.db,"SELECT p.* FROM payments p WHERE booking_date>=$1::date AND booking_date<=$2::date AND NOT EXISTS(SELECT 1 FROM datev_export_items x JOIN datev_export_batches b ON b.id=x.batch_id WHERE x.payment_id=p.id AND b.status<>'cancelled') ORDER BY booking_date,id FOR SHARE",[batch.starts_on,batch.ends_on]);
+ requireRule(invoices.length+suppliers.length+payments.length>0,'DATEV_EMPTY','Keine neuen freigegebenen Belege in diesem Zeitraum. Bereits erzeugte Stapel erneut herunterladen.');requireRule(invoices.length+suppliers.length+payments.length<=1000,'DATEV_BATCH_SIZE','Für große Bestände einen kürzeren Exportzeitraum wählen.');
+ const manifest:any[]=[];const mapping=issuer.datev_mapping;
+ const allArtifacts=await rows<any>(r.db,"SELECT invoice_id,document_version_id,kind,content_hash FROM invoice_artifacts WHERE invoice_id=ANY($1::uuid[]) AND status='archived' ORDER BY invoice_id,kind",[invoices.map(i=>i.id)]);
+ for(const [kind,records]of [['invoice',invoices],['supplier_invoice',suppliers],['payment',payments]] as const)for(const record of records){
+  requireRule(kind==='payment'||record.artifact_status==='archived','DATEV_ORIGINAL','Alle ausgewählten Originalbelege müssen unveränderlich archiviert sein.');
+  const versions=kind==='invoice'?allArtifacts.filter(a=>a.invoice_id===record.id).map(({invoice_id,...v})=>v):kind==='supplier_invoice'?[{document_version_id:record.source_document_version_id,kind:'original',content_hash:record.content_hash}]:[];
+  requireRule(kind==='payment'||versions.length>0&&versions.every((v:any)=>v.document_version_id),'DATEV_ORIGINAL','Ein konkretes archiviertes Original fehlt.');
+  for(const posting of datevPostings(record,kind,mapping)){
+   const snapshot={kind,recordId:record.id,number:record.number??record.reference,...posting,currency:record.currency??'EUR',date:kind==='invoice'?record.issued_at:kind==='supplier_invoice'?record.invoice_date:record.booking_date,direction:kind==='payment'?record.direction:kind==='invoice'?'incoming':'outgoing',versions,originalSnapshotHash:record.content_hash??null,settlement:kind==='invoice'?{kind:record.kind,prepaidTotal:record.prepaid_total??'0',payableTotal:record.payable_total??record.gross_total,deductions:record.snapshot?.settlement??record.snapshot?.final_settlement??null}:null};
+   await r.insert('datev_export_items',{batch_id:batch.id,invoice_id:kind==='invoice'?record.id:null,supplier_invoice_id:kind==='supplier_invoice'?record.id:null,payment_id:kind==='payment'?record.id:null,amount:snapshot.amount,account:posting.accounts.account,counter_account:posting.accounts.counter_account,tax_key:posting.accounts.tax_key??'',snapshot,status:'frozen'});manifest.push(snapshot);
+  }
+ }
+ await r.insert('job_runs',{name:'DATEV-Stapel und Originalbelege paketieren',job_type:'datev.export',payload:{batchId:batch.id},status:'pending'});
+ return r.update('datev_export_batches',batch.id,{mapping_version:hash(mapping),manifest:{profile:{advisor:issuer.datev_advisor,client:issuer.datev_client,accountLength:Number(issuer.datev_account_length??4),fiscalYear:new Date(batch.starts_on).getUTCFullYear()},records:manifest},content_hash:hash(manifest),approved_by:r.ctx.actorId,approved_at:new Date(),status:'generating'},batch.version);
+});
+register('finance.datev.confirm','finance',async r=>{assertFreshAuth(r.ctx.reauthenticatedAt);await r.db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[r.ctx.tenantId+':datev-export']);const batch=await locked(r,'datev_export_batches');requireRule(batch.status==='ready'&&String(r.payload.reason??'').length>=5,'DATEV_CONFIRMATION','Bereiten Stapel und Rückmeldung der Kanzlei angeben.');return r.update('datev_export_batches',batch.id,{status:'import_confirmed',import_confirmed_at:new Date(),import_confirmation:r.payload.reason},batch.version);});
+register('finance.period.create','finance',async r=>{const p=z.object({name:z.string().min(1),starts_on:date,ends_on:date}).parse(r.payload);requireRule(p.starts_on<=p.ends_on,'PERIOD_RANGE','Beginn liegt nach dem Ende.');return r.insert('accounting_periods',{...p,locked:false,status:'draft'});});
+for(const [action,lockedState]of [['lock',true],['unlock',false]] as const)register('finance.period.'+action,'finance',async r=>{assertFreshAuth(r.ctx.reauthenticatedAt);const period=await locked(r,'accounting_periods');requireRule(String(r.payload.reason??'').length>=5,'PERIOD_REASON','Abgleich oder Freigabe durch die Kanzlei dokumentieren.');return r.update('accounting_periods',period.id,{locked:lockedState,status:lockedState?'locked':'draft',notes:r.payload.reason},period.version);});

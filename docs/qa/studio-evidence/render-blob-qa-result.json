@@ -1,0 +1,14 @@
+{
+  "privateTransport": true,
+  "nativeWidth": 3840,
+  "nativeHeight": 2880,
+  "imageBytes": 6983339,
+  "imageHash": "440d26602883fd1706b353ed490909700d403de7e6ea0b78d795ada48acd3489",
+  "separateReaderVerified": true,
+  "pathScopeDenied": true,
+  "mimeDenied": true,
+  "sizeDenied": true,
+  "expiredDenied": true,
+  "overwriteDenied": true,
+  "workerReceivedBucketSecret": false
+}

@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "Tap multi-selection selects exactly two independent elements",
+    "World-space selection form moves both elements exactly once across distinct parents",
+    "Lock-all persists both locks and disables shared movement fields",
+    "Unlock-all command completes",
+    "Undo after autosave restores both original positions and individual lock states",
+    "Coincident slope endpoints are rejected without a saved revision",
+    "Free slope endpoint form creates the actual Y-directed geometric plane",
+    "Slope endpoint undo restores the original direction after save",
+    "Niche side change persists on the actual wall core",
+    "Opening type change creates a real window without changing the stored recess source",
+    "Door hinge and opening direction both persist",
+    "An originally missing optional niche depth can be bound and saved",
+    "Undo clears the new optional niche binding after save",
+    "Undo returns both opening records to their original functional types",
+    "Invalid reordered room boundary is rejected before saving",
+    "Incomplete added boundary section has a readable repairable error",
+    "Closed cyclic room boundary reorder persists",
+    "Room boundary undo restores the exact original shared-wall sequence"
+  ],
+  "passed": 18,
+  "complete": true,
+  "realBrowserAndPostgres": true
+}

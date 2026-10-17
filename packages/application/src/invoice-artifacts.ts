@@ -1,0 +1,35 @@
+import type {ActorContext} from '@schubert/contracts';
+import {withTenant,one,insert,update} from '@schubert/db';
+import {earliestErasureDate,requireRule} from '@schubert/domain';
+import {callWorker,privateBytes,contentHash,archiveOriginal} from '@schubert/adapters';
+import {getRecord,baseData,canonical} from './core.js';
+import {buildDocumentSource} from './render-request.js';
+type Dependencies={guardLease:(ctx:ActorContext,job:any)=>Promise<any>;generatedDocument:(ctx:ActorContext,bytes:Uint8Array,name:string,mime:string,entityType:string,entityId:string,audience?:string,job?:any)=>Promise<any>};
+/** A retry archives the exact persisted bytes, including a PDF's originally embedded XML. */
+export async function runInvoiceArtifacts(ctx:ActorContext,job:any,deps:Dependencies){
+ const invoice=await withTenant(ctx,db=>getRecord(db,'invoices',job.payload.invoiceId));requireRule(invoice.issued_at&&invoice.content_hash===job.payload.contentHash,'INVOICE_SNAPSHOT','Der ausgestellte Rechnungsstand stimmt nicht mit dem Auftrag überein.');if(invoice.artifact_status==='archived')return{invoiceId:invoice.id,status:'archived'};
+ const policy=await withTenant(ctx,db=>invoice.retention_policy_id?getRecord(db,'retention_policies',invoice.retention_policy_id):one<any>(db,"SELECT * FROM retention_policies WHERE document_kind='invoice' AND status='approved' AND approved_by IS NOT NULL AND valid_from<=$1::date ORDER BY valid_from DESC LIMIT 1",[new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin'}).format(new Date(invoice.issued_at))]));requireRule(policy?.years,'RETENTION_PROFILE','Bestätigte Aufbewahrungsregel fehlt.');
+ const checkpoints=await withTenant(ctx,async db=>{const found:any={};for(const extension of ['pdf','xml'])found[extension]=await one<any>(db,"SELECT d.*,v.id document_version_id,b.storage_key FROM documents d JOIN document_versions v ON v.id=d.current_version_id JOIN blob_objects b ON b.id=v.blob_object_id WHERE d.generation_key=$1 AND d.status='available'",[job.id+':invoice:Rechnung_'+invoice.number+'.'+extension]);return found;});
+ let output:any,xml:Uint8Array,pdf:Uint8Array,xrechnung:Uint8Array|undefined;
+ if(checkpoints.pdf){
+  const proof=checkpoints.pdf.generation_proof;requireRule(proof?.snapshotHash===invoice.content_hash&&proof.pdfaValid&&proof.validator,'INVOICE_CHECKPOINT','Gespeichertes Rechnungs-PDF hat keinen passenden vollständigen Validierungsnachweis.');pdf=await privateBytes(checkpoints.pdf.storage_key,40*1024*1024,ctx);
+  requireRule(contentHash(pdf)===checkpoints.pdf.content_hash&&contentHash(pdf)===proof.pdfHash,'INVOICE_CHECKPOINT_HASH','Gespeichertes Rechnungsoriginal stimmt nicht überein.');output=proof;
+  if(checkpoints.xml)xml=await privateBytes(checkpoints.xml.storage_key,40*1024*1024,ctx);
+  else{const source=await withTenant(ctx,async db=>{const version=await getRecord(db,'document_versions',checkpoints.pdf.current_version_id);return{version,blob:await getRecord(db,'blob_objects',version.blob_object_id)};});const inspected=await callWorker('/invoice/inspect',{source:buildDocumentSource(ctx,source.version,source.blob,job)});requireRule(inspected.valid&&inspected.pdfaValid&&inspected.pdfHash===proof.pdfHash,'INVOICE_CHECKPOINT_VALIDATION','Gespeichertes PDF hat die erneute Originalprüfung nicht bestanden.');xml=Buffer.from(inspected.xmlBase64,'base64');}
+  requireRule(contentHash(xml)===proof.xmlHash,'INVOICE_EMBEDDED_XML','Die XML-Datei gehört nicht zum eingebetteten Original des Rechnungs-PDFs.');
+ }else{
+  output=await callWorker('/invoice/generate',{snapshot:invoice.snapshot,contentHash:invoice.content_hash});requireRule(output.valid&&output.pdfBase64&&output.xmlBase64&&output.pdfaValid&&output.validator,'INVOICE_ARTIFACT_INVALID','Unabhängige PDF/A- oder XML-Validierung ist fehlgeschlagen.');pdf=Buffer.from(output.pdfBase64,'base64');xml=Buffer.from(output.xmlBase64,'base64');if(output.xrechnungXmlBase64)xrechnung=Buffer.from(output.xrechnungXmlBase64,'base64');output={snapshotHash:invoice.content_hash,pdfHash:contentHash(pdf),xmlHash:contentHash(xml),pdfaValid:true,profile:output.profile,validator:output.validator,generatorVersion:output.generatorVersion,report:output.report};
+ }
+ if(invoice.snapshot.recipient_profile&&!xrechnung){const generated=await callWorker('/invoice/xrechnung',{bytes:Buffer.from(xml).toString('base64'),profile:invoice.snapshot.recipient_profile});requireRule(generated.valid&&generated.xmlBase64,'XRECHNUNG_INVALID','XRechnungsoriginal ist nicht gültig.');xrechnung=Buffer.from(generated.xmlBase64,'base64');}if(xrechnung)requireRule(contentHash(xrechnung)===output.report?.xrechnung?.xmlHash,'XRECHNUNG_CHECKPOINT','XRechnung stimmt nicht mit dem eingefrorenen Prüfnachweis überein.');
+ const retainUntil=earliestErasureDate(new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin'}).format(new Date(invoice.issued_at)),policy.years),proofs=[];
+ for(const [bytes,mime,extension]of [[pdf,'application/pdf','pdf'],[xml,'application/xml','xml'],...(xrechnung?[[xrechnung,'application/xml','xrechnung.xml'] as const]:[]),...(invoice.kind==='final'?[[Buffer.from(canonical(invoice.snapshot)),'application/json','json'] as const]:[])] as const){
+  await deps.guardLease(ctx,job);const doc=await deps.generatedDocument(ctx,bytes,'Rechnung_'+invoice.number+'.'+extension,mime,'invoice',invoice.id,'customer',{...job,validationProof:output});requireRule(doc.content_hash===contentHash(bytes),'INVOICE_ORIGINAL_HASH','Vorhandener Artefaktcheckpoint enthält andere Originalbytes.');
+  const existing=await withTenant(ctx,db=>one<any>(db,'SELECT * FROM invoice_artifacts WHERE invoice_id=$1 AND kind=$2',[invoice.id,extension]));if(existing){requireRule(existing.content_hash===doc.content_hash&&existing.document_version_id===doc.current_version_id,'INVOICE_ARCHIVE_BINDING','Vorhandener Archivnachweis gehört zu einem anderen Original.');proofs.push(existing);continue;}
+  const proof=await archiveOriginal(ctx,bytes,mime,retainUntil,'invoice/'+invoice.id+'/'+extension);
+  await withTenant(ctx,async db=>{const currentJob=await getRecord(db,'job_runs',job.id,true);requireRule(currentJob.status==='running'&&String(currentJob.fencing_token)===String(job.fencing_token)&&new Date(currentJob.lease_until)>new Date(),'STALE_JOB_FENCE','Ein neuer Jobversuch hat diesen Vorgang übernommen.',409);
+   await insert(db,'invoice_artifacts',{...baseData(ctx),invoice_id:invoice.id,document_version_id:doc.current_version_id,kind:extension,content_hash:doc.content_hash,archive_key:proof.key,storage_version_id:proof.versionId,retain_until:proof.retainUntil,lock_mode:proof.lockMode,lock_verified_at:proof.lockVerifiedAt,profile:output.profile,validator:output.validator,status:'archived'});
+   await insert(db,'retention_assignments',{...baseData(ctx),document_version_id:doc.current_version_id,policy_id:policy.id,started_at:invoice.issued_at,retain_until:retainUntil,status:'active'});
+  });proofs.push({kind:extension,documentVersionId:doc.current_version_id,...proof});
+ }
+ await withTenant(ctx,db=>update(db,'invoices',invoice.id,{artifact_status:'archived'}));return{invoiceId:invoice.id,proofs};
+}

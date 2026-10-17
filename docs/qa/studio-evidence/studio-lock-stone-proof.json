@@ -1,0 +1,25 @@
+{
+  "mode": "stone",
+  "headRevisionId": "30e29a49-1bf3-483e-8223-7c0b2fb70a56",
+  "unchanged": true,
+  "results": [
+    {
+      "case": "stone_measure",
+      "code": "DESIGN_INVALID",
+      "message": "„QA Werkstück Bearbeitung“ ist gesperrt und würde über seinen geometrischen Bezug verändert. Sperre bewusst am betroffenen Element prüfen.",
+      "status": 422
+    },
+    {
+      "case": "dependent_machining",
+      "code": "DESIGN_INVALID",
+      "message": "„QA Werkstück Bearbeitung“ ist gesperrt und würde über seinen geometrischen Bezug verändert. Sperre bewusst am betroffenen Element prüfen.",
+      "status": 422
+    },
+    {
+      "case": "remove_locked_host",
+      "code": "DESIGN_INVALID",
+      "message": "„QA Werkstück Bearbeitung“ ist gesperrt. Bestand zuerst ausdrücklich prüfen.",
+      "status": 422
+    }
+  ]
+}

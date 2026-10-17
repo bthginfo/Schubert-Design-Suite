@@ -1,0 +1,7 @@
+ALTER TABLE change_orders ADD COLUMN currency char(3) NOT NULL DEFAULT 'EUR',ADD COLUMN net_total numeric(20,2),ADD COLUMN tax_total numeric(20,2),ADD COLUMN gross_total numeric(20,2),ADD COLUMN frozen_snapshot jsonb,ADD COLUMN content_hash text,ADD COLUMN accepted_at timestamptz;
+ALTER TABLE delivery_notes ADD COLUMN currency char(3) NOT NULL DEFAULT 'EUR';
+DO $$ DECLARE t text;BEGIN FOREACH t IN ARRAY ARRAY['change_order_lines','delivery_note_lines','supplier_invoice_lines'] LOOP EXECUTE format('ALTER TABLE %I ADD COLUMN IF NOT EXISTS tax_category text,ADD COLUMN IF NOT EXISTS tax_exemption_reason text',t);END LOOP;END $$;
+CREATE FUNCTION protect_accepted_change() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF OLD.status='accepted' THEN RAISE EXCEPTION 'accepted_change_immutable' USING ERRCODE='23514';END IF;RETURN COALESCE(NEW,OLD);END $$;
+CREATE TRIGGER change_accepted_immutable BEFORE UPDATE OR DELETE ON change_orders FOR EACH ROW EXECUTE FUNCTION protect_accepted_change();
+CREATE FUNCTION protect_change_line() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF EXISTS(SELECT 1 FROM change_orders WHERE id=COALESCE(NEW.parent_id,OLD.parent_id) AND status='accepted') THEN RAISE EXCEPTION 'accepted_change_line_immutable' USING ERRCODE='23514';END IF;RETURN COALESCE(NEW,OLD);END $$;
+CREATE TRIGGER change_line_immutable BEFORE INSERT OR UPDATE OR DELETE ON change_order_lines FOR EACH ROW EXECUTE FUNCTION protect_change_line();

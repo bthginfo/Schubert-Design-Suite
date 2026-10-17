@@ -1,0 +1,40 @@
+name: Application quality
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_DB: schubert_ci
+          POSTGRES_PASSWORD: ci_disposable_owner_only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: 'true'
+      CI_DATABASE_URL: postgresql://postgres:ci_disposable_owner_only@localhost:5432/schubert_ci
+      DATABASE_MIGRATION_URL: postgresql://postgres:ci_disposable_owner_only@localhost:5432/schubert_ci
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.15.0'
+      - run: npm install --global corepack@0.34.6
+      - run: corepack enable && corepack prepare pnpm@11.25.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/security-check.mjs
+      - run: pnpm check
+      - run: pnpm test
+      - run: pnpm db:migrate
+      - run: node scripts/ci-database.mjs
+      - run: pnpm exec tsx scripts/testing-fixture.ts
+      - run: pnpm test:integration
+      - run: pnpm requirements
+      - run: pnpm build

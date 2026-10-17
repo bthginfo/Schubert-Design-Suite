@@ -1,0 +1,59 @@
+{
+  "checks": [
+    "Native pointer drag exposes an actual canonical snap target and marker",
+    "Native drag saves a real world-space note movement",
+    "Undo after native drag and autosave restores exact original world position",
+    "Native pan changes only the viewport and creates no revision",
+    "Technical source attachment binds the actual immutable private original version",
+    "Technical source removal persists",
+    "Source removal can be undone after save",
+    "Concept dialog opens with no quote and no generation action",
+    "Empty concept input is blocked by visible form constraints",
+    "Quote either exposes the unaccepted concrete reservation or the actual provider configuration error",
+    "Editing the concept request invalidates the quoted price before any start",
+    "Quote, invalid input and cancel create no paid image job",
+    "Actual private PDF download is available for the selected immutable revision",
+    "Actual private BOM download is available for the selected immutable revision",
+    "Downloaded BOM is revision-bound and contains real connection, clearance and slope technical rows",
+    "Downloaded BOM preserves explicitly separate raw dimensions",
+    "Actual private SVG download is available for the selected immutable revision",
+    "All immutable exports and concept quote leave plan geometry unchanged"
+  ],
+  "passed": 18,
+  "complete": true,
+  "realBrowserAndPostgres": true,
+  "revisionId": "7be21ea7-c4db-49d3-bba9-1ea5aabf53b0",
+  "contentHash": "a37c3b1c6f74ff1773bf5499ad2f2dad48a33c8309c28324578b1160aee288e0",
+  "quoteState": {
+    "checked": false,
+    "disabled": true,
+    "quote": "VERBINDLICHE AUSWAHL VOR DEM STARTMaximale ReservierungBis zu 0,32598 USD1024x1024 Pixel · Konzeptqualität · gpt-image-2.5-flare· Ersatzmodell gpt-image-2Der Betrag gilt für die gerade geprüften Angaben und das hinterlegte Anbieterprofil. Die tatsächliche Nutzung kann geringer ausfallen. Eine Änderung erfordert eine neue Kostenvorschau. Ich bestätige diesen einzelnen kostenpflichtigen Bildauftrag bis zum oben genannten Betrag.Konzeptbild kostenpflichtig anfordern"
+  },
+  "exports": {
+    "pdf": {
+      "status": 200,
+      "mime": "application/pdf",
+      "bytes": 56603,
+      "sha256": "cb8bf564b1d8b75603b44551ce9331020235f470a2f3093c90a4ecc365032b56",
+      "file": "studio-final-pdf.pdf"
+    },
+    "bom": {
+      "status": 200,
+      "mime": "application/json",
+      "bytes": 27172,
+      "sha256": "44488852f78f98039ee157f579d41e60c012a9aee9e0ed7bf646aa2a2fc1b1f1",
+      "file": "studio-final-bom.json"
+    },
+    "svg": {
+      "status": 200,
+      "mime": "image/svg+xml",
+      "bytes": 33315,
+      "sha256": "2789b7d5fb7819cececbc226099be27a7018926434a652809f289e38c265ec96",
+      "file": "studio-final-svg.svg"
+    }
+  },
+  "snap": {
+    "label": "Endpunkt · Synthetischer Raum 2 × 3 m · Wand 1 · 100 / 100 mm−100 %+",
+    "marker": true
+  }
+}

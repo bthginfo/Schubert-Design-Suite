@@ -1,0 +1,19 @@
+import{it,expect}from'vitest';
+import{createDesign,targetMeasure,rectangleContour,IDENTITY_TRANSFORM,applyOperations,worldPoint,inverseOperations}from'./index.js';
+const base={parentId:'root',phase:'planned' as const,locked:false,sourceEvidenceVersionIds:[]};
+function stone(){const s=createDesign('memorial');s.measurements.t=targetMeasure('30');s.elements.push({...base,id:'stone',kind:'stone_piece',label:'Gesperrte Platte',locked:true,transform:structuredClone(IDENTITY_TRANSFORM),purpose:'memorial',finishedContour:rectangleContour('500','1000'),thicknessMeasureId:'t',materialSpecVersionId:'unassigned:material',stockItemId:null,grainDirectionDeg:null,edgeTreatments:[],machiningFeatureIds:[]});return s;}
+it('refuses a direct measure-map change behind a locked element while permitting review-only confirmation',()=>{
+ const s=stone();expect(()=>applyOperations(s,[{type:'set_design_target',measureId:'t',valueMm:'40'}])).toThrow('gesperrt');expect(s.measurements.t.valueMm).toBe('30');expect(applyOperations(s,[{type:'confirm_design_target',measureId:'t',confirmedBy:'reviewer',confirmedAt:'2026-10-17T10:00:00Z'}]).measurements.t.reviewStatus).toBe('confirmed');
+});
+it('cannot move a locked wall indirectly through a shared node, neighboring axis or core thickness',()=>{
+ const s=createDesign('room_plan');s.measurements.core=targetMeasure('100');s.measurements.h=targetMeasure('2500');
+ for(const[id,x,y]of[['a','0','0'],['b','1000','0'],['c','1000','1000']])s.elements.push({...base,id,label:id,kind:'node',point:{xMm:x,yMm:y,zMm:'0'}});
+ for(const[id,start,end,locked]of[['first','a','b',false],['second','b','c',true]]as const)s.elements.push({...base,id,label:id,kind:'wall',locked,startNodeId:start,endNodeId:end,heightMeasureId:'h',coreThicknessMeasureId:'core',layers:[],joinStyle:'miter'});
+ expect(()=>applyOperations(s,[{type:'move_element',elementId:'first',delta:{xMm:'100',yMm:'0',zMm:'0'}}])).toThrow('gesperrt');expect(()=>applyOperations(s,[{type:'move_element',elementId:'a',delta:{xMm:'0',yMm:'50',zMm:'0'}}])).toThrow('gesperrt');expect(()=>applyOperations(s,[{type:'set_design_target',measureId:'core',valueMm:'200'}])).toThrow('gesperrt');expect(()=>applyOperations(s,[{type:'set_element_phase',elementId:'first',phase:'demolition'}])).toThrow('gesperrt');
+});
+it('keeps a wall translation in the wall parent coordinates when its two nodes have different parents',()=>{
+ const s=createDesign('room_plan');s.frames.push({id:'turned',parentFrameId:'root',sourceObjectId:null,datumLabel:'Gedrehter Bezug',transform:{position:{xMm:'0',yMm:'0',zMm:'0'},rotationDeg:{x:'0',y:'0',z:'90'}}});s.measurements.h=targetMeasure('2500');s.measurements.core=targetMeasure('100');s.elements.push({...base,id:'a',label:'a',kind:'node',point:{xMm:'0',yMm:'0',zMm:'0'}},{...base,parentId:'turned',id:'b',label:'b',kind:'node',point:{xMm:'0',yMm:'-1000',zMm:'0'}},{...base,id:'wall',label:'wall',kind:'wall',startNodeId:'a',endNodeId:'b',heightMeasureId:'h',coreThicknessMeasureId:'core',layers:[]});
+ const next=applyOperations(s,[{type:'move_element',elementId:'wall',delta:{xMm:'100',yMm:'0',zMm:'0'}}]);expect(worldPoint(next,'a')).toEqual({xMm:'100',yMm:'0',zMm:'0'});expect(worldPoint(next,'b')).toEqual({xMm:'1100',yMm:'0',zMm:'0'});
+});
+
+it('reverses an explicit phase change without replacing the saved object or its text',()=>{const s=createDesign('room_plan');s.elements.push({...base,id:'note',label:'Hinweis',kind:'technical_note',point:{xMm:'0',yMm:'0',zMm:'0'},text:'Unveränderter Text',category:'information',ruleVersionId:null});const ops=[{type:'set_element_phase' as const,elementId:'note',phase:'demolition' as const}],next=applyOperations(s,ops);expect(next.elements[0].phase).toBe('demolition');expect(applyOperations(next,inverseOperations(s,ops)!)).toEqual(s);});

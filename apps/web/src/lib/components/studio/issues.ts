@@ -1,0 +1,19 @@
+import type{DesignSnapshot,DesignElement}from'@schubert/contracts';
+export type StudioIssue={message:string;elementId:string|null;measureId:string|null;fieldLabel:string|null};
+const fields:Record<string,string>={roughWidthMeasureId:'Rohmaß X',roughHeightMeasureId:'Rohmaß Y',roughThicknessMeasureId:'Rohstärke',measureId:'Maß',heightMeasureId:'Höhe',widthMeasureId:'Breite',thicknessMeasureId:'Materialstärke',coreThicknessMeasureId:'Wandkern',offsetAlongWallMeasureId:'Abstand zum Wandanfang',sillHeightMeasureId:'Brüstungshöhe',finishedFloorLevelMeasureId:'Fertigfußbodenhöhe',requestedHeightMeasureId:'Gewünschte Zeichenhöhe',requestedLowercaseHeightMeasureId:'Gewünschte Kleinbuchstabenhöhe',requestedMaxWidthMeasureId:'Maximale Schriftbreite',lineGapMeasureId:'Zeilenabstand',jointWidthMeasureId:'Fugenbreite',depthMeasureId:'Bearbeitungstiefe',recessDepthMeasureId:'Nischentiefe',minimumWebMeasureId:'Mindeststeg',diameterMeasureId:'Durchmesser',riseMeasureId:'Höhenunterschied',runMeasureId:'Gefällelänge',lengthMeasureId:'Bezugs- / Kontrolllänge'};
+const constraintNames:Record<string,string>={coincident:'Deckungsgleich',horizontal:'Waagerecht',vertical:'Senkrecht',parallel:'Parallel',perpendicular:'Rechtwinklig',distance:'Abstand',centered:'Zentrierung',fixed:'Fixierung',minimum_clearance:'Mindestabstand'};
+/** UI labels and direct repair targets come from the actual immutable snapshot. */
+export function describeStudioIssue(snapshot:DesignSnapshot|null,raw:string):StudioIssue{
+ let message=raw,elementId:string|null=null,measureId:string|null=null,fieldLabel:string|null=null;if(!snapshot)return{message,elementId,measureId,fieldLabel};
+ const namedOwner=snapshot.elements.find(e=>raw.includes(`„${e.label}“`));
+ const measures:Array<{id:string;element:DesignElement;label:string}>=[];
+ function visit(value:any,owner:DesignElement){if(!value||typeof value!=='object')return;for(const[key,item]of Object.entries(value)){if((key.endsWith('MeasureId')||key==='measureId')&&typeof item==='string'){const host=owner.kind==='dimension'?snapshot!.elements.find(e=>e.id===owner.refs[0]?.elementId&&e.kind==='stone_piece'):null;measures.push({id:item,element:host??owner,label:owner.kind==='dimension'?owner.label:fields[key]??'Maß'});}else if(typeof item==='object')visit(item,owner);}}
+ for(const element of snapshot.elements)visit(element,element);
+ for(const binding of measures.sort((a,b)=>Number(b.element.id===namedOwner?.id)-Number(a.element.id===namedOwner?.id)||b.id.length-a.id.length))if(message.includes(binding.id)){measureId??=binding.id;elementId??=binding.element.id;fieldLabel??=binding.label;message=message.split(binding.id).join(`„${binding.element.label} · ${binding.label}“`);}
+ for(const constraint of snapshot.constraints)if(message.includes(constraint.id)){const names=constraint.refs.map(r=>snapshot.elements.find(e=>e.id===r.elementId)?.label).filter(Boolean);message=message.split(constraint.id).join(`${constraintNames[constraint.kind]??'Geometrische Bindung'} (${names.join(', ')})`);elementId??=constraint.refs[0]?.elementId??null;measureId??=constraint.measureId;fieldLabel??=constraintNames[constraint.kind]??null;}
+ for(const element of [...snapshot.elements].sort((a,b)=>b.id.length-a.id.length)){if(message.includes(element.id)){elementId??=element.id;message=message.split(element.id).join(`„${element.label}“`);}else if(message.includes(`„${element.label}“`))elementId??=element.id;}
+ for(const frame of snapshot.frames)message=message.split(frame.id).join(`„${frame.datumLabel}“`);
+ if(measureId){const dimension=snapshot.elements.find(e=>e.kind==='dimension'&&e.measureId===measureId);if(dimension?.kind==='dimension'){const host=snapshot.elements.find(e=>e.id===dimension.refs[0]?.elementId);if(host?.kind==='stone_piece')elementId=host.id;}}
+ if(namedOwner&&fieldLabel)message=message.split(`„${namedOwner.label} · ${fieldLabel}“`).join(fieldLabel);
+ return{message,elementId,measureId,fieldLabel};
+}

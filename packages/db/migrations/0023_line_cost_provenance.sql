@@ -1,0 +1,1 @@
+DO $$ DECLARE t text;BEGIN FOREACH t IN ARRAY ARRAY['quote_lines','invoice_lines','purchase_order_lines','change_order_lines','delivery_note_lines','supplier_invoice_lines','order_lines'] LOOP EXECUTE format('ALTER TABLE %I ADD COLUMN cost_review_required boolean NOT NULL DEFAULT false,ADD COLUMN cost_evidence jsonb',t);END LOOP;END $$;

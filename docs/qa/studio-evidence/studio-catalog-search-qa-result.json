@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Literal underscore name filter",
+    "Literal percent cannot broaden SQL search",
+    "Exact manufacturer filter",
+    "Comma decimal and exact size range",
+    "Finish installation kind depth height combined",
+    "Only dated clean hash-bound available or limited statements",
+    "Explicit unavailable statement",
+    "Expired missing tampered or quarantined sources stay unknown",
+    "Pinned historical approved SKU survives new filters with original dimensions",
+    "Reversed size range gives domain error",
+    "Search result has strict thirty-record bound",
+    "Public business and approval counts unchanged",
+    "Availability table forces tenant legal entity RLS",
+    "Unprivileged caller rejected before library query"
+  ],
+  "passed": 14,
+  "temporarySqlFixturesOnly": true,
+  "noPersistedApprovalsOrProductsCreated": true
+}

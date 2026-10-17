@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "Named checkpoint appends an immutable revision without changing plan geometry",
+    "Historical revision disables edits and constraint tools",
+    "Returning to current revision restores normal editor",
+    "Variant comparison loads actual earlier head quantities",
+    "New variant copies exactly the explicitly selected immutable stand",
+    "Original variant remains independently accessible"
+  ],
+  "passed": 6,
+  "namedRevisionId": "c585e7b6-94c1-4112-af1c-fc5f7cf80096",
+  "copiedVariantId": "c7b37228-dc85-4665-bba2-cec59ef9a7fb",
+  "realBrowserAndPostgres": true
+}

@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "exports": "./src/index.ts",
+  "name": "@schubert/db",
+  "version": "1.0.0",
+  "type": "module"
+}

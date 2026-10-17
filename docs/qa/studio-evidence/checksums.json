@@ -1,0 +1,112 @@
+[
+  {
+    "file": "cloud8-app-render-qa-result.json",
+    "bytes": 1427,
+    "sha256": "f71a5c0b02edd1142af20c07ddb6848a46fa1e500532834ce711ec83ae900d00"
+  },
+  {
+    "file": "dxf-import-live-result.json",
+    "bytes": 1295,
+    "sha256": "7111ac6c7d5b15f44c50d1e0853c457ac056b24b109f57ddbe0d731fbf302be0"
+  },
+  {
+    "file": "render-blob-qa-result.json",
+    "bytes": 381,
+    "sha256": "0af558c0ecf526c91d85e7fb251217d011919aacc6fabacd7a1f8a1faa82a267"
+  },
+  {
+    "file": "render-local-4k-summary.json",
+    "bytes": 1686,
+    "sha256": "7cfb6f63b42f53a6d7efa00d8e55ba296d267a7c2fd462e01180c848e7d50cb3"
+  },
+  {
+    "file": "source-import-live-result.json",
+    "bytes": 815,
+    "sha256": "da7bb22d2be927bc159873f61c3ca5c809a144f4c0d5f92d6c2ea8aeb5bb437b"
+  },
+  {
+    "file": "studio-catalog-search-qa-result.json",
+    "bytes": 859,
+    "sha256": "478ffb91c342e2a8419a0a7096d91c0b18a9d45afdee227e48dd20538697c667"
+  },
+  {
+    "file": "studio-final-artifacts-qa-result.json",
+    "bytes": 2934,
+    "sha256": "11f4ebd86aa1fd128f072482451122a58a5c7af128cab0b5aad80ea402057aa2"
+  },
+  {
+    "file": "studio-final-bom.json",
+    "bytes": 27172,
+    "sha256": "44488852f78f98039ee157f579d41e60c012a9aee9e0ed7bf646aa2a2fc1b1f1"
+  },
+  {
+    "file": "studio-final-controls-all-result.json",
+    "bytes": 1341,
+    "sha256": "00c1f6cd416d746504a7b529002f11a933ee533a31778c8520970b3b02c2b900"
+  },
+  {
+    "file": "studio-final-pdf-review.json",
+    "bytes": 312,
+    "sha256": "2d8debb679dccc3778bee1bc81f9fbb80380b4fe08816e21459e4cd55a30b4a6"
+  },
+  {
+    "file": "studio-final-pdf.pdf",
+    "bytes": 56603,
+    "sha256": "cb8bf564b1d8b75603b44551ce9331020235f470a2f3093c90a4ecc365032b56"
+  },
+  {
+    "file": "studio-final-qa-result.json",
+    "bytes": 431,
+    "sha256": "401293804568ea5d6a256e9c3199b4a3f429653e424e5418c323dfb4a28c70ae"
+  },
+  {
+    "file": "studio-final-svg.svg",
+    "bytes": 33315,
+    "sha256": "2789b7d5fb7819cececbc226099be27a7018926434a652809f289e38c265ec96"
+  },
+  {
+    "file": "studio-library-ui-qa-result.json",
+    "bytes": 432,
+    "sha256": "fc88e7e586691a1d08f2a279618612795b8d6309819472465041ce9478c8a06a"
+  },
+  {
+    "file": "studio-lock-stone-proof.json",
+    "bytes": 860,
+    "sha256": "1ae155945f4b4f3a3ce494f3f86cd98be20d14d1b3348dde8ef2e395d8df0bc5"
+  },
+  {
+    "file": "studio-lock-wall-proof.json",
+    "bytes": 953,
+    "sha256": "6c9550ae5a296166d9edcff0d5893005578a2720e0eb3cdf33e4e640859e4180"
+  },
+  {
+    "file": "studio-new-controls-qa-result.json",
+    "bytes": 679,
+    "sha256": "cb3226398c6ce74ae6c74195f2a46adc201c9c41d0042e48f7b2eeb953f8f463"
+  },
+  {
+    "file": "studio-pinned-library-qa-result.json",
+    "bytes": 346,
+    "sha256": "a950e95840878d070b7dd59edc04c46680af6cca0f8815363356fb6e5a32c107"
+  },
+  {
+    "file": "studio-revisions-qa-result.json",
+    "bytes": 593,
+    "sha256": "ed53a60ab22397770741cdbdc35e210c19e6dca4903785c2ba9940c794be9edd"
+  },
+  {
+    "file": "studio-surface-controls-qa-result.json",
+    "bytes": 464,
+    "sha256": "1a9879ea4f408be3f3821dc2ac0eb6512dc6b56ae77a41ecd5a05fc64727addf"
+  },
+  {
+    "file": "studio-views-qa-result.json",
+    "bytes": 2011,
+    "sha256": "226901ee36355a09a8f4f9702d1a47d021a47631412d089729bead416359bd64"
+  },
+  {
+    "file": "studio-wall-form-qa-result.json",
+    "bytes": 637,
+    "sha256": "03ce47a596a6afea7ba596370e78c466d6c2364258aeeb0c3c2c555e5f0c2da4"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-17T20:19:15.215Z",
+  "checks": [
+    "Real scanned private ZIP inventoried with original paths and no premature OCR",
+    "Selected originals imported with exact hashes, preserved paths and actual individual malware scans",
+    "Checkpoint prevents duplicates; justified exclusions close immutable complete batch",
+    "Confirmed source fence blocks new financial postings",
+    "Identical legacy IDs in same real batch create one customer and one documented duplicate",
+    "Final delta, currency-aware totals, unchanged evidence and explicit fresh release reopen number circles"
+  ],
+  "driveBatchId": "adac4103-83c5-4a83-930f-4af197a1ecc2",
+  "cutoverId": "c06a3c25-0b28-40a3-bc3e-679d64b08e56",
+  "productionModified": false
+}

@@ -1,0 +1,18 @@
+import {one,type DbClient} from '@schubert/db';
+import type {ActorContext} from '@schubert/contracts';
+export async function timeDetails(db:DbClient,ctx:ActorContext,url:URL){const selected=url.searchParams.get('date')??new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin'}).format(new Date());const day=/^\d{4}-\d{2}-\d{2}$/.test(selected)?selected:new Date().toISOString().slice(0,10);const data=await one<any>(db,`SELECT
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT * FROM time_sessions WHERE employee_id=$1 AND (started_at>=now()-interval '14 days' OR (started_at AT TIME ZONE 'Europe/Berlin')::date=$3::date) ORDER BY started_at DESC LIMIT 30)x),'[]'::jsonb) time_sessions,
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT * FROM time_segments WHERE employee_id=$1 AND (started_at>=now()-interval '14 days' OR (started_at AT TIME ZONE 'Europe/Berlin')::date=$3::date) ORDER BY started_at DESC LIMIT 150)x),'[]'::jsonb) time_segments,
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT * FROM time_allocations WHERE employee_id=$1 AND (started_at>=now()-interval '14 days' OR (started_at AT TIME ZONE 'Europe/Berlin')::date=$3::date) ORDER BY started_at DESC LIMIT 150)x),'[]'::jsonb) time_allocations,
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT id,version,starts_on,ends_on,status,reason,warnings FROM time_submissions WHERE employee_id=$1 ORDER BY created_at DESC LIMIT 14)x),'[]'::jsonb) time_submissions,
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT s.id,s.version,s.employee_id,e.name employee_name,s.status,s.starts_on,s.ends_on,s.session_ids,s.warnings,s.revision_snapshot,
+ COALESCE((SELECT jsonb_agg(t) FROM jsonb_array_elements(s.revision_snapshot) item CROSS JOIN LATERAL jsonb_array_elements(item->'segments') t),(SELECT COALESCE(jsonb_agg(jsonb_build_object('kind',t.kind,'started_at',t.started_at,'ended_at',t.ended_at) ORDER BY t.started_at),'[]'::jsonb) FROM time_segments t WHERE t.time_session_id=ANY(s.session_ids))) segments
+ FROM time_submissions s JOIN employees e ON e.id=s.employee_id WHERE $2 AND s.status='submitted' ORDER BY s.created_at LIMIT 25)x),'[]'::jsonb) review_submissions,
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT c.*,e.name employee_name FROM time_corrections c JOIN employees e ON e.id=c.employee_id WHERE $2 AND c.status='requested' ORDER BY c.created_at LIMIT 25)x),'[]'::jsonb) review_corrections,
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT id,session_id,new_snapshot,original_command_ids,status,reason,approved_at FROM time_corrections WHERE employee_id=$1 ORDER BY created_at DESC LIMIT 20)x),'[]'::jsonb) time_corrections,
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT id,order_id,performed_on,description,status FROM work_reports WHERE employee_id=$1 ORDER BY created_at DESC LIMIT 25)x),'[]'::jsonb) work_reports,
+ COALESCE((SELECT jsonb_agg(x) FROM(SELECT id,order_id,performed_on,quantity,unit,activity,status FROM time_quantity_entries WHERE employee_id=$1 ORDER BY created_at DESC LIMIT 25)x),'[]'::jsonb) time_quantity_entries,
+ (SELECT COALESCE(sum(seconds),0)::numeric/3600 FROM time_account_ledger WHERE employee_id=$1 AND kind IN('work','correction')) approved_hours,
+ (SELECT CASE WHEN count(*)>0 THEN sum(days)+(SELECT COALESCE(sum(days),0) FROM leave_ledger WHERE employee_id=$1 AND year=EXTRACT(year FROM now())) ELSE NULL END FROM leave_entitlements WHERE employee_id=$1 AND year=EXTRACT(year FROM now()) AND status='approved') leave_balance
+ `,[ctx.employeeId,ctx.permissions.includes('time.approve'),day]);return {...(data??{}),selected_day:day};}
+export {reportRange,reportDetails} from './report-data.js';

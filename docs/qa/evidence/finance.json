@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-17T19:48:32.721Z",
+  "tenantId": "35e7bc9a-de16-40a1-a2aa-e28d2ed4bd00",
+  "checks": [
+    "Real private Blob archive readback and denied application deletion",
+    "advance independently prevalidated, issued once, immutable and archived byte-exact",
+    "partial independently prevalidated, issued once, immutable and archived byte-exact",
+    "partial_credit independently prevalidated, issued once, immutable and archived byte-exact",
+    "final independently prevalidated, issued once, immutable and archived byte-exact",
+    "Final deducts true partials net of credits and actual advance cash; unpaid advances do not duplicate OP",
+    "final_credit independently prevalidated, issued once, immutable and archived byte-exact",
+    "Final correction reverses exact issued snapshot including deduction lines",
+    "Actual DATEV ZIP contains exact independently archived originals, encoded ledger and hash manifest",
+    "SQL DATE values retain calendar days across both daylight-saving boundaries"
+  ],
+  "invoiceIds": [
+    "a2700ac9-ca18-4110-8555-0f8cf2759a49",
+    "01d275dc-a37c-4c2b-a42d-b98b8a0b34bb",
+    "4b531dcf-49d3-41f7-b5db-0bc446a0ade4"
+  ],
+  "datevBatchId": "16947c1c-f8ab-4b19-bb4c-a7d30d540117",
+  "productionModified": false
+}

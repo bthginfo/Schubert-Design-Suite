@@ -1,0 +1,45 @@
+{
+  "revisionId": "0b15656e-1a33-4694-8f9c-946c63186345",
+  "revisionNumber": 13,
+  "contentHash": "c85248ad73b86ba9bcc9e4f66a99bb86a1520d8bf04b89527fdaff1fedbd0680",
+  "source": {
+    "format": "dxf",
+    "sourceUnit": "mm",
+    "approximated": false,
+    "topologyRule": "evenodd",
+    "parserVersion": "schubert-vector/1.0.0",
+    "unitConfirmed": true,
+    "sourceEncoding": "utf-8",
+    "sourcePlaneZMm": "0",
+    "sourceEntityIds": [
+      "OUTER",
+      "INNER",
+      "INSTANCE/PART/RECT"
+    ],
+    "curveErrorBoundMm": "0.05",
+    "sourceContentHash": "651662084773bd38c0456b26588fb2c6cfc1200771449fdd960dafae8861f56e",
+    "sourceDocumentVersionId": "ef735778-6154-4baa-be26-53f872ff4d26",
+    "coordinateQuantizationMm": "0.01"
+  },
+  "partCount": 2,
+  "holeCount": 1,
+  "netAreaMm2": "7747.12328692",
+  "bomQuantity": "2",
+  "noReviewWasFabricated": true,
+  "exports": {
+    "pdf": {
+      "httpStatus": 200,
+      "bytes": 37600,
+      "mime": "application/pdf",
+      "hash": null,
+      "sha256": "5c20136982d6ff7b1a3c288eb3ca46963718318da51111890375fd1515a97926"
+    },
+    "bom": {
+      "httpStatus": 200,
+      "bytes": 10537,
+      "mime": "application/json",
+      "hash": null,
+      "sha256": "4c79cb036e71c01c97919969a381d043c8a37df613d34bdb9e8b9e4aeffef955"
+    }
+  }
+}

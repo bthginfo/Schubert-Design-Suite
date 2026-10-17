@@ -1,0 +1,25 @@
+{
+  "mode": "wall",
+  "headRevisionId": "ce5c6c68-fce5-4259-8256-5f234a332a40",
+  "unchanged": true,
+  "results": [
+    {
+      "case": "shared_node",
+      "code": "DESIGN_INVALID",
+      "message": "„Synthetischer Raum 2 × 3 m · Wand 4“ ist gesperrt und würde über seinen geometrischen Bezug verändert. Sperre bewusst am betroffenen Element prüfen.",
+      "status": 422
+    },
+    {
+      "case": "shared_neighbor",
+      "code": "DESIGN_INVALID",
+      "message": "„Synthetischer Raum 2 × 3 m · Wand 4“ ist gesperrt und würde über seinen geometrischen Bezug verändert. Sperre bewusst am betroffenen Element prüfen.",
+      "status": 422
+    },
+    {
+      "case": "bound_core_measure",
+      "code": "DESIGN_INVALID",
+      "message": "„Synthetischer Raum 2 × 3 m · Wand 4“ ist gesperrt und würde über seinen geometrischen Bezug verändert. Sperre bewusst am betroffenen Element prüfen.",
+      "status": 422
+    }
+  ]
+}

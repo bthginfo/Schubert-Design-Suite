@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-17T20:19:13.557Z",
+  "officialValidator": "XRechnung3.0.2/config2026-08-31/CEN1.3.16/DE2.6.0",
+  "xmlHash": "39f822f4297ce2013b5763396df6a5e2ab2529bf1fd3febbef31e414ee0344de",
+  "pdfHash": "353fcfda17b5bafb18cf7fff7bb7a602c12ad8145bbf5d7a78b91effeffeb767",
+  "officialXmlAndBothSchematronsPassed": true,
+  "pdfaPassed": true,
+  "missingContactRejected": true,
+  "incomingParsed": true,
+  "providerGenerationCalled": false
+}

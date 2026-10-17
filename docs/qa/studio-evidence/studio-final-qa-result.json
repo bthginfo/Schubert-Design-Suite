@@ -1,0 +1,15 @@
+{
+  "memorialRevision": "5f424e62-74cc-43ac-b102-2f4011c29111",
+  "memorialRevisionNumber": 6,
+  "borderPhysicalStones": 4,
+  "borderBOMLines": 4,
+  "borderNetAreaM2": 0.558,
+  "borderVolumeM3": 0.0837,
+  "explicitJointMm": 5,
+  "renderBodies": 4,
+  "assemblyReviewStillOpen": true,
+  "roomRevision": "9fc569e4-e343-4c21-afb1-9bd66629e851",
+  "roomRevisionNumber": 10,
+  "realConstraintSaved": true,
+  "constraintValueMm": "2000"
+}

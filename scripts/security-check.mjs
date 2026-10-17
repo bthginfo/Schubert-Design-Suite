@@ -1,0 +1,5 @@
+import {execFileSync} from 'node:child_process';import {readFile} from 'node:fs/promises';
+const files=[...new Set(execFileSync('git',['ls-files','--cached','--others','--exclude-standard','-z'],{encoding:'utf8'}).split('\0').filter(Boolean))];
+const patterns=[/\bvcp_[A-Za-z0-9]{30,}/,/\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{40,}/,/postgres(?:ql)?:\/\/[^\s/:]+:[^\s@]{8,}@/];const failures=[];
+for(const path of files){if(/(?:pnpm-lock\.yaml|skills-lock\.json)$/.test(path))continue;const bytes=await readFile(path).catch(()=>null);if(!bytes||bytes.includes(0))continue;const value=bytes.toString('utf8').replaceAll('postgresql://postgres:ci_disposable_owner_only@localhost:5432/schubert_ci','<ephemeral-CI-database>');if(patterns.some(pattern=>pattern.test(value)))failures.push(path);}
+if(failures.length){console.error('Potential credentials in source files (values withheld):\n'+failures.join('\n'));process.exitCode=1;}else console.log('Source credential scan passed for '+files.length+' repository files.');

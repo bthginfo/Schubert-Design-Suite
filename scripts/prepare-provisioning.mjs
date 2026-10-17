@@ -1,0 +1,8 @@
+import {randomBytes,randomUUID} from 'node:crypto';
+import {readFile,writeFile} from 'node:fs/promises';
+import {parse} from 'dotenv';
+let values={};try{values=parse(await readFile('.env.provisioning.local'));}catch{}
+values={ADMIN_INITIAL_EMAIL:'superadmin@schubert.invalid',ADMIN_INITIAL_NAME:'Superadmin',ADMIN_INITIAL_PASSWORD:randomBytes(27).toString('base64url'),APP_DB_PASSWORD:randomBytes(32).toString('base64url'),BETTER_AUTH_SECRET:randomBytes(48).toString('base64url'),INTEGRATION_ENCRYPTION_KEY:randomBytes(48).toString('base64url'),CRON_SECRET:randomBytes(32).toString('base64url'),SETUP_TOKEN:randomBytes(32).toString('base64url'),PROVISIONING_RUN_ID:randomUUID(),...values};
+await writeFile('.env.provisioning.local',Object.entries(values).map(([k,v])=>k+'='+JSON.stringify(v)).join('\n')+'\n',{mode:0o600});
+await writeFile('../Schubert-Zugangsdaten.txt','SCHUBERT DESIGN SUITE – PERSÖNLICHER SUPERADMIN\n\nAnmeldung: '+values.ADMIN_INITIAL_EMAIL+'\nInitiale Passphrase: '+values.ADMIN_INITIAL_PASSWORD+'\n\nDie Produktivadresse wird nach erfolgreicher Bereitstellung ergänzt.\n\nBitte ändern Sie die initiale Passphrase nach der ersten Anmeldung unter Mein Konto.\nDie Anmeldeadresse mit .invalid ist eine interne Kennung. Tragen Sie vor der Nutzung der Passwortwiederherstellung eine eigene erreichbare Geschäftsadresse ein.\n\nSMTP und OpenAI: Einstellungen → Verbindungen. Gespeicherte Geheimnisse werden nicht angezeigt und können durch einen neuen Wert ersetzt werden. Automatisches Aufladen wird durch die Anwendung nicht aktiviert.\n\nDiese Datei enthält vertrauliche Zugangsdaten. Sie wird nicht in Git gespeichert.\n',{mode:0o600});
+console.log('Production bootstrap secrets and requested access file prepared without printing credentials.');

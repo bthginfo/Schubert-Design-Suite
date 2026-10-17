@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-17T20:30:31.520Z",
+  "checks": [
+    "Approved immutable recipient profile produces three archived hash-exact public invoice originals, including official validated XRechnung",
+    "Real mixed-tax invoice contains independently validated 1000/190 plus 200/14 and 1404 gross",
+    "Actual reminder PDF and frozen stage generated; a disputed balance blocks further reminders",
+    "Actual DATEV ZIP separates tax groups into confirmed account mappings and preserves all three public invoice originals"
+  ],
+  "publicInvoiceId": "eb65b571-7d8a-4b46-9e42-31644d9fd30b",
+  "mixedInvoiceId": "98ffe4e0-f883-4c4e-bc21-79f3073c41a4",
+  "datevBatchId": "10841cfb-e458-4719-a7c0-46cf5251ebf5",
+  "productionModified": false
+}

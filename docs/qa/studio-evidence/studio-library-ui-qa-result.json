@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "Inverted width range shows recoverable German error",
+    "Reset clears dimensions and previous search error",
+    "Manufacturer search retrieves seeded manufacturer references",
+    "All product filters can be combined and zero result remains explicit",
+    "Reset clears manufacturer and advanced criteria",
+    "Catalog placement cancellation leaves editor usable"
+  ],
+  "passed": 6,
+  "realBrowser": true
+}

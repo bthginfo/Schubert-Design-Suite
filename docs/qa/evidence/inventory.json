@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-17T20:45:27.696Z",
+  "checks": [
+    "Two simultaneous real reservations of one individual slab produce exactly one winner",
+    "Actual cut preserves input lineage and 3 square metres / 300 EUR as 200+70+30",
+    "Both contradictory count facts survive stale submissions; immutable evidence and close gate prevent last-write wins",
+    "Resolved count retains subsequent actual withdrawal: final quantity 8, with no duplicate inventory difference"
+  ],
+  "countId": "c8491c67-6def-44be-834e-e0aa91252448",
+  "productionModified": false
+}

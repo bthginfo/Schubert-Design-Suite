@@ -1,0 +1,10 @@
+import {readFile} from 'node:fs/promises';
+import {spawn} from 'node:child_process';
+import {parse} from 'dotenv';
+const workers=parse(await readFile('.env.workers.local'));
+const python=process.env.DOCUMENT_PYTHON;
+if(!python)throw new Error('Set DOCUMENT_PYTHON to the document-worker virtual environment executable.');
+const env={...process.env,DOCUMENT_WORKER_SECRET:workers.DOCUMENT_WORKER_SECRET,PORT:'8084',ASSET_GATEWAY_URL:'http://127.0.0.1:5173/api/v1/render-assets/read',ALLOW_LOCAL_GATEWAY:'true'};
+for(const key of ['DATABASE_URL','DATABASE_MIGRATION_URL','APP_DB_PASSWORD','OPENAI_API_KEY','VERCEL_TOKEN','BLOB_READ_WRITE_TOKEN'])delete env[key];
+const child=spawn(python,['server.py'],{cwd:'apps/document-worker',env,stdio:'inherit'});
+child.on('exit',code=>process.exit(code??1));

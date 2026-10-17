@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "Deleting one saved bore preserves its stone and other machining",
+    "Undo restores the bore after actual autosave",
+    "Redo removes only the bore after actual autosave",
+    "Undersized raw blank rejected with human explanation",
+    "Rejected raw blank does not create a saved binding",
+    "Explicit raw blank saves separately without resizing finished contour",
+    "Undo clears a newly bound optional raw dimension after save",
+    "Three explicit raw dimensions persist"
+  ],
+  "passed": 8,
+  "initialRevisionId": "e677e3bb-8c94-4201-8172-5b66e5ea0500",
+  "finalRevisionId": "f8de07ae-9eaf-4302-b03e-9f3595481e1e",
+  "realBrowserAndPostgres": true
+}

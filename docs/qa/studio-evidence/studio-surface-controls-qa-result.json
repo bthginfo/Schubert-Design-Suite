@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "Surface initial thickness is retained even before material assignment",
+    "Slope creation persists the real host horizontal run and rise",
+    "Slope dimension editing drives its endpoints consistently",
+    "Zero slope run is rejected without a new saved head",
+    "Slope undo after save restores the previous actual plane"
+  ],
+  "passed": 5,
+  "realBrowserAndPostgres": true,
+  "finalRevisionId": "144b3539-09f0-48f0-a957-a758136eab72"
+}

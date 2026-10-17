@@ -1,0 +1,16 @@
+.git
+**/node_modules
+**/.svelte-kit
+**/.vercel
+**/build
+**/__pycache__
+**/.venv
+**/*.pyc
+.env*
+!.env.example
+work
+.agents
+skills-lock.json
+test-results
+playwright-report
+coverage

@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "exports": "./src/index.ts",
+  "name": "@schubert/geometry",
+  "version": "1.0.0",
+  "type": "module"
+}

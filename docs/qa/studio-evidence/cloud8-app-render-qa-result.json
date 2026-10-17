@@ -1,0 +1,37 @@
+{
+  "workerHost": "https://schubert-suite-renderer.vercel.app",
+  "trigger": "actual Studio button through main app at127.0.0.1:5173",
+  "jobId": "ec983fb3-be27-4c95-8ba6-a0df99859154",
+  "jobStatus": "completed",
+  "fencingToken": "1",
+  "revisionId": "40dce8f0-7852-4bcf-a503-bfec40475ce3",
+  "revisionContentHash": "d162672051a49de2a5e8ea3ce05c82fd18007bf5b18e2a6b325174fd1a9fdc79",
+  "sceneAdapterVersion": "schubert-scene/1.0.3",
+  "renderOriginMm": [
+    1750,
+    1988.62,
+    610
+  ],
+  "imageDocumentId": "f89f5bf0-7ac6-4401-adaf-68c87fd9f24a",
+  "imageDocumentVersionId": "c1017fc6-5cb6-4903-b866-3a101986b303",
+  "imageHash": "b45ae71daa78d2e7a2682671df11f7ade4763009d38518c72290cc98c8b9551a",
+  "imageBytes": 1069334,
+  "width": 1440,
+  "height": 1080,
+  "maskDocumentId": "023955cc-c332-4db7-a35e-fc78fdfc8905",
+  "proofDocumentId": "afd88a15-f4c9-4cdc-b2ff-5e9f82f271fb",
+  "generationKeys": [
+    "ec983fb3-be27-4c95-8ba6-a0df99859154:render",
+    "ec983fb3-be27-4c95-8ba6-a0df99859154:render_mask",
+    "ec983fb3-be27-4c95-8ba6-a0df99859154:render_manifest"
+  ],
+  "scopedPrivateOutputTicket": true,
+  "download": {
+    "byteLength": 1069334,
+    "hash": "b45ae71daa78d2e7a2682671df11f7ade4763009d38518c72290cc98c8b9551a",
+    "status": 200
+  },
+  "accuracy": "model_based",
+  "workerManifestHash": "485e07a2dd104007a893b3c7351ae7c73d557be6834bf5ec00dee881b96014dc",
+  "localWorkerArtifactEndpointUsed": false
+}

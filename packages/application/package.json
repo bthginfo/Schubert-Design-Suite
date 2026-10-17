@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "exports": "./src/index.ts",
+  "name": "@schubert/application",
+  "version": "1.0.0",
+  "type": "module"
+}

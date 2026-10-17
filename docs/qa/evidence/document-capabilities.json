@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-17T20:17:04.773Z",
+  "audio": {
+    "container": "wav",
+    "verifiedSeconds": 2,
+    "longAudioRejected": true,
+    "shaVerified": true
+  },
+  "preview": {
+    "width": 363,
+    "height": 512,
+    "sourceHashVerified": true
+  },
+  "label": {
+    "hashVerified": true,
+    "bytes": 30783,
+    "accuracy": "generative_visualization"
+  },
+  "pdfExtraction": {
+    "parser": "schubert-documents/1.1.0",
+    "textCharacters": 2168
+  },
+  "providerGenerationCalled": false
+}

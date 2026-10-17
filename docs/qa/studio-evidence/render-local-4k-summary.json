@@ -1,0 +1,53 @@
+{
+  "actualLocalBlenderRender": true,
+  "fixtureType": "synthetic renderer acceptance, no business manufacturing approval",
+  "observedSeconds": 367.442,
+  "width": 3840,
+  "height": 2880,
+  "imageHash": "ee00cca352128843aa997ec982e92b11582dbc547aa31590a5965d9be46d823c",
+  "manifest": {
+    "generatorVersion": "schubert-blender/1.0.0",
+    "sceneAdapterVersion": "schubert-scene/1.0.3",
+    "blenderVersion": "4.5.14 LTS",
+    "geometryEngineVersion": "schubert-geometry/1.0.0",
+    "revisionId": "new-revision",
+    "contentHash": "56db6415a41bbe5201653e3dd742f1ff63675485397c8d57916644519ee2092c",
+    "profile": "final",
+    "unit": "mm",
+    "coordinateSystem": "right_handed_z_up",
+    "renderOriginMm": [
+      2250.0,
+      -94.42398240246467,
+      825.0
+    ],
+    "tessellationChordErrorMm": "0.005",
+    "numericWeldErrorBudgetMm": "0.0025",
+    "camera": {
+      "location": [
+        2.4286346435546875,
+        -5.925837516784668,
+        5.844367027282715
+      ],
+      "rotationEuler": [
+        0.8895902037620544,
+        3.425284234026549e-08,
+        0.385882705450058
+      ],
+      "projection": "ORTHO",
+      "scaleM": 4.882361888885498,
+      "framingVersion": "projected-bounds/1"
+    },
+    "lightingVersion": "neutral-studio/1",
+    "wallUnionVersion": "shared-node-solids/2",
+    "machiningVersion": "front-back-wedges/1",
+    "materialStackVersion": "oriented-stacks/1",
+    "samples": 16,
+    "seed": 27419,
+    "assetVersions": [],
+    "protectedElementIds": [],
+    "outlineImports": [],
+    "warnings": [
+      "Neutral material appearance; no verified physical slab texture supplied."
+    ]
+  }
+}

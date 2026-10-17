@@ -1,0 +1,29 @@
+{
+  "revisionId": "f42486ee-2598-42d6-b310-e5402a3f09cb",
+  "revisionNumber": 9,
+  "contentHash": "953d9c3a86e7f5db589d9f924c3f18b04b15f6e80a7c7fc3b3a0b3d0d6078ad1",
+  "sourceDocumentVersionId": "045f0e20-d2a5-4ebb-af4e-9b79e95fb1cb",
+  "previewDocumentVersionId": "7df4bc15-c526-4dee-8d46-4e98088bc0f6",
+  "pageIndex": 0,
+  "pixelWidth": 1440,
+  "pixelHeight": 1019,
+  "calibrationUsable": true,
+  "allImportedMeasurementsUnreviewed": true,
+  "importedMeasurementCount": 11,
+  "importedWall": true,
+  "importedOpeningWidthMm": "900",
+  "literalSourceText": "3.200",
+  "sourceTextValueMm": "3200",
+  "exports": {
+    "pdf": {
+      "httpStatus": 200,
+      "bytes": 25861,
+      "mime": "application/pdf"
+    },
+    "bom": {
+      "httpStatus": 200,
+      "bytes": 8131,
+      "mime": "application/json"
+    }
+  }
+}

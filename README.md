@@ -1,12 +1,12 @@
 # SCHUBERT Design Suite
 
-Deutschsprachige Betriebsanwendung fÃ¼r Kunden, Angebote, AuftrÃ¤ge, Einkauf, Lager, Raum- und Grabmalplanung, Arbeitszeiten, Dokumente, Rechnungen, Kundenportal und Auswertungen.
+Deutschsprachige Betriebsanwendung für Kunden, Angebote, Aufträge, Einkauf, Lager, Raum- und Grabmalplanung, Arbeitszeiten, Dokumente, Rechnungen, Kundenportal und Auswertungen.
 
-Svelte5 / SvelteKit3, TypeScript, PostgreSQL mit mandanten- und gesellschaftsbezogener Row Level Security. Private Dateien liegen in Vercel Blob; Neon Ã¼bernimmt die GeschÃ¤ftsdaten. DokumentprÃ¼fung, Blender-Rendering und verschlÃ¼sselte Sicherung laufen in getrennten Vercel-Projekten.
+Svelte5 / SvelteKit3, TypeScript, PostgreSQL mit mandanten- und gesellschaftsbezogener Row Level Security. Private Dateien liegen in Vercel Blob; Neon übernimmt die Geschäftsdaten. Dokumentprüfung, Blender-Rendering und verschlüsselte Sicherung laufen in getrennten Vercel-Projekten.
 
-## Start und PrÃ¼fung
+## Start und Prüfung
 
-Voraussetzungen: Node24.15, pnpm11.25, eine separate Entwicklungsdatenbank und private Entwicklungsablage. `.env.example` beschreibt die Variablen. Zugangsdaten gehÃ¶ren ausschlieÃŸlich in ignorierte Umgebungsdateien beziehungsweise die geschÃ¼tzten Vercel-Einstellungen.
+Voraussetzungen: Node24.15, pnpm11.25, eine separate Entwicklungsdatenbank und private Entwicklungsablage. `.env.example` beschreibt die Variablen. Zugangsdaten gehören ausschließlich in ignorierte Umgebungsdateien beziehungsweise die geschützten Vercel-Einstellungen.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -16,7 +16,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-Migrationen benÃ¶tigen einen eigenen DatenbankeigentÃ¼mer Ã¼ber `DATABASE_MIGRATION_URL`; der normale Server verwendet ausschlieÃŸlich den eingeschrÃ¤nkten `schubert_app`-Zugang. Testkonten erzeugt `scripts/testing-fixture.ts` in einer gesonderten Testgesellschaft.
+Migrationen benötigen einen eigenen Datenbankeigentümer über `DATABASE_MIGRATION_URL`; der normale Server verwendet ausschließlich den eingeschränkten `schubert_app`-Zugang. Testkonten erzeugt `scripts/testing-fixture.ts` in einer gesonderten Testgesellschaft.
 
 ```sh
 pnpm check
@@ -27,15 +27,14 @@ pnpm security:check
 pnpm build
 ```
 
-Die CI fÃ¼hrt diese PrÃ¼fungen mit einem kurzlebigen PostgreSQL aus. Reale ProviderprÃ¼fungen und visuelle Abnahmen sind zusÃ¤tzlich in `docs/qa/` dokumentiert. Ein erfolgreiches Build bestÃ¤tigt keine steuerliche, rechtliche oder technische Fertigungsfreigabe.
+Die CI führt diese Prüfungen mit einem kurzlebigen PostgreSQL aus. Reale Providerprüfungen und visuelle Abnahmen sind zusätzlich in `docs/qa/` dokumentiert. Ein erfolgreiches Build bestätigt keine steuerliche, rechtliche oder technische Fertigungsfreigabe.
 
 ## Dokumentation
 
-- [Bedienung](docs/bedienung.md): verstÃ¤ndliche Einstiege und typische ArbeitsablÃ¤ufe.
+- [Bedienung](docs/bedienung.md): verständliche Einstiege und typische Arbeitsabläufe.
 - [Betrieb und Konfiguration](docs/operations/configuration.md): SMTP, KI-Wechsel, Budgets, Freigaben und Dienste.
 - [Wiederherstellung](docs/operations/restore.md): Sicherungsgrenzen, isolierter Test und sichere Wiederaufnahme.
 - [Architektur](docs/architecture.md), [Anforderungen](docs/requirements.md), [Abnahme](docs/qa/acceptance.md).
-- [AbhÃ¤ngigkeiten und Lizenzen](docs/third-party-notices.md), [Versionen](docs/dependencies.json).
+- [Abhängigkeiten und Lizenzen](docs/third-party-notices.md), [Versionen](docs/dependencies.json).
 
-Die Ausgangsspezifikation ist als `docs/master-specification.md` erhalten. Abweichungen durch spÃ¤tere Nutzerentscheidungen, insbesondere ausschlieÃŸliche Nutzung von Neon und Vercel Blob, sind in der Betriebsdokumentation festgehalten.
-
+Die Ausgangsspezifikation ist als `docs/master-specification.md` erhalten. Abweichungen durch spätere Nutzerentscheidungen, insbesondere ausschließliche Nutzung von Neon und Vercel Blob, sind in der Betriebsdokumentation festgehalten.
