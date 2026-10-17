@@ -13,7 +13,7 @@ const help:Record<string,string>={
   street:'Straße und Hausnummer in derselben Zeile.',
   postal_code:'Postleitzahl der zugehörigen Anschrift.',
   city:'Ort der angegebenen Anschrift.',
-  country:'Zweistelliger Ländercode, zum Beispiel DE für Deutschland.',
+  country:'Wählen Sie das Land der Anschrift. Der passende Ländercode wird für Belege automatisch gespeichert.',
   vat_id:'Nur die bestätigte Umsatzsteuer-ID eintragen. Ist sie noch unbekannt, lassen Sie das Feld frei.',
   payment_days:'Zahlungsziel in Kalendertagen. Die konkrete Fälligkeit wird im Beleg nachvollziehbar festgelegt.',
   customer_id:'Wählen Sie den Auftraggeber aus den bestehenden Kunden. Die Akte bleibt mit diesem Kunden verknüpft.',

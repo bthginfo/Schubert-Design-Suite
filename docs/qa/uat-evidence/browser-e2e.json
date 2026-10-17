@@ -1,0 +1,20 @@
+﻿{
+    "passed":  11,
+    "syntheticLocalTenants":  true,
+    "failed":  0,
+    "browser":  "Microsoft Edge",
+    "cases":  [
+                  "ok  1 tests\\e2e\\uat.spec.ts:32:1 › Customer: required fields, invalid email, Unicode, country and persisted record (39.9s)",
+                  "ok  2 tests\\e2e\\uat.spec.ts:48:1 › Inquiry: invalid draft can be resumed or discarded without losing the saved version (12.0s)",
+                  "ok  3 tests\\e2e\\uat.spec.ts:63:1 › Unsaved new forms protect browser back navigation and can be deliberately discarded (5.7s)",
+                  "ok  4 tests\\e2e\\uat.spec.ts:73:1 › Reference pickers exclude erased customers and keep all workflow filters available (4.8s)",
+                  "ok  5 tests\\e2e\\uat.spec.ts:80:1 › Quote: comma amounts and unselected options survive save and reopening (7.2s)",
+                  "ok  6 tests\\e2e\\uat.spec.ts:95:1 › Desktop and mobile regressions: no viewport overflow and no automated WCAG violations (32.4s)",
+                  "ok  7 tests\\e2e\\uat.spec.ts:104:1 › Form UX: optional accordions, keyboard operation, inline error and narrow layout (17.1s)",
+                  "ok  8 tests\\e2e\\uat.spec.ts:127:1 › Employee access: finance pages and direct finance commands stay blocked (7.0s)",
+                  "ok  9 tests\\e2e\\uat.spec.ts:133:1 › Employee mobile: offline work, pause and finish sync once connection returns (12.9s)",
+                  "ok 10 tests\\e2e\\uat.spec.ts:158:36 › Studio Raum: saved geometry, views, readable controls, real PDF and BOM (23.6s)",
+                  "ok 11 tests\\e2e\\uat.spec.ts:158:36 › Studio Stele: saved geometry, views, readable controls, real PDF and BOM (21.0s)"
+              ],
+    "checkedAt":  "2026-10-17T23:10:48.8268454Z"
+}

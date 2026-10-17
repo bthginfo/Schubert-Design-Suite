@@ -50,7 +50,7 @@ register('workforce.time.submit','time',async r=>{
  requireRule(sessions.length,'TIME_EMPTY','Keine abgeschlossenen Zeiten zum Einreichen vorhanden.');const snapshot=await effectiveSessions(r.db,sessions.map(x=>x.id));
  let workSeconds=0,breakSeconds=0;
  for(const session of snapshot)for(const segment of session.segments){requireRule(segment.ended_at,'TIME_OPEN','Offene Aufzeichnung zuerst abschließen.');if(segment.kind==='work')workSeconds+=durationSeconds(segment.started_at,segment.ended_at);else breakSeconds+=durationSeconds(segment.started_at,segment.ended_at);}
- const warnings:string[]=[];if(workSeconds>10*3600)warnings.push('?berlange tatsächliche Arbeitszeit prüfen; Daten bleiben vollständig erhalten.');if(workSeconds>6*3600&&breakSeconds<(workSeconds>9*3600?2700:1800))warnings.push('Tatsächliche Pausen unter Prüfschwelle.');
+ const warnings:string[]=[];if(workSeconds>10*3600)warnings.push('Überlange tatsächliche Arbeitszeit prüfen; Daten bleiben vollständig erhalten.');if(workSeconds>6*3600&&breakSeconds<(workSeconds>9*3600?2700:1800))warnings.push('Tatsächliche Pausen unter Prüfschwelle.');
  const submission=await r.insert('time_submissions',{employee_id:employee.id,starts_on:date,ends_on:date,session_ids:sessions.map(x=>x.id),revision_snapshot:snapshot,warnings,status:'submitted'});
  await r.db.query("UPDATE time_sessions SET status='submitted',version=version+1,updated_at=now() WHERE id=ANY($1::uuid[])",[sessions.map(x=>x.id)]);return submission;
 });

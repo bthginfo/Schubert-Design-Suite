@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-10-17T22:29:41.686Z",
+  "checks": [
+    "Open purpose and legal hold block erasure",
+    "Shared bytes preserved for independently authorized document",
+    "Last document erases actual private bytes, not foreign file references",
+    "Independent encrypted tombstone journal read back before deletion",
+    "Unused party profile anonymized with no remaining contact details",
+    "Approved retention versions immutable"
+  ],
+  "productionModified": false
+}

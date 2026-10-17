@@ -1,0 +1,1192 @@
+{
+  "checkedAt": "2026-10-18",
+  "routes": 74,
+  "viewportChecks": 148,
+  "errors": [],
+  "routesChecked": [
+    {
+      "path": "/",
+      "heading": "Guten Tag, Test.",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/customers",
+      "heading": "Kunden",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/quotes",
+      "heading": "Angebote",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/suppliers",
+      "heading": "Lieferanten",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/dispatch",
+      "heading": "Einsatzplanung",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/studio",
+      "heading": "Planungsstudio",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/reports",
+      "heading": "Wissen, wo der Betrieb steht.",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/documents",
+      "heading": "Dokumente",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/tasks",
+      "heading": "Aufgaben",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/settings",
+      "heading": "Ein guter Rahmen.",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/time",
+      "heading": "Meine Arbeitszeit",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/orders",
+      "heading": "Aufträge",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/inquiries",
+      "heading": "Anfragen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/work-packages",
+      "heading": "Arbeitspakete",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/sites",
+      "heading": "Objekte & Räume",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/cemeteries",
+      "heading": "Friedhöfe",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/graves",
+      "heading": "Grabstätten",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/buildings",
+      "heading": "Gebäude",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/floors",
+      "heading": "Geschosse & Höhenbezüge",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/rooms",
+      "heading": "Räume",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/change-orders",
+      "heading": "Nachträge",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/deliveries",
+      "heading": "Lieferscheine",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/acceptances",
+      "heading": "Abnahmen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/defects",
+      "heading": "Mängel",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/invoices",
+      "heading": "Rechnungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/payments",
+      "heading": "Zahlungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/recipient-invoice-profiles",
+      "heading": "E-Rechnungsprofile",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/tax-decisions",
+      "heading": "Steuerentscheidungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/receivables",
+      "heading": "Offene Forderungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/payables",
+      "heading": "Offene Verbindlichkeiten",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/bank-accounts",
+      "heading": "Bestätigte Bankverbindungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/bank-imports",
+      "heading": "Kontoauszüge",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/bank-transactions",
+      "heading": "Bankabgleich",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/credit-offsets",
+      "heading": "Gutschriften verrechnen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/dunning",
+      "heading": "Zahlungserinnerungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/datev",
+      "heading": "DATEV-Übergaben",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/accounting-periods",
+      "heading": "Buchungsperioden",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/purchase-orders",
+      "heading": "Bestellungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/supplier-invoices",
+      "heading": "Rechnungseingang",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/products",
+      "heading": "Produkte & Leistungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/price-imports",
+      "heading": "Preislisten",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/sales-prices",
+      "heading": "Verkaufspreise",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/stock",
+      "heading": "Lager & Naturstein",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/inventory",
+      "heading": "Inventur",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/stock-locations",
+      "heading": "Lagerorte",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/materials",
+      "heading": "Materialbibliothek",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/material-versions",
+      "heading": "Materialstände",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/product-variants",
+      "heading": "Produktausführungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/product-versions",
+      "heading": "Technische Produktstände",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/product-availability",
+      "heading": "Belegte Produktverfügbarkeit",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/product-assets",
+      "heading": "Herstellerdateien & Nutzungsrechte",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/edge-treatments",
+      "heading": "Kantenprofile",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/finishes",
+      "heading": "Oberflächen & Tönungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/glyph-library",
+      "heading": "Originalzeichen & Befestigung",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/material-requirements",
+      "heading": "Bestätigter Materialbedarf",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/leave",
+      "heading": "Urlaub & Abwesenheit",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/team",
+      "heading": "Team",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/resources",
+      "heading": "Fahrzeuge & Geräte",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/employment-periods",
+      "heading": "Beschäftigungszeiträume",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/work-schedules",
+      "heading": "Arbeitsmodelle",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/cost-rates",
+      "heading": "Interne Kostensätze",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/leave-entitlements",
+      "heading": "Urlaubsansprüche",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/work-calendars",
+      "heading": "Feiertagskalender",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/time-openings",
+      "heading": "Zeitkonto-Eröffnungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/time-adjustments",
+      "heading": "Zeitkonto-Gutschriften",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/cost-estimates",
+      "heading": "Restschätzungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/performance-valuations",
+      "heading": "Leistungsbewertungen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/liquidity-openings",
+      "heading": "Liquiditätsanfangsbestände",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/imports",
+      "heading": "Datenübernahme",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/cutovers",
+      "heading": "Datenwechsel abschließen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/document-versions",
+      "heading": "Dokumentversionen",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/rules",
+      "heading": "Regeln & Freigaben",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/audit",
+      "heading": "Nachweisprotokoll",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "path": "/jobs",
+      "heading": "Verarbeitung",
+      "views": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "violations": []
+        },
+        {
+          "width": 375,
+          "documentWidth": 375,
+          "violations": []
+        }
+      ]
+    }
+  ]
+}

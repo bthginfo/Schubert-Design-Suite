@@ -73,10 +73,11 @@ export function validateDesign(input: DesignSnapshot, options: { forRelease?: bo
     if (!id) return;
     const measure = measurements[id];
     if (!measure) return;
-    if (measure.valueMm === null) issue(`„${element.label}“: Maß ${id} ist noch unbekannt.`);
-    else if (!allowNegative&&(allowZero ? new D(measure.valueMm).lt(0) : new D(measure.valueMm).lte(0))) blocking.push(`„${element.label}“: ${id} muss ${allowZero ? 'mindestens null' : 'positiv'} sein.`);
-    if (measure.isEstimated) issue(`„${element.label}“: ${id} ist geschätzt.`);
-    if (measure.reviewStatus !== 'confirmed') issue(`„${element.label}“: ${id} ist ${measure.semantic === 'design_target' ? 'noch nicht festgelegt' : 'noch nicht fachlich bestätigt'}.`);
+    const measureName=({width:'Breite',height:'Höhen- / Längenmaß',depth:'Tiefe',thickness:'Stärke',length:'Länge',offset:'Abstand',radius:'Radius'} as Record<string,string>)[id.split(':').at(-1)??'']||'Dieses Maß';
+    if (measure.valueMm === null) issue(`„${element.label}“: ${measureName} ist noch unbekannt.`);
+    else if (!allowNegative&&(allowZero ? new D(measure.valueMm).lt(0) : new D(measure.valueMm).lte(0))) blocking.push(`„${element.label}“: ${measureName} muss ${allowZero ? 'mindestens null' : 'positiv'} sein.`);
+    if (measure.isEstimated) issue(`„${element.label}“: ${measureName} ist geschätzt.`);
+    if (measure.reviewStatus !== 'confirmed') issue(`„${element.label}“: ${measureName} ist ${measure.semantic === 'design_target' ? 'noch nicht festgelegt' : 'noch nicht fachlich bestätigt'}.`);
   };
   for (const element of snapshot.elements) {
     for (const id of measurementIds(element)) if (!measurements[id]) blocking.push(`„${element.label}“: Maß ${id} fehlt.`);

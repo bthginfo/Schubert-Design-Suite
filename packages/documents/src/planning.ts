@@ -83,13 +83,14 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
   }
   let page=newPage('Stück- und Bearbeitungsliste'),y=A4[1]-125;
   const bom=calculateBOM(snapshot);
+  const decimalLabel=(value:string)=>value.replace('.',',');
   const tableHead=()=>{page.drawRectangle({x:36,y:y-24,width:A4[0]-72,height:24,color:warm});draw(page,'BAUTEIL / AUSFÜHRUNG',44,y-16,9,green);draw(page,'MENGE',389,y-16,9,green);draw(page,'EINHEIT',460,y-16,9,green);y-=42;};
   tableHead();
   for(const item of bom.lines){
-    const detail=[item.category,...(item.materialSpecVersionId?[`Materialstand: ${item.materialSpecVersionId.startsWith('unassigned:')?'noch nicht zugeordnet':item.materialSpecVersionId}`]:[]),...(item.thicknessMm!==null?[`Stärke ${item.thicknessMm} mm`]:[]),...(item.netAreaM2!==null?[`Netto ${item.netAreaM2} m²`]:[]),...(item.volumeM3!==null?[`Volumen ${item.volumeM3} m³`]:[]),...(item.edgeLengthM!==null?[`Bearbeitete Kante ${item.edgeLengthM} m`]:[]),...(['Bearbeitung','Anschlusspunkt','Freiraumkontrolle','Gef\u00e4llevorgabe'].includes(item.category)?item.notes:item.notes.filter(note=>/^(Rohma\u00df:|Oberfl\u00e4chenstand:|Untergrund:|Ausf\u00fchrungsregel:|Bewegungsfugen:|Technische Quellen:)/.test(note)))].join(' · ');
+    const detail=[item.category,...(item.materialSpecVersionId?[`Materialstand: ${item.materialSpecVersionId.startsWith('unassigned:')?'noch nicht zugeordnet':item.materialSpecVersionId}`]:[]),...(item.thicknessMm!==null?[`Stärke ${decimalLabel(item.thicknessMm)} mm`]:[]),...(item.netAreaM2!==null?[`Netto ${decimalLabel(item.netAreaM2)} m²`]:[]),...(item.volumeM3!==null?[`Volumen ${decimalLabel(item.volumeM3)} m³`]:[]),...(item.edgeLengthM!==null?[`Bearbeitete Kante ${decimalLabel(item.edgeLengthM)} m`]:[]),...(['Bearbeitung','Anschlusspunkt','Freiraumkontrolle','Gef\u00e4llevorgabe'].includes(item.category)?item.notes:item.notes.filter(note=>/^(Rohma\u00df:|Oberfl\u00e4chenstand:|Untergrund:|Ausf\u00fchrungsregel:|Bewegungsfugen:|Technische Quellen:)/.test(note)))].join(' · ');
     const rows=wrap(detail,9,325),labels=wrap(item.label,11,325),height=16+labels.length*15+rows.length*13;
     if(y-height<75){page=newPage('Stück- und Bearbeitungsliste · Fortsetzung');y=A4[1]-125;tableHead();}
-    labels.forEach((row,i)=>draw(page,row,44,y-i*15,11));draw(page,item.quantity,389,y,10);draw(page,item.unit,460,y,10);
+    labels.forEach((row,i)=>draw(page,row,44,y-i*15,11));draw(page,decimalLabel(item.quantity),389,y,10);draw(page,item.unit,460,y,10);
     rows.forEach((row,i)=>draw(page,row,44,y-labels.length*15-3-i*13,9,muted));
     y-=height;page.drawLine({start:{x:36,y:y+7},end:{x:A4[0]-36,y:y+7},thickness:.4,color:line});
   }

@@ -16,6 +16,7 @@
 @media(max-width:760px){.assistant-overlay{background:#192b2066}}
 
 /* A quiet, readable workspace. Shared controls retain the same shape in every module. */
+.editor-sections{display:flex;flex-direction:column;gap:28px}.editor-section+.editor-section{border-top:1px solid var(--line);padding-top:26px}.editor-section-heading{margin-bottom:20px}.editor-section-heading h3{font-size:15px;font-weight:600;letter-spacing:-.015em}.editor-section-heading p{font-size:13px;line-height:1.6;color:var(--muted);margin-top:5px}.form-disclosure{border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff)}.form-disclosure>summary{display:flex;align-items:center;gap:12px;list-style:none;cursor:pointer;padding:17px 18px;min-height:54px;font-size:14px;font-weight:500}.form-disclosure>summary::-webkit-details-marker{display:none}.form-disclosure>summary>svg{transform:rotate(-90deg);flex:none;transition:transform .15s}.form-disclosure[open]>summary>svg{transform:rotate(0deg)}.disclosure-hint{font-size:12px;font-weight:400;color:var(--muted);margin-left:auto}.disclosure-body{padding:4px 18px 22px}.form-disclosure+.form-disclosure{margin-top:-16px}.form-disclosure>summary:hover{background:#f4f6f3;border-radius:10px}.form-disclosure>summary:focus-visible{outline-offset:2px}summary{cursor:pointer;scroll-margin-top:90px;scroll-margin-bottom:110px}
 :root{font-size:15px;letter-spacing:-.01em;--muted:#58625b;--line:#dfe3de}
 html{scroll-padding-top:90px;scroll-padding-bottom:110px}
 button,input,select,textarea,a{scroll-margin-top:90px;scroll-margin-bottom:110px}
@@ -41,7 +42,7 @@ h1,h2,h3{text-wrap:balance;letter-spacing:-.025em}
 .text-link{font-size:13px}
 .panel,.dashboard-hero,.metric-strip,.timer-panel,.publication,.portal-login{border-radius:12px}
 .stack,.panel,.timer-panel,.main-column{min-width:0}
-.table-scroll{max-width:100%}
+.table-scroll{max-width:100%;position:relative}.table-scroll:focus-visible{outline:2px solid var(--forest);outline-offset:-2px}.mobile-record-head>a{min-width:0;overflow-wrap:anywhere}.mobile-record-details span{min-width:0;overflow-wrap:anywhere}
 .field select{max-width:100%;min-width:0}
 .panel-header{padding:22px 26px}
 .panel-header h2{font-size:17px;font-weight:600;letter-spacing:-.025em}

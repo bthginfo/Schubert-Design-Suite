@@ -1,5 +1,6 @@
 <script lang="ts">
   import {valueLabels} from '#lib/client/api.ts';
+  import {countries,normalizeCountry} from '@schubert/contracts';
   import type {Field} from '#lib/client/types.ts';
   import {fieldHelp} from '#lib/client/field-help.ts';
   import WorkPattern from './WorkPattern.svelte';import MappingEditor from './MappingEditor.svelte';import CuttingOutputs from './CuttingOutputs.svelte';import DatevMapping from './DatevMapping.svelte';
@@ -18,7 +19,13 @@
     <label class="check-field" for={id}><input id={id} type="checkbox" bind:checked={value} aria-invalid={!!error}/><span>{field.label}{field.required?' *':''}</span></label>
   {:else}
     <label for={id}>{field.label}{field.required?' *':''}{field.internal?' · intern':''}</label>
-    {#if field.key==='user_id'&&lookups.users}
+    {#if field.key==='country'}
+      <select {id} value={normalizeCountry(String(value||''))||value||''} onchange={(event)=>value=event.currentTarget.value} required={field.required} aria-invalid={!!error} aria-describedby={descriptions} autocomplete="country">
+        <option value="">Bitte auswählen</option>
+        {#if value&&!normalizeCountry(String(value))}<option value={value}>Bisherige Angabe prüfen: {value}</option>{/if}
+        {#each countries as country}<option value={country.value}>{country.label}</option>{/each}
+      </select>
+    {:else if field.key==='user_id'&&lookups.users}
       <ReferencePicker {id} bind:value reference="users" initial={lookups.users} required={field.required} invalid={!!error} describedBy={descriptions}/>
     {:else if field.type==='textarea'}
       <textarea {id} bind:value minlength={field.key==='statement'?10:undefined} required={field.required} aria-invalid={!!error} aria-describedby={descriptions}></textarea>

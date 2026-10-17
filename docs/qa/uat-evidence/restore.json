@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-17T22:36:19.804Z",
+  "manifestHash": "95c07acf41a226848ab8380f86b16b609e03bfd068557ece3be5626e319907ec",
+  "snapshotAt": "2026-10-17T22:30:08.943Z",
+  "restoredTables": 203,
+  "restoredRows": 4845,
+  "validatedForeignKeys": 411,
+  "restoredAndReadBackFiles": 49,
+  "tombstonesReplayed": 7,
+  "independentJournalEntries": 9,
+  "erasedFilesExcluded": 3,
+  "independentLatestJournalReplayed": true,
+  "sharedIdentityAndErasedOcrVerified": true,
+  "sessionRestorePolicy": "all_accesses_disabled",
+  "numberCountersLocked": true,
+  "numberCountersComparedWithLive": true,
+  "invoiceIssueLocked": true,
+  "jobsAndExternalMessagesBlocked": true,
+  "rpoSeconds": 72,
+  "rtoSeconds": 130,
+  "productionModified": false,
+  "measuredOn": "synthetic isolated Neon tenant with real independent private Blob backup"
+}
