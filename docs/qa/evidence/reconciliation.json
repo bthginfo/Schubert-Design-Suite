@@ -1,0 +1,14 @@
+{
+  "passed": 4,
+  "derivedOverdueEventsIdempotent": true,
+  "actualPrivateOrphanRemoved": true,
+  "registeredOriginalExcluded": true,
+  "dailyReconciliationWithRestrictedRole": true,
+  "result": {
+    "recoveredJobs": 0,
+    "checkedDueItems": 1,
+    "dispatcherScheduled": 0,
+    "expiredReservationsRemoved": 1,
+    "expiredReservationsDeferred": 0
+  }
+}

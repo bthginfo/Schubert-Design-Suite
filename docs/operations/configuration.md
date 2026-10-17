@@ -44,3 +44,12 @@ Zuerst Entwicklungsmigrationen, automatisierte Tests, private Providerprüfung u
 ## Aufwendige Renderings
 
 Auf ausdrücklichen Nutzerwunsch gibt es keine künstlichen monatlichen Stückgrenzen für Renderings. Gleiche Revision, Generatorfassung und Qualitätsstufe verwenden vorhandene Ergebnisse; konkurrierende identische Anfragen werden unter einem gemeinsamen Auftragslock zusammengeführt. Der Nutzer wählt Vorschau oder finale Qualität bewusst. Worker-Parallelität und Threads sind für den vorhandenen Vercel-Tarif begrenzt; weitere Aufträge bleiben in der Warteschlange. Die Produktoberfläche fragt den Status auf ausdrücklichen Wunsch ab. Tatsächlicher Verbrauch ist in der Vercel-Verbrauchsübersicht zu prüfen.
+
+
+## Übergabestand und laufender Betrieb
+
+Die [Produktivadresse](https://schubert-design-suite.vercel.app) ist eingerichtet. Die separate vertrauliche Datei Schubert-Zugangsdaten.txt liegt außerhalb des Repositorys im Ausgabenordner. Nach der ersten Anmeldung unter „Mein Zugang“ eine eigene erreichbare Adresse und eine neue persönliche Passphrase hinterlegen. SMTP danach unter Betrieb & Integration → Integrationen eintragen und die bewusste Testmail an eine eigene Adresse senden.
+
+Der persönliche OpenAI-Schlüssel wurde zunächst mit30Tagen Laufzeit angelegt; ein späterer Schubert-Schlüssel kann im selben Integrationsformular eingesetzt werden. Das Geheimnisfeld bleibt bei der Anzeige leer. Preis-/Modellprofil prüfen, speichern und eine kleine Modellprüfung starten. Bereits freigegebene Aufträge behalten ihre genaue Verbindungsfassung; sie werden nicht still auf einen anderen Anbieterzugang umgebogen.
+
+Vorgehensweisen bei Unterbrechungen und Schlüsselwechsel stehen in [Störungen und Änderungen](incidents.md). Die lokalen ignorierten Konfigurationsdateien, insbesondere .env.backup.local mit den Wiederherstellungsschlüsseln, sind vertrauliche Betreiberunterlagen und gehören zur eigenen gesicherten Betriebsablage. Der öffentliche Repositoryinhalt enthält diese Geheimnisse nicht.

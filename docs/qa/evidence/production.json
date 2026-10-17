@@ -1,0 +1,295 @@
+{
+  "checkedAt": "2026-10-17T21:38:59.312Z",
+  "url": "https://schubert-design-suite.vercel.app",
+  "readOnlyVerification": true,
+  "jobs": [
+    {
+      "id": "75b59830-588f-4f3d-a6e5-e776c4f4dca4",
+      "job_type": "archive.probe",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:29:04.587Z",
+      "next_attempt_at": "2026-10-17T21:29:04.471Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "26eb6b1e-0866-4911-a761-89e151b557fb",
+      "job_type": "outbox.dispatch",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:29:04.629Z",
+      "next_attempt_at": "2026-10-17T21:29:04.471Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "06d26151-955b-401f-b0a5-d06dfc0240ed",
+      "job_type": "outbox.dispatch",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:29:03.884Z",
+      "next_attempt_at": "2026-10-17T21:29:03.199Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "5d54d6ef-fa56-45e1-95c5-6fda16c41dd2",
+      "job_type": "backup.create",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:29:03.841Z",
+      "next_attempt_at": "2026-10-17T21:34:03.199Z",
+      "last_error": null,
+      "result": {
+        "backupId": "41e09072-b305-42dc-b95f-cdc8aa188745",
+        "provider": "vercel_blob",
+        "rowCount": 254,
+        "fileCount": 3,
+        "snapshotAt": "2026-10-17T21:34:04.433Z",
+        "tableCount": 203,
+        "completedAt": "2026-10-17T21:34:09.149Z",
+        "dirtyVersion": "11",
+        "manifestHash": "2b00ec11120de06e48e0a7a808fe30f96652f021bc1255d9f4ecb72241a33d6c",
+        "encryptionVersion": "08da42d1712352dc",
+        "providerDeletionLock": false
+      }
+    },
+    {
+      "id": "1874c252-1bab-44c2-a07b-9b7c66b73521",
+      "job_type": "outbox.dispatch",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:22:31.936Z",
+      "next_attempt_at": "2026-10-17T21:22:31.776Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "47680c89-f77f-4753-995a-e61a9353e996",
+      "job_type": "planning.ai_visualization",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:22:31.896Z",
+      "next_attempt_at": "2026-10-17T21:22:31.776Z",
+      "last_error": null,
+      "result": {
+        "label": "KI-Visualisierung · keine technische Zeichnung",
+        "model": "gpt-image-2.5-flare",
+        "accuracy": "generative_visualization",
+        "actualCost": "0.007275",
+        "documentId": "b9c54d64-a1e1-4f36-a8a8-fb78103f7bd7",
+        "revisionId": "e531261c-ad5b-4211-9951-30d375abc340",
+        "providerRunId": "b6ec6fb6-2218-441d-aaaf-dcb3889fbd8c",
+        "documentVersionId": "46fdd2bd-e48c-40bc-a96a-b2376b9029aa",
+        "protectedContentRequiresComposite": false
+      }
+    },
+    {
+      "id": "5df5a412-ebe5-4ca3-b10d-027895493e32",
+      "job_type": "outbox.dispatch",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:21:47.371Z",
+      "next_attempt_at": "2026-10-17T21:21:47.194Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "52b22e8b-63f9-4b76-86e7-e450c2660e86",
+      "job_type": "backup.create",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:21:47.330Z",
+      "next_attempt_at": "2026-10-17T21:26:47.194Z",
+      "last_error": null,
+      "result": {
+        "backupId": "708fb5fb-e59a-4f39-ba6a-fc9ea8d5a901",
+        "provider": "vercel_blob",
+        "rowCount": 223,
+        "fileCount": 2,
+        "snapshotAt": "2026-10-17T21:26:47.843Z",
+        "tableCount": 203,
+        "completedAt": "2026-10-17T21:26:52.790Z",
+        "dirtyVersion": "9",
+        "manifestHash": "21ed4f7d768a6f14dfc5bd5012ab888a3120cdd310af39fbcfea4b85ef1c965e",
+        "encryptionVersion": "08da42d1712352dc",
+        "providerDeletionLock": false
+      }
+    },
+    {
+      "id": "705bfdef-22f3-4bab-ae4b-79d5977a5fdd",
+      "job_type": "document.extract",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:19:10.822Z",
+      "next_attempt_at": "2026-10-17T21:19:10.667Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "36b95347-f9fb-410d-aae5-62211e12be2b",
+      "job_type": "document.ingest",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:18:57.255Z",
+      "next_attempt_at": "2026-10-17T21:18:56.491Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "6ef7f322-7a05-4a0d-9f72-658d374cf217",
+      "job_type": "outbox.dispatch",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:18:57.298Z",
+      "next_attempt_at": "2026-10-17T21:18:56.491Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "62d6991e-5118-4080-b045-e7c9ecca8593",
+      "job_type": "ai.probe",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:13:19.575Z",
+      "next_attempt_at": "2026-10-17T21:13:19.493Z",
+      "last_error": null,
+      "result": {
+        "model": "gpt-6-luna",
+        "cached": false,
+        "available": true,
+        "actualCost": "0.0000608",
+        "promptVersion": "schubert-design-2026-10-17.1",
+        "connectionVersionId": "e2e1afb1-204c-4bd8-af22-56575bca816b"
+      }
+    },
+    {
+      "id": "ee30756e-a6e4-42cb-a9c8-cf4d326a3da2",
+      "job_type": "outbox.dispatch",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:13:01.882Z",
+      "next_attempt_at": "2026-10-17T21:13:01.084Z",
+      "last_error": null,
+      "result": null
+    },
+    {
+      "id": "b2fea03c-51d5-4dff-a0ba-16b50c0dec11",
+      "job_type": "backup.create",
+      "status": "completed",
+      "attempts": 1,
+      "queued_at": "2026-10-17T21:13:01.824Z",
+      "next_attempt_at": "2026-10-17T21:18:01.084Z",
+      "last_error": null,
+      "result": {
+        "backupId": "d3633aab-6e72-46fc-aed8-b8c2b5f579be",
+        "provider": "vercel_blob",
+        "rowCount": 188,
+        "fileCount": 1,
+        "snapshotAt": "2026-10-17T21:19:26.441Z",
+        "tableCount": 203,
+        "completedAt": "2026-10-17T21:19:31.433Z",
+        "dirtyVersion": "6",
+        "manifestHash": "cd19b90e3d1fca4d41a51bac3e99e938e7a73e8f948f1790a4d399247b618ff8",
+        "encryptionVersion": "08da42d1712352dc",
+        "providerDeletionLock": false
+      }
+    }
+  ],
+  "ai": [
+    {
+      "id": "b6ec6fb6-2218-441d-aaaf-dcb3889fbd8c",
+      "capability": "image_generation",
+      "model_id": "gpt-image-2.5-flare",
+      "status": "completed",
+      "input_tokens": 279,
+      "output_tokens": 196,
+      "cost_reserved": "0.326905",
+      "cost_actual": "0.007275",
+      "connection_version_id": "e2e1afb1-204c-4bd8-af22-56575bca816b"
+    },
+    {
+      "id": "a48e194e-e4eb-4886-8a28-92111fc9c3a5",
+      "capability": "assistant_reasoning",
+      "model_id": "gpt-6.1-sol",
+      "status": "completed",
+      "input_tokens": 802,
+      "output_tokens": 191,
+      "cost_reserved": "0.046544",
+      "cost_actual": "0.003514",
+      "connection_version_id": "e2e1afb1-204c-4bd8-af22-56575bca816b"
+    },
+    {
+      "id": "5d7d5089-33ff-4d27-95ce-3bb22b374b2e",
+      "capability": "speech_transcription",
+      "model_id": "gpt-4o-mini-transcribe-2025-12-15",
+      "status": "completed",
+      "input_tokens": 47,
+      "output_tokens": 20,
+      "cost_reserved": "0.030000",
+      "cost_actual": "0.000159",
+      "connection_version_id": "e2e1afb1-204c-4bd8-af22-56575bca816b"
+    },
+    {
+      "id": "d55dfda3-2f6a-4503-9bc0-a85a2802a100",
+      "capability": "assistant_reasoning",
+      "model_id": "gpt-6-luna",
+      "status": "completed",
+      "input_tokens": 442,
+      "output_tokens": 67,
+      "cost_reserved": "0.001700",
+      "cost_actual": "0.000078",
+      "connection_version_id": "e2e1afb1-204c-4bd8-af22-56575bca816b"
+    },
+    {
+      "id": "5351a083-4f69-4754-8f61-c535600d9279",
+      "capability": "assistant_reasoning",
+      "model_id": "gpt-6-luna",
+      "status": "completed",
+      "input_tokens": 413,
+      "output_tokens": 39,
+      "cost_reserved": "0.001692",
+      "cost_actual": "0.000061",
+      "connection_version_id": "e2e1afb1-204c-4bd8-af22-56575bca816b"
+    }
+  ],
+  "budgets": [
+    {
+      "period": "2026-10",
+      "limit_amount": "5.000000",
+      "spent": "0.011087",
+      "reserved": "0.000000",
+      "currency": "USD"
+    }
+  ],
+  "backups": [
+    {
+      "id": "41e09072-b305-42dc-b95f-cdc8aa188745",
+      "snapshot_at": "2026-10-17T21:34:04.433Z",
+      "content_hash": "2b00ec11120de06e48e0a7a808fe30f96652f021bc1255d9f4ecb72241a33d6c",
+      "status": "verified"
+    },
+    {
+      "id": "708fb5fb-e59a-4f39-ba6a-fc9ea8d5a901",
+      "snapshot_at": "2026-10-17T21:26:47.843Z",
+      "content_hash": "21ed4f7d768a6f14dfc5bd5012ab888a3120cdd310af39fbcfea4b85ef1c965e",
+      "status": "verified"
+    },
+    {
+      "id": "d3633aab-6e72-46fc-aed8-b8c2b5f579be",
+      "snapshot_at": "2026-10-17T21:19:26.441Z",
+      "content_hash": "cd19b90e3d1fca4d41a51bac3e99e938e7a73e8f948f1790a4d399247b618ff8",
+      "status": "verified"
+    }
+  ],
+  "documents": [
+    {
+      "id": "8b124c1f-593c-4678-aaec-1223d6269f3c",
+      "status": "available",
+      "current_version_id": "e03b6638-6d6a-4732-9aaf-4c1a5c20d89d",
+      "content_hash": "21a76ec0b2d40eccebbf14c8db9b67bbca492f268b8d36ca93b7b5cf845c065e"
+    }
+  ],
+  "secretsPrinted": false
+}

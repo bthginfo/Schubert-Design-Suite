@@ -1,5 +1,7 @@
 # SCHUBERT Design Suite
 
+[Produktive Anwendung öffnen](https://schubert-design-suite.vercel.app) · [Bedienung](docs/bedienung.md) · [Ausführliche tatsächliche Abnahme](docs/qa/acceptance.md)
+
 Deutschsprachige Betriebsanwendung für Kunden, Angebote, Aufträge, Einkauf, Lager, Raum- und Grabmalplanung, Arbeitszeiten, Dokumente, Rechnungen, Kundenportal und Auswertungen.
 
 Svelte5 / SvelteKit3, TypeScript, PostgreSQL mit mandanten- und gesellschaftsbezogener Row Level Security. Private Dateien liegen in Vercel Blob; Neon übernimmt die Geschäftsdaten. Dokumentprüfung, Blender-Rendering und verschlüsselte Sicherung laufen in getrennten Vercel-Projekten.

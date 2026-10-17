@@ -6,7 +6,7 @@ Stand: 17.10.2026. Alle Geschäftsvorgänge in diesen Tests verwenden ausdrückl
 
 Die vollständigen Fachbereiche sind implementiert: CRM, Angebote/Aufträge, Rechnungen und E-Rechnungen, Zahlungsausgleich und DATEV, Lieferanten/Einkauf, Lager/Inventur, Dokumente/Import, Grabmal- und Raumstudio, Kundenportal, Personal/Disposition/Zeiten, Assistent, Controlling, Administration, Datenschutz und Wiederherstellung. Ein sichtbarer Dialog ersetzt keinen Integrationsnachweis. Die nachstehenden Prüfungen unterscheiden tatsächliche Datenbank-/Provideraufrufe und ausdrücklich kontrollierte Fehlerantworten.
 
-Der abschließende lokale Stand umfasst 200 erfolgreiche automatische Tests in 35 Dateien. Zusätzlich wurden 15 echte PostgreSQL-Integrationsfälle zu Mandantentrennung, Berechtigungen, Transaktionsabbruch, Idempotenz, Event-/Auditfolgen, Zeit-/Offlinekonflikten und unveränderlichen Geschäftsständen ausgeführt. Der abschließende Gesamtcheck und Produktionsbuild werden im Veröffentlichungsnachweis ergänzt.
+Der abschließende lokale Stand umfasst 202 erfolgreiche automatische Tests in 36 Dateien. Zusätzlich wurden 15 echte PostgreSQL-Integrationsfälle zu Mandantentrennung, Berechtigungen, Transaktionsabbruch, Idempotenz, Event-/Auditfolgen, Zeit-/Offlinekonflikten und unveränderlichen Geschäftsständen ausgeführt. Der abschließende Gesamtcheck endete mit null Fehlern und null Warnungen. Die Hauptanwendung und ihre privaten Queue-Funktionen wurden auf Vercel vollständig gebaut und praktisch geprüft.
 
 ## Oberflächen, Bedienbarkeit und Schaltflächen
 
@@ -46,4 +46,21 @@ Die Mengen-/Zeitangaben sind Messungen dieser synthetischen Testbestände. Sie s
 
 ## Veröffentlichung
 
-Die tatsächliche produktive Browser-, KI-, Queue- und Backup-Abnahme wird nach dem geprüften Hauptdeployment hier mit URL und Versionsbezug ergänzt. Vorher wird keine erfolgreiche Live-Integration behauptet.
+Produktivadresse: [Schubert Design Suite](https://schubert-design-suite.vercel.app). Das GitHub-Repository enthält den geprüften vollständigen Quellbestand und eine erfolgreiche Qualitäts-Pipeline. Die Produktionsdatenbank hat alle 32 Migrationen; der Runtimezugang besitzt keine Besitzer-/RLS-Umgehungsrechte.
+
+Tatsächlich auf der veröffentlichten Anwendung geprüft:
+
+- Superadmin-Anmeldung, frische Passphrase bei technischen Einstellungen, bestehender OpenAI-Zugang ohne Anzeige des Geheimnisses, sichere spätere Austauschmöglichkeit. Öffentliche Schubert-Firmendaten sind vorbereitet; fachliche Freigaben wurden dadurch nicht erteilt.
+- Luna-Verbindungstest und normale Assistenz aus dem tatsächlichen Arbeitsbereich: zwei abgeschlossene Aufrufe. Vertiefte Planprüfung mit Sol6.1 benennt im synthetischen leeren Entwurf fehlende Maße und schlägt keine geratenen Maße oder automatische Geschäftsänderung vor.
+- Tatsächliche Sprachtranskription einer selbst erzeugten synthetischen Aufnahme von4,71Sekunden; der erkannte Text verlangt weiterhin Prüfung. Kein Personalgespräch wurde verwendet.
+- Ein tatsächliches Konzeptbild mit GPT Image2.5 Flare: Kostenvorschau0,326905USD, Ausgabe1024×1024, tatsächlich0,007275USD. Die private gespeicherte Ausgabe enthält sichtbar „KI-Visualisierung · Konzept · keine technische Zeichnung“ und die gebundene Planrevision. Ohne Kostenbestätigung verweigert der Server den Start mit409.
+- Alle fünf Live-KI-Aufrufe zusammen:0,011087USD bestätigt,0USD offen reserviert, Monatsbudget5USD. Diese konkreten Messwerte sind keine Preisgarantie für andere Aufgaben. Automatische Aufladung wurde durch die App nicht aktiviert.
+- Neu hochgeladenes eigenes352-Byte-TXT: tatsächlicher privater Upload → Quarantäne → Cloud-Virenprüfung → Textauswertung → verfügbare Originalversion. Die beiden Verarbeitungsschritte wurden automatisch über die echte Vercel-Warteschlange abgeschlossen.
+- Authentifizierter Originalabruf200 mit exakt passendem SHA; Bereichsabruf206 für16Bytes; unzulässiger Mehrfachbereich416; derselbe Originalabruf ohne Anmeldung401. Keine private API-Antwort wird im Service-Worker-Cache gespeichert.
+- Tatsächlicher privater Archivtest und mehrere signierte verschlüsselte Produktionssicherungen in der getrennten Ablage abgeschlossen. Der erste Produktionsstand enthält203Tabellen,188Zeilen und ein Original. Spätere Stände enthalten die zusätzliche synthetische Abnahme. Die frühere isolierte Restore-Übung bleibt separat dokumentiert.
+- Tägliche Nachholprüfung am authentifizierten tatsächlichen Vercel-Endpunkt erfolgreich. Der Runtimezugang benötigt dafür kein DELETE-Recht auf das Speicherjournal. Abgelaufene ungebundene Uploads werden erst nach bestätigter privater Anbieterentfernung freigegeben; registrierte Originale bleiben ausgeschlossen. Vier zusätzliche echte PG-/Blob-Fälle prüfen dies einschließlich wiederholter Fälligkeitsereignisse.
+- Zwei zeitgleiche Bildanfragen mit verschiedenen Command-Schlüsseln erzeugen in der isolierten PG-Prüfung genau einen Auftrag vor jeder Anbieterübermittlung. Zwei Prüfungen bestanden, null Anbieteraufrufe; keine künstliche monatliche Renderstückzahl eingeführt.
+- Tatsächlich aktivierter Service Worker, gecachte Offline-Zeitseite und Wiederöffnung von offline-time.html bei abgeschalteter Browserverbindung. Es wurden dabei keine produktiven Arbeitszeiten begonnen. Die bereits dokumentierten Offline-Aktions-/Konfliktfälle liefen im getrennten QA-Bestand.
+- Sichtprüfung auf375Pixeln und am Desktop. Die zusätzlichen automatischen WCAG-A/AA-Prüfungen der tatsächlich geöffneten Haupt-, Einstellungs-, Integrations- und leeren Studioansichten wurden nach Kontrast-/Tastaturkorrekturen wiederholt. Sie ergänzen die beschriebenen Geräte-/Screenreaderprüfungen und ersetzen diese nicht.
+
+[Produktionsnachlese ohne Geheimnisse](evidence/production.json), [Nachholprüfung](evidence/reconciliation.json), [Bild-Konkurrenzprüfung](evidence/visualization-concurrency.json). Die synthetische Live-Planung und ihr eigener Nutzungsnachweis sind deutlich als Abnahme ohne Fertigungsfreigabe bezeichnet.
