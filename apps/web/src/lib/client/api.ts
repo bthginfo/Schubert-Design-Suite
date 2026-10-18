@@ -1,10 +1,14 @@
 import type { Row } from './types';
+import {feedbackRequestAction,recordFeedbackStep} from './feedback-context';
 
 export class RequestError extends Error {
   code: string; fields: Record<string,string>; correlationId?: string;
   constructor(message:string, details:Row = {}) { super(message); this.name='RequestError'; this.code=details.code || 'REQUEST_FAILED'; this.fields=details.fields || {}; this.correlationId=details.correlationId; }
 }
 export async function request(path:string, body?:unknown, method='POST'): Promise<any> {
+  const trace=feedbackRequestAction(path,body);
+  if(trace)recordFeedbackStep(trace.kind,trace.action,'started');
+  try {
   let response:Response;
   try { response=await fetch(path,{method,credentials:'same-origin',headers:body instanceof FormData ? {} : {'Content-Type':'application/json'},body:body===undefined?undefined:body instanceof FormData?body:JSON.stringify(body)}); }
   catch { throw new RequestError('Der Server ist nicht erreichbar. Ihre Eingaben bleiben erhalten. Bitte prüfen Sie die Verbindung.'); }
@@ -13,7 +17,9 @@ export async function request(path:string, body?:unknown, method='POST'): Promis
     const error=result?.error || {};
     throw new RequestError(typeof error==='string'?error:error.message || result?.message || `Die Anfrage konnte nicht abgeschlossen werden (${response.status}).`,typeof error==='object'?error:{});
   }
+  if(trace)recordFeedbackStep(trace.kind,trace.action,'succeeded');
   return result?.result ?? result;
+  }catch(error){if(trace)recordFeedbackStep(trace.kind,trace.action,'failed',error instanceof RequestError?error:{code:'REQUEST_FAILED'});throw error;}
 }
 const pendingKeys=new Map<string,string>();
 function stable(value:any):string{if(value===null||typeof value!=='object')return JSON.stringify(value)??'null';if(Array.isArray(value))return '['+value.map(stable).join(',')+']';return '{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+stable(value[key])).join(',')+'}';}

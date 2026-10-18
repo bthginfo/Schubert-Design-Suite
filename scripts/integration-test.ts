@@ -1,3 +1,4 @@
+import {feedbackIntegration} from './feedback-integration.js';
 import 'dotenv/config';
 import {config} from 'dotenv';
 config({path:'.env.testing.local',quiet:true});
@@ -97,5 +98,6 @@ await test('Personal onboarding is persisted, optimistic and cannot target anoth
  const entity=await withTenant(owner,db=>one<any>(db,'SELECT training_mode FROM legal_entities WHERE id=$1',[owner.legalEntityId]));
  assert.equal(studio.summary.onboarding?.id,result.id);assert.equal(studio.summary.trainingMode,entity.training_mode);
 });
+await feedbackIntegration(actor,test);
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}

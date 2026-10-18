@@ -1,24 +1,13 @@
-import { test, expect, type Page, type BrowserContext } from '@playwright/test';
+import {login} from './login.js';
+import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { randomUUID } from 'node:crypto';
 import { PDFDocument } from 'pdf-lib';
 import { mkdir,writeFile } from 'node:fs/promises';
 
 const unique='UAT '+new Date().toISOString().slice(0,10)+' '+randomUUID().slice(0,8);
-const authenticated=new Map<string,Awaited<ReturnType<BrowserContext['cookies']>>>();
 async function navigate(page:Page,path:string){await page.goto(path);await page.waitForLoadState('networkidle');}
-async function login(page:Page,role='OWNER',credentials?:{email:string;password:string}){
-  const email=credentials?.email||process.env[`TEST_${role}_EMAIL`],password=credentials?.password||process.env[`TEST_${role}_PASSWORD`];
-  if(!email||!password)throw Error('Synthetic role credentials missing: '+role);
-  const cookies=authenticated.get(email);
-  if(cookies){await page.context().addCookies(cookies);await navigate(page,'/');if(!page.url().endsWith('/login'))return;authenticated.delete(email);}
-  await navigate(page,'/login');
-  await page.getByLabel('E-Mail', {exact:false}).fill(email);
-  await page.locator('#login-password').fill(password);
-  await page.getByRole('button',{name:'Sicher anmelden',exact:true}).click();
-  await expect(page).not.toHaveURL(/\/login/);
-  authenticated.set(email,await page.context().cookies());
-}
+
 async function createInquiry(page:Page,title:string){
   await navigate(page,'/inquiries');await page.getByRole('button',{name:'Anfrage anlegen',exact:true}).first().click();
   const dialog=page.getByRole('dialog');

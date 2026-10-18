@@ -1,3 +1,4 @@
+import {login as sharedLogin} from './login.js';
 ﻿import {test,expect,type Page} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {randomUUID} from 'node:crypto';
@@ -13,9 +14,7 @@ test.beforeAll(async()=>{
  await withTenant(usageActor,async db=>{for(const row of [{task:'office_assistant',input:9000,output:1500,cost:'.75'},{task:'room_review',input:1000,output:1000,cost:'1.25'},{task:'image_generation',input:null,output:null,cost:null}]){const id=randomUUID();fixtureIds.push(id);await db.query("INSERT INTO ai_runs(id,tenant_id,legal_entity_id,actor_id,capability,task_type,model_id,request_hash,input_tokens,output_tokens,cost_actual,cost_basis,status,created_at) VALUES($1,$2,$3,$4,'assistant_reasoning',$5,'synthetic-usage-test',$9,$6,$7,$8,'configured_estimate','completed','2003-04-15T12:00:00Z')",[id,usageActor.tenantId,usageActor.legalEntityId,usageActor.actorId,row.task,row.input,row.output,row.cost,id]);}});
 });
 test.afterAll(async()=>{try{if(fixtureIds.length)await withTenant(usageActor,db=>db.query('DELETE FROM ai_runs WHERE id=ANY($1::uuid[])',[fixtureIds]));}finally{await closePools();}});
-async function login(page:Page,role='OWNER'){
- await page.goto('/login');await page.getByLabel('E-Mail',{exact:false}).fill(process.env['TEST_'+role+'_EMAIL']!);await page.locator('#login-password').fill(process.env['TEST_'+role+'_PASSWORD']!);await page.getByRole('button',{name:'Sicher anmelden',exact:true}).click();await expect(page).not.toHaveURL(/\/login/);
-}
+const login=(page:Page,role='OWNER')=>sharedLogin(page,role);
 async function capture(page:Page,name:string){
  await mkdir('work/features-browser',{recursive:true});await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'work/features-browser/'+name+'-desktop.png',fullPage:true,animations:'disabled'});
  const audit=await new AxeBuilder({page}).include('.page-content').analyze();expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact??''))).toEqual([]);

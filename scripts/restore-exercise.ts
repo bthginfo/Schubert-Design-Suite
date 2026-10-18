@@ -24,7 +24,7 @@ const schema='restore_'+randomUUID().replaceAll('-',''),db=new pg.Client({connec
 try{
  assert.match(schema,/^restore_[a-f0-9]{32}$/);await db.query('CREATE SCHEMA "'+schema+'"');await db.query('BEGIN');await db.query('SET LOCAL search_path="'+schema+'",public');
  const names=Object.keys(snapshot.tables);for(const name of names){assert.match(name,/^[a-z_][a-z0-9_]*$/);await db.query(`CREATE TABLE "${schema}"."${name}"(LIKE public."${name}" INCLUDING ALL)`);}
- for(const name of names){const values=snapshot.tables[name];if(values.length)await db.query(`INSERT INTO "${schema}"."${name}" OVERRIDING SYSTEM VALUE SELECT * FROM jsonb_populate_recordset(NULL::"${schema}"."${name}",$1::jsonb)`,[JSON.stringify(values)]);const count=(await db.query(`SELECT count(*)::int n FROM "${schema}"."${name}"`)).rows[0].n;assert.equal(count,values.length,'Restored table count differs: '+name);}
+ for(const name of names){const values=snapshot.tables[name];await insertRestoredRows(db,schema,name,values);const count=(await db.query(`SELECT count(*)::int n FROM "${schema}"."${name}"`)).rows[0].n;assert.equal(count,values.length,'Restored table count differs: '+name);}
  const constraints=(await db.query("SELECT r.relname table_name,c.conname,pg_get_constraintdef(c.oid) definition FROM pg_constraint c JOIN pg_class r ON r.oid=c.conrelid JOIN pg_namespace n ON n.oid=r.relnamespace WHERE n.nspname='public' AND c.contype='f' AND r.relname=ANY($1::text[])",[names])).rows;
  for(const constraint of constraints){const definition=constraint.definition.replaceAll('REFERENCES public.','REFERENCES "'+schema+'".');await db.query(`ALTER TABLE "${schema}"."${constraint.table_name}" ADD CONSTRAINT "${constraint.conname}" ${definition}`);}
  const byStorage=new Map<string,string>();for(const file of manifest.files){if(privacy.excludedStorage.has(file.storageKey))continue;const original=await restoreBytes(file.backupKey,'file');assert.equal(sha(original),file.contentHash);assert.equal(original.length,file.byteLength);const restored=await storePrivate(ctx,original,'application/octet-stream');uploaded.push(restored.key);assert.equal(sha(await privateBytes(restored.key,40*1024*1024,ctx)),file.contentHash);byStorage.set(file.storageKey,restored.key);}
@@ -41,3 +41,4 @@ try{
  // Only the schema and temporary copies created by this exact exercise are removed.
  await db.query('DROP SCHEMA "'+schema+'" CASCADE');for(const key of uploaded)await deletePrivate(key,ctx);
 }catch(error){await db.query('ROLLBACK').catch(()=>{});throw error;}finally{await db.end();await closePools();}
+import {insertRestoredRows} from './lib/restore-rows.js';

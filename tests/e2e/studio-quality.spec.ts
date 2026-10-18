@@ -1,3 +1,4 @@
+import {login} from './login.js';
 import {test,expect,type Page} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {randomUUID} from 'node:crypto';
@@ -7,7 +8,7 @@ import {PDFDocument} from 'pdf-lib';
 test('Representative memorial and room: persisted dimensions, drawings, camera and PDF',async({page,context})=>{
   test.setTimeout(240000);
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('/login');await page.getByLabel('E-Mail',{exact:false}).fill(process.env.TEST_PLANNER_EMAIL!);await page.locator('#login-password').fill(process.env.TEST_PLANNER_PASSWORD!);await page.getByRole('button',{name:'Sicher anmelden',exact:true}).click();await expect(page).not.toHaveURL(/\/login/);
+  await login(page,'PLANNER');
   await mkdir('work/final-studios',{recursive:true});
   for(const kind of ['memorial','room_plan'] as const){
     const name='Abnahme '+(kind==='memorial'?'Grabmal':'Bad')+' '+randomUUID().slice(0,8);
@@ -43,7 +44,11 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
     const savedPromise=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().includes('/designs/')&&r.url().endsWith('/commands'));
     await page.getByRole('button',{name:'Speichern',exact:true}).click();const saved=await savedPromise;expect(saved.status()).toBe(200);
     const payload=await saved.json(),state=payload.result??payload;await writeFile('work/final-studios/'+kind+'-saved.json',JSON.stringify(state,null,2));
-    await expect(page.getByRole('button',{name:'Speichern',exact:true})).toBeDisabled();await page.reload();
+    await expect(page.getByRole('button',{name:'Speichern',exact:true})).toBeDisabled();
+    if(await page.getByRole('button',{name:'Feedback',exact:true}).count()){
+      await page.getByRole('button',{name:'Feedback',exact:true}).click();const feedback=page.locator('dialog.feedback-dialog');await feedback.getByText('Mitgesendeten Kontext ansehen',{exact:false}).click();await expect(feedback).toContainText('Planung bearbeiten · erfolgreich');await feedback.getByRole('button',{name:'Feedback schließen'}).click();
+    }
+    await page.reload();
     const svg=page.locator('svg[role="application"]');await expect(svg).toBeVisible();
     for(const label of ['Front','Seite',kind==='memorial'?'Drauf':'Grundriss']){
       await page.getByRole('button',{name:label,exact:true}).click();
