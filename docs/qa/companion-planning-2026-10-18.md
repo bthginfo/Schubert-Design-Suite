@@ -13,7 +13,7 @@
 
 ## Technische Nachweise
 
-- 276 Unit-Tests in 50 Dateien bestanden.
+- 277 Unit-Tests in 50 Dateien bestanden.
 - 33 echte PostgreSQL-Prüfungen bestanden. Zusätzlich geprüft: 31 gleich datierte Projekte über zwei Seiten ohne Duplikate; Suche nach älteren Projekten; mehr als 25 Monatszuordnungen; Überlappungen und Datumsgrenzen; gespeicherte Raum-/Grabmalvorschläge mit Versionskonflikt; idempotenter Herstellerimport, Mandantentrennung, unveränderliche Quellen und gesperrte Fertigungsfreigabe.
 - Svelte-/TypeScript-Prüfung ohne Fehler oder Warnungen; Produktions-Build erfolgreich.
 - Reale Browserabläufe: Einführung einschließlich Fehler und mobiler Rollenführung; persönliche Darstellung; Feedback; Hilfe; Verbrauch; Nummernkreise; Monatsdisposition und Bereichsnavigation; manuelles Nachtragen und Offline-Timer; Grundriss/Grabmal mit erneutem Öffnen, 3D, Stückliste und echten PDF-Exporten.
@@ -34,3 +34,7 @@ Zwei betroffene Browserabläufe wurden erneut bestanden, einschließlich tatsäc
 Die grafische KI-Ausgabe bleibt eine Konzeptdarstellung. Geschützte Bestandsinschrift benötigt vor Kundenverwendung das bestehende Verfahren zum Erhalt der Originalpixel und fachliche Kontrolle. Ein Foto darf nicht als vermessene technische Zeichnung ausgegeben werden. Physische Geräte, Screenreader und fachliche Betriebsfreigaben ergänzen die technische Abnahme.
 
 Keine feste monatliche Renderstückzahl, kein neuer kostenpflichtiger Dienst und keine automatische Guthabenaufladung. Die bestehenden einstellbaren Geldbudgets bleiben aktiv. Persönliche Hilfe, Darstellung und Kalender verursachen keine Modellaufrufe. Der ausdrücklich gewünschte betriebliche Testdatensatz bleibt erhalten.
+
+## Live-Nachprüfung des Modellformats
+
+Die erste tatsächliche Erstentwurfsanfrage mit Luna wurde nach dem Anbieteraufruf wegen eines ungültigen Vorschlagsformats abgewiesen. Kein Plan wurde geändert; 0,000243 USD wurden als tatsächlicher Verbrauch erfasst. Erstentwürfe erhalten deshalb ein eigenes strikt strukturiertes Antwortfeld mit vollständigen Maßangaben. Ziel und Basisrevision werden ausschließlich aus dem aktuellen Serverkontext gebunden. Abgewiesene Modellvorschläge werden als ungültige Antwort markiert, ohne automatische kostenpflichtige Wiederholung. 277 Unit-Tests bestanden, einschließlich der Bindung und abgelehnter unvollständiger Maße.

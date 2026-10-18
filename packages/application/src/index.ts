@@ -25,6 +25,7 @@ import './administration.js';
 import './communication.js';
 import './email-commands.js';
 export * from './core.js';
+export * from './ai-proposals.js';
 export * from './time-sync-errors.js';
 export * from './queries.js';
 export * from './jobs.js';

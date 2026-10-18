@@ -9,6 +9,16 @@ export const planningDraftSchema=z.discriminatedUnion('kind',[
  z.strictObject({kind:z.literal('rectangular_room'),label:z.string().trim().min(1).max(100),clearWidthMm:dimension,clearDepthMm:dimension,heightMm:dimension,wallThicknessMm:dimension}),
  z.strictObject({kind:z.literal('memorial_slab'),label:z.string().trim().min(1).max(100),widthMm:dimension,heightMm:dimension,thicknessMm:dimension})
 ]);
+const dimensionProperty={type:'string',pattern:'^[0-9]+(\\.[0-9]{1,2})?$'};
+function draftFormat(kind:string,dimensions:string[]){return{type:'object',properties:{kind:{type:'string',enum:[kind]},label:{type:'string'},...Object.fromEntries(dimensions.map(name=>[name,dimensionProperty]))},required:['kind','label',...dimensions],additionalProperties:false};}
+export const planningDraftFormat={anyOf:[{type:'null'},draftFormat('rectangular_room',['clearWidthMm','clearDepthMm','heightMm','wallThicknessMm']),draftFormat('memorial_slab',['widthMm','heightMm','thicknessMm'])]};
+
+export function bindPlanningDraft(context:any,draft:unknown){
+ // Only the authoritative server context supplies the target and base revision.
+ const operations=planningDraftOperations(context,draft);
+ requireRule(typeof context.variantId==='string'&&typeof context.revisionId==='string'&&Number.isInteger(context.baseVersion),'AI_DRAFT_CONTEXT','Einen aktuellen gespeicherten Planstand auswählen.');
+ return{targetId:context.variantId,baseVersion:context.baseVersion,commands:[{name:'planning.design.change',inputJson:JSON.stringify({base_revision_id:context.revisionId,operations})}]};
+}
 /** Compact model output is expanded by the geometry adapter; the AI cannot attest dimensions. */
 export function planningDraftOperations(context:any,input:unknown):DesignOperation[]{
  const draft=planningDraftSchema.parse(input),snapshot=context.snapshot;
@@ -32,4 +42,4 @@ export function planningDraftOperations(context:any,input:unknown):DesignOperati
  return operations.map(op=>designOperationSchema.parse(op));
 }
 
-export const planningDraftInstructions='Für einen ersten Entwurf in einer LEEREN Variante darf planning.design.change statt operations das Feld draft enthalten. room_plan: {kind:"rectangular_room",label,clearWidthMm,clearDepthMm,heightMm,wallThicknessMm}; memorial: {kind:"memorial_slab",label,widthMm,heightMm,thicknessMm}. Alle Maße sind positive Dezimalstrings in mm. clearWidthMm/clearDepthMm sind lichte Innenmaße ohne Wandstärke. Frage nach, wenn Maße fehlen, ein Skizzenmaß unlesbar ist oder Außenmaß/Achsmaß unklar bleibt. Keine Standardmaße erfinden. base_revision_id bleibt erforderlich. Der Server erstellt daraus editierbare, ungeprüfte Elemente; erst die ausdrückliche Bestätigung wendet sie an. Für vorhandene Elemente operations verwenden: set_element_position {elementId,position:{xMm,yMm,zMm}}, rotate_element {elementId,rotationDeg:{x,y,z}}, set_inscription_text {elementId,exactText}, set_design_target {measureId,valueMm,confirm:false}. Keine IDs erfinden. Beschreibe im Antworttext kurz, was die Vorschau ändern wird.';
+export const planningDraftInstructions='Für einen ersten Entwurf in einer LEEREN Variante verwende ausschließlich das strukturierte Feld planningDraft auf der obersten Antwortebene und lasse commands leer. room_plan: {kind:"rectangular_room",label,clearWidthMm,clearDepthMm,heightMm,wallThicknessMm}; memorial: {kind:"memorial_slab",label,widthMm,heightMm,thicknessMm}. Alle Maße sind positive Dezimalstrings in mm. clearWidthMm/clearDepthMm sind lichte Innenmaße ohne Wandstärke. Frage nach, wenn Maße fehlen, ein Skizzenmaß unlesbar ist oder Außenmaß/Achsmaß unklar bleibt. Keine Standardmaße erfinden. Bei Rückfragen planningDraft=null. Der Server bindet Ziel und Revision selbst und erstellt editierbare, ungeprüfte Elemente; erst die ausdrückliche Bestätigung wendet sie an. Für vorhandene Elemente planningDraft=null und planning.design.change mit operations verwenden: set_element_position {elementId,position:{xMm,yMm,zMm}}, rotate_element {elementId,rotationDeg:{x,y,z}}, set_inscription_text {elementId,exactText}, set_design_target {measureId,valueMm,confirm:false}. Keine IDs erfinden. Beschreibe im Antworttext kurz, was die Vorschau ändern wird.';

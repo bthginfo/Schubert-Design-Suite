@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {withTenant,rows,one,insertMany} from '@schubert/db';
-import {executeCommand,loadPage,invalidateReads,baseData,prepareAssistantContext,assistantInputSchema} from '@schubert/application';
+import {executeCommand,loadPage,invalidateReads,baseData,prepareAssistantContext,assistantInputSchema,applyAIProposal} from '@schubert/application';
 import {searchPlanningProducts} from '../packages/application/src/catalog-search.js';
 import {validatePlanningReferences} from '../packages/application/src/planning.js';
 import {rectangleContour} from '@schubert/geometry';
@@ -40,7 +40,8 @@ export async function uxFlowIntegration(actor:(role:string)=>ActorContext,test:(
   for(const kind of ['room_plan','memorial']){
    const created=await call(owner,'planning.project.create',{name:'Synthetic companion '+kind+' '+randomUUID().slice(0,8),kind});
    const draft=kind==='room_plan'?{kind:'rectangular_room',label:'Badentwurf',clearWidthMm:'4000',clearDepthMm:'6000',heightMm:'2600',wallThicknessMm:'200'}:{kind:'memorial_slab',label:'Grabmalentwurf',widthMm:'800',heightMm:'1200',thicknessMm:'160'};
-   const operations=planningDraftOperations({snapshot:created.revision.snapshot},draft),result=await call(owner,'planning.design.change',{base_revision_id:created.revision.id,operations},created.variant);
+   const operations=planningDraftOperations({snapshot:created.revision.snapshot},draft),proposal={...baseData(owner),id:randomUUID(),actor_id:owner.actorId,entity_type:'planning',entity_id:created.variant.id,base_version:created.variant.version,action_type:'draft_changes',commands:[{name:'planning.design.change',input:{base_revision_id:created.revision.id,operations}}],missing_inputs:[],validation:{serverGeneratedPlanningDraft:true},expires_at:new Date(Date.now()+300000),status:'proposed'},untrusted={...proposal,id:randomUUID(),validation:{serverGeneratedPlanningDraft:false}};
+   await withTenant(owner,db=>insertMany(db,'ai_proposals',[proposal,untrusted]));await assert.rejects(()=>applyAIProposal(owner,untrusted.id),(error:any)=>error.code==='AI_OPERATION');const result=await applyAIProposal(owner,proposal.id);
    assert(result.revision.snapshot.elements.length>0);assert(Object.values(result.revision.snapshot.measurements).every((m:any)=>m.reviewStatus==='unreviewed'));assert.equal(result.variant.version,created.variant.version+1);
    assert.throws(()=>planningDraftOperations({snapshot:result.revision.snapshot},draft),(error:any)=>error.code==='AI_DRAFT_SCOPE');
    await assert.rejects(()=>call(owner,'planning.design.change',{base_revision_id:created.revision.id,operations},created.variant));
