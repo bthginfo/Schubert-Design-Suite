@@ -1,6 +1,6 @@
 /** Explicit operator-run training data. Never runs during build or normal startup. */
 import 'dotenv/config';
-import {config} from 'dotenv';
+import {config,parse} from 'dotenv';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
 import pg from 'pg';
@@ -12,7 +12,15 @@ import {register,executeCommand,hash,ingestUpload,type Runtime} from '@schubert/
 
 const production=process.argv.includes('--production'),dryRun=process.argv.includes('--dry-run');
 if(!production)config({path:'.env.testing.local',quiet:true});
-const adminDb=new pg.Client({connectionString:process.env.DATABASE_MIGRATION_URL,ssl:process.env.DATABASE_MIGRATION_URL?.includes('neon.tech')?{rejectUnauthorized:true}:undefined});
+else{
+ const source=JSON.parse(await readFile('.vercel/provisioning-result.json','utf8')),secrets=parse(await readFile('.env.provisioning.local'));
+ const url=new URL(source.applicationConnectionBase);
+ if(!source.completed||url.username!=='schubert_app'||!url.hostname.startsWith('ep-dawn-math-')||!secrets.APP_DB_PASSWORD)throw Error('Verified production application connection required.');
+ url.password=secrets.APP_DB_PASSWORD;process.env.DATABASE_URL=url.toString();
+ process.env.BETTER_AUTH_SECRET=secrets.BETTER_AUTH_SECRET;process.env.INTEGRATION_ENCRYPTION_KEY=secrets.INTEGRATION_ENCRYPTION_KEY;
+}
+const contextUrl=production?process.env.DATABASE_URL:process.env.DATABASE_MIGRATION_URL;
+const adminDb=new pg.Client({connectionString:contextUrl,ssl:contextUrl?.includes('neon.tech')?{rejectUnauthorized:true}:undefined});
 await adminDb.connect();
 let ctx:ActorContext;
 try{
@@ -34,6 +42,7 @@ try{
   if(production&&issued.n)throw Error('Training data may not be mixed with an already operating invoice system.');
   let document=await withTenant(ctx,db=>one<any>(db,dryRun?"SELECT * FROM documents WHERE current_version_id IS NOT NULL ORDER BY created_at LIMIT 1":"SELECT * FROM documents WHERE name='TEST - Schubert Beispielunterlagen.pdf' ORDER BY created_at LIMIT 1"));
   if(!document){
+   if(production)throw Error('Upload TEST - Schubert Beispielunterlagen.pdf through the live application before installing training data. Production files must use the live private storage connection.');
    if(dryRun)throw Error('A synthetic uploaded document is required for the database preflight.');
    const pdf=await PDFDocument.create(),font=await pdf.embedFont(StandardFonts.Helvetica),bold=await pdf.embedFont(StandardFonts.HelveticaBold),page=pdf.addPage([595,842]);
    page.drawText('SCHUBERT | TESTBETRIEB',{x:48,y:772,size:20,font:bold,color:rgb(.15,.3,.24)});
