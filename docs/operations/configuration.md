@@ -1,6 +1,6 @@
 # Betrieb, Konfiguration und Grenzen
 
-Stand:17.10.2026. Die Software unterscheidet technische Verfügbarkeit und fachliche Freigabe.
+Stand:18.10.2026. Die Software unterscheidet technische Verfügbarkeit und fachliche Freigabe.
 
 ## Bestehende Dienste
 
@@ -21,7 +21,7 @@ Vercel-Pro-Nutzung und Neon-Free-Kontingente haben nutzungsabhängige Grenzen. K
 | Herstellermodelle, Rechte, Glyphen-/Bohrdaten | Bibliothek und technische Freigaben | Referenzberatung möglich, unbewiesene Fertigung gesperrt |
 | Mitarbeiter, Arbeitsmodelle, Feiertage, Anfangssalden, Qualifikation | Personal und Administration | Unbekannte Kosten/Salden bleiben unbekannt |
 
-Es sind keine erfundenen Produktpreise, Beschäftigten, Herstellerzusagen oder betriebliche Fachfreigaben im Produktivbestand hinterlegt.
+Für den ausdrücklich angeforderten Testbetrieb gibt es klar gekennzeichnete, fiktive Beispieldaten einschließlich Preisen und Beschäftigten. Sie sind keine betrieblichen Stammdaten oder Herstellerzusagen; fachliche Freigaben werden nicht vorgetäuscht. Umfang und kontrollierte spätere Entfernung beschreibt [Testbetrieb, Einführung, Nummernkreise und KI-Verbrauch](training-and-usage.md).
 
 ## Private Archivierung
 

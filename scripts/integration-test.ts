@@ -7,6 +7,8 @@ import {executeCommand,loadPage,register,auditEvent} from '@schubert/application
 import {getPool,withTenant,one,rows,closePools} from '@schubert/db';
 import {rolePermissions,DomainError} from '@schubert/domain';
 import type {ActorContext} from '@schubert/contracts';
+import {aiUsage} from '../packages/application/src/ai-usage.js';
+import {allocateNumber} from '../packages/application/src/numbering-engine.js';
 const tenantId=process.env.TEST_TENANT_ID,legalId=process.env.TEST_LEGAL_ENTITY_ID;
 assert(tenantId&&legalId,'Run scripts/testing-fixture.ts first.');
 function actor(role:string):ActorContext{return {tenantId:tenantId!,legalEntityId:legalId!,actorId:process.env['TEST_'+role.toUpperCase()+'_ID']!,employeeId:process.env['TEST_'+role.toUpperCase()+'_EMPLOYEE_ID']!,role,permissions:rolePermissions[role]??[],permissionVersion:1,correlationId:randomUUID(),actorType:'employee',identityAssurance:'individual_session',reauthenticatedAt:new Date()};}
@@ -42,6 +44,55 @@ await test('A01 business change, receipt and outbox roll back atomically before 
 });
 await test('H08 multiple events in one aggregate version receive deterministic distinct sequences',async()=>{
  register('test.multi_event','admin',async r=>{const record=await r.insert('parties',{name:'Synthetic multi-event '+randomUUID(),is_customer:true,status:'active'});await auditEvent(r,'test.multi_event',record.id,record.version,{step:1});await auditEvent(r,'test.multi_event',record.id,record.version,{step:2});return record;});const record=await command(owner,'test.multi_event');const events=await withTenant(owner,db=>rows<any>(db,"SELECT event_sequence FROM outbox_events WHERE aggregate_type='test.multi_event' AND aggregate_id=$1 AND aggregate_version=1 ORDER BY event_sequence",[record.id]));assert.deepEqual(events.map(e=>e.event_sequence),[0,1,2]);
+});
+await test('AI monthly usage aggregates tokens, task kinds and costs without crossing month or entity boundaries',async()=>{
+ const rollback=new Error('rollback usage fixtures');
+ await assert.rejects(()=>withTenant(owner,async db=>{
+  const add=async(task:string,input:number|null,output:number|null,cost:string|null,created:string,basis='configured_estimate')=>db.query("INSERT INTO ai_runs(tenant_id,legal_entity_id,actor_id,capability,task_type,model_id,request_hash,status,input_tokens,output_tokens,cost_actual,cost_basis,usage_details,created_at) VALUES($1,$2,$3,'assistant_reasoning',$4,'synthetic-model',$5,'completed',$6,$7,$8,$9,$10,$11)",[tenantId,legalId,owner.actorId,task,randomUUID(),input,output,cost,basis,JSON.stringify({cached_tokens:input===1000?600:null}),created]);
+  await add('room_design',1000,200,'0.001','2002-02-01T00:00:00Z');
+  await add('memorial_design',300,null,null,'2002-02-28T23:59:59Z');
+  await add('room_design',10,15,'0.4','2002-02-15T10:00:00Z','provider_confirmed');
+  await add('office_assistant',9000,9000,'3','2002-03-01T00:00:00Z');
+  const usage=await aiUsage(db,owner,'2002-02');
+  assert.equal(usage.totals.requests,3);assert.equal(usage.totals.total_tokens,'1525');assert.equal(usage.totals.cached_tokens,'600');
+  assert.equal(usage.totals.missing_usage,1);assert.equal(usage.totals.missing_cost,1);assert.equal(Number(usage.totals.cost),.401);assert.equal(Number(usage.totals.confirmed_cost),.4);assert.equal(usage.tasks.length,2);
+  assert.equal((await aiUsage(db,{...owner,legalEntityId:randomUUID()},'2002-02')).totals.requests,0);
+  assert.equal((await aiUsage(db,{...owner,tenantId:randomUUID()},'2002-02')).totals.requests,0);
+  assert.equal((await aiUsage(db,owner,'2002-02',false)).tasks,undefined);
+  throw rollback;
+ }),error=>error===rollback);
+});
+await test('AI dashboard usage is restricted to integration administrators',async()=>{
+ const plain=await loadPage(owner,'',new URL('http://localhost/?usage-check='+randomUUID()));assert.equal(plain.summary.aiUsage,undefined);
+ const admin={...owner,permissions:[...owner.permissions,'admin.integrations']};
+ const page=await loadPage(admin,'',new URL('http://localhost/?usage-check='+randomUUID()));assert.ok(page.summary.aiUsage.totals);
+});
+await test('Concurrent number allocation is unique, rollback-safe and blocks an existing number',async()=>{
+ const scope='acceptance-'+randomUUID();
+ const allocated=await Promise.all(Array.from({length:6},()=>withTenant(owner,db=>allocateNumber(db,owner,scope,'TEST'))));
+ assert.equal(new Set(allocated).size,6);assert.ok(allocated.some(n=>n.endsWith('00006')));
+ const rollback=new Error('Rollback allocation');let rolledBack='';
+ await assert.rejects(()=>withTenant(owner,async db=>{rolledBack=await allocateNumber(db,owner,scope,'TEST');throw rollback;}),e=>e===rollback);
+ assert.equal(await withTenant(owner,db=>allocateNumber(db,owner,scope,'TEST')),rolledBack);
+ await assert.rejects(()=>withTenant(owner,async db=>{await db.query('UPDATE number_counters SET last_value=0 WHERE scope=$1',[scope]);await allocateNumber(db,owner,scope,'TEST');}),(e:any)=>e.code==='NUMBER_ALREADY_USED');
+});
+await test('Numbering settings reject a backwards start and retain issued strings',async()=>{
+ const scope='invoices',year=new Date().getFullYear();
+ const prior=await withTenant(owner,db=>one<any>(db,'SELECT * FROM numbering_profiles WHERE scope=$1',[scope]));
+ const counter=await withTenant(owner,db=>one<any>(db,'SELECT last_value FROM number_counters WHERE scope=$1 AND year=$2',[scope,year]));
+ const next=Number(counter?.last_value??0)+10;
+ const configured=await command(owner,'settings.numbering.update',{scope,template:'TEST-{JJJJ}-{NR}',padding:5,annual:true,next,reason:'Synthetischer Umstiegstest mit dokumentiertem vorherigem Stand'},prior);
+ const number=await withTenant(owner,db=>allocateNumber(db,owner,scope,'RE'));assert.ok(number.endsWith(String(next).padStart(5,'0')));
+ await assert.rejects(()=>command(owner,'settings.numbering.update',{scope,template:'NEU-{JJJJ}-{NR}',padding:5,annual:true,next,reason:'Unzulässiger Versuch einer Rücksetzung'},configured),(e:any)=>e.code==='NUMBER_BACKWARDS');
+ const saved=await withTenant(owner,db=>one<any>(db,'SELECT number FROM numbering_allocations WHERE scope=$1 AND number=$2',[scope,number]));assert.equal(saved.number,number);
+});
+await test('Personal onboarding is persisted, optimistic and cannot target another user',async()=>{
+ const prior=await withTenant(owner,db=>one<any>(db,'SELECT * FROM user_onboarding WHERE actor_id=$1',[owner.actorId]));
+ const result=await command(owner,'account.onboarding.update',{status:'deferred',step:2},prior);
+ assert.equal(result.actor_id,owner.actorId);assert.equal(result.step,2);
+ await assert.rejects(()=>command(owner,'account.onboarding.update',{status:'completed',step:2},prior),(e:any)=>e.code==='VERSION_CONFLICT');
+ await assert.rejects(()=>command(owner,'account.onboarding.update',{status:'completed',step:2,actor_id:employee.actorId},result));
+ assert.equal(await withTenant(employee,db=>one(db,'SELECT id FROM user_onboarding WHERE id=$1',[result.id])),null);
 });
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}

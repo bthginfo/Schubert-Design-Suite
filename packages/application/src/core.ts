@@ -1,3 +1,5 @@
+import {allocateNumber as nextNumber} from './numbering-engine.js';
+export {nextNumber};
 import {createHash,randomUUID} from 'node:crypto';
 import {z} from 'zod';
 import {bindLineCosts} from './line-costs.js';
@@ -12,7 +14,7 @@ export type Handler=(r:Runtime)=>Promise<any>;
 const handlers=new Map<string,{permission:string;handler:Handler;system?:boolean}>();
 export function register(name:string,permission:string,handler:Handler){if(handlers.has(name)&&process.env.APP_ENV!=='development')throw new Error('Duplicate command '+name);handlers.set(name,{permission,handler});}
 export function baseData(ctx:ActorContext){return {tenant_id:ctx.tenantId,legal_entity_id:ctx.legalEntityId,created_by:ctx.actorId,updated_by:ctx.actorId};}
-export async function nextNumber(db:DbClient,ctx:ActorContext,scope:string,prefix:string){const year=Number(new Intl.DateTimeFormat('en',{timeZone:'Europe/Berlin',year:'numeric'}).format(new Date()));const counter=await one<any>(db,`INSERT INTO number_counters(tenant_id,legal_entity_id,scope,year,last_value)VALUES($1,$2,$3,$4,1)ON CONFLICT(tenant_id,legal_entity_id,scope,year) DO UPDATE SET last_value=number_counters.last_value+1 WHERE NOT number_counters.locked RETURNING last_value`,[ctx.tenantId,ctx.legalEntityId,scope,year]);requireRule(counter,'NUMBER_CIRCLE_LOCKED','Der Nummernkreis ist bis zum Abgleich gesperrt.');return `${prefix}-${year}-${String(counter.last_value).padStart(5,'0')}`;}
+
 export async function getRecord(db:DbClient,table:string,id:unknown,lock=false){requireRule(typeof id==='string'&&z.uuid().safeParse(id).success,'OBJECT_REQUIRED','Gültigen Datensatz auswählen.');const record=await one<any>(db,`SELECT * FROM ${ident(table)} WHERE id=$1${lock?' FOR UPDATE':''}`,[id]);requireRule(record,'NOT_FOUND','Datensatz ist nicht verfügbar.',404);return record;}
 export async function assertOrderScope(db:DbClient,ctx:ActorContext,orderId:string){if(['Employee','Workshop'].includes(ctx.role)){const assigned=await one(db,"SELECT 1 FROM dispatch_assignments WHERE order_id=$1 AND employee_id=$2 AND status NOT IN('cancelled','deleted') LIMIT 1",[orderId,ctx.employeeId]);requireRule(assigned,'NOT_FOUND','Auftrag ist nicht verfügbar.',404);}}
 async function currentActor(db:DbClient,ctx:ActorContext){if(ctx.actorType==='service')return;const member=await one<any>(db,'SELECT * FROM memberships WHERE user_id=$1 AND active FOR SHARE',[ctx.actorId]);requireRule(member,'SESSION_REVOKED','Zugang wurde entzogen. Neu anmelden.',401);ctx.permissions=[...new Set([...(rolePermissions[member.role]??[]),...(member.permissions??[])])];ctx.role=member.role;ctx.permissionVersion=member.permission_version;ctx.employeeId=member.employee_id;requireRule(member.legal_entity_id===ctx.legalEntityId,'ENTITY_SCOPE','Juristische Einheit ist nicht freigegeben.',403);}

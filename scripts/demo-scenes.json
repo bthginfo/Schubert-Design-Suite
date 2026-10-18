@@ -1,0 +1,530 @@
+{
+  "memorial": {
+    "kind": "memorial",
+    "unit": "mm",
+    "frames": [
+      {
+        "id": "root",
+        "transform": {
+          "position": {
+            "xMm": "0",
+            "yMm": "0",
+            "zMm": "0"
+          },
+          "rotationDeg": {
+            "x": "0",
+            "y": "0",
+            "z": "0"
+          }
+        },
+        "datumLabel": "Planursprung · Höhenbezug noch zu bestätigen",
+        "parentFrameId": null,
+        "sourceObjectId": null
+      }
+    ],
+    "elements": [
+      {
+        "id": "42448ece-712e-4e20-8d43-d2213bbed65d:dimension:width",
+        "kind": "dimension",
+        "mode": "driving",
+        "refs": [
+          {
+            "feature": "width",
+            "elementId": "42448ece-712e-4e20-8d43-d2213bbed65d"
+          }
+        ],
+        "label": "Stele · 800 × 1200 × 160 mm · Breite",
+        "phase": "planned",
+        "locked": false,
+        "offsetMm": "30",
+        "parentId": "root",
+        "measureId": "42448ece-712e-4e20-8d43-d2213bbed65d:width",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "42448ece-712e-4e20-8d43-d2213bbed65d:dimension:height",
+        "kind": "dimension",
+        "mode": "driving",
+        "refs": [
+          {
+            "feature": "height",
+            "elementId": "42448ece-712e-4e20-8d43-d2213bbed65d"
+          }
+        ],
+        "label": "Stele · 800 × 1200 × 160 mm · Höhe / Länge",
+        "phase": "planned",
+        "locked": false,
+        "offsetMm": "30",
+        "parentId": "root",
+        "measureId": "42448ece-712e-4e20-8d43-d2213bbed65d:height",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "42448ece-712e-4e20-8d43-d2213bbed65d",
+        "kind": "stone_piece",
+        "label": "Stele · 800 × 1200 × 160 mm",
+        "phase": "planned",
+        "locked": false,
+        "purpose": "memorial",
+        "parentId": "root",
+        "transform": {
+          "position": {
+            "xMm": "0",
+            "yMm": "0",
+            "zMm": "0"
+          },
+          "rotationDeg": {
+            "x": "90",
+            "y": "0",
+            "z": "0"
+          }
+        },
+        "stockItemId": null,
+        "edgeTreatments": [],
+        "finishedContour": {
+          "holes": [],
+          "outer": [
+            {
+              "to": {
+                "xMm": "800",
+                "yMm": "0"
+              },
+              "from": {
+                "xMm": "0",
+                "yMm": "0"
+              },
+              "kind": "line"
+            },
+            {
+              "to": {
+                "xMm": "800",
+                "yMm": "800"
+              },
+              "from": {
+                "xMm": "800",
+                "yMm": "0"
+              },
+              "kind": "line"
+            },
+            {
+              "to": {
+                "xMm": "0",
+                "yMm": "800"
+              },
+              "from": {
+                "xMm": "800",
+                "yMm": "800"
+              },
+              "kind": "circular_arc",
+              "center": {
+                "xMm": "400",
+                "yMm": "800"
+              },
+              "clockwise": false
+            },
+            {
+              "to": {
+                "xMm": "0",
+                "yMm": "0"
+              },
+              "from": {
+                "xMm": "0",
+                "yMm": "800"
+              },
+              "kind": "line"
+            }
+          ]
+        },
+        "grainDirectionDeg": null,
+        "thicknessMeasureId": "42448ece-712e-4e20-8d43-d2213bbed65d:thickness",
+        "machiningFeatureIds": [],
+        "materialSpecVersionId": "unassigned:material",
+        "sourceEvidenceVersionIds": []
+      }
+    ],
+    "variantId": "demo-variant",
+    "revisionId": "demo-revision",
+    "constraints": [],
+    "precisionMm": "0.01",
+    "measurements": {
+      "42448ece-712e-4e20-8d43-d2213bbed65d:width": {
+        "origin": "manual",
+        "valueMm": "800",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      },
+      "42448ece-712e-4e20-8d43-d2213bbed65d:height": {
+        "origin": "manual",
+        "valueMm": "1200",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      },
+      "42448ece-712e-4e20-8d43-d2213bbed65d:thickness": {
+        "origin": "manual",
+        "valueMm": "160",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      }
+    },
+    "assetManifest": [],
+    "schemaVersion": 1,
+    "coordinateSystem": "right_handed_z_up",
+    "parentRevisionId": null,
+    "planningProjectId": "demo-project",
+    "geometryEngineVersion": "schubert-geometry/1.0.0"
+  },
+  "room_plan": {
+    "kind": "room_plan",
+    "unit": "mm",
+    "frames": [
+      {
+        "id": "root",
+        "transform": {
+          "position": {
+            "xMm": "0",
+            "yMm": "0",
+            "zMm": "0"
+          },
+          "rotationDeg": {
+            "x": "0",
+            "y": "0",
+            "z": "0"
+          }
+        },
+        "datumLabel": "Planursprung · Höhenbezug noch zu bestätigen",
+        "parentFrameId": null,
+        "sourceObjectId": null
+      }
+    ],
+    "elements": [
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664:n0",
+        "kind": "node",
+        "label": "Bad · 4200 × 3200 mm Wandachsen · Knoten 1",
+        "phase": "planned",
+        "point": {
+          "xMm": "0",
+          "yMm": "0",
+          "zMm": "0"
+        },
+        "locked": false,
+        "parentId": "root",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664:n1",
+        "kind": "node",
+        "label": "Bad · 4200 × 3200 mm Wandachsen · Knoten 2",
+        "phase": "planned",
+        "point": {
+          "xMm": "4200",
+          "yMm": "0",
+          "zMm": "0"
+        },
+        "locked": false,
+        "parentId": "root",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664:n2",
+        "kind": "node",
+        "label": "Bad · 4200 × 3200 mm Wandachsen · Knoten 3",
+        "phase": "planned",
+        "point": {
+          "xMm": "4200",
+          "yMm": "3200",
+          "zMm": "0"
+        },
+        "locked": false,
+        "parentId": "root",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664:n3",
+        "kind": "node",
+        "label": "Bad · 4200 × 3200 mm Wandachsen · Knoten 4",
+        "phase": "planned",
+        "point": {
+          "xMm": "0",
+          "yMm": "3200",
+          "zMm": "0"
+        },
+        "locked": false,
+        "parentId": "root",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664:w0",
+        "kind": "wall",
+        "label": "Bad · 4200 × 3200 mm Wandachsen · Wand 1",
+        "phase": "planned",
+        "layers": [],
+        "locked": false,
+        "parentId": "root",
+        "endNodeId": "602faa30-1d4c-419d-96d0-ce4978587664:n1",
+        "joinStyle": "miter",
+        "startNodeId": "602faa30-1d4c-419d-96d0-ce4978587664:n0",
+        "heightMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:wall-height",
+        "coreThicknessMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:wall-core",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664:w1",
+        "kind": "wall",
+        "label": "Bad · 4200 × 3200 mm Wandachsen · Wand 2",
+        "phase": "planned",
+        "layers": [],
+        "locked": false,
+        "parentId": "root",
+        "endNodeId": "602faa30-1d4c-419d-96d0-ce4978587664:n2",
+        "joinStyle": "miter",
+        "startNodeId": "602faa30-1d4c-419d-96d0-ce4978587664:n1",
+        "heightMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:wall-height",
+        "coreThicknessMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:wall-core",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664:w2",
+        "kind": "wall",
+        "label": "Bad · 4200 × 3200 mm Wandachsen · Wand 3",
+        "phase": "planned",
+        "layers": [],
+        "locked": false,
+        "parentId": "root",
+        "endNodeId": "602faa30-1d4c-419d-96d0-ce4978587664:n3",
+        "joinStyle": "miter",
+        "startNodeId": "602faa30-1d4c-419d-96d0-ce4978587664:n2",
+        "heightMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:wall-height",
+        "coreThicknessMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:wall-core",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664:w3",
+        "kind": "wall",
+        "label": "Bad · 4200 × 3200 mm Wandachsen · Wand 4",
+        "phase": "planned",
+        "layers": [],
+        "locked": false,
+        "parentId": "root",
+        "endNodeId": "602faa30-1d4c-419d-96d0-ce4978587664:n0",
+        "joinStyle": "miter",
+        "startNodeId": "602faa30-1d4c-419d-96d0-ce4978587664:n3",
+        "heightMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:wall-height",
+        "coreThicknessMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:wall-core",
+        "sourceEvidenceVersionIds": []
+      },
+      {
+        "id": "602faa30-1d4c-419d-96d0-ce4978587664",
+        "kind": "room",
+        "label": "Bad · 4200 × 3200 mm Wandachsen",
+        "phase": "planned",
+        "locked": false,
+        "roomId": "unassigned:room:602faa30-1d4c-419d-96d0-ce4978587664",
+        "floorId": "unassigned:floor:602faa30-1d4c-419d-96d0-ce4978587664",
+        "boundary": [
+          {
+            "side": "left",
+            "wallId": "602faa30-1d4c-419d-96d0-ce4978587664:w0"
+          },
+          {
+            "side": "left",
+            "wallId": "602faa30-1d4c-419d-96d0-ce4978587664:w1"
+          },
+          {
+            "side": "left",
+            "wallId": "602faa30-1d4c-419d-96d0-ce4978587664:w2"
+          },
+          {
+            "side": "left",
+            "wallId": "602faa30-1d4c-419d-96d0-ce4978587664:w3"
+          }
+        ],
+        "parentId": "root",
+        "floorLayers": [],
+        "sourceEvidenceVersionIds": [],
+        "finishedFloorLevelMeasureId": "602faa30-1d4c-419d-96d0-ce4978587664:floor-level"
+      },
+      {
+        "id": "311a5d78-65d5-498d-bae5-6aba006aefdb",
+        "kind": "opening",
+        "label": "Tür · 900 × 2100 mm",
+        "phase": "planned",
+        "locked": false,
+        "wallId": "602faa30-1d4c-419d-96d0-ce4978587664:w0",
+        "parentId": "root",
+        "hingeSide": "left",
+        "openingType": "door",
+        "widthMeasureId": "311a5d78-65d5-498d-bae5-6aba006aefdb:width",
+        "heightMeasureId": "311a5d78-65d5-498d-bae5-6aba006aefdb:height",
+        "openingDirection": "inward",
+        "sillHeightMeasureId": "311a5d78-65d5-498d-bae5-6aba006aefdb:sill",
+        "offsetAlongWallMeasureId": "311a5d78-65d5-498d-bae5-6aba006aefdb:offset",
+        "sourceEvidenceVersionIds": []
+      }
+    ],
+    "variantId": "demo-variant",
+    "revisionId": "demo-revision",
+    "constraints": [],
+    "precisionMm": "0.01",
+    "measurements": {
+      "311a5d78-65d5-498d-bae5-6aba006aefdb:sill": {
+        "origin": "manual",
+        "valueMm": "0",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      },
+      "311a5d78-65d5-498d-bae5-6aba006aefdb:width": {
+        "origin": "manual",
+        "valueMm": "900",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      },
+      "311a5d78-65d5-498d-bae5-6aba006aefdb:height": {
+        "origin": "manual",
+        "valueMm": "2100",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      },
+      "311a5d78-65d5-498d-bae5-6aba006aefdb:offset": {
+        "origin": "manual",
+        "valueMm": "600",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      },
+      "602faa30-1d4c-419d-96d0-ce4978587664:wall-core": {
+        "origin": "manual",
+        "valueMm": "200",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      },
+      "602faa30-1d4c-419d-96d0-ce4978587664:floor-level": {
+        "origin": "manual",
+        "valueMm": "0",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      },
+      "602faa30-1d4c-419d-96d0-ce4978587664:wall-height": {
+        "origin": "manual",
+        "valueMm": "2600",
+        "semantic": "design_target",
+        "measuredAt": null,
+        "measuredBy": null,
+        "confirmedAt": null,
+        "confirmedBy": null,
+        "isEstimated": false,
+        "reviewStatus": "unreviewed",
+        "tolerancePlusMm": null,
+        "sourceMeasureIds": [],
+        "toleranceMinusMm": null,
+        "evidenceVersionId": null,
+        "measurementMethod": null,
+        "derivedByKernelVersion": null
+      }
+    },
+    "assetManifest": [],
+    "schemaVersion": 1,
+    "coordinateSystem": "right_handed_z_up",
+    "parentRevisionId": null,
+    "planningProjectId": "demo-project",
+    "geometryEngineVersion": "schubert-geometry/1.0.0"
+  }
+}

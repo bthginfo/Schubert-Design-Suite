@@ -1,3 +1,4 @@
+export * from './numbering.js';
 import { Decimal } from 'decimal.js';
 import type { SalesLine } from '@schubert/contracts';
 Decimal.set({precision:40,rounding:Decimal.ROUND_HALF_UP});
@@ -26,6 +27,7 @@ export const rolePermissions:Record<string,string[]>={
  Finance:['catalog.read','crm','billing','billing.invoice.issue','finance','purchasing','documents','reports','time','tasks'],
  Planner:['reports.read','orders','planning','catalog','documents','time','tasks'],Dispatcher:['reports.read','documents','orders','dispatch','time','time.approve','tasks'],Workshop:['documents','orders','inventory','time','tasks'],Employee:['documents','orders','time','tasks'],HR:['hr','time','time.approve','tasks'],TaxAdvisor:['finance.read','reports','documents','time'],TechAdmin:['system','admin.technical'],Portal:[]};
 rolePermissions.SuperAdmin=[...new Set([...rolePermissions.Owner,'hr','admin.technical','admin.integrations'])];
+for(const [role,permissions] of Object.entries(rolePermissions))if(role!=='Portal')permissions.push('account.self');
 for(const permissions of Object.values(rolePermissions))if(permissions.includes('documents')||permissions.includes('hr'))permissions.push('documents.upload');
 export function assertPermission(permissions:string[],permission:string){requireRule(permissions.includes(permission),'FORBIDDEN','Für diesen Vorgang fehlt die Berechtigung.',403);}
 export function assertVersion(actual:number,expected?:number){requireRule(expected!==undefined&&actual===expected,'VERSION_CONFLICT','Der Datensatz wurde inzwischen geändert. Aktuellen Stand laden und Änderungen prüfen.',409);}

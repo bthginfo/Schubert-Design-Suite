@@ -214,7 +214,7 @@ add('processing_purposes',{document_id:'uuid',party_id:'uuid',purpose:'text',leg
 add('retention_policies',{approved_at:'timestamptz',content_hash:'text',responsible_person:'text',source_reference:'text',previous_version_id:'uuid'});
 add('legal_holds',{released_by:'text',release_reason:'text'});
 add('deletion_tombstones',{entity_id:'uuid',related_ids:'uuid[]',deletion_job_id:'uuid',independent_proof:'jsonb'});
-add('ai_runs',{source_document_ids:'uuid[]'});add('ai_proposals',{ai_run_id:'uuid'});
+add('ai_runs',{source_document_ids:'uuid[]',task_type:'text',usage_details:'jsonb',pricing_snapshot:'jsonb',cost_basis:'text'});add('ai_proposals',{ai_run_id:'uuid'});
 
 add('invoices',{planned_transmission_date:'date',recipient_regime:'text',retention_policy_id:'uuid'});add('legal_entities',{previous_year_turnover:'numeric(20,2)',turnover_year:'integer'});
 
@@ -241,3 +241,9 @@ add('mail_delivery_evidence',{outgoing_message_id:'uuid',job_id:'uuid',outcome:'
 
 add('inventory_count_observations',{line_id:'uuid',quantity:'numeric(20,6)',actor_id:'text',observed_at:'timestamptz'});
 add('inventory_count_lines',{resolved_observation_id:'uuid'});
+
+add('user_onboarding',{actor_id:'text NOT NULL',step:'integer NOT NULL DEFAULT 0',guide_version:'integer NOT NULL DEFAULT 1'});add('legal_entities',{training_mode:'boolean NOT NULL DEFAULT false'});
+
+add('numbering_profiles',{scope:'text NOT NULL',template:'text NOT NULL',padding:'integer NOT NULL',annual:'boolean NOT NULL DEFAULT true'});
+
+add('demo_datasets',{records:'jsonb',coverage:'jsonb',dataset_version:'integer NOT NULL DEFAULT 1'});

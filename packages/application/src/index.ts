@@ -1,3 +1,5 @@
+import './numbering-settings.js';
+import './onboarding.js';
 import './billing-profiles.js';
 import './drive-import.js';
 import './migration-cutover.js';
