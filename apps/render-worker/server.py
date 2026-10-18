@@ -63,7 +63,7 @@ def check_request(data,load_assets=True):
     fail(re.fullmatch(r'[0-9]{1,15}', str(data.get('fencingToken', ''))) is not None, 'JOB_FENCE', 'Monotones Fencingtoken fehlt.')
     fail(data.get('profile') in ('preview', 'final'), 'PROFILE', 'Renderprofil fehlt.')
     fail(data.get('generatorVersion') == VERSION, 'GENERATOR_VERSION', 'Rendererversion stimmt nicht mit dem Auftrag überein.')
-    fail(data.get('sceneAdapterVersion','schubert-scene/1.0.3')=='schubert-scene/1.0.3','SCENE_ADAPTER_VERSION','Die eingefrorene Szeneversion wird von diesem Worker nicht unterstützt.')
+    fail(data.get('sceneAdapterVersion','schubert-scene/1.0.3') in ('schubert-scene/1.0.3','schubert-scene/1.0.4'),'SCENE_ADAPTER_VERSION','Die eingefrorene Szeneversion wird von diesem Worker nicht unterstützt.')
     canonical = data.get('canonicalSnapshot', '')
     fail(isinstance(canonical, str) and digest(canonical) == data.get('contentHash'), 'REVISION_HASH', 'Kanonischer Revisionsinhalt wurde verändert.')
     try: snapshot = json.loads(canonical)

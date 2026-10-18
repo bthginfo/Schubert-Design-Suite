@@ -2,7 +2,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf
 import fontkit from '@pdf-lib/fontkit';
 import {planningFontBase64}from'./planning-fonts.js';
 import type { DesignSnapshot } from '@schubert/contracts';
-import { calculateBOM, projectDesign, measureValue, validateDesign,contourParts, type DesignView, type ViewShape } from '@schubert/geometry';
+import { calculateBOM, projectDesign, projectDimensions, layoutDimension, measureValue, validateDesign,contourParts, type DesignView, type ViewShape } from '@schubert/geometry';
 
 export type PlanningPdfMeta = {
   title: string; revision: string; status: string; audience?: 'internal' | 'customer' | 'supplier';
@@ -45,7 +45,7 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
   function newPage(title:string,size:[number,number]=A4,scale='—'){
     const page=pdf.addPage(size);pages.push({page,scale,title});const w=size[0],h=size[1];
     draw(page,'SCHUBERT',36,h-42,15,green);draw(page,'PLANUNGSSTUDIO',36,h-58,8,muted);
-    draw(page,title,180,h-42,15);draw(page,meta.title,180,h-59,10,muted);
+    draw(page,title,180,h-42,15);const shortTitle=wrap(meta.title,10,w-216)[0]??'';draw(page,shortTitle+(shortTitle.length<meta.title.length?' …':''),180,h-59,10,muted);
     page.drawLine({start:{x:36,y:h-75},end:{x:w-36,y:h-75},thickness:0.7,color:line});
     draw(page,`${status} · ${{internal:'Intern',customer:'Kunde',supplier:'Lieferant'}[meta.audience??'internal']} · Revision ${meta.revision}`,36,h-94,9,muted);
     return page;
@@ -53,6 +53,7 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
   function stroke(page:PDFPage,shape:ViewShape,scale:number,origin:{x:number;y:number},bounds:{minX:number;minY:number}){
     if(shape.points.length<2)return;
     const point=(p:{xMm:string;yMm:string})=>({x:origin.x+(Number(p.xMm)-bounds.minX)*PT_PER_MM/scale,y:origin.y+(Number(p.yMm)-bounds.minY)*PT_PER_MM/scale});
+    if(shape.erase){page.drawSvgPath(shape.points.map((p,i)=>{const at=point(p);return(i?'L':'M')+at.x+' '+(-at.y);}).join(' ')+' Z',{color:rgb(1,1,1),borderColor:rgb(1,1,1),borderWidth:1.4});return;}
     for(const ring of [shape.points,...shape.holes])for(let i=0;i<ring.length-(shape.closed?0:1);i++){
       const a=point(ring[i]),b=point(ring[(i+1)%ring.length]);
       page.drawLine({start:a,end:b,thickness:shape.secondary?0.35:shape.kind==='opening'?1.3:0.65,color:shape.kind==='opening'?green:ink,
@@ -62,12 +63,22 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
   const names:Record<DesignView,string>={front:'Vorderansicht',side:'Seitenansicht',top:'Grundriss / Draufsicht'};
   for(const view of (snapshot.kind==='memorial'?['front','side','top']:['top','front','side']) as DesignView[]){
     const projected=projectDesign(snapshot,view),b=projected.bounds;
-    const scale=[1,2,5,10,20,25,50,100,200,500,1000].find(s=>b.width*PT_PER_MM/s<950&&b.height*PT_PER_MM/s<540)??Math.ceil(Math.max(b.width/300,b.height/180)/10)*10;
+    const scale=[1,2,5,10,20,25,50,100,200,500,1000].find(s=>b.width*PT_PER_MM/s<950&&b.height*PT_PER_MM/s<480)??Math.ceil(Math.max(b.width/300,b.height/160)/10)*10;
     const page=newPage(names[view],A3,`1:${scale}`),drawWidth=b.width*PT_PER_MM/scale,drawHeight=b.height*PT_PER_MM/scale;
-    const origin={x:Math.max(90,(A3[0]-drawWidth)/2),y:Math.max(155,(A3[1]-drawHeight)/2-15)};
+    const origin={x:Math.max(90,(A3[0]-drawWidth)/2),y:Math.max(200,(A3[1]-drawHeight)/2-15)};
     projected.shapes.forEach(s=>stroke(page,s,scale,origin,b));
+    for(const dimension of projectDimensions(snapshot,view)){
+      const d=layoutDimension(dimension,14*scale/PT_PER_MM),factor=PT_PER_MM/scale;
+      const p=(x:number,y:number)=>({x:origin.x+(x-b.minX)*factor,y:origin.y+(y-b.minY)*factor});
+      const a=p(d.a.x,d.a.y),end=p(d.b.x,d.b.y),at=p(d.label.x,d.label.y);
+      if(Math.hypot(end.x-a.x,end.y-a.y)<45)continue;
+      for(const [start,finish] of [[p(Number(dimension.a.xMm),Number(dimension.a.yMm)),a],[a,end],[end,p(Number(dimension.b.xMm),Number(dimension.b.yMm))]])page.drawLine({start,end:finish,thickness:.4,color:muted});
+      for(const q of [a,end])page.drawLine({start:{x:q.x-2,y:q.y-2},end:{x:q.x+2,y:q.y+2},thickness:.7,color:green});
+      const text=Number(dimension.valueMm).toLocaleString('de-DE',{maximumFractionDigits:2})+(dimension.label.endsWith('Wandachse')?' · Achse':'');
+      const labelWidth=width(text,8);page.drawRectangle({x:at.x-labelWidth/2-2,y:at.y+2,width:labelWidth+4,height:11,color:rgb(1,1,1)});draw(page,text,at.x-labelWidth/2,at.y+4,8,green);
+    }
     projected.texts.forEach((entry,index)=>{const x=origin.x+(Number(entry.point.xMm)-b.minX)*PT_PER_MM/scale,y=origin.y+(Number(entry.point.yMm)-b.minY)*PT_PER_MM/scale;page.drawCircle({x,y,size:6,borderColor:green,borderWidth:.6,color:rgb(1,1,1)});draw(page,String(index+1),x-2,y-3,8,green);});
-    const x0=origin.x,x1=x0+drawWidth,y0=origin.y,y1=y0+drawHeight,offset=25;
+    const x0=origin.x,x1=x0+drawWidth,y0=origin.y,y1=y0+drawHeight,offset=45;
     page.drawLine({start:{x:x0,y:y0-offset},end:{x:x1,y:y0-offset},thickness:.5,color:muted});
     for(const x of [x0,x1]){page.drawLine({start:{x,y:y0-5},end:{x,y:y0-offset-5},thickness:.4,color:muted});page.drawLine({start:{x:x-3,y:y0-offset-3},end:{x:x+3,y:y0-offset+3},thickness:.7,color:ink});}
     draw(page,`${b.width.toLocaleString('de-DE',{maximumFractionDigits:2})} mm · geometrisches Außenmaß`,x0+Math.max(0,(drawWidth-220)/2),y0-offset-15,9);
@@ -78,7 +89,7 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
     page.drawLine({start:{x:barX,y:barY},end:{x:barX+40,y:barY},thickness:2,color:ink});
     for(const x of [barX,barX+40])page.drawLine({start:{x,y:barY-4},end:{x,y:barY+4},thickness:1,color:ink});
     draw(page,`${barMm.toLocaleString('de-DE',{maximumFractionDigits:2})} mm · Maßstab 1:${scale}`,barX,barY-18,9);
-    label(page,'Maßhaltige Bauteilgeometrie. Schrift wird hier nicht durch ähnliche Zeichensätze ersetzt. Wörtlicher Text und Herstellerreferenz stehen im Inschriftenplan. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.',310,110,10,800);
+    label(page,'Maße in mm; „Achse“ bezeichnet die Wandachse, kein lichtes Raummaß. Planmaße sind kein bestätigtes Aufmaß. Schrift wird hier nicht durch ähnliche Zeichensätze ersetzt. Wörtlicher Text und Herstellerreferenz stehen im Inschriftenplan. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.',310,110,10,800);
     label(page,`Höhenbezug: ${snapshot.frames.map(f=>f.datumLabel).join(' · ')}`,45,70,9,A3[0]-90,muted);
   }
   let page=newPage('Stück- und Bearbeitungsliste'),y=A4[1]-125;

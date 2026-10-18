@@ -8,7 +8,7 @@ import {privateBytes,readPrivate,callWorker} from '@schubert/adapters';
 import {validateDesign,worldMatrix,surfaceMatrix,worldPoint,measureValue,roomContour,multiplyMatrix,transformMatrix,IDENTITY_TRANSFORM,hasAssetUsage,wallCoreEnds,wallCoreMesh,wallLayerMeshes,layerSlices,withThroughCutouts,miterCut,machiningDepth,mm,wallJoinConsistencyIssues} from '@schubert/geometry';
 import {canonical,hash,getRecord} from './core.js';
 import {assertDocumentAccess} from './document-access.js';
-export const RENDER_SCENE_VERSION='schubert-scene/1.0.3';
+export const RENDER_SCENE_VERSION='schubert-scene/1.0.4';
 
 /** The worker never receives storage credentials, a mutable catalogue or a remote URL. */
 export async function buildRenderRequest(ctx:ActorContext,revision:any,job:any){

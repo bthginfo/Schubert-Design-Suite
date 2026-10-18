@@ -13,6 +13,17 @@ it('moves one actual shared wall and its door while both room boundaries follow'
  const before=twoRooms(),next=applyOperations(before,[{type:'move_element',elementId:'shared',delta:{xMm:'100',yMm:'0',zMm:'0'}}]);expect(next.elements.filter(e=>e.kind==='wall')).toHaveLength(7);expect(contourAreaMm2(roomContour(next,'left')!)).toBe('6300000');expect(contourAreaMm2(roomContour(next,'right')!)).toBe('5700000');
  const door=next.elements.find(e=>e.id==='door');expect(door?.kind==='opening'&&doorSwingContour(next,door)?.outer[0].from.xMm).toBe('2100');expect(validateDesign(next).blocking).toEqual([]);expect(worldPoint(before,'b').xMm).toBe('2000');
 });
+it('draws known through-openings over wall fills irrespective of insertion order',()=>{
+ const s=twoRooms();s.elements.reverse();const top=projectDesign(s,'top'),gap=top.shapes.find(p=>p.elementId==='door'&&p.erase);
+ expect(gap?.points).toEqual([{xMm:'2100',yMm:'600'},{xMm:'2100',yMm:'1500'},{xMm:'1900',yMm:'1500'},{xMm:'1900',yMm:'600'}]);
+ expect(top.shapes.indexOf(gap!)).toBeGreaterThan(top.shapes.findLastIndex(p=>p.kind==='wall'));expect(top.shapes.filter(p=>p.label.endsWith('Laibung'))).toHaveLength(2);
+ expect(projectDesign(s,'front').shapes.some(p=>p.erase)).toBe(false);
+ s.measurements.doorH.valueMm=null;expect(projectDesign(s,'top').shapes.some(p=>p.erase)).toBe(false);
+});
+it('does not draw a partial-depth niche as a through-opening',()=>{
+ const s=twoRooms(),door=s.elements.find(e=>e.id==='door');if(door?.kind!=='opening')throw Error('door');door.openingType='recess';door.recessDepthMeasureId='depth';door.recessSide='left';s.measurements.depth=targetMeasure('60');
+ expect(projectDesign(s,'top').shapes.some(p=>p.erase)).toBe(false);
+});
 it('edits a complete boundary atomically and restores it through semantic undo',()=>{
  const before=twoRooms(),room=before.elements.find(e=>e.id==='right');if(room?.kind!=='room')throw Error('room');const op:DesignOperation={type:'set_room_spec',elementId:room.id,boundary:[...room.boundary.slice(1),room.boundary[0]]},next=applyOperations(before,[op]),undone=applyOperations(next,inverseOperations(before,[op])!);expect(undone.elements.find(e=>e.id===room.id)).toEqual(room);expect(()=>applyOperations(before,[{...op,boundary:room.boundary.slice(0,3)}])).toThrow('nicht geschlossen');
  const duplicate=structuredClone(before),other=duplicate.elements.find(e=>e.id==='right');if(other?.kind==='room')other.boundary=structuredClone((before.elements.find(e=>e.id==='left')as Extract<DesignElement,{kind:'room'}>).boundary);expect(validateDesign(duplicate).blocking.join()).toContain('dieselbe Wandseite');

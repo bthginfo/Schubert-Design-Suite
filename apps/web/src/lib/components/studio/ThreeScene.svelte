@@ -7,9 +7,10 @@
   import type { Contour,DesignSnapshot,Point3 } from '@schubert/contracts';
   import { sampleRing,measureValue,worldMatrix,surfaceMatrix,worldPoint,toRenderer,roomContour,hasAssetUsage,wallCoreMesh,wallLayerMeshes,layerSlices,contourParts,withThroughCutouts,stoneDepthSlices,hostMachining,miterCut } from '@schubert/geometry';
   import{clipSolid}from'./clip-solid.ts';
+  import {fitPerspectiveBounds} from './camera-fit.ts';
   import type{CameraCommand}from'./camera-navigation.ts';
   let {snapshot,resetKey=0,assets=[],glyphs=[],cameraCommand=null,onzoomchange=()=>{}}:{snapshot:DesignSnapshot;resetKey?:number;assets?:any[];glyphs?:any[];cameraCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void}=$props();
-  const context=useThrelte();let mounted=$state(false),controls:OrbitControls|undefined;
+  const context=useThrelte(),{size}=context;let mounted=$state(false),controls:OrbitControls|undefined;
   const root=new THREE.Group(),camera=new THREE.PerspectiveCamera(38,1,.01,10000);
   let fitted=false,lastReset=-1,generation=0;const downloads=new Set<AbortController>();
   let fittedDistance=1,lastCommand:CameraCommand|null=null;
@@ -21,7 +22,7 @@
     else if(command.action==='zoom_in'||command.action==='zoom_out'){offset.setLength(THREE.MathUtils.clamp(distance*(command.action==='zoom_in'?.8:1.25),fittedDistance*.05,fittedDistance*20));camera.position.copy(controls.target).add(offset);}
     else if(command.action==='front'||command.action==='side'||command.action==='top'){offset.copy(command.action==='front'?new THREE.Vector3(0,0,1):command.action==='side'?new THREE.Vector3(1,0,0):new THREE.Vector3(0,1,.0001)).setLength(distance);camera.position.copy(controls.target).add(offset);}
     else{const spherical=new THREE.Spherical().setFromVector3(offset),step=Math.PI/12;spherical.theta+=command.action==='left'?step:command.action==='right'?-step:0;spherical.phi=THREE.MathUtils.clamp(spherical.phi+(command.action==='up'?-step:command.action==='down'?step:0),.015,Math.PI-.015);camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(spherical));}
-    controls.update();cameraChanged();
+    controls.update();if(['front','side','top'].includes(command.action))fitCamera();else cameraChanged();
   }
   const C=new THREE.Matrix4().set(1,0,0,0,0,0,1,0,0,-1,0,0,0,0,0,1);
   function disposeObject(child:THREE.Object3D){child.traverse(object=>{const o=object as THREE.Mesh;if(o.geometry)o.geometry.dispose();if(o.material){for(const material of Array.isArray(o.material)?o.material:[o.material]){for(const value of Object.values(material))if(value instanceof THREE.Texture)value.dispose();material.dispose();}}});}
@@ -33,7 +34,7 @@
     try{const response=await fetch(`/api/v1/documents/${asset.document_id}/download?version=${asset.document_version_id}`,{signal:controller.signal});if(!response.ok)throw new Error('Private Originaldatei ist nicht verfügbar.');const bytes=await response.arrayBuffer();const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(b=>b.toString(16).padStart(2,'0')).join('');if(digest!==asset.content_hash)throw new Error('Originaldatei hat einen abweichenden Inhalt.');
       const gltf=await new GLTFLoader().parseAsync(bytes,'');if(sequence!==generation){disposeObject(gltf.scene);return;}
       const up=sourceAxis(asset.source_up_axis),forward=sourceAxis(asset.source_forward_axis),right=new THREE.Vector3().crossVectors(forward,up),factor=asset.source_unit==='mm'?.001:1;
-      const basis=new THREE.Matrix4().set(right.x*factor,right.y*factor,right.z*factor,0,forward.x*factor,forward.y*factor,forward.z*factor,0,up.x*factor,up.y*factor,up.z*factor,0,0,0,0,1),group=new THREE.Group();group.matrixAutoUpdate=false;group.matrix.copy(C).multiply(matrixFor(element.id)).multiply(basis);group.add(gltf.scene);root.add(group);for(const item of placeholder){root.remove(item);disposeObject(item);}context.invalidate();
+      const basis=new THREE.Matrix4().set(right.x*factor,right.y*factor,right.z*factor,0,forward.x*factor,forward.y*factor,forward.z*factor,0,up.x*factor,up.y*factor,up.z*factor,0,0,0,0,1),group=new THREE.Group();group.matrixAutoUpdate=false;group.matrix.copy(C).multiply(matrixFor(element.id)).multiply(basis);group.add(gltf.scene);root.add(group);for(const item of placeholder){root.remove(item);disposeObject(item);}fitCamera();context.invalidate();
     }catch(error){if(!controller.signal.aborted)console.warn('Das geprüfte Originalmodell konnte nicht geladen werden; die gekennzeichnete Hülle bleibt sichtbar.');}finally{downloads.delete(controller);}
   }
   function shapeFor(contour:Contour){return contourParts(contour).map(part=>{const shape=new THREE.Shape(sampleRing(part.outer).map(p=>new THREE.Vector2(Number(p.xMm)/1000,Number(p.yMm)/1000)));for(const hole of part.holes)shape.holes.push(new THREE.Path(sampleRing(hole).map(p=>new THREE.Vector2(Number(p.xMm)/1000,Number(p.yMm)/1000))));return shape;});}
@@ -68,11 +69,20 @@
       }
       if(e.kind==='clearance')addGeometry(new THREE.ShapeGeometry(shapeFor(e.contour)),matrixFor(e.id),0xb5ab76,true);
     }
-    if(!fitted||lastReset!==resetKey){const box=new THREE.Box3().setFromObject(root);if(!box.isEmpty()){const center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()),distance=Math.max(size.x,size.y,size.z,.5)*1.8;camera.position.copy(center).add(new THREE.Vector3(distance*.8,distance*.7,distance));camera.near=Math.max(.001,distance/1000);camera.far=Math.max(100,distance*100);camera.updateProjectionMatrix();fittedDistance=camera.position.distanceTo(center);if(controls){controls.minDistance=fittedDistance*.05;controls.maxDistance=fittedDistance*20;controls.target.copy(center);controls.update();}cameraChanged();}fitted=true;lastReset=resetKey;}
+    if(!fitted){fitCamera(true);fitted=true;}
     context.invalidate();
   }
+  function fitCamera(resetDirection=false){
+    const box=new THREE.Box3().setFromObject(root);if(box.isEmpty()||!controls)return;
+    const direction=resetDirection?new THREE.Vector3(.8,.7,1):camera.position.clone().sub(controls.target);
+    camera.aspect=Math.max(1,size.current.width)/Math.max(1,size.current.height);
+    fittedDistance=fitPerspectiveBounds(camera,box,direction);controls.target.copy(box.getCenter(new THREE.Vector3()));
+    controls.minDistance=fittedDistance*.05;controls.maxDistance=fittedDistance*20;controls.update();cameraChanged();
+  }
+  $effect(()=>{const {width,height}=$size;if(mounted&&width>0&&height>0&&fitted)fitCamera();});
   onMount(()=>{context.scene.add(root);context.scene.background=new THREE.Color(0xf4f4ef);const ambient=new THREE.HemisphereLight(0xffffff,0x7d8576,2.7),sun=new THREE.DirectionalLight(0xfff8ec,3);sun.position.set(3,6,4);context.scene.add(ambient,sun);controls=new OrbitControls(camera,context.renderer.domElement);controls.enableDamping=false;controls.addEventListener('change',cameraChanged);mounted=true;return()=>{mounted=false;dispose();controls?.dispose();context.scene.remove(root,ambient,sun);};});
-  $effect(()=>{snapshot;resetKey;assets;glyphs;if(mounted)rebuild();});
+  $effect(()=>{snapshot;assets;glyphs;if(mounted)rebuild();});
+  $effect(()=>{const reset=resetKey;if(mounted&&reset!==lastReset){fitCamera(true);lastReset=reset;}});
   $effect(()=>{if(mounted&&cameraCommand&&cameraCommand!==lastCommand){lastCommand=cameraCommand;navigate(cameraCommand);}});
 </script>
 <T is={camera} makeDefault/>

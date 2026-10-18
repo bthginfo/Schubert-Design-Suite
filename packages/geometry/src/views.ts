@@ -6,10 +6,10 @@ import { measureValue } from './model.js';
 import { applyMatrix, worldMatrix, surfaceMatrix, worldPoint } from './transforms.js';
 import { roomContour } from './validation.js';
 import {calibrateReference,sourcePointToMm}from'./references.js';
-import{doorSwingContour}from'./openings.js';
+import{doorSwingContour,openingPlanGap}from'./openings.js';
 
 export type DesignView = 'top' | 'front' | 'side';
-export type ViewShape = { elementId: string; label: string; kind: string; points: Point2[]; holes: Point2[][]; closed: boolean; secondary?: boolean; estimated?: boolean };
+export type ViewShape = { elementId: string; label: string; kind: string; points: Point2[]; holes: Point2[][]; closed: boolean; secondary?: boolean; estimated?: boolean; erase?:boolean };
 export type ProjectedDesign = { shapes: ViewShape[]; texts: Array<{ elementId: string; point: Point2; text: string; referenceOnly: boolean }>;
   bounds: { minX: number; minY: number; maxX: number; maxY: number; width: number; height: number } };
 export function projectPoint(point: Point3, view: DesignView): Point2 {
@@ -40,20 +40,35 @@ export function projectDesign(snapshot: DesignSnapshot, view: DesignView = snaps
       const start=point(Number(offset),Number(sill??0)),end=point(Number(offset)+Number(width),Number(sill??0));
       const points=view==='top'?[start,end]:height===null?[start,end]:[start,end,{...end,zMm:mm(Number(end.zMm)+Number(height))},{...start,zMm:mm(Number(start.zMm)+Number(height))}];
       shapes.push({elementId:element.id,label:element.label,kind:element.kind,points:points.map(p=>projectPoint(p,view)),holes:[],closed:points.length>2,estimated:height===null||sill===null});
-      if(view==='top'){const swing=doorSwingContour(snapshot,element);if(swing)shapes.push({elementId:element.id,label:element.label+' · Schwenkbereich',kind:'opening',points:sampleRing(swing.outer),holes:[],closed:true,secondary:true});}
+      if(view==='top'){
+        const gap=openingPlanGap(snapshot,element);if(gap){const points=gap.outer.map(e=>e.from);shapes.push({elementId:element.id,label:element.label+' · Öffnungssymbol',kind:'opening',points,holes:[],closed:true,secondary:true,erase:true});for(const ends of [[points[0],points[3]],[points[1],points[2]]])shapes.push({elementId:element.id,label:element.label+' · Laibung',kind:'opening',points:ends,holes:[],closed:false});}
+        const swing=doorSwingContour(snapshot,element);if(swing)shapes.push({elementId:element.id,label:element.label+' · Schwenkbereich',kind:'opening',points:sampleRing(swing.outer),holes:[],closed:true,secondary:true});
+      }
     }
     if (contour) {
       let matrix = surfaceMatrix(snapshot, element.id);
       if (element.kind === 'machining') matrix = surfaceMatrix(snapshot, element.hostElementId);
       const project = (points: Point2[], zMm='0') => points.map(p=>projectPoint(applyMatrix({...p,zMm},matrix),view));
-      for(const part of contourParts(contour)){const base = sampleRing(part.outer);
-      shapes.push({ elementId: element.id, label: element.label, kind: element.kind, points: project(base), holes: part.holes.map(h=>project(sampleRing(h))), closed:true });
+      for(const part of contourParts(contour)){const base = sampleRing(part.outer),front=project(base);
+      // An edge-on curved face is a line, not a stack of sampling facets.
+      const area=front.reduce((sum,p,i)=>{const q=front[(i+1)%front.length];return sum+Number(p.xMm)*Number(q.yMm)-Number(q.xMm)*Number(p.yMm);},0);
+      const edgeOn=element.kind==='stone_piece'&&Math.abs(area)<.01;
+      const extent=(axis:'xMm'|'yMm',sign:number)=>base.reduce((best,p,i)=>sign*Number(front[i][axis])>sign*Number(front[best][axis])?i:best,0);
+      const extremes=[extent('xMm',-1),extent('xMm',1),extent('yMm',-1),extent('yMm',1)];
+      const xSpan=Number(front[extremes[1]].xMm)-Number(front[extremes[0]].xMm),ySpan=Number(front[extremes[3]].yMm)-Number(front[extremes[2]].yMm);
+      const silhouette=(xSpan>ySpan?extremes.slice(0,2):extremes.slice(2)).map(i=>base[i]);
+      shapes.push({ elementId: element.id, label: element.label, kind: element.kind, points: edgeOn?project(silhouette):front, holes: edgeOn?[]:part.holes.map(h=>project(sampleRing(h))), closed:!edgeOn });
       if (element.kind === 'stone_piece') {
         const thickness = measureValue(snapshot,element.thicknessMeasureId);
         if (thickness !== null) {
           const z = mm(new D(thickness).negated());
-          shapes.push({elementId:element.id,label:element.label,kind:element.kind,points:project(base,z),holes:[],closed:true,secondary:true});
-          for (const p of base) shapes.push({elementId:element.id,label:element.label,kind:element.kind,points:[project([p])[0],project([p],z)[0]],holes:[],closed:false,secondary:true});
+          const back=project(edgeOn?silhouette:base,z),delta=Math.hypot(Number(back[0].xMm)-Number(project(edgeOn?silhouette:base)[0].xMm),Number(back[0].yMm)-Number(project(edgeOn?silhouette:base)[0].yMm));
+          if(delta>.005){
+            shapes.push({elementId:element.id,label:element.label,kind:element.kind,points:back,holes:[],closed:!edgeOn,secondary:!edgeOn});
+            const connectors=edgeOn?silhouette:[...part.outer.map(e=>e.from),...extremes.map(i=>base[i])];
+            const seen=new Set<string>();
+            for (const p of connectors){const points=[project([p])[0],project([p],z)[0]],key=JSON.stringify(points);if(seen.has(key))continue;seen.add(key);shapes.push({elementId:element.id,label:element.label,kind:element.kind,points,holes:[],closed:false,secondary:!edgeOn});}
+          }
         }
       }
       }
@@ -67,6 +82,8 @@ export function projectDesign(snapshot: DesignSnapshot, view: DesignView = snaps
     }
     if (element.kind === 'technical_note') texts.push({elementId:element.id,point:projectPoint(applyMatrix(element.point,worldMatrix(snapshot,element.parentId)),view),text:element.text,referenceOnly:false});
   }
+  // Draw opening conventions over wall/room fills, independent of insertion order.
+  if(view==='top')shapes.sort((a,b)=>(a.kind==='opening'?(a.erase?1:2):0)-(b.kind==='opening'?(b.erase?1:2):0));
   const all=shapes.flatMap(s=>s.points), xs=all.map(p=>Number(p.xMm)),ys=all.map(p=>Number(p.yMm));
   const minX=xs.length?Math.min(...xs):0,minY=ys.length?Math.min(...ys):0,maxX=xs.length?Math.max(...xs):1000,maxY=ys.length?Math.max(...ys):1000;
   return {shapes,texts,bounds:{minX,minY,maxX,maxY,width:Math.max(1,maxX-minX),height:Math.max(1,maxY-minY)}};
@@ -79,6 +96,6 @@ export function scaledDrawingSize(widthMm: string, heightMm: string, scale=20): 
 export function renderTechnicalSvg(snapshot: DesignSnapshot, view:DesignView=snapshot.kind==='memorial'?'front':'top', scale=20): string {
   const model=projectDesign(snapshot,view),b=model.bounds,size=scaledDrawingSize(String(b.width),String(b.height),scale);
   const path=(points:Point2[],closed:boolean)=>points.map((p,i)=>`${i?'L':'M'}${p.xMm},${mm(new D(p.yMm).negated())}`).join(' ')+(closed?' Z':'');
-  const shapes=model.shapes.filter(s=>s.points.length>1).map(s=>`<path data-element-id="${escapeXml(s.elementId)}" d="${path(s.points,s.closed)} ${s.holes.map(h=>path(h,true)).join(' ')}" fill="${s.kind==='room'?'#f6f5f2':s.kind==='clearance'?'none':s.closed&&!s.secondary?'#eceeea':'none'}" fill-rule="evenodd" stroke="${s.kind==='opening'?'#315c4c':'#202522'}" stroke-width="${scale*0.25}"${s.secondary||s.estimated||s.kind==='clearance'?' stroke-dasharray="'+scale*1.5+' '+scale+'"':''}><title>${escapeXml(s.label)}</title></path>`).join('');
+  const shapes=model.shapes.filter(s=>s.points.length>1).map(s=>`<path data-element-id="${escapeXml(s.elementId)}" d="${path(s.points,s.closed)} ${s.holes.map(h=>path(h,true)).join(' ')}" fill="${s.erase?'#ffffff':s.kind==='room'?'#f6f5f2':s.kind==='clearance'?'none':s.closed&&!s.secondary?'#eceeea':'none'}" fill-rule="evenodd" stroke="${s.erase?'#ffffff':s.kind==='opening'?'#315c4c':'#202522'}" stroke-width="${scale*(s.erase?.5:.25)}"${!s.erase&&(s.secondary||s.estimated||s.kind==='clearance')?' stroke-dasharray="'+scale*1.5+' '+scale+'"':''}><title>${escapeXml(s.label)}</title></path>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.widthMm}mm" height="${size.heightMm}mm" viewBox="${b.minX} ${-b.maxY} ${b.width} ${b.height}" role="img" aria-label="${escapeXml(view)} · Revision ${escapeXml(snapshot.revisionId)} · 1:${scale}"><metadata>Revision ${escapeXml(snapshot.revisionId)}; Kernel ${escapeXml(snapshot.geometryEngineVersion)}; mm; 1:${scale}. Inschrifttext separat: keine Ersatzglyphen oder Bohrschablone.</metadata>${shapes}</svg>`;
 }

@@ -1,0 +1,309 @@
+{
+  "date": "2026-10-18",
+  "syntheticData": true,
+  "nativeRenders": [
+    {
+      "kind": "memorial",
+      "revision": "fcda0a05-3d6a-4a70-8764-15adf70b1300",
+      "sourceHash": "2086395e9968a0a1e726dab55e98b42065da91922721e40bba532f5de8730523",
+      "width": 3840,
+      "height": 2880,
+      "beautySha256": "dc348750f8aa8e1dbccd52c75d766b0b8da3cf4c199d9e3304dccdf0c3162534",
+      "maskSha256": "c5ce3183c8b693b98a2ca2c233d98b73c46b53fbdc85eb27408bee7e07dc8be0",
+      "pdfSha256": "ea550423c8280d55fd7b7e748cca96d451b50269fa6b77d516f0f663e005d94c",
+      "sceneAdapterVersion": "schubert-scene/1.0.4",
+      "protectedElements": 0,
+      "emptyMaskVerified": true,
+      "renderOrigin": "local Blender 4.5.14 LTS",
+      "appearance": "neutral material; no approved physical slab texture supplied"
+    },
+    {
+      "kind": "room_plan",
+      "revision": "5f13191d-435c-4b7c-925c-e64691357ee8",
+      "sourceHash": "35b2b2018c6e8897f16b9be066ceab6467186b96fa7306c41273b560ea16f0df",
+      "width": 3840,
+      "height": 2880,
+      "beautySha256": "02380ebb7faaec670a04deeeb8f64f92b217918529091be512a4855dae27a259",
+      "maskSha256": "f023b6c81b999930d0a5973ca851e2c156e07fd57a9ec08aa6ee48c09694b79d",
+      "pdfSha256": "5dcb658a8adfabbd41992a84a5e8aa4e165e9f272b64f6d73d0f0c5556c9604a",
+      "sceneAdapterVersion": "schubert-scene/1.0.4",
+      "protectedElements": 0,
+      "emptyMaskVerified": true,
+      "renderOrigin": "local Blender 4.5.14 LTS",
+      "appearance": "neutral material; no approved physical slab texture supplied"
+    }
+  ],
+  "maskPassRecheck": [
+    {
+      "kind": "memorial",
+      "beautyUnchanged": true,
+      "rendererSourceSha256": "e2b197a47e6c132b640985e905b027a14f24cf4f5bb59a1c8edc8ecef0c4cdbe",
+      "maskOnlyRecheck": true
+    },
+    {
+      "kind": "room_plan",
+      "beautyUnchanged": true,
+      "rendererSourceSha256": "e2b197a47e6c132b640985e905b027a14f24cf4f5bb59a1c8edc8ecef0c4cdbe",
+      "maskOnlyRecheck": true
+    }
+  ],
+  "database": [
+    {
+      "kind": "memorial",
+      "revisionId": "fcda0a05-3d6a-4a70-8764-15adf70b1300",
+      "contentHash": "2086395e9968a0a1e726dab55e98b42065da91922721e40bba532f5de8730523",
+      "geometryPersisted": true,
+      "elementCount": 3,
+      "dimensions": [
+        {
+          "valueMm": "800",
+          "basis": "target"
+        },
+        {
+          "valueMm": "1200",
+          "basis": "target"
+        }
+      ],
+      "bom": {
+        "revisionId": "fcda0a05-3d6a-4a70-8764-15adf70b1300",
+        "geometryEngineVersion": "schubert-geometry/1.0.0",
+        "lines": [
+          {
+            "id": "bom:42448ece-712e-4e20-8d43-d2213bbed65d",
+            "elementId": "42448ece-712e-4e20-8d43-d2213bbed65d",
+            "label": "Stele · 800 × 1200 × 160 mm",
+            "category": "Natursteinbauteil",
+            "quantity": "1",
+            "unit": "Stk",
+            "materialSpecVersionId": "unassigned:material",
+            "productVariantVersionId": null,
+            "grossAreaM2": "0.89132741",
+            "netAreaM2": "0.89132741",
+            "edgeLengthM": "0",
+            "thicknessMm": "160",
+            "volumeM3": "0.14261239",
+            "notes": [
+              "Netto = Fertigkontur abzüglich ausdrücklich modellierter Durchausschnitte. Kein pauschaler Verschnitt oder Gewicht angenommen.",
+              "Umfang inkl. Ausschnitte: 3.65663706 m",
+              "Konkrete Rohplatte/Charge offen."
+            ]
+          }
+        ],
+        "totals": {
+          "pieces": "1",
+          "stoneNetAreaM2": "0.89132741",
+          "treatedEdgeLengthM": "0",
+          "stoneVolumeM3": "0.14261239",
+          "unresolvedVolumeCount": 0
+        },
+        "validation": {
+          "blocking": [],
+          "warnings": [
+            "„Stele · 800 × 1200 × 160 mm · Breite“: Breite ist noch nicht festgelegt.",
+            "„Stele · 800 × 1200 × 160 mm · Höhe / Länge“: Höhen- / Längenmaß ist noch nicht festgelegt.",
+            "„Stele · 800 × 1200 × 160 mm“: konkrete Materialversion fehlt.",
+            "„Stele · 800 × 1200 × 160 mm“: Stärke ist noch nicht festgelegt.",
+            "„Stele · 800 × 1200 × 160 mm“: vorgesehenes Rohmaß oder konkrete Rohplatte und Zuschnittbezug sind noch offen."
+          ]
+        }
+      },
+      "warnings": [
+        "„Stele · 800 × 1200 × 160 mm · Breite“: Breite ist noch nicht festgelegt.",
+        "„Stele · 800 × 1200 × 160 mm · Höhe / Länge“: Höhen- / Längenmaß ist noch nicht festgelegt.",
+        "„Stele · 800 × 1200 × 160 mm“: konkrete Materialversion fehlt.",
+        "„Stele · 800 × 1200 × 160 mm“: Stärke ist noch nicht festgelegt.",
+        "„Stele · 800 × 1200 × 160 mm“: vorgesehenes Rohmaß oder konkrete Rohplatte und Zuschnittbezug sind noch offen."
+      ]
+    },
+    {
+      "kind": "room_plan",
+      "revisionId": "5f13191d-435c-4b7c-925c-e64691357ee8",
+      "contentHash": "35b2b2018c6e8897f16b9be066ceab6467186b96fa7306c41273b560ea16f0df",
+      "geometryPersisted": true,
+      "elementCount": 10,
+      "dimensions": [
+        {
+          "valueMm": "4200",
+          "basis": "reference"
+        },
+        {
+          "valueMm": "3200",
+          "basis": "reference"
+        },
+        {
+          "valueMm": "4200",
+          "basis": "reference"
+        },
+        {
+          "valueMm": "3200",
+          "basis": "reference"
+        }
+      ],
+      "bom": {
+        "revisionId": "5f13191d-435c-4b7c-925c-e64691357ee8",
+        "geometryEngineVersion": "schubert-geometry/1.0.0",
+        "lines": [
+          {
+            "id": "bom:602faa30-1d4c-419d-96d0-ce4978587664:w0",
+            "elementId": "602faa30-1d4c-419d-96d0-ce4978587664:w0",
+            "label": "Bad · 4200 × 3200 mm Wandachsen · Wand 1",
+            "category": "Wand",
+            "quantity": "4.2",
+            "unit": "m",
+            "materialSpecVersionId": null,
+            "productVariantVersionId": null,
+            "grossAreaM2": "10.92",
+            "netAreaM2": "9.03",
+            "edgeLengthM": null,
+            "thicknessMm": "200",
+            "volumeM3": "1.806",
+            "notes": [
+              "Projektionsfläche je Wandseite; expliziter Abzug von Türen, Fenstern und Durchgängen. Keine erfundene Abrechnungsnorm.",
+              "Kernvolumen aus der ausdrücklich gewählten geschlossenen Anschlussgeometrie; Nischen nur mit tatsächlicher Tiefe abgezogen."
+            ]
+          },
+          {
+            "id": "bom:602faa30-1d4c-419d-96d0-ce4978587664:w1",
+            "elementId": "602faa30-1d4c-419d-96d0-ce4978587664:w1",
+            "label": "Bad · 4200 × 3200 mm Wandachsen · Wand 2",
+            "category": "Wand",
+            "quantity": "3.2",
+            "unit": "m",
+            "materialSpecVersionId": null,
+            "productVariantVersionId": null,
+            "grossAreaM2": "8.32",
+            "netAreaM2": "8.32",
+            "edgeLengthM": null,
+            "thicknessMm": "200",
+            "volumeM3": "1.664",
+            "notes": [
+              "Projektionsfläche je Wandseite; expliziter Abzug von Türen, Fenstern und Durchgängen. Keine erfundene Abrechnungsnorm.",
+              "Kernvolumen aus der ausdrücklich gewählten geschlossenen Anschlussgeometrie; Nischen nur mit tatsächlicher Tiefe abgezogen."
+            ]
+          },
+          {
+            "id": "bom:602faa30-1d4c-419d-96d0-ce4978587664:w2",
+            "elementId": "602faa30-1d4c-419d-96d0-ce4978587664:w2",
+            "label": "Bad · 4200 × 3200 mm Wandachsen · Wand 3",
+            "category": "Wand",
+            "quantity": "4.2",
+            "unit": "m",
+            "materialSpecVersionId": null,
+            "productVariantVersionId": null,
+            "grossAreaM2": "10.92",
+            "netAreaM2": "10.92",
+            "edgeLengthM": null,
+            "thicknessMm": "200",
+            "volumeM3": "2.184",
+            "notes": [
+              "Projektionsfläche je Wandseite; expliziter Abzug von Türen, Fenstern und Durchgängen. Keine erfundene Abrechnungsnorm.",
+              "Kernvolumen aus der ausdrücklich gewählten geschlossenen Anschlussgeometrie; Nischen nur mit tatsächlicher Tiefe abgezogen."
+            ]
+          },
+          {
+            "id": "bom:602faa30-1d4c-419d-96d0-ce4978587664:w3",
+            "elementId": "602faa30-1d4c-419d-96d0-ce4978587664:w3",
+            "label": "Bad · 4200 × 3200 mm Wandachsen · Wand 4",
+            "category": "Wand",
+            "quantity": "3.2",
+            "unit": "m",
+            "materialSpecVersionId": null,
+            "productVariantVersionId": null,
+            "grossAreaM2": "8.32",
+            "netAreaM2": "8.32",
+            "edgeLengthM": null,
+            "thicknessMm": "200",
+            "volumeM3": "1.664",
+            "notes": [
+              "Projektionsfläche je Wandseite; expliziter Abzug von Türen, Fenstern und Durchgängen. Keine erfundene Abrechnungsnorm.",
+              "Kernvolumen aus der ausdrücklich gewählten geschlossenen Anschlussgeometrie; Nischen nur mit tatsächlicher Tiefe abgezogen."
+            ]
+          },
+          {
+            "id": "bom:602faa30-1d4c-419d-96d0-ce4978587664",
+            "elementId": "602faa30-1d4c-419d-96d0-ce4978587664",
+            "label": "Bad · 4200 × 3200 mm Wandachsen",
+            "category": "Raumfläche",
+            "quantity": "13.44",
+            "unit": "m²",
+            "materialSpecVersionId": null,
+            "productVariantVersionId": null,
+            "grossAreaM2": "13.44",
+            "netAreaM2": "13.44",
+            "edgeLengthM": "14.8",
+            "thicknessMm": null,
+            "volumeM3": null,
+            "notes": [
+              "Raumgrenze aus gemeinsam referenzierten Wandachsen; lichte Maße separat bestätigen."
+            ]
+          }
+        ],
+        "totals": {
+          "pieces": "0",
+          "stoneNetAreaM2": "0",
+          "treatedEdgeLengthM": "0",
+          "stoneVolumeM3": "0",
+          "unresolvedVolumeCount": 0
+        },
+        "validation": {
+          "blocking": [],
+          "warnings": [
+            "„Bad · 4200 × 3200 mm Wandachsen · Wand 1“: Dieses Maß ist noch nicht festgelegt.",
+            "„Bad · 4200 × 3200 mm Wandachsen · Wand 2“: Dieses Maß ist noch nicht festgelegt.",
+            "„Bad · 4200 × 3200 mm Wandachsen · Wand 3“: Dieses Maß ist noch nicht festgelegt.",
+            "„Bad · 4200 × 3200 mm Wandachsen · Wand 4“: Dieses Maß ist noch nicht festgelegt.",
+            "„Bad · 4200 × 3200 mm Wandachsen“: Dieses Maß ist noch nicht festgelegt.",
+            "„Tür · 900 × 2100 mm“: Breite ist noch nicht festgelegt.",
+            "„Tür · 900 × 2100 mm“: Höhen- / Längenmaß ist noch nicht festgelegt.",
+            "„Tür · 900 × 2100 mm“: Abstand ist noch nicht festgelegt.",
+            "„Tür · 900 × 2100 mm“: Dieses Maß ist noch nicht festgelegt."
+          ]
+        }
+      },
+      "warnings": [
+        "„Bad · 4200 × 3200 mm Wandachsen · Wand 1“: Dieses Maß ist noch nicht festgelegt.",
+        "„Bad · 4200 × 3200 mm Wandachsen · Wand 2“: Dieses Maß ist noch nicht festgelegt.",
+        "„Bad · 4200 × 3200 mm Wandachsen · Wand 3“: Dieses Maß ist noch nicht festgelegt.",
+        "„Bad · 4200 × 3200 mm Wandachsen · Wand 4“: Dieses Maß ist noch nicht festgelegt.",
+        "„Bad · 4200 × 3200 mm Wandachsen“: Dieses Maß ist noch nicht festgelegt.",
+        "„Tür · 900 × 2100 mm“: Breite ist noch nicht festgelegt.",
+        "„Tür · 900 × 2100 mm“: Höhen- / Längenmaß ist noch nicht festgelegt.",
+        "„Tür · 900 × 2100 mm“: Abstand ist noch nicht festgelegt.",
+        "„Tür · 900 × 2100 mm“: Dieses Maß ist noch nicht festgelegt."
+      ]
+    }
+  ],
+  "projectionBrowser": {
+    "cases": [
+      {
+        "kind": "memorial",
+        "revision": "fcda0a05-3d6a-4a70-8764-15adf70b1300",
+        "pdfBytes": 21658,
+        "views": 3
+      },
+      {
+        "kind": "room_plan",
+        "revision": "5f13191d-435c-4b7c-925c-e64691357ee8",
+        "pdfBytes": 22538,
+        "views": 3
+      }
+    ],
+    "errors": []
+  },
+  "pdf": [
+    {
+      "kind": "memorial",
+      "pages": 5,
+      "escapedText": [],
+      "axisLabel": true,
+      "textCharacters": 3395
+    },
+    {
+      "kind": "room_plan",
+      "pages": 5,
+      "escapedText": [],
+      "axisLabel": true,
+      "textCharacters": 4003
+    }
+  ]
+}

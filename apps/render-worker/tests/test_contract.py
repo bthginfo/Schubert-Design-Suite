@@ -12,6 +12,13 @@ class WorkerContract(unittest.TestCase):
         data=self.request();server.check_request(data);data['snapshot']['revisionId']='revision5'
         with self.assertRaises(server.RenderError) as result:server.check_request(data)
         self.assertEqual(result.exception.code,'SNAPSHOT_CONTRACT')
+    def test_scene_versions_preserve_legacy_replay_and_reject_unknown_lighting(self):
+        data=self.request()
+        for version in ('schubert-scene/1.0.3','schubert-scene/1.0.4'):
+            data['sceneAdapterVersion']=version;server.check_request(data)
+        data['sceneAdapterVersion']='schubert-scene/9'
+        with self.assertRaises(server.RenderError) as result:server.check_request(data)
+        self.assertEqual(result.exception.code,'SCENE_ADAPTER_VERSION')
     def test_unlicensed_exact_glyphs_are_blocked(self):
         data=self.request();data['geometry']['glyphs']=[{'renderingBasis':'shop_image_reference','placements':[]}]
         with self.assertRaises(server.RenderError) as result:server.check_request(data)

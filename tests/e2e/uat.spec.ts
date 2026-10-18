@@ -164,6 +164,7 @@ for(const kind of ['Raum','Stele'])test('Studio '+kind+': saved geometry, views,
   await page.getByRole('button',{name:'Vergrößern',exact:true}).click();await expect(svg).not.toHaveAttribute('viewBox',original!);
   await page.getByRole('button',{name:'Einpassen',exact:true}).click();await expect(svg).toHaveAttribute('viewBox',original!);
   await page.getByRole('button',{name:'3D',exact:true}).click();await expect(page.locator('.three-stage canvas')).toBeVisible({timeout:45000});
+  await page.locator('.camera-disclosure summary').click();
   await page.getByRole('button',{name:'Kamera nach links drehen',exact:true}).click();
   await page.getByRole('button',{name:'Front',exact:true}).click();await expect(svg).toBeVisible();
   await expect(page.locator('.revision-chip')).toHaveText(revision);

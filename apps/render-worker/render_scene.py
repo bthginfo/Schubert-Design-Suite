@@ -54,7 +54,7 @@ def material(name,color,metallic=0,roughness=.52):
     p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*color,1);p.inputs['Metallic'].default_value=metallic;p.inputs['Roughness'].default_value=roughness
     return m
 
-stone=material('Neutral stone appearance; physical slab variation unconfirmed',(.36,.35,.32),0,.48)
+stone=material('Neutral stone appearance; physical slab variation unconfirmed',(.18,.185,.18) if request.get('sceneAdapterVersion')=='schubert-scene/1.0.4' else (.36,.35,.32),0,.48)
 wall=material('Neutral mineral finish',(.75,.75,.70),0,.72)
 metal=material('Neutral metal appearance',(.33,.23,.11),.72,.32)
 envelope=material('Verified bounding envelope only',(.10,.24,.18),0,.7)
@@ -173,8 +173,18 @@ from bpy_extras.object_utils import world_to_camera_view
 normalized=[world_to_camera_view(scene,camera,corner) for corner in corners]
 if any(p.x<.02 or p.x>.98 or p.y<.02 or p.y>.98 for p in normalized):raise ValueError('Actual canonical geometry does not fit the frozen camera bounds')
 
-world=bpy.data.worlds.new('Frozen neutral studio world');scene.world=world;world.use_nodes=True;world.node_tree.nodes['Background'].inputs['Color'].default_value=(.88,.90,.91,1);world.node_tree.nodes['Background'].inputs['Strength'].default_value=.45
-for name,offset,power,size in [('Key',(-1,-2,3),120,2.5),('Fill',(2,-1,1),60,2),('Rim',(0,2,2),85,1.8)]:
+scene_version=request.get('sceneAdapterVersion','schubert-scene/1.0.3')
+studio_v2=scene_version=='schubert-scene/1.0.4'
+world=bpy.data.worlds.new('Frozen neutral studio world');scene.world=world;world.use_nodes=True
+background=world.node_tree.nodes['Background'];background.inputs['Color'].default_value=(.88,.90,.91,1);background.inputs['Strength'].default_value=.18 if studio_v2 else .45
+if studio_v2:
+    # A light camera backdrop must not flatten the actual surface illumination.
+    # No texture, bevel, ground geometry or material claim is added to the model.
+    camera_background=world.node_tree.nodes.new('ShaderNodeBackground');camera_background.inputs['Color'].default_value=(1,1,1,1);camera_background.inputs['Strength'].default_value=4
+    ray=world.node_tree.nodes.new('ShaderNodeLightPath');mix=world.node_tree.nodes.new('ShaderNodeMixShader')
+    world.node_tree.links.new(ray.outputs['Is Camera Ray'],mix.inputs[0]);world.node_tree.links.new(background.outputs[0],mix.inputs[1]);world.node_tree.links.new(camera_background.outputs[0],mix.inputs[2]);world.node_tree.links.new(mix.outputs[0],world.node_tree.nodes['World Output'].inputs['Surface'])
+lights=[('Key',(-1,-2,3),300,2.5),('Fill',(2,-1,1),50,2),('Rim',(0,2,2),200,1.8)] if studio_v2 else [('Key',(-1,-2,3),120,2.5),('Fill',(2,-1,1),60,2),('Rim',(0,2,2),85,1.8)]
+for name,offset,power,size in lights:
     light_data=bpy.data.lights.new(name,'AREA');light_data.energy=power*extent*extent;light_data.shape='DISK';light_data.size=size*extent
     light=bpy.data.objects.new(name,light_data);scene.collection.objects.link(light);light.location=center+Vector(offset)*extent;light.rotation_euler=(center-light.location).to_track_quat('-Z','Y').to_euler()
 
@@ -192,15 +202,20 @@ black,white=mask_material('Unprotected pixels',(0,0,0)),mask_material('Protected
 for obj in objects:
     if obj.type=='MESH':obj.data.materials.clear();obj.data.materials.append(white if obj in protected else black)
 world.node_tree.nodes['Background'].inputs['Color'].default_value=(0,0,0,1);world.node_tree.nodes['Background'].inputs['Strength'].default_value=0
-scene.view_settings.view_transform='Standard';scene.cycles.samples=1;scene.cycles.use_denoising=False;scene.render.filepath=str(source.parent/'protected.png');bpy.ops.render.render(write_still=True)
+world.node_tree.links.new(background.outputs[0],world.node_tree.nodes['World Output'].inputs['Surface'])
+scene.view_settings.view_transform='Standard';scene.cycles.samples=1;scene.cycles.use_denoising=False
+# Beauty dithering would turn black mask pixels into 1/255 noise. Any nonzero
+# mask pixel is deliberately protected by the compositor, including edge coverage.
+if studio_v2:scene.render.dither_intensity=0
+scene.render.filepath=str(source.parent/'protected.png');bpy.ops.render.render(write_still=True)
 manifest={
-    'generatorVersion':request['generatorVersion'],'sceneAdapterVersion':'schubert-scene/1.0.3',
+    'generatorVersion':request['generatorVersion'],'sceneAdapterVersion':scene_version,
     'blenderVersion':bpy.app.version_string,'geometryEngineVersion':request['snapshot']['geometryEngineVersion'],
     'revisionId':request['snapshot']['revisionId'],'contentHash':request['contentHash'],'profile':request['profile'],
     'unit':'mm','coordinateSystem':'right_handed_z_up','renderOriginMm':render_origin_mm,
     'tessellationChordErrorMm':str(chord_error),'numericWeldErrorBudgetMm':str(chord_error/2),
     'camera':{'location':list(camera.location),'rotationEuler':list(camera.rotation_euler),'projection':'ORTHO','scaleM':camera_data.ortho_scale,'framingVersion':'projected-bounds/1'},
-    'lightingVersion':'neutral-studio/1','wallUnionVersion':'shared-node-solids/2',
+    'lightingVersion':'neutral-studio/2' if studio_v2 else 'neutral-studio/1','wallUnionVersion':'shared-node-solids/2',
     'machiningVersion':'front-back-wedges/1','materialStackVersion':'oriented-stacks/1',
     'samples':8 if request['profile']=='preview' else 16,'seed':27419,
     'assetVersions':[{'id':a['assetVersionId'],'contentHash':a['contentHash'],'sourceHash':a['sourceHash']} for a in assets.values()],

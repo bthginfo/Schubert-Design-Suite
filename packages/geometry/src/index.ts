@@ -17,3 +17,4 @@ export * from './layers.js';
 export * from './openings.js';
 export * from './snapping.js';
 export * from './selection.js';
+export * from './dimensions.js';
