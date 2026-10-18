@@ -12,7 +12,8 @@ Full scope: docs/master-specification.md. Empty upstream repository inspected. D
 | 5 Memorial studio | Implemented and exercised | Geometry, exact revision packages, renderer and source provenance |
 | 6 Room studio | Implemented and exercised | Shared topology, openings, source import, product dimensions, Undo |
 | 7 Assistant and analytics | Implemented and exercised on production | Budget/context tests, actual report snapshots and private exports |
-| 8 Deployment and acceptance | Deployed and technically verified | Production schema36; additive onboarding, usage, numbering and training manifest tables; actual AI/queue/private archive/backup/offline checks |
+| 8 Deployment and acceptance | Deployed and technically verified | Production schema39; additive onboarding, usage, numbering, feedback, personal appearance and training manifest tables; actual AI/queue/private archive/backup/offline checks |
 | 9 Guided training and usage visibility | Implemented and checked | 246 unit tests, 21 PostgreSQL integration checks, browser coverage for personal onboarding, contextual help, monthly AI usage and real number allocation; explicit operator-run test dataset |
+| 10 Test feedback and personal appearance | Implemented and checked | 260 unit tests, 29 PostgreSQL integration checks, 20 complete browser flows; private feedback with SuperAdmin triage/export, personal palettes and light/dark/device modes with actual-color previews; see docs/qa/personal-appearance-2026-10-18.md |
 
 Missing operational inputs are tracked in docs/operations/configuration.md. They block their dependent live operation only. No financial, legal, supplier or manufacturing approval may be fabricated.

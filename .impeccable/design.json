@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T11:16:09.527Z",
+  "title": "Design System: SCHUBERT Design Suite",
+  "extensions": {
+    "colorMeta": {
+      "forest": {
+        "role": "primary",
+        "displayName": "Waldgrün / Mintgrün"
+      },
+      "forest-dark": {
+        "role": "primary",
+        "displayName": "Waldgrün / Mintgrün · Hover"
+      },
+      "ocean": {
+        "role": "primary",
+        "displayName": "Ozeanblau / Hellblau"
+      },
+      "ocean-hover": {
+        "role": "primary",
+        "displayName": "Ozeanblau / Hellblau · Hover"
+      },
+      "violet": {
+        "role": "primary",
+        "displayName": "Violett / Flieder"
+      },
+      "violet-hover": {
+        "role": "primary",
+        "displayName": "Violett / Flieder · Hover"
+      },
+      "rose": {
+        "role": "primary",
+        "displayName": "Beere / Rosé"
+      },
+      "rose-hover": {
+        "role": "primary",
+        "displayName": "Beere / Rosé · Hover"
+      },
+      "clay": {
+        "role": "primary",
+        "displayName": "Terrakotta / Apricot"
+      },
+      "clay-hover": {
+        "role": "primary",
+        "displayName": "Terrakotta / Apricot · Hover"
+      },
+      "slate": {
+        "role": "primary",
+        "displayName": "Graphit / Silbergrau"
+      },
+      "slate-hover": {
+        "role": "primary",
+        "displayName": "Graphit / Silbergrau · Hover"
+      },
+      "on-accent": {
+        "role": "neutral",
+        "displayName": "Text auf Akzent"
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Arbeitsfläche"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Bedienfläche"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Primärer Text"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Sekundärer Text"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Konturen und Trennlinien"
+      },
+      "wash": {
+        "role": "neutral",
+        "displayName": "Zurückgesetzte Fläche"
+      },
+      "bronze": {
+        "role": "neutral",
+        "displayName": "Bestehender Bronze-Akzent"
+      },
+      "danger": {
+        "role": "neutral",
+        "displayName": "Fehlertext"
+      },
+      "danger-wash": {
+        "role": "neutral",
+        "displayName": "Fehlerfläche"
+      },
+      "warning": {
+        "role": "neutral",
+        "displayName": "Warntext"
+      },
+      "warning-wash": {
+        "role": "neutral",
+        "displayName": "Warnfläche"
+      },
+      "success": {
+        "role": "neutral",
+        "displayName": "Erfolgstext"
+      },
+      "success-wash": {
+        "role": "neutral",
+        "displayName": "Erfolgsfläche"
+      },
+      "accent-wash": {
+        "role": "primary",
+        "displayName": "Zurückgenommene Auswahlfläche · Schubert-Standard"
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Seitenüberschrift",
+        "purpose": "Bestehende Überschrift im Seitenkopf; mobil 28px."
+      },
+      "title": {
+        "displayName": "Panelüberschrift",
+        "purpose": "Bestehender Titel im regulären Panelkopf."
+      },
+      "body": {
+        "displayName": "Grundschrift",
+        "purpose": "Tatsächlicher Grundwert der globalen Kaskade."
+      },
+      "body-copy": {
+        "displayName": "Erklärender Text",
+        "purpose": "Seitenbeschreibungen, Einführung und Darstellungseinstellungen."
+      },
+      "label": {
+        "displayName": "Beschriftung",
+        "purpose": "Reguläre Formularbeschriftungen."
+      },
+      "button": {
+        "displayName": "Schaltflächentext",
+        "purpose": "Reguläre Desktop-Schaltflächen mit eigener Zeilenhöhe."
+      },
+      "mobile-field": {
+        "displayName": "Mobile Eingabe",
+        "purpose": "Bestehende lesbare Eingabegröße auf kleinen Bildschirmen."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sidebar-overlay",
+        "value": "0 16px 55px #26342814",
+        "purpose": "Bestehendes --shadow für die eingeblendete mobile Seitennavigation."
+      },
+      {
+        "name": "modal-overlay",
+        "value": "0 25px 120px #0d201c4d",
+        "purpose": "Bestehender Dialogschatten; keine reguläre Karten-Erhebung."
+      },
+      {
+        "name": "input-focus",
+        "value": "0 0 0 3px #315c4c0d",
+        "purpose": "Bestehender zusätzlicher Fokusschatten an Formularfeldern; die sichtbare Fokuslinie verwendet den semantischen Akzent."
+      },
+      {
+        "name": "studio-active-view",
+        "value": "0 1px 3px #233f2820",
+        "purpose": "Bestehende aktive Ansichtsoption des Studios."
+      }
+    ],
+    "motion": [
+      {
+        "name": "button-state",
+        "value": "background .15s, transform .15s",
+        "purpose": "Bestehender Übergang von regulären Schaltflächen."
+      },
+      {
+        "name": "navigation-state",
+        "value": "background .15s, color .15s",
+        "purpose": "Bestehender Übergang der Seitennavigation."
+      },
+      {
+        "name": "mobile-sidebar",
+        "value": "transform .2s",
+        "purpose": "Bestehendes Einblenden der mobilen Seitennavigation."
+      },
+      {
+        "name": "reduced-motion",
+        "value": ".01ms",
+        "purpose": "Bestehende globale Begrenzung von Animation und Transition bei prefers-reduced-motion: reduce; keine zusätzliche Theme-Animation."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "desktop-compact",
+        "value": "1200px"
+      },
+      {
+        "name": "content-single-column",
+        "value": "1000px"
+      },
+      {
+        "name": "app-mobile",
+        "value": "760px"
+      },
+      {
+        "name": "appearance-compact",
+        "value": "650px"
+      },
+      {
+        "name": "studio-inspector-below",
+        "value": "1020px"
+      },
+      {
+        "name": "studio-mobile",
+        "value": "720px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primäraktion",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Bestehende reguläre Schaltfläche mit Hover, sichtbarem Fokus und aktivem Zustand. Mindesthöhe Desktop 44px, mobil 48px.",
+      "html": "<button type=\"button\" class=\"ds-btn-primary\">Darstellung speichern</button>",
+      "css": ".ds-btn-primary{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 16px;border:1px solid var(--forest,#315c4c);background:var(--forest,#315c4c);color:var(--on-accent,#fff);border-radius:8px;font:500 13px/1.4 Inter,sans-serif;letter-spacing:-.01em;cursor:pointer;white-space:nowrap;transition:background .15s,transform .15s}.ds-btn-primary:hover:not(:disabled){background:var(--forest-dark,#244638);border-color:var(--forest-dark,#244638)}.ds-btn-primary:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn-primary:active:not(:disabled){transform:translateY(1px)}.ds-btn-primary:disabled{cursor:not-allowed;opacity:.5}@media(max-width:760px){.ds-btn-primary{min-height:48px;font-size:14px;padding:12px 16px;white-space:normal}}"
+    },
+    {
+      "name": "Sekundäraktion",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Bestehende reguläre Schaltfläche mit Hover, sichtbarem Fokus und aktivem Zustand. Mindesthöhe Desktop 44px, mobil 48px.",
+      "html": "<button type=\"button\" class=\"ds-btn-secondary\">Zurück</button>",
+      "css": ".ds-btn-secondary{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 16px;border:1px solid var(--line,#dfe3de);background:var(--paper,#fff);color:var(--ink,#202522);border-radius:8px;font:500 13px/1.4 Inter,sans-serif;letter-spacing:-.01em;cursor:pointer;white-space:nowrap;transition:background .15s,transform .15s}.ds-btn-secondary:hover:not(:disabled){background:var(--wash,#eeefea);border-color:var(--line,#dfe3de)}.ds-btn-secondary:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn-secondary:active:not(:disabled){transform:translateY(1px)}.ds-btn-secondary:disabled{cursor:not-allowed;opacity:.5}@media(max-width:760px){.ds-btn-secondary{min-height:48px;font-size:14px;padding:12px 16px;white-space:normal}}"
+    },
+    {
+      "name": "Ghost-Aktion",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Bestehende reguläre Schaltfläche mit Hover, sichtbarem Fokus und aktivem Zustand. Mindesthöhe Desktop 44px, mobil 48px.",
+      "html": "<button type=\"button\" class=\"ds-btn-ghost\">Abbrechen</button>",
+      "css": ".ds-btn-ghost{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 16px;border:1px solid transparent;background:transparent;color:var(--ink,#202522);border-radius:8px;font:500 13px/1.4 Inter,sans-serif;letter-spacing:-.01em;cursor:pointer;white-space:nowrap;transition:background .15s,transform .15s}.ds-btn-ghost:hover:not(:disabled){background:var(--wash,#eeefea);border-color:var(--line,#dfe3de)}.ds-btn-ghost:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn-ghost:active:not(:disabled){transform:translateY(1px)}.ds-btn-ghost:disabled{cursor:not-allowed;opacity:.5}@media(max-width:760px){.ds-btn-ghost{min-height:48px;font-size:14px;padding:12px 16px;white-space:normal}}"
+    },
+    {
+      "name": "Gefahrenaktion",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Bestehende reguläre Schaltfläche mit Hover, sichtbarem Fokus und aktivem Zustand. Mindesthöhe Desktop 44px, mobil 48px.",
+      "html": "<button type=\"button\" class=\"ds-btn-danger\">Löschen</button>",
+      "css": ".ds-btn-danger{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 16px;border:1px solid var(--line,#dfe3de);background:var(--danger-wash,#fff0ed);color:var(--danger,#993c35);border-radius:8px;font:500 13px/1.4 Inter,sans-serif;letter-spacing:-.01em;cursor:pointer;white-space:nowrap;transition:background .15s,transform .15s}.ds-btn-danger:hover:not(:disabled){background:var(--wash,#eeefea);border-color:var(--line,#dfe3de)}.ds-btn-danger:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn-danger:active:not(:disabled){transform:translateY(1px)}.ds-btn-danger:disabled{cursor:not-allowed;opacity:.5}@media(max-width:760px){.ds-btn-danger{min-height:48px;font-size:14px;padding:12px 16px;white-space:normal}}"
+    },
+    {
+      "name": "Beschriftetes Eingabefeld",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Bestehendes Formularfeld; sichtbares Label, semantischer Platzhalter und Fokus. Kein zusätzlicher Laufzeitcode erforderlich.",
+      "html": "<label class=\"ds-field\"><span>Bezeichnung</span><input type=\"text\" placeholder=\"Bezeichnung eingeben\"/><small>Bitte eine eindeutige Bezeichnung verwenden.</small></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;min-width:0;color:var(--ink,#202522);font:500 13px/1.55 Inter,sans-serif;letter-spacing:-.01em}.ds-field input{box-sizing:border-box;width:100%;min-height:46px;border:1px solid var(--line,#dfe3de);background:var(--paper,#fff);padding:12px 13px;border-radius:8px;color:var(--ink,#202522);font:400 14px/1.55 Inter,sans-serif;caret-color:var(--forest,#315c4c);transition:border-color .15s,box-shadow .15s}.ds-field input::placeholder{color:var(--muted,#58625b);opacity:1}.ds-field input:hover{border-color:var(--line,#dfe3de)}.ds-field input:focus{border-color:var(--line,#dfe3de);box-shadow:0 0 0 3px #315c4c0d}.ds-field input:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-field input[aria-invalid=true]{border-color:var(--danger,#993c35)}.ds-field small{color:var(--muted,#58625b);font-size:12px;line-height:1.65;font-weight:400;max-width:70ch}@media(max-width:760px){.ds-field{font-size:14px}.ds-field input{font-size:16px;min-height:48px}.ds-field small{font-size:13px}}"
+    },
+    {
+      "name": "Aktive Seitennavigation",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Aktiver Eintrag im persönlichen Arbeitsbereich, einschließlich Akzentkontrast für das bestehende Symbol.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Arbeitsbereiche\"><a class=\"ds-nav-item\" href=\"#appearance\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 3-1 3-3 1-2 4 2 3v4l4 2 3-2 3 2 4-2v-4l2-3-2-4-3-1-1-3zM16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0\"></path></svg><span>Meine Einstellungen</span></a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:5px;background:var(--wash,#eeefea);padding:17px}.ds-nav-item{box-sizing:border-box;display:flex;align-items:center;gap:12px;min-height:45px;padding:11px 15px;border-radius:8px;background:var(--forest,#315c4c);color:var(--on-accent,#fff);font:600 13px/1.55 Inter,sans-serif;letter-spacing:-.01em;text-decoration:none;transition:background .15s,color .15s}.ds-nav-item:hover{background:var(--forest,#315c4c)}.ds-nav-item:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-nav-item svg{flex:none;color:var(--on-accent,#fff)}@media(max-width:760px){.ds-nav-item{font-size:14px;min-height:48px}}"
+    },
+    {
+      "name": "Erfolgsstatus",
+      "kind": "chip",
+      "refersTo": "status-success",
+      "description": "Nicht interaktiver Zustand mit lesbarer Bedeutung und ergänzendem Punkt; keine persönliche Akzentumfärbung.",
+      "html": "<span class=\"ds-status\"><span class=\"ds-status-dot\" aria-hidden=\"true\"></span>Gespeichert</span>",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:5px;font:500 11px/1.5 Inter,sans-serif;letter-spacing:-.01em;padding:4px 8px;border-radius:6px;white-space:nowrap;background:var(--success-wash,#eaf2ec);color:var(--success,#315c4c)}.ds-status-dot{width:4px;height:4px;border-radius:50%;background:currentColor}"
+    },
+    {
+      "name": "Reguläres Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Bestehende ruhige Bedienfläche mit Kopf und Inhaltsbereich; keine zusätzliche dekorative Erhebung.",
+      "html": "<section class=\"ds-panel\" aria-labelledby=\"ds-panel-title\"><header class=\"ds-panel-header\"><div><h2 id=\"ds-panel-title\">Ihre Darstellung</h2><p>Ihre Farben. Ihr Arbeitsbereich. Auf allen Geräten mit Ihrem Zugang.</p></div></header><div class=\"ds-panel-body\"><p>Wählen Sie eine Akzentfarbe und das Erscheinungsbild. Die Vorschau zeigt Ihre Auswahl vor dem Speichern.</p></div></section>",
+      "css": ".ds-panel{min-width:0;background:var(--paper,#fff);color:var(--ink,#202522);border:1px solid var(--line,#dfe3de);border-radius:12px;font:400 15px/1.55 Inter,sans-serif;letter-spacing:-.01em}.ds-panel-header{padding:22px 26px;border-bottom:1px solid var(--line,#dfe3de);display:flex;justify-content:space-between;align-items:center;gap:16px}.ds-panel-header h2{margin:0;font-size:17px;font-weight:600;letter-spacing:-.025em}.ds-panel-header p{color:var(--muted,#58625b);font-size:13px;line-height:1.65;margin:5px 0 0}.ds-panel-body{padding:26px}.ds-panel-body p{margin:0;font-size:14px;line-height:1.7;max-width:70ch;color:var(--muted,#58625b)}@media(max-width:760px){.ds-panel-header{padding:21px 20px}.ds-panel-body{padding:22px 20px}}"
+    },
+    {
+      "name": "Akzentwahl · heller Vorschau-Modus",
+      "kind": "custom",
+      "refersTo": "appearance-choice",
+      "description": "Quellgetreuer heller Zustand der sechs nativen Radiooptionen. Der Produktbestand aktualisiert Namen und Farbfelder nach dem gewählten Modus; dieser eigenständige Ausschnitt zeigt ausdrücklich Hell und enthält keine Speicherlogik.",
+      "html": "<fieldset class=\"ds-appearance\"><legend>Akzentfarbe</legend><p>Für Buttons, Links und Ihre aktuelle Auswahl.</p><div class=\"ds-accent-choices\"><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"forest\" checked/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#315c4c,#9fd5ba);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Waldgrün</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"ocean\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#245aa0,#a3c9ff);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Ozeanblau</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"violet\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#6b45a0,#d0b5f6);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Violett</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"rose\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#984368,#f2b3cd);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Beere</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"clay\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#934c31,#edb79d);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Terrakotta</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"slate\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#4b5868,#bdcbdc);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Graphit</span></label></div></fieldset>",
+      "css": ".ds-appearance{min-width:0;border:0;padding:0;margin:0;color:var(--ink,#202522);font:400 15px/1.55 Inter,sans-serif;letter-spacing:-.01em}.ds-appearance legend{padding:0;font-size:14px;font-weight:600}.ds-appearance>p{font-size:13px;color:var(--muted,#58625b);margin:5px 0 13px}.ds-accent-choices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.ds-accent-choice{box-sizing:border-box;position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:12px 5px;border:1px solid var(--line,#dfe3de);border-radius:10px;cursor:pointer;font-size:12px}.ds-accent-choice:has(:checked){border-color:var(--forest,#315c4c);background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff))}.ds-accent-swatch{display:grid;place-items:center;width:34px;height:34px;border-radius:50%}.ds-accent-swatch svg{visibility:hidden}.ds-accent-choice:has(:checked) .ds-accent-swatch svg{visibility:visible}.ds-accent-choice input{position:absolute;opacity:0;width:100%;height:100%;inset:0;margin:0;cursor:pointer}.ds-accent-choice:has(:focus-visible){outline:2px solid var(--forest,#315c4c);outline-offset:3px}@media(max-width:650px){.ds-accent-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.ds-accent-choice{min-height:82px}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Das ruhige Arbeitswerkzeug",
+    "overview": "Die SCHUBERT Design Suite ist ein hochwertiges, ruhiges Arbeitswerkzeug für einen Handwerksbetrieb. Die Oberfläche unterstützt deutschsprachige Menschen mit unterschiedlicher digitaler Erfahrung durch klare Beschriftungen, sichtbare Zustände und vertraute Formularabläufe. Die bestätigte Richtung bleibt sachlich: Inter, warme helle Flächen und Waldgrün als Schubert-Standard.\n\nDie persönliche Darstellung erweitert diese bestehende Identität um sechs geprüfte Farbfamilien und die Modi Hell, Dunkel und Wie mein Gerät. Sie verändert den Bedienrahmen, nicht die fachliche Bedeutung von Plänen, Originalschriftbildern oder Materialien. Abstände, Typografie und bestehende Komponentenformen bleiben erhalten.",
+    "keyCharacteristics": [
+      "Ruhige, flächige Oberflächen mit präzisen Konturen.",
+      "Akzent für Handlung, Navigation und Auswahl; eigene Bedeutungsfarben für Status.",
+      "Lesbare deutsche Namen, ergänzende Symbole und sichtbarer Tastaturfokus.",
+      "Persönliche Auswahl mit Vorschau und ausdrücklichem Speichern."
+    ],
+    "rules": [
+      {
+        "name": "Akzent und Bedeutung",
+        "body": "Die persönliche Akzentfarbe kennzeichnet Bedienung und Auswahl. Fehler, Warnung und Erfolg behalten ihre eigenen semantischen Farben und verständliche Texte.",
+        "section": "colors"
+      },
+      {
+        "name": "Original bleibt Original",
+        "body": "Technisches Zeichenpapier, Originalschriftbilder, reale Materialien, native 3D-Inhalte und erzeugte PDF-Inhalte behalten ihre fachlichen Farben.",
+        "section": "colors"
+      },
+      {
+        "name": "Bestehende Schrift",
+        "body": "Inter bleibt die bestehende Anwendungsschrift. Ein generischer Design-Detektorhinweis auf Inter ist als bekannte Bestandsentscheidung akzeptiert und kein Auftrag zum Schriftaustausch.",
+        "section": "typography"
+      },
+      {
+        "name": "Fläche vor Schatten",
+        "body": "Reguläre Bedienflächen werden durch Tonwert und Kontur gegliedert. Bestehende Schatten dienen begrenzten Überlagerungen oder Zuständen; zusätzliche dekorative Schatten sind nicht Bestandteil dieser Erweiterung.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do vorhandene semantische Farbvariablen für Bedienflächen, Text, Konturen, Auswahl und Status verwenden.",
+      "Do Farbfeld und sichtbaren Farbnamen auf den gewählten Vorschau-Modus abstimmen, einschließlich der Geräteeinstellung.",
+      "Do Text oder Symbol zusätzlich zur Farbe verwenden und Tastaturfokus sichtbar halten.",
+      "Do die vorhandenen Abstands-, Typografie- und Responsive-Regeln weiterverwenden; komponentenspezifische Unterschiede bleiben dokumentierter Bestand.",
+      "Do Originalschriftbilder, Zeichenpapier, Materialien, 3D-Inhalte und PDF-Farben fachlich unverändert darstellen.",
+      "Do Speichern, Ladezustand, Erfolg und Fehler nachvollziehbar anzeigen und Fehlermeldungen nach der auslösenden Aktion fokussieren."
+    ],
+    "donts": [
+      "Don't persönliche Akzentfarben als Ersatz für Fehler-, Warn- oder Erfolgsfarben einsetzen.",
+      "Don't Inter wegen eines generischen Detektorhinweises austauschen oder aus dieser Erweiterung eine neue Markenidentität ableiten.",
+      "Don't freie CSS-Farbwerte, neue Farbverläufe oder zusätzliche Paletten aus den Dokumentationsbeispielen ableiten.",
+      "Don't light-dark()-Deklarationen in statische UI-Styles verschieben, wenn der Build daraus private Hilfsvariablen erzeugt; die zentrale Inline-Grenze bleibt maßgeblich.",
+      "Don't Theme-Polling, KI-Aufrufe oder zusätzliche Gerätemodus-Schreibvorgänge einführen.",
+      "Don't diesen dokumentierten Implementierungsstand als abgeschlossene fachliche oder visuelle Gesamtfreigabe ausgeben."
+    ]
+  }
+}

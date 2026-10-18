@@ -5,6 +5,7 @@
   import type {AppData,Row} from '#lib/client/types.ts';
   import Icon from './Icon.svelte';
   import NotificationPreferences from './NotificationPreferences.svelte';
+  import AppearanceSettings from './AppearanceSettings.svelte';
   let {data}:{data:AppData}=$props();
   let name=$state(untrack(()=>data.summary?.account?.name||data.user?.name||''));let email=$state(untrack(()=>data.summary?.account?.email||data.user?.email||''));let ready=$state(false);let profilePassword=$state('');let emailConfirmed=$state(false);let busy=$state('');let error=$state('');let notice=$state('');let errors:Record<string,string>=$state({});
   let currentPassword=$state('');let newPassword=$state('');let repeatedPassword=$state('');let sessions:Row[]=$state([]);let sessionsLoaded=$state(false);let currentSessionId=$state('');let revoking:Row|null=$state(null);
@@ -21,6 +22,7 @@
 
 {#if error}<div class="notice error" role="alert"><Icon name="alert"/><div>{error}</div></div>{/if}
 {#if notice}<div class="notice info" role="status"><Icon name="check"/><div>{notice}</div></div>{/if}
+<AppearanceSettings {data}/>
 <div class="settings-grid">
   <div class="stack">
     <section class="panel"><header class="panel-header"><div><h2>Mein persönliches Profil</h2><p>Ihr eigener Name und Ihre geschäftliche Anmeldung.</p></div><Icon name="users" size={18}/></header>

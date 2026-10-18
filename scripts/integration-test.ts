@@ -1,3 +1,4 @@
+import {appearanceIntegration} from './appearance-integration.js';
 import {feedbackIntegration} from './feedback-integration.js';
 import 'dotenv/config';
 import {config} from 'dotenv';
@@ -99,5 +100,6 @@ await test('Personal onboarding is persisted, optimistic and cannot target anoth
  assert.equal(studio.summary.onboarding?.id,result.id);assert.equal(studio.summary.trainingMode,entity.training_mode);
 });
 await feedbackIntegration(actor,test);
+await appearanceIntegration(actor,test);
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}

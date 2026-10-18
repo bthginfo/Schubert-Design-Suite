@@ -249,3 +249,5 @@ add('user_onboarding',{actor_id:'text NOT NULL',step:'integer NOT NULL DEFAULT 0
 add('numbering_profiles',{scope:'text NOT NULL',template:'text NOT NULL',padding:'integer NOT NULL',annual:'boolean NOT NULL DEFAULT true'});
 
 add('demo_datasets',{records:'jsonb',coverage:'jsonb',dataset_version:'integer NOT NULL DEFAULT 1'});
+
+add('user_preferences',{actor_id:'text NOT NULL',accent:'text NOT NULL',mode:'text NOT NULL'});

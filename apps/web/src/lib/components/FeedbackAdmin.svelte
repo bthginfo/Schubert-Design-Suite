@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {tick} from 'svelte';
+  import {tick,untrack} from 'svelte';
   import {page} from '$app/state';
   import {goto,refreshAll,beforeNavigate} from '$app/navigation';
   import {feedbackCategories,feedbackStatuses,feedbackPriorities,feedbackStepLabel,feedbackPage} from '@schubert/contracts';
@@ -9,9 +9,9 @@
   let {data}:{data:AppData}=$props();
   const queue=$derived(data.feedback??{items:[],counts:[],detail:null,next:null,status:'all'});
   const report=$derived(queue.detail);
-  let enabled=$state(false),busy=$state(false),error=$state(''),notice=$state('');
+  let enabled=$state(untrack(()=>!!data.summary.feedback?.enabled)),busy=$state(false),error=$state(''),notice=$state('');
   let messageArea=$state<'setting'|'report'>('setting'),messageReportId=$state('');
-  let status=$state('new'),priority=$state('normal'),notes=$state(''),resolution=$state('');
+  let status=$state(untrack(()=>data.feedback?.detail?.status??'new')),priority=$state(untrack(()=>data.feedback?.detail?.priority??'normal')),notes=$state(untrack(()=>data.feedback?.detail?.admin_notes??'')),resolution=$state(untrack(()=>data.feedback?.detail?.resolution_ref??''));
   $effect(()=>{enabled=!!data.summary.feedback?.enabled;});
   $effect(()=>{if(report){status=report.status;priority=report.priority;notes=report.admin_notes;resolution=report.resolution_ref;}});
   function url(values:Record<string,string|null>){const query=new URLSearchParams(page.url.search);query.set('tab','feedback');for(const [key,value]of Object.entries(values))value?query.set(key,value):query.delete(key);return '/settings?'+query.toString();}

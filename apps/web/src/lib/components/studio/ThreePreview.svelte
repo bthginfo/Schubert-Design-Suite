@@ -34,16 +34,23 @@
 <style>
   .three-stage{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;height:100%;background:#f4f4ef}
   .three-canvas{position:relative;flex:1;min-height:220px;overflow:hidden}
-  .three-footer{flex:none;background:#fafbf8;border-top:1px solid #d9deda}
-  .camera-disclosure>summary{min-height:44px;box-sizing:border-box;padding:12px 16px;font-size:13px;font-weight:600;color:#244e3d;cursor:pointer}
-  .camera-disclosure>summary span{font-size:12px;font-weight:400;color:#515a54;margin-left:8px}
+  .three-footer{flex:none;background:var(--paper);border-top:1px solid var(--line)}
+  .camera-disclosure>summary{min-height:44px;box-sizing:border-box;padding:12px 16px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+  .camera-disclosure>summary span{font-size:12px;font-weight:400;color:var(--muted);margin-left:8px}
   .camera-tools{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 10px}
   .camera-tools>div{display:flex;align-items:center;flex-wrap:wrap;gap:3px}
-  .camera-tools span{font-size:12px;min-width:82px;color:#515a54}
-  .camera-tools button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:8px 10px;border:1px solid #d9deda;border-radius:6px;background:#fff;color:#244e3d;cursor:pointer;font-size:13px}
-  .camera-tools button:hover{background:#e7eee7}.camera-tools button:focus-visible,.camera-disclosure>summary:focus-visible{outline:2px solid #315c4c;outline-offset:2px}
-  .three-caption{font-size:12px;line-height:1.5;color:#515a54;margin:0;padding:0 16px 12px}
-  .three-unresolved{font-size:12px;line-height:1.6;margin:0;padding:10px 16px;background:#fff6de;color:#665018}
+  .camera-tools span{font-size:12px;min-width:82px;color:var(--muted)}
+  .camera-tools button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);cursor:pointer;font-size:13px}
+  .camera-tools button:hover{background:var(--wash)}.camera-tools button:focus-visible,.camera-disclosure>summary:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+  .three-caption{font-size:12px;line-height:1.5;color:var(--muted);margin:0;padding:0 16px 12px}
+  .three-unresolved{font-size:12px;line-height:1.6;margin:0;padding:10px 16px;background:var(--warning-wash);color:var(--warning)}
   .three-error{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:32px}.three-error p{max-width:380px;line-height:1.7}
   @media(max-width:720px){.camera-disclosure>summary span{display:none}.camera-tools{display:grid}.three-caption{font-size:12px}}
+
+/* UI chrome follows the personal theme; the physical 3D scene stays unchanged. */
+.three-footer{background:var(--paper);color:var(--ink)}
+.camera-disclosure summary,.camera-tools button{color:var(--forest)}
+.camera-disclosure summary span,.camera-tools span,.three-caption{color:var(--muted)}
+.camera-tools button{background:var(--paper);border-color:var(--line)}
+.camera-tools button:hover{background:var(--wash)}
 </style>

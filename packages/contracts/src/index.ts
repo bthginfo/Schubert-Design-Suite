@@ -3,6 +3,7 @@ export * from './modules.js';
 export * from './planning.js';
 export * from './countries.js';
 export * from './feedback.js';
+export * from './appearance.js';
 export const decimalString=z.union([z.string(),z.number()]).transform(String).refine(v=>/^-?\d+(?:[.,]\d+)?$/.test(v),'Eindeutige Dezimalzahl eingeben.').transform(v=>v.replace(',','.'));
 export const commandSchema=z.object({name:z.string().regex(/^[a-z][a-z0-9_.]+$/),id:z.uuid().optional(),expectedVersion:z.number().int().nonnegative().optional(),idempotencyKey:z.string().min(8).max(200),payload:z.record(z.string(),z.unknown()).default({})}).strict();
 export type Command=z.infer<typeof commandSchema>;
