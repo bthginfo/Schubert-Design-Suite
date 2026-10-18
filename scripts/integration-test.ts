@@ -93,6 +93,9 @@ await test('Personal onboarding is persisted, optimistic and cannot target anoth
  await assert.rejects(()=>command(owner,'account.onboarding.update',{status:'completed',step:2},prior),(e:any)=>e.code==='VERSION_CONFLICT');
  await assert.rejects(()=>command(owner,'account.onboarding.update',{status:'completed',step:2,actor_id:employee.actorId},result));
  assert.equal(await withTenant(employee,db=>one(db,'SELECT id FROM user_onboarding WHERE id=$1',[result.id])),null);
+ const studio=await loadPage(owner,'studio',new URL('https://test.invalid/studio?onboarding-check='+result.version));
+ const entity=await withTenant(owner,db=>one<any>(db,'SELECT training_mode FROM legal_entities WHERE id=$1',[owner.legalEntityId]));
+ assert.equal(studio.summary.onboarding?.id,result.id);assert.equal(studio.summary.trainingMode,entity.training_mode);
 });
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}
