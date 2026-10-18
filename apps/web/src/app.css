@@ -181,3 +181,31 @@ h1,h2,h3{text-wrap:balance;letter-spacing:-.025em}
 .app-shell .nav-item.active .nav-badge{background:color-mix(in srgb,var(--on-accent) 15%,transparent);color:var(--on-accent)}
 
 .app-shell input::placeholder,.app-shell textarea::placeholder{color:var(--muted);opacity:1}
+
+/* Shared disclosures and narrow action surfaces. */
+.app-shell{--chart-muted:color-mix(in srgb,var(--forest) 58%,var(--paper));--chart-secondary:var(--warning)}
+.app-shell .btn{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.app-shell .btn svg{flex-shrink:0}
+.action-menu .btn{justify-content:space-between;text-align:left;line-height:1.6;padding:13px 15px;gap:14px}
+.action-menu{min-width:0}
+.app-shell details:not(.form-disclosure)>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:48px;padding:14px 16px;border-radius:10px;background:var(--wash);color:var(--ink);font-size:13px;font-weight:500;line-height:1.6;overflow-wrap:anywhere}
+.app-shell details>summary::-webkit-details-marker{display:none}
+.app-shell details:not(.form-disclosure)>summary:hover{background:color-mix(in srgb,var(--forest) 7%,var(--wash))}
+.app-shell details:not(.form-disclosure)>summary::after{content:'';width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);margin:-4px 3px 0 auto;flex:none;transition:transform .15s}
+.app-shell details[open]:not(.form-disclosure)>summary::after{transform:rotate(225deg);margin-top:4px}
+.app-shell details:not(.form-disclosure)>summary:has(>svg:last-child)::after{display:none}
+.app-shell details[open]>summary{margin-bottom:14px}
+.app-shell summary svg{flex:none}
+.time-entry-intro{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 0 8px}
+.time-entry-intro h2{font-size:22px;font-weight:550;letter-spacing:-.025em}
+.time-entry-intro p{max-width:55ch;font-size:14px;line-height:1.7;margin-top:10px}
+.time-entry-intro .btn{flex:none}
+.app-shell .live-timer>summary{background:var(--paper);border:1px solid var(--line);padding:18px 20px;font-size:14px;gap:14px}
+.live-timer summary>span{flex:1}.live-timer summary small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:4px}
+.app-shell .live-timer[open]>summary{margin-bottom:0;border-radius:12px 12px 0 0;border-bottom:0}
+.live-timer .timer-panel{border-radius:0 0 12px 12px}
+@media(max-width:760px){.time-entry-intro{flex-direction:column;align-items:stretch;padding-top:4px;gap:18px}.time-entry-intro .btn{align-self:flex-start}.app-shell details:not(.form-disclosure)>summary{font-size:14px;min-height:50px}}
+/* Keep the active companion's controls unobstructed; feedback returns on close. */
+.app-shell:has(#assistant-drawer) .feedback-fab{display:none}
+.app-shell:has(dialog[open]) .feedback-fab,.app-shell:has([role="dialog"][aria-modal="true"]) .feedback-fab{display:none}
+@media(max-width:760px){.app-shell button.feedback-fab{display:none}.mobile-nav.with-feedback{grid-template-columns:repeat(5,minmax(0,1fr))}}

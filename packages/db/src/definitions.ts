@@ -251,3 +251,6 @@ add('numbering_profiles',{scope:'text NOT NULL',template:'text NOT NULL',padding
 add('demo_datasets',{records:'jsonb',coverage:'jsonb',dataset_version:'integer NOT NULL DEFAULT 1'});
 
 add('user_preferences',{actor_id:'text NOT NULL',accent:'text NOT NULL',mode:'text NOT NULL'});
+
+// Columns introduced by the versioned catalog migrations, also used by bounded bulk imports.
+add('product_variant_versions',{approved_at:'timestamptz',approved_by:'text',validation_report:'jsonb'});

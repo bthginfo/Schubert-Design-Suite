@@ -1,0 +1,15 @@
+import{describe,it,expect}from'vitest';
+import{createDesign,applyOperations,calculateBOM}from'@schubert/geometry';
+import{planningDraftOperations}from'../packages/ai/src/planning-draft.js';
+import{visualizationInputSchema,visualizationQuote}from'../packages/application/src/ai-visualizations.js';
+import{randomUUID}from'node:crypto';
+describe('Companion draft planning',()=>{
+ it('creates editable room geometry using clear dimensions without technical confirmation',()=>{const snapshot=createDesign('room_plan'),operations=planningDraftOperations({snapshot},{kind:'rectangular_room',label:'Bad',clearWidthMm:'4000',clearDepthMm:'6000',heightMm:'2600',wallThicknessMm:'200'}),after=applyOperations(snapshot,operations);expect(after.elements.filter(e=>e.kind==='wall')).toHaveLength(4);expect(after.elements.filter(e=>e.kind==='room')).toHaveLength(1);expect(Object.values(after.measurements).every(m=>m.origin==='ai'&&m.reviewStatus==='unreviewed')).toBe(true);const floor=calculateBOM(after).lines.find(line=>line.category==='Raumfläche');expect(floor?.netAreaM2).toBe('26.04'); // Room quantity explicitly uses wall axes; the requested clear dimensions remain 4 × 6 m.
+expect(snapshot.elements).toHaveLength(0);});
+ it('refuses missing dimensions and a silent replacement of an existing plan',()=>{const snapshot=createDesign('memorial'),draft={kind:'memorial_slab',label:'Stein',widthMm:'600',heightMm:'1000',thicknessMm:'140'};const operations=planningDraftOperations({snapshot},draft),after=applyOperations(snapshot,operations);expect(after.elements.some(e=>e.kind==='stone_piece')).toBe(true);expect(()=>planningDraftOperations({snapshot:after},draft)).toThrow();expect(()=>planningDraftOperations({snapshot},{...draft,thicknessMm:null})).toThrow();expect(()=>planningDraftOperations({snapshot},{...draft,widthMm:'40000000'})).toThrow();});
+});
+describe('Explicit image request',()=>{
+ const base={revision_id:randomUUID(),prompt:'Fotorealistisches Grabmal mit natürlichem Licht',rights_basis:'own_content',rights_statement:'Eigener Entwurf für die ausdrücklich gewünschte Bildbearbeitung.'};
+ it('requires a prepared source for photo edits and binds requested quality and size in the quote',()=>{expect(()=>visualizationInputSchema.parse({...base,intent:'photo'})).toThrow();expect(()=>visualizationInputSchema.parse({...base,rights_basis:'licensed_document'})).toThrow();const p=visualizationInputSchema.parse({...base,quality:'high',size:'1024x1536'}),q=visualizationQuote({},p);expect(q.quality).toBe('high');expect(q.size).toBe('1024x1536');expect(q.planReference).toBe(true);expect(Number(q.estimatedMaxCost)).toBeGreaterThan(.3);expect(Number(q.estimatedMaxCost)).toBeLessThan(.5);expect(q.fallbackRates.output).toBe('30');});
+ it('bounds references and respects the configured request budget without a monthly count cap',()=>{expect(()=>visualizationInputSchema.parse({...base,reference_document_ids:[randomUUID(),randomUUID()]})).toThrow();const p=visualizationInputSchema.parse(base);expect(()=>visualizationQuote({imageMaxRequestCost:'0.01'},p)).toThrow();});
+});

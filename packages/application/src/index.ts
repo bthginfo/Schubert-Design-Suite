@@ -15,6 +15,7 @@ import './inventory.js';
 import './workforce.js';
 import './planning.js';
 import './catalog.js';
+import './catalog-public-import.js';
 import './sales-prices.js';
 import './documents.js';
 import './migration.js';

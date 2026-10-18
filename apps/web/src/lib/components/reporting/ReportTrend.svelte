@@ -3,6 +3,7 @@
   import {display} from '#lib/client/api.ts';
   import {reportMonthDrilldown,reportMetrics,reportMoney,reportNumber,reportQuantity} from '#lib/client/reports.ts';
   import Icon from '../Icon.svelte';
+  import TrendPlot from './TrendPlot.svelte';
   let {rows,from,to,business,currency,definitions=[]}:{rows:Row[];from:string;to:string;business:string;currency?:string;definitions?:Row[]}=$props();
   let metric=$state('invoiced_net');
   const selected=$derived(reportMetrics.find(item=>item.key===metric)||reportMetrics[1]);
@@ -19,17 +20,11 @@
     {#each currencies as unit}
       {@const group=series.filter(row=>row.currency===unit)}
       {@const values=group.map(row=>reportNumber(row.value)).filter((value):value is number=>value!==null)}
-      {@const maximum=Math.max(0,...values.map(value=>Math.abs(value)))}
-      {@const negatives=values.some(value=>value<0)}
-      <div class="trend-currency"><h3>{selected.label} · {selected.unit==='currency'?(unit||'Währung nicht bestätigt'):selected.unit==='percent'?'Prozent':'Anzahl'}</h3><p class="field-help">{negatives?'Die Mittellinie kennzeichnet null; negative Werte zeigen nach links.':'Balken beginnen bei null.'} Die Tabelle enthält alle Werte und Datenlücken.</p></div>
-      <div class="trend-chart" aria-label={`${selected.label} nach Monat`}>
-        {#each group as row}
-          {@const value=reportNumber(row.value)}
-          <div class="trend-row"><a href={monthHref(row)} class="trend-month">{monthLabel(row)}</a><div class:negative-axis={negatives} class="trend-track" aria-hidden="true">{#if value!==null}<span class:negative={value<0} class="trend-bar" style={`width:${maximum?Math.abs(value)/maximum*(negatives?50:100):0}%;left:${negatives?(value<0?50-(maximum?Math.abs(value)/maximum*50:0):50):0}%`}></span>{:else}<span class="trend-missing">Grundlage fehlt</span>{/if}</div><span class="trend-value">{format(row.value,unit)}</span></div>
-        {/each}
-      </div>
+      {#if values.length}
+        <TrendPlot label={selected.label+' · '+(unit||'Währung offen')} points={group.map(row=>({label:monthLabel(row),value:reportNumber(row.value),href:monthHref(row)}))} format={value=>format(value,unit)}/>
+      {:else}<div class="trend-empty"><Icon name="chart" size={28}/><div><h3>Noch keine bestätigten Werte</h3><p>Für „{selected.label}“ liegt im gewählten Zeitraum noch keine bestätigte Monatsreihe vor. Die zugehörigen Belege erreichen Sie über die Tabelle.</p></div></div>{/if}
       <details class="trend-table"><summary>Werte als Tabelle lesen</summary><div class="table-scroll mt"><table class="data-table"><caption class="sr-only">{selected.label} im gewählten Zeitraum · {unit||'Währung offen'}</caption><thead><tr><th>Monat</th><th class="number">{selected.label}</th><th>Quelle</th></tr></thead><tbody>{#each group as row}<tr><th scope="row">{monthLabel(row)}</th><td class="number">{format(row.value,unit)}</td><td><a class="text-link" href={monthHref(row)}>Belege öffnen<Icon name="arrow" size={13}/></a></td></tr>{/each}</tbody></table></div></details>
     {/each}
   {:else}<div class="empty-state compact"><Icon name="chart" size={27}/><h3>Noch keine bestätigte Monatsreihe</h3><p>Für den gewählten Zeitraum liegen keine berechtigten Auswertungswerte vor. Das ist keine Aussage über Umsatz oder Leistung des Betriebs.</p></div>{/if}
 </div></section>
-<style>.trend-select{max-width:610px;margin-bottom:27px}.trend-currency{margin-top:24px;margin-bottom:18px}.trend-currency h3{font-size:14px;font-weight:550}.trend-currency p{margin-top:5px}.trend-chart{display:grid;gap:17px}.trend-row{display:grid;grid-template-columns:70px minmax(45px,1fr) minmax(135px,auto);gap:15px;align-items:center;font-size:12px}.trend-month{color:var(--forest);text-decoration:underline;text-underline-offset:3px}.trend-track{position:relative;height:21px;background:#f0f2ed;border-radius:3px;overflow:hidden}.trend-bar{height:100%;position:absolute;background:#5f7f62;border-radius:2px}.trend-bar.negative{background:#a46b5c}.trend-track.negative-axis:after{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:1px solid #8d998b}.trend-missing{display:block;font-size:10px;text-align:center;line-height:21px;color:var(--muted)}.trend-value{text-align:right;font-variant-numeric:tabular-nums;font-size:12px}.trend-table{margin-top:24px}.trend-table summary{font-size:12px;cursor:pointer;color:var(--forest)}@media(max-width:760px){.trend-row{grid-template-columns:53px minmax(30px,1fr);gap:9px 12px}.trend-value{grid-column:2;text-align:left;font-size:12px}.trend-month{grid-row:span 2;align-self:start;padding-top:2px;font-size:13px}.trend-select{margin-bottom:22px}.trend-currency h3{font-size:15px}.trend-table summary{font-size:13px;min-height:42px;display:flex;align-items:center}}</style>
+<style>.trend-select{max-width:610px;margin-bottom:28px}.trend-table{margin-top:24px}.trend-empty{display:flex;gap:18px;align-items:flex-start;padding:34px 0 26px;border-top:1px solid var(--line)}.trend-empty :global(svg){color:var(--muted);flex:none;margin-top:3px}.trend-empty h3{font-size:17px;font-weight:550;letter-spacing:-.02em}.trend-empty p{font-size:14px;line-height:1.7;margin-top:9px;max-width:65ch}</style>

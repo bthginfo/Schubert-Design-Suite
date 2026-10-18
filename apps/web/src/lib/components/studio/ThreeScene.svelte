@@ -1,5 +1,5 @@
 ﻿<script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount,untrack } from 'svelte';
   import { T,useThrelte } from '@threlte/core';
   import * as THREE from 'three';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -8,8 +8,9 @@
   import { sampleRing,measureValue,worldMatrix,surfaceMatrix,worldPoint,toRenderer,roomContour,hasAssetUsage,wallCoreMesh,wallLayerMeshes,layerSlices,contourParts,withThroughCutouts,stoneDepthSlices,hostMachining,miterCut } from '@schubert/geometry';
   import{clipSolid}from'./clip-solid.ts';
   import {fitPerspectiveBounds} from './camera-fit.ts';
+  import {isWallSurface} from './wall-visibility.ts';
   import type{CameraCommand}from'./camera-navigation.ts';
-  let {snapshot,resetKey=0,assets=[],glyphs=[],cameraCommand=null,onzoomchange=()=>{}}:{snapshot:DesignSnapshot;resetKey?:number;assets?:any[];glyphs?:any[];cameraCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void}=$props();
+  let {snapshot,showWalls=true,resetKey=0,assets=[],glyphs=[],cameraCommand=null,onzoomchange=()=>{}}:{snapshot:DesignSnapshot;showWalls?:boolean;resetKey?:number;assets?:any[];glyphs?:any[];cameraCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void}=$props();
   const context=useThrelte(),{size}=context;let mounted=$state(false),controls:OrbitControls|undefined;
   const root=new THREE.Group(),camera=new THREE.PerspectiveCamera(38,1,.01,10000);
   let fitted=false,lastReset=-1,generation=0;const downloads=new Set<AbortController>();
@@ -42,6 +43,7 @@
   function addGeometry(geometry:THREE.BufferGeometry,matrix:THREE.Matrix4,color:number,wire=false){geometry.applyMatrix4(matrix).applyMatrix4(C);geometry.computeVertexNormals();const material=new THREE.MeshStandardMaterial({color,roughness:.68,metalness:.05,side:THREE.DoubleSide,transparent:wire,opacity:wire ? .3 : 1});const mesh=new THREE.Mesh(geometry,material);root.add(mesh);const edge=new THREE.LineSegments(new THREE.EdgesGeometry(geometry,20),new THREE.LineBasicMaterial({color:wire?0x617d70:0x444d47}));root.add(edge);}
   function rebuild(){dispose();
     for(const e of snapshot.elements.filter(e=>e.phase!=='demolition')){
+      const firstChild=root.children.length;
       if(e.kind==='stone_piece'){
         const {slices}=stoneDepthSlices(snapshot,e),miters=hostMachining(snapshot,e.id).filter(f=>f.machiningType==='miter');
         if(!slices.length)addGeometry(new THREE.ShapeGeometry(shapeFor(e.finishedContour)),matrixFor(e.id),0xc9c4b8);
@@ -68,10 +70,14 @@
         }
       }
       if(e.kind==='clearance')addGeometry(new THREE.ShapeGeometry(shapeFor(e.contour)),matrixFor(e.id),0xb5ab76,true);
+      for(const child of root.children.slice(firstChild))child.userData.wall=isWallSurface(e);
     }
+    untrack(applyWallVisibility);
     if(!fitted){fitCamera(true);fitted=true;}
     context.invalidate();
   }
+  function applyWallVisibility(){for(const child of root.children)child.visible=!child.userData.wall||showWalls;context.invalidate();}
+  $effect(()=>{showWalls;if(mounted)applyWallVisibility();});
   function fitCamera(resetDirection=false){
     const box=new THREE.Box3().setFromObject(root);if(box.isEmpty()||!controls)return;
     const direction=resetDirection?new THREE.Vector3(.8,.7,1):camera.position.clone().sub(controls.target);

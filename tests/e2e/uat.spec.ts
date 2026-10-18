@@ -50,7 +50,7 @@ test('Inquiry: invalid draft can be resumed or discarded without losing the save
 });
 
 test('Unsaved new forms protect browser back navigation and can be deliberately discarded',async({page})=>{
-  await login(page);await navigate(page,'/customers');await page.getByRole('link',{name:'Anfragen',exact:true}).click();
+  await login(page);await navigate(page,'/customers');await page.getByRole('button',{name:'Alle Bereiche',exact:true}).click();await page.locator('.directory-links').getByRole('link',{name:'Anfragen',exact:true}).click();
   await page.getByRole('button',{name:'Anfrage anlegen',exact:true}).first().click();const dialog=page.getByRole('dialog');
   await dialog.locator('#field-title').fill(unique+' nicht speichern');
   await page.goBack();await expect(dialog.getByRole('heading',{name:'Ungespeicherte Eingaben',exact:true})).toBeVisible();
@@ -129,7 +129,10 @@ test('Employee mobile: offline work, pause and finish sync once connection retur
   await command('workforce.employee.create',{name:unique+' Offline-Prüfung',user_id:user.user_id,employment_start:'2026-01-01',weekly_hours:'40',work_pattern:'[8,8,8,8,8,0,0]',holiday_region:'DE-BY'});
   await page.request.post('/api/auth/sign-out',{headers:{origin:new URL(page.url()).origin}});
   await page.setViewportSize({width:375,height:812});await login(page,'EMPLOYEE',credentials);await navigate(page,'/time');
-  await expect(page.getByRole('button',{name:'Arbeit starten',exact:true})).toBeEnabled();
+  await expect(page.locator('details.live-timer')).not.toHaveAttribute('open');await page.getByRole('button',{name:'Zeit nachtragen',exact:true}).click();const manual=page.getByRole('dialog',{name:'Zeit nachtragen',exact:true});
+  await manual.locator('#manual-from').fill('2026-10-17T09:00');await manual.locator('#manual-to').fill('2026-10-17T10:00');await manual.locator('#manual-note').fill('Synthetische Nacherfassung: Werkstatt ohne Pause.');await manual.getByRole('checkbox').check();await mkdir('.impeccable/review',{recursive:true});await page.screenshot({path:'.impeccable/review/manual-time-mobile.png'});await manual.getByRole('button',{name:'Zeitraum speichern',exact:true}).click();await expect(manual).toBeHidden();await expect(page.getByRole('status').filter({hasText:'Die nacherfasste Zeit wurde gespeichert.'})).toBeVisible();
+  await navigate(page,'/time?date=2026-10-17');await expect(page.locator('.time-segment').filter({hasText:'09:00'})).toContainText('10:00');await navigate(page,'/time');
+  await page.locator('details.live-timer>summary').click();await expect(page.getByRole('button',{name:'Arbeit starten',exact:true})).toBeEnabled();
   await context.setOffline(true);
   try{
     await page.getByRole('button',{name:'Arbeit starten',exact:true}).click();await expect(page.getByRole('button',{name:'Pause',exact:true})).toBeVisible();
@@ -141,11 +144,11 @@ test('Employee mobile: offline work, pause and finish sync once connection retur
   }finally{await context.setOffline(false);}
   await page.getByRole('button',{name:'Synchronisieren',exact:true}).click();
   await expect(page.getByText('Keine ausstehenden Übertragungen. Bestätigte Zeiten und genehmigte Klärungen sind im Serverbestand gespeichert.',{exact:true})).toBeVisible();
-  await page.reload();await page.waitForLoadState('networkidle');await expect(page.getByRole('button',{name:'Arbeit starten',exact:true})).toBeVisible();
+  await page.reload();await page.waitForLoadState('networkidle');await page.locator('details.live-timer>summary').click();await expect(page.getByRole('button',{name:'Arbeit starten',exact:true})).toBeVisible();
 });
 
 for(const kind of ['Raum','Stele'])test('Studio '+kind+': saved geometry, views, readable controls, real PDF and BOM',async({page,context})=>{
-  await login(page,'PLANNER');await navigate(page,'/studio');
+  await login(page,'PLANNER');await navigate(page,'/studio?q=Synthetische%20Studio-QA');
   await page.getByRole('link',{name:new RegExp('Synthetische Studio-QA '+kind+' ')}).click();
   await expect(page.locator('.studio-workspace')).toBeVisible();
   const svg=page.locator('svg[role="application"]');await expect(svg).toBeVisible();

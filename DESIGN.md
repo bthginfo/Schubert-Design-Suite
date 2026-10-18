@@ -140,6 +140,11 @@ components:
     textColor: "{colors.ink}"
     rounded: "{rounded.choice}"
     padding: "12px 5px"
+  disclosure:
+    backgroundColor: "{colors.wash}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.choice}"
+    padding: "14px 16px"
 ---
 
 # Design System: SCHUBERT Design Suite
@@ -159,7 +164,7 @@ Die persönliche Darstellung erweitert diese bestehende Identität um sechs gepr
 - Lesbare deutsche Namen, ergänzende Symbole und sichtbarer Tastaturfokus.
 - Persönliche Auswahl mit Vorschau und ausdrücklichem Speichern.
 
-Dies ist eine Bestandsdokumentation der ausdrücklich freigegebenen persönlichen Darstellungserweiterung, keine neue Produkt- oder Markenpositionierung. Produktkontext: [Master-Spezifikation](docs/master-specification.md), insbesondere Kapitel 3. Es bestand zuvor keine `DESIGN.md`, keine `PRODUCT.md` und kein Design-Sidecar; daraus werden keine zusätzlichen Produktversprechen abgeleitet.
+Dies ist eine Bestandsdokumentation der persönlichen Darstellung und der weiterentwickelten Bedienmuster für Begleiter, Einführung und Arbeitsbereiche, keine neue Produkt- oder Markenpositionierung. Produktkontext: [PRODUCT.md](PRODUCT.md) und [Master-Spezifikation](docs/master-specification.md), insbesondere Kapitel 3. Die Erweiterungen übernehmen die bestätigte Identität und ergänzen nur im Code belegte, wiederverwendbare Regeln.
 
 ## Colors
 
@@ -231,7 +236,11 @@ Die Desktopoberfläche besteht aus fester linker Seitennavigation, oberer Kontex
 
 Reguläre Panels nutzen denselben Aufbau aus Kopf, Inhalt und optionalem Aktionsfuß. Formularfelder stehen auf breiten Ansichten meist in zwei Spalten. Die Auswahl der sechs Farbfamilien erscheint in sechs Spalten, unter (650px) in drei Spalten; die drei Modusoptionen werden dann untereinander angezeigt. Die Vorschau darf umbrechen, ohne Text oder Aktion abzuschneiden.
 
-Unter dem bestehenden mobilen Breakpoint (760px) wechseln Navigation und Inhalte in die mobile Anordnung. Reguläre Schaltflächen und Eingaben behalten mobile Mindesthöhen von (48px); große Schaltflächen verwenden den bestehenden höheren Wert. Aktionsfüße dürfen umbrechen. Die Einführung blendet ihre linke Schrittnavigation auf kleinen Bildschirmen aus.
+Unter dem bestehenden mobilen Breakpoint (760px) wechseln Navigation und Inhalte in die mobile Anordnung. Reguläre Schaltflächen und Eingaben behalten mobile Mindesthöhen von (48px); große Schaltflächen verwenden den bestehenden höheren Wert. Aktionsfüße und lange Schaltflächentexte dürfen umbrechen. Die Bereichsnavigation wird mobil zur beschrifteten nativen Auswahl. Aktiviertes Testfeedback erhält einen eigenen Platz in der vorhandenen unteren Navigation; der schwebende Einstieg bleibt auf Desktopansichten beschränkt.
+
+Begleiter und Dialoge begrenzen ihre Höhe am sichtbaren Fenster. Lange Inhalte und erweiterte Optionen scrollen innerhalb der Oberfläche, während die primären Aktionen erreichbar bleiben. Der Begleiter ist auf breiten Ansichten ein rechter, nichtmodaler Arbeitsbereich; mobil schützt eine Fokusbegrenzung die geöffnete Ansicht. Die Einführung liegt als nativer Dialog über der tatsächlichen Seite und ordnet ihre Erklärung am hervorgehobenen Bedienelement an. Ihre Karte bleibt innerhalb des Fensters; auf kleinen Ansichten bleibt der Aktionsfuß sichtbar.
+
+**The Erreichbare Aktion Rule.** Lange Beschriftungen dürfen umbrechen. Scrollbare Inhalte, Dialoge und Hilfeansichten halten ihre Abschluss- und Schließaktionen erreichbar; schwebendes Feedback verdeckt keine geöffnete Hilfe oder modale Oberfläche.
 
 Das Studio behält seine eigene räumliche Struktur aus Elementliste, Arbeitsansicht und Inspektor. Seine bestehenden Breakpoints sind gesondert im Sidecar erfasst; sie werden durch die Darstellungserweiterung nicht vereinheitlicht.
 
@@ -253,7 +262,7 @@ Konturen verwenden den semantischen Linienwert. Auswahl wird durch Kombination a
 
 ### Buttons
 
-Primäraktionen nutzen den gewählten Akzent mit `on-accent`; Hover nutzt den passenden familienabhängigen Hover-Wert. Sekundäre Aktionen stehen auf `paper`, Ghost-Aktionen sind im Ruhezustand transparent. Gefahrenaktionen nutzen `danger` und `danger-wash`. Reguläre Buttons haben eine bestehende Mindesthöhe (44px), mobil (48px); das Frontmatter-Padding beschreibt den Desktopzustand. Der aktive Zustand verschiebt eine bedienbare Schaltfläche leicht (1px). Deaktivierte Aktionen bleiben als solche erkennbar.
+Primäraktionen nutzen den gewählten Akzent mit `on-accent`; Hover nutzt den passenden familienabhängigen Hover-Wert. Sekundäre Aktionen stehen auf `paper`, Ghost-Aktionen sind im Ruhezustand transparent. Gefahrenaktionen nutzen `danger` und `danger-wash`. Reguläre Buttons haben eine bestehende Mindesthöhe (44px), mobil (48px); das Frontmatter-Padding beschreibt den Desktopzustand. Beschriftungen umbrechen innerhalb der verfügbaren Breite, ergänzende Symbole schrumpfen nicht. Der aktive Zustand verschiebt eine bedienbare Schaltfläche leicht (1px). Deaktivierte Aktionen bleiben als solche erkennbar.
 
 ### Inputs / Fields
 
@@ -262,6 +271,24 @@ Eingaben verwenden `paper`, `ink` und `line`, eine sichtbare Beschriftung sowie 
 ### Navigation
 
 Die aktive Seitennavigation verwendet Akzentfläche und `on-accent`, einschließlich des Symbols. Inaktive Einträge bleiben zurückgenommen. Tabs kennzeichnen die aktive Ansicht durch Akzenttext und Unterstreichung. Bezeichnungen und die jeweils vorhandene semantische Auswahlkennzeichnung bleiben erhalten.
+
+Die gemeinsame Bereichsnavigation zeigt bis zu vier Kernbereiche und hält den aktuell geöffneten Bereich sichtbar. **Alle Bereiche** öffnet ein durchsuchbares Verzeichnis unterhalb der Leiste; Escape schließt es und führt den Fokus zum Auslöser zurück. Die Verzeichnislinks nutzen `wash` und Akzenttext für die Auswahl. Auf kleinen Bildschirmen übernimmt eine native Auswahl die vollständige Liste.
+
+### Disclosures
+
+Wiederverwendbare aufklappbare Hilfen verwenden native `details`/`summary`, eine zurückgesetzte Fläche und einen sichtbaren Richtungsindikator. Die globale Zusammenfassung ist mindestens (48px), mobil (50px) hoch; lokale Begleiter- und Formularvarianten behalten ihre belegten Abweichungen. Der Indikator dreht sich beim Öffnen. Ein vorhandenes abschließendes Symbol ersetzt den zusätzlichen Indikator. Tastaturfokus bleibt sichtbar und lange Titel dürfen umbrechen.
+
+### Begleiter, Dialoge und Einführung
+
+Der Begleiter trennt **Hilfe für diese Seite** und **Chat** mit beschrifteten Auswahlflächen. Lokale Hilfen bestehen aus einer kurzen Einordnung, aufklappbaren Schritten und passenden Aktionen. Chatvorschläge landen zuerst im Eingabefeld; die sichtbare Senden-Aktion startet die Anfrage. Unterlagen und Modelloptionen bleiben in einer aufklappbaren Gruppe. Nachrichten und prüfbare Vorschläge verwenden die vorhandenen semantischen Flächen und Konturen.
+
+Der Desktopbegleiter bleibt rechts neben der Arbeit verfügbar. Mobil begrenzt er den Tastaturfokus und stellt ihn beim Schließen wieder her. Native Dialoge für Einführung, Feedback und Studioabläufe schützen den modalen Fokus; bestehende andere Dialoge behalten ihre Fokusbegrenzung. Fehlerrückmeldungen erscheinen innerhalb der betroffenen Oberfläche und werden dort sichtbar fokussiert. Inhaltsbereiche dürfen scrollen, ohne die abschließenden Aktionen wegzuschieben.
+
+Die Einführung hebt reale, sichtbare Seitenbereiche mit Akzentkontur und abgedunkeltem Umfeld hervor. Schrittzahl, verständliche Erklärung, Zurück/Weiter und eine Möglichkeit zum späteren Fortsetzen bleiben an der Karte zusammen. Die persönliche Darstellung bildet den letzten Schritt. Position und Größe der Karte richten sich nach dem tatsächlichen Bedienelement und dem sichtbaren Fenster, nicht nach festen Bildschirmkoordinaten.
+
+### Monatsauswertungen
+
+Monatsbalken beginnen bei null und führen zu den zugehörigen Belegen. Ein fehlender bestätigter Wert erhält einen offenen Kreis und eine verständliche Beschriftung. Mobil wird derselbe Zeitraum als Folge lesbarer Zeilen mit Monat, ausgeschriebenem Wert und Balken dargestellt. Tabellarische Ziffern erleichtern den Vergleich; negative Werte verwenden die semantische Warnfarbe. Ein Datenloch erhält keinen erfundenen Balken.
 
 ### Chips / Status
 
@@ -277,11 +304,13 @@ Panels verwenden `paper` mit feiner Kontur und getrennten Kopf-, Inhalts- und Ak
 
 Die Vorschau ändert sich sofort; die übrige Anwendung folgt nach **Darstellung speichern** oder **Einführung abschließen**. **Schubert-Standard auswählen** setzt die Auswahl auf Waldgrün und Hell zurück und erfordert anschließend Speichern. Ladezustände sperren doppelte Bedienung; Erfolg und Fehler erhalten verständliche Rückmeldung.
 
-Fehler beim Zurückstellen der Einführung erscheinen bei der auslösenden Kopfaktion; andere Speicherfehler beim unteren Abschlussbereich. Die Meldung wird fokussiert und in den sichtbaren Bereich gebracht. Im Studio zeigt der gemeinsame Auswahlversatz kurze sichtbare X-/Y-/Z-Beschriftungen mit Einheit und vollständigen zugänglichen Eingabenamen.
+Fehler beim Speichern der Einführung erscheinen innerhalb der Tourkarte. Die Meldung wird fokussiert und in den sichtbaren Bereich gebracht. Im Studio zeigt der gemeinsame Auswahlversatz kurze sichtbare X-/Y-/Z-Beschriftungen mit Einheit und vollständigen zugänglichen Eingabenamen.
 
 ### Quellen und Prüfevidenz
 
 Maßgeblich sind [appearance.ts](packages/contracts/src/appearance.ts), [app.css](apps/web/src/app.css), [AppearanceSettings.svelte](apps/web/src/lib/components/AppearanceSettings.svelte), [Onboarding.svelte](apps/web/src/lib/components/Onboarding.svelte), [Studio.svelte](apps/web/src/lib/components/Studio.svelte) und dessen Unterkomponenten. Betriebsverhalten ist in [Persönliche Darstellung](docs/operations/personal-appearance.md) dokumentiert.
+
+Die ergänzten Bedienmuster sind außerdem in [Assistant.svelte](apps/web/src/lib/components/Assistant.svelte), [CompanionHome.svelte](apps/web/src/lib/components/CompanionHome.svelte), [SectionNavigation.svelte](apps/web/src/lib/components/SectionNavigation.svelte), [TrendPlot.svelte](apps/web/src/lib/components/reporting/TrendPlot.svelte), [FeedbackWidget.svelte](apps/web/src/lib/components/FeedbackWidget.svelte) und dem gemeinsamen Seitenrahmen belegt. Diese Quellenaufnahme ergänzt die Systemdokumentation; sie ist keine neue Gesamtfreigabe.
 
 Die dreizehn aktuellen Aufnahmen unter `.impeccable/review/appearance-*.png` belegen den visuellen Kontext einschließlich mobiler und großer Ansichten sowie gezielt ausgelöster Speicherfehler. Die abschließende fokussierte Nachprüfung der drei Befunde zu Fehlerrückmeldung, Achsenbeschriftung und Platzhalterkontrast ergab am 18.10.2026 **ship**; alle drei sind **resolved**. Diese Wertung gilt für den geprüften Korrektursatz. Der umfassendere Testumfang und seine Grenzen sind in `docs/qa/personal-appearance-2026-10-18.md` dokumentiert.
 
@@ -295,6 +324,9 @@ Die dreizehn aktuellen Aufnahmen unter `.impeccable/review/appearance-*.png` bel
 - **Do** die vorhandenen Abstands-, Typografie- und Responsive-Regeln weiterverwenden; komponentenspezifische Unterschiede bleiben dokumentierter Bestand.
 - **Do** Originalschriftbilder, Zeichenpapier, Materialien, 3D-Inhalte und PDF-Farben fachlich unverändert darstellen.
 - **Do** Speichern, Ladezustand, Erfolg und Fehler nachvollziehbar anzeigen und Fehlermeldungen nach der auslösenden Aktion fokussieren.
+- **Do** lange Aktionsnamen umbrechen lassen und bei scrollbaren Dialog- und Hilfeinhalten die Abschlussaktionen erreichbar halten.
+- **Do** umfangreiche Bereichslisten und ergänzende Hilfen über beschriftete, tastaturbedienbare Auswahl- und Aufklappmuster zugänglich machen.
+- **Do** fehlende bestätigte Diagrammwerte ausdrücklich benennen und auf kleinen Bildschirmen lesbare Monatszeilen verwenden.
 
 ### Don't:
 

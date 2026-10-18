@@ -1,0 +1,2 @@
+ALTER TABLE product_variant_versions DROP CONSTRAINT public_reference_provenance;
+ALTER TABLE product_variant_versions ADD CONSTRAINT public_reference_provenance CHECK(status<>'source_reference' OR COALESCE(approved_at IS NULL AND content_hash ~ '^[a-f0-9]{64}$' AND source_url LIKE 'https://%' AND validation_report->>'kind'='manufacturer_public_reference' AND validation_report->>'sourceHash' ~ '^[a-f0-9]{64}$' AND validation_report->>'publicSourceKey' IS NOT NULL,false));
