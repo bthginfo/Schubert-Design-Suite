@@ -9,15 +9,16 @@ import {buildDocumentSource} from './render-request.js';
 
 async function preparePreview(r:any){
   assertPermission(r.ctx.permissions,'documents');
+  const documentPreview=r.command.name==='documents.preview'||r.payload.ai_preview===true;
   const p=z.object({document_version_id:z.uuid().optional(),document_id:z.uuid().optional(),page_index:z.number().int().min(0).max(999).default(0),ai_preview:z.boolean().default(false)}).refine(p=>p.document_version_id||p.document_id).parse(r.payload);const currentDocument=p.document_id?await getRecord(r.db,'documents',p.document_id):null;
   const version=await getRecord(r.db,'document_versions',p.document_version_id??currentDocument.current_version_id),doc=await getRecord(r.db,'documents',version.document_id);
   await assertDocumentAccess(r.db,r.ctx,doc);
   requireRule(doc.status==='available'&&version.status==='available','DOCUMENT_QUARANTINE','Die Originaldatei muss zuerst die Dateiprüfung abschließen.',409);
   requireRule(['application/pdf','image/png','image/jpeg','image/webp','image/tiff'].includes(doc.mime_type),'PLAN_SOURCE_TYPE','Eine PDF-Unterlage oder ein geprüftes Foto auswählen.');
   await r.db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[r.ctx.tenantId+':source-preview:'+version.id+':'+p.page_index]);
-  const existing=await one<any>(r.db,"SELECT * FROM job_runs WHERE job_type=$3 AND payload->>'documentVersionId'=$1 AND (payload->>'pageIndex')::int=$2 AND COALESCE((payload->>'aiPreview')::boolean,false)=$4 AND status IN('pending','running','retry','completed') ORDER BY created_at DESC LIMIT 1",[version.id,p.page_index,p.ai_preview?'document.preview':'planning.source.preview',p.ai_preview]);
+  const existing=await one<any>(r.db,"SELECT * FROM job_runs WHERE job_type=$3 AND payload->>'documentVersionId'=$1 AND (payload->>'pageIndex')::int=$2 AND COALESCE((payload->>'aiPreview')::boolean,false)=$4 AND status IN('pending','running','retry','completed') ORDER BY created_at DESC LIMIT 1",[version.id,p.page_index,documentPreview?'document.preview':'planning.source.preview',p.ai_preview]);
   if(existing)return previewJobResult(existing);
-  const job=await r.insert('job_runs',{job_type:p.ai_preview?'document.preview':'planning.source.preview',name:p.ai_preview?'Kleine Bildreferenz für KI vorbereiten':'Grundrissseite und Textpositionen',payload:{documentId:doc.id,documentVersionId:version.id,pageIndex:p.page_index,sourceHash:version.content_hash,aiPreview:p.ai_preview},status:'pending'});
+  const job=await r.insert('job_runs',{job_type:documentPreview?'document.preview':'planning.source.preview',name:p.ai_preview?'Kleine Bildreferenz für KI vorbereiten':documentPreview?'Bildvorlage für Fotobearbeitung':'Grundrissseite und Textpositionen',payload:{documentId:doc.id,documentVersionId:version.id,pageIndex:p.page_index,sourceHash:version.content_hash,aiPreview:p.ai_preview},status:'pending'});
   return previewJobResult(job);
 }
 register('planning.source.preview','planning',preparePreview);

@@ -1,7 +1,13 @@
 import {describe,expect,it} from 'vitest';
-import {sourceReferences,assistantRestrictedPaths,type AssistantSource} from './assistant';
+import {sourceReferences,assistantRestrictedPaths,selectedPlanningElements,type AssistantSource} from './assistant';
 const source:AssistantSource={key:'local-only',documentId:'selected-document',name:'Konkrete Testquelle',pageNumber:3,includeImage:false};
 describe('explicit assistant document references',()=>{
+ it('retains template component IDs while bounding untrusted browser selection events',()=>{
+  const wall='9b9d590b-6393-44d9-bc91-2329e34413af:wall:0';
+  expect(selectedPlanningElements([wall,wall,'',null,42,'x'.repeat(201)])).toEqual([wall]);
+  expect(selectedPlanningElements({id:wall})).toEqual([]);
+  expect(selectedPlanningElements(Array.from({length:30},(_,i)=>'component:'+i))).toHaveLength(20);
+ });
  it('sends only the selected document, zero-based page and explicit image choice',()=>{
   expect(sourceReferences([source])).toEqual([{document_id:'selected-document',page_index:2,include_image:false}]);
   expect(JSON.stringify(sourceReferences([source]))).not.toMatch(/local-only|Konkrete|history|password|bytes/);

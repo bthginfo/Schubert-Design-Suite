@@ -31,7 +31,7 @@ async function imageBasis(db:any,ctx:ActorContext,p:z.infer<typeof visualization
  const references=[];
  for(const [index,id] of p.reference_document_ids.entries()){
   const doc=await getRecord(db,'documents',id);await assertDocumentAccess(db,ctx,doc);requireRule(doc.status==='available'&&!personnelDocumentTypes.includes(doc.entity_type),'IMAGE_REFERENCE_SCOPE','Die ausgewählte Bildquelle ist nicht verfügbar.');
-  const version=await getRecord(db,'document_versions',doc.current_version_id),preview=await one<any>(db,"SELECT result FROM job_runs WHERE id=$2 AND job_type='document.preview' AND payload->>'documentVersionId'=$1 AND status='completed'",[version.id,p.reference_preview_job_ids[index]]);
+  const version=await getRecord(db,'document_versions',doc.current_version_id),preview=await one<any>(db,"SELECT result FROM job_runs WHERE id=$2 AND job_type IN('document.preview','planning.source.preview') AND payload->>'documentVersionId'=$1 AND status='completed'",[version.id,p.reference_preview_job_ids[index]]);
   requireRule(version.status==='available'&&preview?.result?.sourceHash===version.content_hash&&preview.result.width>0&&preview.result.width<=1440&&preview.result.height>0&&preview.result.height<=1440,'IMAGE_REFERENCE_PREPARE','Die ausgewählte Bildseite zuerst vorbereiten und prüfen.');
   references.push({documentId:doc.id,documentVersionId:version.id,sourceHash:version.content_hash,...preview.result});
  }

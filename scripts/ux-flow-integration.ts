@@ -11,6 +11,16 @@ import {planningDraftOperations} from '../packages/ai/src/planning-draft.js';
 export async function uxFlowIntegration(actor:(role:string)=>ActorContext,test:(label:string,run:()=>Promise<void>)=>Promise<void>){
  const owner=actor('Owner'),employee=actor('Employee');
  const call=(ctx:ActorContext,name:string,payload:object={},record?:any,key=randomUUID())=>executeCommand(ctx,{name,payload,id:record?.id,expectedVersion:record?.version,idempotencyKey:key});
+ await test('Photo-edit and chat previews retain document binding with separate image resolutions',async()=>{
+  const source=await withTenant(owner,db=>one<any>(db,"SELECT v.id FROM document_versions v JOIN documents d ON d.current_version_id=v.id WHERE d.status='available' AND v.status='available' AND d.mime_type IN('image/png','application/pdf') ORDER BY d.created_at LIMIT 1"));
+  assert(source,'A real available document from the testing fixture is required');
+  for(const small of [false,true]){
+   const result=await call(owner,'documents.preview',{document_version_id:source.id,page_index:0,ai_preview:small});
+   const job=await withTenant(owner,db=>one<any>(db,'SELECT job_type,payload FROM job_runs WHERE id=$1',[result.job_id]));
+   assert.equal(job.job_type,'document.preview');assert.equal(job.payload.aiPreview,small);assert.equal(job.payload.documentVersionId,source.id);
+   const repeated=await call(owner,'documents.preview',{document_version_id:source.id,page_index:0,ai_preview:small});assert.equal(repeated.job_id,result.job_id);
+  }
+ });
  await test('Studio search reaches older projects and keyset pagination returns each tied timestamp once',async()=>{
   const prefix='Synthetic search '+randomUUID(),fixtures=Array.from({length:31},(_,i)=>({...baseData(owner),id:randomUUID(),name:prefix+' '+i,kind:'room_plan',status:'draft',updated_at:'2002-01-01T12:00:00.123456Z'}));
   await withTenant(owner,db=>insertMany(db,'planning_projects',fixtures));

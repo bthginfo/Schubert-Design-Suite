@@ -13,8 +13,8 @@
 
 ## Technische Nachweise
 
-- 277 Unit-Tests in 50 Dateien bestanden.
-- 33 echte PostgreSQL-Prüfungen bestanden. Zusätzlich geprüft: 31 gleich datierte Projekte über zwei Seiten ohne Duplikate; Suche nach älteren Projekten; mehr als 25 Monatszuordnungen; Überlappungen und Datumsgrenzen; gespeicherte Raum-/Grabmalvorschläge mit Versionskonflikt; idempotenter Herstellerimport, Mandantentrennung, unveränderliche Quellen und gesperrte Fertigungsfreigabe.
+- 278 Unit-Tests in 50 Dateien bestanden.
+- 34 echte PostgreSQL-Prüfungen bestanden. Zusätzlich geprüft: 31 gleich datierte Projekte über zwei Seiten ohne Duplikate; Suche nach älteren Projekten; mehr als 25 Monatszuordnungen; Überlappungen und Datumsgrenzen; gespeicherte Raum-/Grabmalvorschläge mit Versionskonflikt; idempotenter Herstellerimport, Mandantentrennung, unveränderliche Quellen und gesperrte Fertigungsfreigabe.
 - Svelte-/TypeScript-Prüfung ohne Fehler oder Warnungen; Produktions-Build erfolgreich.
 - Reale Browserabläufe: Einführung einschließlich Fehler und mobiler Rollenführung; persönliche Darstellung; Feedback; Hilfe; Verbrauch; Nummernkreise; Monatsdisposition und Bereichsnavigation; manuelles Nachtragen und Offline-Timer; Grundriss/Grabmal mit erneutem Öffnen, 3D, Stückliste und echten PDF-Exporten.
 - Begleiter: Seitenhilfe ohne Anbieteranfrage, explizites Senden, begrenzter Verlauf, Rückkehr zum ursprünglichen Gespräch, mobiler Fokus und automatisierte WCAG-A/AA-Prüfung. Nur die kostenpflichtige Chat-Antwort wurde in diesem gezielten Browsertest ausdrücklich simuliert; echte Anbieterprüfungen des vorigen Standes sind separat in acceptance.md dokumentiert.
@@ -37,4 +37,12 @@ Keine feste monatliche Renderstückzahl, kein neuer kostenpflichtiger Dienst und
 
 ## Live-Nachprüfung des Modellformats
 
-Die erste tatsächliche Erstentwurfsanfrage mit Luna wurde nach dem Anbieteraufruf wegen eines ungültigen Vorschlagsformats abgewiesen. Kein Plan wurde geändert; 0,000243 USD wurden als tatsächlicher Verbrauch erfasst. Erstentwürfe erhalten deshalb ein eigenes strikt strukturiertes Antwortfeld mit vollständigen Maßangaben. Ziel und Basisrevision werden ausschließlich aus dem aktuellen Serverkontext gebunden. Abgewiesene Modellvorschläge werden als ungültige Antwort markiert, ohne automatische kostenpflichtige Wiederholung. 277 Unit-Tests bestanden, einschließlich der Bindung und abgelehnter unvollständiger Maße.
+Die erste tatsächliche Erstentwurfsanfrage mit Luna wurde nach dem Anbieteraufruf wegen eines ungültigen Vorschlagsformats abgewiesen. Kein Plan wurde geändert; 0,000243 USD wurden als tatsächlicher Verbrauch erfasst. Erstentwürfe erhalten deshalb ein eigenes strikt strukturiertes Antwortfeld mit vollständigen Maßangaben. Ziel und Basisrevision werden ausschließlich aus dem aktuellen Serverkontext gebunden. Abgewiesene Modellvorschläge werden als ungültige Antwort markiert, ohne automatische kostenpflichtige Wiederholung. 278 Unit-Tests bestanden, einschließlich der Bindung und abgelehnter unvollständiger Maße.
+
+## Tats?chliche Live-Abnahme nach der Formatkorrektur
+
+Zwei neue Erstentw?rfe wurden auf der Produktivadresse mit gpt-6-luna angefragt, ausdr?cklich ?ber den Vorschlagsendpunkt ?bernommen und nach erneutem ?ffnen als bearbeitbare Geometrie best?tigt: rechteckiger Raum und stehender Grabmalstein ohne Inschrift. Erfasste Kosten anhand der Anbieternutzung und hinterlegten Preise: 0,00022105 USD und 0,0002138 USD.
+
+Aus den beiden gespeicherten Revisionen wurden anschlie?end echte Bildauftr?ge mit gpt-image-2.5-flare erzeugt, privat gespeichert und ?ber die authentifizierte Anwendung heruntergeladen. Beide Ergebnisse haben 1536 ? 1024 Pixel in mittlerer Qualit?t. Das Raumkonzept (0,032375 USD) und das Grabmalkonzept (0,02755 USD) wurden visuell auf Materialstruktur, plausible Beleuchtung, saubere Bildausgabe und Konzeptkennzeichnung gepr?ft. Dies belegt diese zwei Ausgaben; es ist keine Garantie ma?haltiger oder geometrisch identischer Modellbilder.
+
+Die anschlie?ende Pr?fung korrigierte au?erdem die Auswahl automatisch erzeugter Komponenten im Begleiter und die Zuordnung gro?er Fotovorlagen zum Bildauftrag. Chat-Vorschauen bleiben auf 512 Pixel begrenzt, Fotobearbeitung nutzt bis 1440 Pixel. Bereits vorbereitete ?ltere Bildvorlagen bleiben mit derselben Quellen- und Hash-Pr?fung verwendbar. 278 Unit-Tests und 34 PostgreSQL-Pr?fungen bestanden.
