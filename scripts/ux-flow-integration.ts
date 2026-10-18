@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {withTenant,rows,one,insertMany} from '@schubert/db';
+import {withTenant,rows,one,insert,insertMany} from '@schubert/db';
 import {executeCommand,loadPage,invalidateReads,baseData,prepareAssistantContext,assistantInputSchema,applyAIProposal} from '@schubert/application';
 import {searchPlanningProducts} from '../packages/application/src/catalog-search.js';
 import {validatePlanningReferences} from '../packages/application/src/planning.js';
@@ -12,14 +12,14 @@ export async function uxFlowIntegration(actor:(role:string)=>ActorContext,test:(
  const owner=actor('Owner'),employee=actor('Employee');
  const call=(ctx:ActorContext,name:string,payload:object={},record?:any,key=randomUUID())=>executeCommand(ctx,{name,payload,id:record?.id,expectedVersion:record?.version,idempotencyKey:key});
  await test('Photo-edit and chat previews retain document binding with separate image resolutions',async()=>{
-  const source=await withTenant(owner,db=>one<any>(db,"SELECT v.id FROM document_versions v JOIN documents d ON d.current_version_id=v.id WHERE d.status='available' AND v.status='available' AND d.mime_type IN('image/png','application/pdf') ORDER BY d.created_at LIMIT 1"));
-  assert(source,'A real available document from the testing fixture is required');
-  for(const small of [false,true]){
+  // Metadata-only routing fixture. No worker or external storage is invoked by this test.
+  const source=await withTenant(owner,async db=>{const common=baseData(owner),blob=await insert(db,'blob_objects',{...common,storage_key:'synthetic-preview-routing/'+randomUUID(),provider:'integration_fixture',content_hash:'a'.repeat(64),mime_type:'image/png',size_bytes:1}),document=await insert(db,'documents',{...common,name:'Synthetic preview-routing metadata',original_name:'synthetic.png',mime_type:'image/png',size_bytes:1,content_hash:blob.content_hash,status:'available'}),version=await insert(db,'document_versions',{...common,document_id:document.id,blob_object_id:blob.id,content_hash:blob.content_hash,revision:1,status:'available'});await db.query('UPDATE documents SET current_version_id=$1 WHERE id=$2',[version.id,document.id]);return{id:version.id,documentId:document.id,blobId:blob.id};});
+  try{for(const small of [false,true]){
    const result=await call(owner,'documents.preview',{document_version_id:source.id,page_index:0,ai_preview:small});
    const job=await withTenant(owner,db=>one<any>(db,'SELECT job_type,payload FROM job_runs WHERE id=$1',[result.job_id]));
    assert.equal(job.job_type,'document.preview');assert.equal(job.payload.aiPreview,small);assert.equal(job.payload.documentVersionId,source.id);
    const repeated=await call(owner,'documents.preview',{document_version_id:source.id,page_index:0,ai_preview:small});assert.equal(repeated.job_id,result.job_id);
-  }
+  }}finally{await withTenant(owner,async db=>{await db.query("DELETE FROM job_runs WHERE payload->>'documentVersionId'=$1",[source.id]);await db.query('UPDATE documents SET current_version_id=NULL WHERE id=$1',[source.documentId]);await db.query('DELETE FROM document_versions WHERE id=$1',[source.id]);await db.query('DELETE FROM documents WHERE id=$1',[source.documentId]);await db.query('DELETE FROM blob_objects WHERE id=$1',[source.blobId]);});}
  });
  await test('Studio search reaches older projects and keyset pagination returns each tied timestamp once',async()=>{
   const prefix='Synthetic search '+randomUUID(),fixtures=Array.from({length:31},(_,i)=>({...baseData(owner),id:randomUUID(),name:prefix+' '+i,kind:'room_plan',status:'draft',updated_at:'2002-01-01T12:00:00.123456Z'}));
