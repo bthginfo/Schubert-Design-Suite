@@ -14,6 +14,8 @@ Das Fragezeichen oben öffnet Hilfe zur aktuellen Seite. Für Fachlisten werden 
 
 ## Nummernkreise
 
+Die Einführung führt durch sämtliche berechtigten Hauptarbeitsbereiche einschließlich Einkauf, Lager, Team und Disposition; mit Integrationsrecht zusätzlich KI-Verbrauch. Jede Station öffnet die tatsächliche Seite und hebt einen Bereich hervor. Eine Stationsauswahl ermöglicht direkte Sprünge. Pausierte ältere Einführungen werden auf die ursprüngliche Station abgebildet; abgeschlossene Einführungen starten nicht ungefragt erneut.
+
 Unter **Einstellungen → Nummernkreise** stehen unter anderem Rechnungen, Angebote, Aufträge, Kunden, Lieferanten, Bestellungen und Lieferscheine zur Verfügung. Platzhalter: `{NR}`, `{JJJJ}`, `{JJ}`, `{MM}`. Mindeststellen führen nur Nullen voran und kürzen eine größere laufende Nummer niemals.
 
 Die nächste freie Nummer ist die erste Nummer, die nach Speicherung vergeben werden soll. Beispiel: letzte Nummer im Altsystem 347 → Start bei 348. Bereits in der Suite verbrauchte Zählerstände dürfen nicht zurückgesetzt werden. Neue Nummern werden atomar und unter derselben Sperre wie Profiländerungen vergeben. Auch Kollisionen mit bestehenden Datensätzen und der unveränderlichen Vergabehistorie werden abgefangen. Ein Rollback verbraucht keine Nummer. Gesperrte Wiederherstellungszähler bleiben gesperrt.
@@ -21,6 +23,8 @@ Die nächste freie Nummer ist die erste Nummer, die nach Speicherung vergeben we
 Jährlicher Neustart benötigt eine Jahresangabe im Format; fortlaufende Zählung nutzt einen gemeinsamen Zähler. Jahr und Monat richten sich nach Europe/Berlin. Rechnungsnummern entstehen weiterhin erst bei der Ausstellung. Die Vorschau ist unverbindlich und verbraucht keine Nummer. Bestehende Belegnummern und ausgestellte Originale bleiben unverändert. Änderungen erfordern aktuelle Version, erneute Authentifizierung, dokumentierten Grund und Auditnachweis.
 
 ## Kennzeichnung und Entfernung der Testdaten
+
+Die ausdrücklich angeforderte Erweiterung v2 ergänzt 325 weitere Einträge in rund 60 Tabellen, darunter acht Aufträge, vier Angebots- und Rechnungsentwürfe, 20 Einsätze, zwölf nacherfasste Zeitentwürfe sowie sieben zusätzliche Grabmal-/Raumplanungen. Der vorhandene v1-Bestand bleibt erhalten. Aufruf: `scripts/demo-data.ts --production --expand`; ein vorgeschaltetes `--dry-run` rollt die vollständige referenzielle Anlage zurück. V2 besitzt ein eigenes Manifest und übernimmt keine Eigentümerschaft an gemeinsam verwendeten Originalunterlagen. Die 96 echten Steinreferenzen gehören separat zur Katalogbibliothek, nicht zu den später zu entfernenden Testdaten.
 
 Der ausdrücklich angeforderte Datensatz enthält fiktive Familien Lenz und Bergmann, verknüpfte Beratung, Angebote, Aufträge, Material, Team, Planung, Unterlagen und Entwürfe in den weiteren Fachbereichen. Die Szenen für Grabmal und Grundriss basieren auf den zuvor geprüften Geometriebeispielen. Es erfolgen keine automatischen KI-Renderings, E-Mails, Bestellungen oder Rechnungsausstellungen.
 

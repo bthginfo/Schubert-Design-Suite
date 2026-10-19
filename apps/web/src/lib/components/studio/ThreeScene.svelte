@@ -6,11 +6,14 @@
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import type { Contour,DesignSnapshot,Point3 } from '@schubert/contracts';
   import { sampleRing,measureValue,worldMatrix,surfaceMatrix,worldPoint,toRenderer,roomContour,hasAssetUsage,wallCoreMesh,wallLayerMeshes,layerSlices,contourParts,withThroughCutouts,stoneDepthSlices,hostMachining,miterCut } from '@schubert/geometry';
+  import{stoneAppearance}from'./stone-appearance.ts';
+  import{letteringLayout,loadPlanningFont}from'./lettering-layout.ts';
+  import'./planning-fonts.css';
   import{clipSolid}from'./clip-solid.ts';
   import {fitPerspectiveBounds} from './camera-fit.ts';
   import {isWallSurface} from './wall-visibility.ts';
   import type{CameraCommand}from'./camera-navigation.ts';
-  let {snapshot,showWalls=true,resetKey=0,assets=[],glyphs=[],cameraCommand=null,onzoomchange=()=>{}}:{snapshot:DesignSnapshot;showWalls?:boolean;resetKey?:number;assets?:any[];glyphs?:any[];cameraCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void}=$props();
+  let {snapshot,showWalls=true,resetKey=0,materials=[],assets=[],glyphs=[],cameraCommand=null,onzoomchange=()=>{}}:{snapshot:DesignSnapshot;showWalls?:boolean;resetKey?:number;materials?:any[];assets?:any[];glyphs?:any[];cameraCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void}=$props();
   const context=useThrelte(),{size}=context;let mounted=$state(false),controls:OrbitControls|undefined;
   const root=new THREE.Group(),camera=new THREE.PerspectiveCamera(38,1,.01,10000);
   let fitted=false,lastReset=-1,generation=0;const downloads=new Set<AbortController>();
@@ -40,14 +43,25 @@
   }
   function shapeFor(contour:Contour){return contourParts(contour).map(part=>{const shape=new THREE.Shape(sampleRing(part.outer).map(p=>new THREE.Vector2(Number(p.xMm)/1000,Number(p.yMm)/1000)));for(const hole of part.holes)shape.holes.push(new THREE.Path(sampleRing(hole).map(p=>new THREE.Vector2(Number(p.xMm)/1000,Number(p.yMm)/1000))));return shape;});}
   function matrixFor(id:string){const m=surfaceMatrix(snapshot,id);return new THREE.Matrix4().set(m[0],m[1],m[2],m[3]/1000,m[4],m[5],m[6],m[7]/1000,m[8],m[9],m[10],m[11]/1000,0,0,0,1);}
-  function addGeometry(geometry:THREE.BufferGeometry,matrix:THREE.Matrix4,color:number,wire=false){geometry.applyMatrix4(matrix).applyMatrix4(C);geometry.computeVertexNormals();const material=new THREE.MeshStandardMaterial({color,roughness:.68,metalness:.05,side:THREE.DoubleSide,transparent:wire,opacity:wire ? .3 : 1});const mesh=new THREE.Mesh(geometry,material);root.add(mesh);const edge=new THREE.LineSegments(new THREE.EdgesGeometry(geometry,20),new THREE.LineBasicMaterial({color:wire?0x617d70:0x444d47}));root.add(edge);}
+  function addGeometry(geometry:THREE.BufferGeometry,matrix:THREE.Matrix4,color:number,wire=false,materialId?:string){geometry.applyMatrix4(matrix).applyMatrix4(C);geometry.computeVertexNormals();const material=new THREE.MeshStandardMaterial({color,roughness:.68,metalness:.05,side:THREE.DoubleSide,transparent:wire,opacity:wire ? .3 : 1});const source=materials.find(m=>m.id===materialId);if(source){const appearance=stoneAppearance(source);material.color.set(appearance.color);material.roughness=appearance.roughness;const sequence=generation;new THREE.TextureLoader().load(appearance.path,texture=>{if(sequence!==generation){texture.dispose();return;}texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(1.25,1.25);texture.anisotropy=Math.min(8,context.renderer.capabilities.getMaxAnisotropy());material.map=texture;material.needsUpdate=true;context.invalidate();});}const mesh=new THREE.Mesh(geometry,material);root.add(mesh);const edge=new THREE.LineSegments(new THREE.EdgesGeometry(geometry,20),new THREE.LineBasicMaterial({color:wire?0x617d70:0x444d47}));root.add(edge);}
+  async function addLettering(element:Extract<DesignSnapshot['elements'][number],{kind:'inscription'}>,sequence:number){
+    try{await loadPlanningFont(element.previewFontKey);if(sequence!==generation||!mounted)return;
+      const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');if(!ctx)return;
+      const font=letteringLayout(snapshot,element).font,layout=letteringLayout(snapshot,element,(text,size)=>{ctx.font=`400 ${size}px "${font.family}"`;return ctx.measureText(text).width;}),padding=Math.max(3,layout.fontSize*.06),width=layout.width+padding*2,height=layout.height+padding*2,density=Math.min(3,4096/width,4096/height);
+      canvas.width=Math.max(1,Math.ceil(width*density));canvas.height=Math.max(1,Math.ceil(height*density));ctx.scale(density,density);ctx.font=`400 ${layout.fontSize}px "${font.family}"`;ctx.textBaseline='alphabetic';ctx.textAlign=layout.anchor==='middle'?'center':layout.anchor as CanvasTextAlign;ctx.fillStyle=layout.color;ctx.strokeStyle='#25231f';ctx.lineWidth=.35;
+      ctx.translate(padding-layout.left,padding+layout.top);ctx.scale(layout.scale,1);for(const row of layout.rows){ctx.strokeText(row.text,0,-row.baseline);ctx.fillText(row.text,0,-row.baseline);}
+      const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
+      const geometry=new THREE.PlaneGeometry(width/1000,height/1000),matrix=matrixFor(element.surfaceElementId).multiply(new THREE.Matrix4().makeTranslation(Number(element.originUV.uMm)/1000,Number(element.originUV.vMm)/1000,.0008)).multiply(new THREE.Matrix4().makeRotationZ(Number(element.rotationDeg)*Math.PI/180)).multiply(new THREE.Matrix4().makeTranslation((layout.left+layout.width/2)/1000,(layout.top-layout.bottom)/2000,0));
+      geometry.applyMatrix4(matrix).applyMatrix4(C);const mesh=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({map:texture,transparent:true,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1}));mesh.userData.lettering=true;root.add(mesh);context.invalidate();
+    }catch{if(sequence===generation)console.warn('Entwurfsschrift ist derzeit nicht verfügbar. Die Inschrift bleibt gespeichert.');}
+  }
   function rebuild(){dispose();
     for(const e of snapshot.elements.filter(e=>e.phase!=='demolition')){
       const firstChild=root.children.length;
       if(e.kind==='stone_piece'){
         const {slices}=stoneDepthSlices(snapshot,e),miters=hostMachining(snapshot,e.id).filter(f=>f.machiningType==='miter');
-        if(!slices.length)addGeometry(new THREE.ShapeGeometry(shapeFor(e.finishedContour)),matrixFor(e.id),0xc9c4b8);
-        for(const slice of slices){let geometry:THREE.BufferGeometry=new THREE.ExtrudeGeometry(shapeFor(slice.contour),{depth:(Number(slice.topMm)-Number(slice.bottomMm))/1000,bevelEnabled:false,curveSegments:32});geometry.translate(0,0,Number(slice.bottomMm)/1000);for(const feature of miters)if(feature.miter){const next=clipSolid(geometry,miterCut(snapshot,e,feature.miter.edgeIndex,feature.miter.angleDeg,feature.face).keepPlane);geometry.dispose();geometry=next;}addGeometry(geometry,matrixFor(e.id),e.purpose==='memorial'?0xb7b4aa:0xc9c4b8);}
+        if(!slices.length)addGeometry(new THREE.ShapeGeometry(shapeFor(e.finishedContour)),matrixFor(e.id),0xc9c4b8,false,e.materialSpecVersionId);
+        for(const slice of slices){let geometry:THREE.BufferGeometry=new THREE.ExtrudeGeometry(shapeFor(slice.contour),{depth:(Number(slice.topMm)-Number(slice.bottomMm))/1000,bevelEnabled:false,curveSegments:32});geometry.translate(0,0,Number(slice.bottomMm)/1000);for(const feature of miters)if(feature.miter){const next=clipSolid(geometry,miterCut(snapshot,e,feature.miter.edgeIndex,feature.miter.angleDeg,feature.face).keepPlane);geometry.dispose();geometry=next;}addGeometry(geometry,matrixFor(e.id),e.purpose==='memorial'?0xb7b4aa:0xc9c4b8,false,e.materialSpecVersionId);}
       }
       if(e.kind==='wall'){
         const a=snapshot.elements.find(n=>n.id===e.startNodeId),b=snapshot.elements.find(n=>n.id===e.endNodeId),height=measureValue(snapshot,e.heightMeasureId),thickness=measureValue(snapshot,e.coreThicknessMeasureId);
@@ -62,7 +76,8 @@
       }
       if(e.kind==='room'){const contour=roomContour(snapshot,e.id),slices=layerSlices(snapshot,e);if(contour){if(!slices.layers.length){const geometry=new THREE.ShapeGeometry(shapeFor(contour));const level=measureValue(snapshot,e.finishedFloorLevelMeasureId);if(level!==null)addGeometry(geometry,new THREE.Matrix4().makeTranslation(0,0,Number(level)/1000),0xddd8cb);else geometry.dispose();}for(const layer of slices.layers){const geometry=new THREE.ExtrudeGeometry(shapeFor(contour),{depth:(Number(layer.topMm)-Number(layer.bottomMm))/1000,bevelEnabled:false});addGeometry(geometry,new THREE.Matrix4().makeTranslation(0,0,Number(layer.bottomMm)/1000),0xddd8cb);}}}
       if(e.kind==='catalog_object'){const h=measureValue(snapshot,e.heightMeasureId??null),index=root.children.length;addGeometry(h!==null?new THREE.ExtrudeGeometry(shapeFor(e.footprint),{depth:Number(h)/1000,bevelEnabled:false}):new THREE.ShapeGeometry(shapeFor(e.footprint)),matrixFor(e.id),0x315c4c,true);if(e.assetVersionId)void loadOriginal(e,root.children.slice(index),generation);}
-      if(e.kind==='surface'){const slices=layerSlices(snapshot,e),color=e.surfaceType==='shower'?0xaebfb3:0xd2cbbd;if(!slices.layers.length)addGeometry(new THREE.ShapeGeometry(shapeFor(e.contour)),matrixFor(e.id),color);for(const layer of slices.layers){const geometry=new THREE.ExtrudeGeometry(shapeFor(e.contour),{depth:(Number(layer.topMm)-Number(layer.bottomMm))/1000,bevelEnabled:false});geometry.translate(0,0,Number(layer.bottomMm)/1000);addGeometry(geometry,matrixFor(e.id),color);}}
+      if(e.kind==='surface'){const slices=layerSlices(snapshot,e),color=e.surfaceType==='shower'?0xaebfb3:0xd2cbbd;if(!slices.layers.length)addGeometry(new THREE.ShapeGeometry(shapeFor(e.contour)),matrixFor(e.id),color,false,e.layers.at(-1)?.materialSpecVersionId);for(const layer of slices.layers){const geometry=new THREE.ExtrudeGeometry(shapeFor(e.contour),{depth:(Number(layer.topMm)-Number(layer.bottomMm))/1000,bevelEnabled:false});geometry.translate(0,0,Number(layer.bottomMm)/1000);addGeometry(geometry,matrixFor(e.id),color,false,layer.materialSpecVersionId);}}
+      if(e.kind==='inscription'&&e.renderingBasis==='shop_image_reference')void addLettering(e,generation);
       if(e.kind==='inscription'&&e.renderingBasis==='verified_contours'){
         const base=matrixFor(e.surfaceElementId).multiply(new THREE.Matrix4().makeTranslation(Number(e.originUV.uMm)/1000,Number(e.originUV.vMm)/1000,.0001)).multiply(new THREE.Matrix4().makeRotationZ(Number(e.rotationDeg)*Math.PI/180));
         for(const placement of e.glyphPlacements){const glyph=glyphs.find(g=>g.id===placement.glyphAssetVersionId),manifest=snapshot.assetManifest.find(a=>a.assetVersionId===placement.glyphAssetVersionId);if(!glyph||!hasAssetUsage(glyph,'internal_consultation')||!glyph.geometry_verified||!glyph.contour||manifest?.contentHash!==glyph.content_hash||glyph.text!==placement.codepointText)continue;
@@ -87,7 +102,7 @@
   }
   $effect(()=>{const {width,height}=$size;if(mounted&&width>0&&height>0&&fitted)fitCamera();});
   onMount(()=>{context.scene.add(root);context.scene.background=new THREE.Color(0xf4f4ef);const ambient=new THREE.HemisphereLight(0xffffff,0x7d8576,2.7),sun=new THREE.DirectionalLight(0xfff8ec,3);sun.position.set(3,6,4);context.scene.add(ambient,sun);controls=new OrbitControls(camera,context.renderer.domElement);controls.enableDamping=false;controls.addEventListener('change',cameraChanged);mounted=true;return()=>{mounted=false;dispose();controls?.dispose();context.scene.remove(root,ambient,sun);};});
-  $effect(()=>{snapshot;assets;glyphs;if(mounted)rebuild();});
+  $effect(()=>{snapshot;assets;glyphs;materials;if(mounted)rebuild();});
   $effect(()=>{const reset=resetKey;if(mounted&&reset!==lastReset){fitCamera(true);lastReset=reset;}});
   $effect(()=>{if(mounted&&cameraCommand&&cameraCommand!==lastCommand){lastCommand=cameraCommand;navigate(cameraCommand);}});
 </script>

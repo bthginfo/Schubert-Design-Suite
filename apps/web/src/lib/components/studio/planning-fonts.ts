@@ -1,0 +1,77 @@
+// Metrics and hashes are derived from the self-hosted, licensed original fonts.
+export const planningFonts = [
+  {
+    "key": "notoserif",
+    "label": "Noto Serif",
+    "family": "Schubert Noto Serif",
+    "path": "/planning-fonts/notoserif.ttf",
+    "capRatio": 0.714,
+    "ascender": 1.069,
+    "descender": 0.293,
+    "source": "https://github.com/google/fonts/blob/main/ofl/notoserif/NotoSerif[wdth,wght].ttf",
+    "sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+    "license": "SIL Open Font License 1.1"
+  },
+  {
+    "key": "cinzel",
+    "label": "Cinzel",
+    "family": "Schubert Cinzel",
+    "path": "/planning-fonts/cinzel.ttf",
+    "capRatio": 0.7,
+    "ascender": 0.976,
+    "descender": 0.372,
+    "source": "https://github.com/google/fonts/blob/main/ofl/cinzel/Cinzel[wght].ttf",
+    "sha256": "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
+    "license": "SIL Open Font License 1.1"
+  },
+  {
+    "key": "lora",
+    "label": "Lora",
+    "family": "Schubert Lora",
+    "path": "/planning-fonts/lora.ttf",
+    "capRatio": 0.7,
+    "ascender": 1.006,
+    "descender": 0.274,
+    "source": "https://github.com/google/fonts/blob/main/ofl/lora/Lora[wght].ttf",
+    "sha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+    "license": "SIL Open Font License 1.1"
+  },
+  {
+    "key": "cormorantgaramond",
+    "label": "Cormorant Garamond",
+    "family": "Schubert Cormorant Garamond",
+    "path": "/planning-fonts/cormorantgaramond.ttf",
+    "capRatio": 0.625,
+    "ascender": 0.924,
+    "descender": 0.287,
+    "source": "https://github.com/google/fonts/blob/main/ofl/cormorantgaramond/CormorantGaramond[wght].ttf",
+    "sha256": "b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0",
+    "license": "SIL Open Font License 1.1"
+  },
+  {
+    "key": "greatvibes",
+    "label": "Great Vibes",
+    "family": "Schubert Great Vibes",
+    "path": "/planning-fonts/greatvibes.ttf",
+    "capRatio": 0.75,
+    "ascender": 0.851,
+    "descender": 0.401,
+    "source": "https://github.com/google/fonts/blob/main/ofl/greatvibes/GreatVibes-Regular.ttf",
+    "sha256": "8d509802186f1b51572531ecf313e8098f9a5bfdfaca93f0c9b34467f9982d15",
+    "license": "SIL Open Font License 1.1"
+  },
+  {
+    "key": "montserrat",
+    "label": "Montserrat",
+    "family": "Schubert Montserrat",
+    "path": "/planning-fonts/montserrat.ttf",
+    "capRatio": 0.7,
+    "ascender": 0.968,
+    "descender": 0.251,
+    "source": "https://github.com/google/fonts/blob/main/ofl/montserrat/Montserrat[wght].ttf",
+    "sha256": "0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7",
+    "license": "SIL Open Font License 1.1"
+  }
+] as const;
+export type PlanningFontKey=typeof planningFonts[number]["key"];
+export const planningFont=(key?:string)=>planningFonts.find(font=>font.key===key)??planningFonts[0];

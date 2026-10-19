@@ -1,0 +1,16 @@
+# Abnahme: Studio, Einführung und Navy-Darstellung
+
+Stand: 19.10.2026. Lokale Anwendung gegen echten PostgreSQL-Testmandanten; keine bezahlten KI-Aufrufe für diese Prüfung.
+
+- `pnpm check`: keine Fehler oder Warnungen. `pnpm build`: erfolgreich einschließlich geprüfter Schrift-/Texturdateien und Worker-Build.
+- 322 Tests in 53 Dateien erfolgreich. Abgedeckt sind unter anderem 14 gültige Grundformen, exakte Oval-Außenmaße, Rundung/Fase, Bogenradien, projizierte Schriftflächen, Textlayout, unabhängige Textbewegung mit Undo und Kontraste jeder Navy-Akzentfamilie.
+- 37 echte PostgreSQL-Integrationsprüfungen erfolgreich. Die Steinbibliothek importiert 96 Quellenreferenzen einmalig, behält Quellenhashes und erfindet keine Freigaben. Ein absichtlich abgebrochener Command wird vollständig zurückgerollt und sicher wiederholt: jeweils nur ein Geschäftsdatensatz, Audit- und Outbox-Eintrag. Verbindungsfehler mit unbekanntem Ausgang werden nicht automatisch wiederholt.
+- Sieben relevante Browserfälle erfolgreich: persönliche Darstellung, dunkle Fachformulare/Feedback/Studio, komplette Rollenführung, mobile Rollenführung, lesbare Studio-Leerzustände, direkte Form-/Schriftbedienung sowie repräsentative Grabmal-/Raumplanung mit Export. Bestätigungsrunden wiederholen nur betroffene Fälle.
+- Die vollständige Führung besucht auch Produkte, Einkauf, Lager, Team, Monatsdisposition, Zeitnacherfassung, Dokumente, Aufgaben, Berichte und Administration. Später pausieren und an der Disposition fortsetzen funktioniert. Der KI-Verbrauch wird mit passender Berechtigung als eigene Station besucht.
+- Im tatsächlichen Formular werden gerundete Ecken mit 60 mm, eine Quellenreferenz „Impala“ und eine mehrzeilige Inschrift angelegt. Text ziehen, Pfeiltasten, Zentrieren, Drehen, unabhängige Rasteroptionen, Speicherung und erneutes Öffnen sind geprüft. 3D zeigt beide vollständigen Textzeilen.
+- Vollbild und Rückkehr funktionieren. Bei 375 CSS-Pixeln stehen die Studioaktionen in zwei ausreichend breiten Spalten. Die visuelle Prüfung korrigierte zuvor abgeschnittenen 3D-Text und senkrecht umgebrochene Aktionsbeschriftungen.
+- Hell/Dunkel und die tatsächlichen Formulare wurden mit Browser-Kontrastprüfungen und Screenshots geprüft. Zeichnungspapier bleibt hell, während der Leerzustand die korrekten Oberflächen-/Textfarben verwendet.
+- Für Grabmal und Raum wurden echte fünfseitige Planungs-PDFs erzeugt. Front-/Draufansichten wurden gerendert und visuell geprüft: Maße, Türanschlag, Konturen, Maßstab und Revisionsbezug sind lesbar. Schriftanforderungen bleiben vom technischen Originalkontur-Nachweis getrennt.
+- Die v2-Testdatenanlage hat die vollständige referenzielle Probe mit 325 Zeilen und sieben zusätzlichen Plänen bestanden; die Probedaten wurden zurückgerollt. Produktive Anlage erfolgt ausdrücklich, einmalig und mit eigenem Manifest. Bestehende v1-Daten bleiben erhalten.
+
+Die strukturierte Browserprüfung ersetzt keine Prüfung auf einem realen iPhone/Android-Gerät. Repräsentative Steintexturen sind keine Fotos der konkreten Lieferplatte; Entwurfsschriften sind keine bestätigten Herstellerkonturen. Fertigungs- und Rechnungsfreigaben bleiben an die vorhandenen echten Nachweise gebunden.

@@ -16,6 +16,12 @@ Die Anwendung verteilt keine zugekauften Herstellerkonturen oder Bohrdaten. Schu
 
 ## Renderer und Schriften
 
+Die Gestaltungsvorschau verwendet Noto Serif, Cinzel, Lora, Cormorant Garamond, Great Vibes und Montserrat unter SIL Open Font License 1.1. Vollständige OFL-Texte stehen in `apps/web/static/planning-fonts/*-OFL.txt`; das Manifest enthält feste Quellen und SHA-256. Diese Entwurfsschriften werden nicht als Herstelleroriginale ausgegeben.
+
+Repräsentative Gesteinsstrukturen von ambientCG sind nach [CC0 1.0](https://docs.ambientcg.com/license/) auch innerhalb kommerzieller Anwendungen weitergebbar. `apps/web/static/planning-materials/manifest.json` führt Kennungen, Quellen und Hashes. Der Build prüft die Dateien vor der lokalen Auslieferung. Die Texturen sind keine behaupteten Originalabbildungen bestimmter Lieferplatten.
+
+Handelsnamen, Gesteinsbezeichnungen und Herkunftsangaben aus dem ROSSITTIS-Steinlexikon werden als Fakten mit Quellenhash, Datum und Link geführt. Lieferantenfotos, Marketingtexte und technische Freigaben werden nicht übernommen.
+
 Blender4.5.14 wird als isolierter Prozess aus der offiziellen Distribution verwendet, SHA256 `9ba871ff2ecd36526b77432745980b7e6664ecd0c7ca11c48849073dcfe06da3`. Die Distribution enthält ihre Lizenzdateien. Blender steht unter GPL; korrespondierende Quellen und Lizenzinformationen: [Blender-Lizenz](https://www.blender.org/about/license/), [offizielle Releases](https://download.blender.org/release/Blender4.5/), [Quellcode](https://projects.blender.org/blender/blender). Die eigenständige Prozessanbindung macht kein Hersteller-CAD-Modell zu einem frei lizenzierten Asset.
 
 Die eingebetteten Planungsschriften führen ihre Lizenz in `packages/documents/src/planning-fonts.LICENSE`. Die Weboberfläche verwendet das installierte Inter-Paket; dessen OFL-Dateien werden mit dem Paket bereitgestellt. Bei einer Weitergabe des vollständigen Quellbestands oder der Container sind diese Lizenzhinweise und die jeweiligen mitgelieferten Texte zu erhalten.

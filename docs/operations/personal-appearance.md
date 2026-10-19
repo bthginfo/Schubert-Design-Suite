@@ -17,6 +17,8 @@ Die Einstellung gehört zum persönlichen Zugang in der jeweiligen juristischen 
 
 ## Betrieb und Kosten
 
+Der Dunkelmodus verwendet Navy: dunkler Hintergrund, getrennte Navigation, leicht angehobene Arbeitsflächen und dezente gerichtete Schatten. Alle sechs Akzentfamilien behalten geprüfte Kontraste. Zeichnungspapier und Materialien behalten ihre fachlichen Farben. Die zusätzliche Tiefe benötigt keine Grafikdateien, Datenbankabfragen oder KI-Verarbeitung.
+
 - Ein eigener Datensatz in `user_preferences`, über den bestehenden Seitenabruf mitgeladen. Kein zusätzlicher Datenbank-Roundtrip für die Darstellung, keine Polling-Abfrage.
 - Der Gerätemodus wird ausschließlich im Browser aufgelöst und erzeugt weder Schreibvorgänge noch KI-Aufrufe.
 - Server gerenderte Farben vermeiden einen nachträglichen hellen Anwendungsrahmen beim Laden einer gespeicherten dunklen Darstellung. Öffentliche Anmeldung und Kundenportal bleiben in ihrer bisherigen Gestaltung.

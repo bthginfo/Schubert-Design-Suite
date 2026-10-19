@@ -50,7 +50,9 @@ export const stonePieceElementSchema = z.strictObject({ ...base, kind: z.literal
 export const catalogElementSchema = z.strictObject({ ...base, kind: z.literal('catalog_object'), transform: transformSchema,
   productVariantVersionId: idSchema, assetVersionId: idSchema.nullable(), accuracy: z.enum(['verified_original','verified_envelope','approximate']),
   footprint: contourSchema, heightMeasureId: idSchema.optional(), connectionElementIds: z.array(idSchema).max(1000), clearanceElementIds: z.array(idSchema).max(1000) });
+const previewFontSchema=z.enum(['notoserif','cinzel','lora','cormorantgaramond','greatvibes','montserrat']);
 export const inscriptionElementSchema = z.strictObject({ ...base, kind: z.literal('inscription'), surfaceElementId: idSchema,
+  previewFontKey:previewFontSchema.optional(),previewColor:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   originUV: z.strictObject({ uMm: mmSchema, vMm: mmSchema }), rotationDeg: decimalAngleSchema, exactText: z.string().max(30000),
   fontVariantVersionId: idSchema, referenceAssetVersionIds: z.array(idSchema).max(1000),
   renderingBasis: z.enum(['shop_image_reference','verified_contours','verified_3d']), requestedHeightMeasureId: idSchema,
@@ -137,6 +139,7 @@ export const designOperationSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('correct_existing_inscription'), elementId: idSchema, exactText: z.string().max(30000), reason: z.string().min(10).max(2000), evidenceVersionId: idSchema }),
   z.strictObject({ type: z.literal('set_inscription_originals'), elementId:idSchema, glyphPlacements:inscriptionElementSchema.shape.glyphPlacements, evidenceVersionId:idSchema }),
   z.strictObject({ type: z.literal('set_inscription_layout'), elementId: idSchema,
+    previewFontKey:previewFontSchema.optional(),previewColor:inscriptionElementSchema.shape.previewColor,
     originUV: inscriptionElementSchema.shape.originUV.optional(), rotationDeg: decimalAngleSchema.optional(), alignment: inscriptionElementSchema.shape.alignment.optional(),
     fontVariantVersionId: idSchema.optional(), referenceAssetVersionIds: z.array(idSchema).optional(), renderingBasis: inscriptionElementSchema.shape.renderingBasis.optional(),
     requestedHeightMeasureId: idSchema.optional(), requestedLowercaseHeightMeasureId: idSchema.nullable().optional(), requestedMaxWidthMeasureId: idSchema.nullable().optional(),

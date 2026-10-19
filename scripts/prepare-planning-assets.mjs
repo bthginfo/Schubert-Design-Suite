@@ -1,0 +1,10 @@
+import{readFile,writeFile}from'node:fs/promises';import{createHash}from'node:crypto';import{fileURLToPath}from'node:url';import{unzipSync}from'fflate';
+const root=fileURLToPath(new URL('../',import.meta.url)),digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+async function exists(path,hash){try{return digest(await readFile(root+'apps/web/static'+path))===hash;}catch{return false;}}
+async function fetchBytes(url){const parsed=new URL(url);if(!['raw.githubusercontent.com','ambientcg.com'].includes(parsed.hostname)||parsed.protocol!=='https:')throw Error('Unapproved planning-asset origin.');const response=await fetch(url,{headers:{'User-Agent':'Schubert-Design-Suite build-assets/1.0'},signal:AbortSignal.timeout(90000)});if(!response.ok)throw Error('Planning asset unavailable: '+parsed.hostname+' '+response.status);return new Uint8Array(await response.arrayBuffer());}
+const fonts=JSON.parse(await readFile(root+'apps/web/static/planning-fonts/manifest.json','utf8')),materials=JSON.parse(await readFile(root+'apps/web/static/planning-materials/manifest.json','utf8'));
+for(const font of fonts){if(await exists(font.path,font.sha256))continue;const bytes=await fetchBytes(font.downloadUrl);if(digest(bytes)!==font.sha256)throw Error('Planning font source hash changed: '+font.key);await writeFile(root+'apps/web/static'+font.path,bytes);}
+for(const asset of materials){const missing=[];for(const[map,file]of Object.entries(asset.files))if(!await exists(file.path,file.sha256))missing.push([map,file]);if(!missing.length)continue;const archive=unzipSync(await fetchBytes('https://ambientcg.com/get?file='+asset.id+'_1K-JPG.zip'));
+ for(const[map,file]of missing){const suffix=map==='color'?'_Color.jpg':map==='normal'?'_NormalGL.jpg':'_Roughness.jpg',key=Object.keys(archive).find(name=>name.endsWith(suffix)),bytes=key?archive[key]:null;if(!bytes||digest(bytes)!==file.sha256)throw Error('Planning texture source hash changed: '+asset.id+' '+map);await writeFile(root+'apps/web/static'+file.path,bytes);}
+}
+console.log('Planning fonts and representative CC0 textures verified.');

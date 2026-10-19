@@ -5,7 +5,7 @@
   import Icon from '../Icon.svelte';
   import{machiningDepth,measureValue}from'@schubert/geometry';
   import type{CameraAction,CameraCommand}from'./camera-navigation.ts';
-  let { snapshot, showWalls=true, resetKey = 0,assets=[],glyphs=[],navigationCommand=null,onzoomchange=()=>{} }:{ snapshot:DesignSnapshot;showWalls?:boolean;resetKey?:number;assets?:any[];glyphs?:any[];navigationCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void }=$props();
+  let { snapshot, showWalls=true, resetKey = 0,materials=[],assets=[],glyphs=[],navigationCommand=null,onzoomchange=()=>{} }:{ snapshot:DesignSnapshot;showWalls?:boolean;resetKey?:number;materials?:any[];assets?:any[];glyphs?:any[];navigationCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void }=$props();
   let cameraCommand:CameraCommand|null=$state(null),commandNumber=0;
   $effect(()=>{cameraCommand=navigationCommand;});
   function navigate(action:CameraAction){cameraCommand={id:++commandNumber,action};}
@@ -18,7 +18,7 @@
 </script>
 <div class="three-stage" aria-label="Interaktive dreidimensionale Planvorschau">
   <div class="three-canvas"><svelte:boundary>
-    <Canvas renderMode="on-demand" shadows={false} dpr={Math.min(globalThis.devicePixelRatio||1,2)}><Scene {snapshot} {showWalls} {resetKey} {assets} {glyphs} {cameraCommand} {onzoomchange}/></Canvas>
+    <Canvas renderMode="on-demand" shadows={false} dpr={Math.min(globalThis.devicePixelRatio||1,2)}><Scene {materials} {snapshot} {showWalls} {resetKey} {assets} {glyphs} {cameraCommand} {onzoomchange}/></Canvas>
     {#snippet failed(_error,reset)}<div class="three-error"><strong>3D ist auf diesem Gerät nicht verfügbar.</strong><p>Die maßhaltigen 2D-Ansichten und alle Eingabefelder bleiben nutzbar.</p><button class="btn" onclick={reset}>Erneut versuchen</button></div>{/snippet}
   </svelte:boundary></div>
   <div class="three-footer">

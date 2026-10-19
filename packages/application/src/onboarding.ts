@@ -5,7 +5,7 @@ import {register} from './core.js';
 import {appearanceSchema} from '@schubert/contracts';
 import {saveAppearance} from './appearance.js';
 register('account.onboarding.update','account.self',async r=>{
- const p=z.object({status:z.enum(['in_progress','completed','deferred']),step:z.number().int().min(0).max(20),guideVersion:z.literal(2).optional(),appearance:appearanceSchema.optional(),appearanceVersion:z.number().int().nonnegative().optional()}).strict().parse(r.payload);
+ const p=z.object({status:z.enum(['in_progress','completed','deferred']),step:z.number().int().min(0).max(20),guideVersion:z.union([z.literal(2),z.literal(3)]).optional(),appearance:appearanceSchema.optional(),appearanceVersion:z.number().int().nonnegative().optional()}).strict().parse(r.payload);
  await r.db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',['onboarding:'+r.ctx.tenantId+':'+r.ctx.actorId]);
  const previous=await one<any>(r.db,'SELECT * FROM user_onboarding WHERE actor_id=$1 FOR UPDATE',[r.ctx.actorId]);
  if(previous)assertVersion(previous.version,r.command.expectedVersion);

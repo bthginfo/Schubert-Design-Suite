@@ -25,3 +25,7 @@ skills-lock.json
 __pycache__/
 *.pyc
 .venv/
+
+# Build downloads, pinned and SHA-256 verified by scripts/prepare-planning-assets.mjs
+apps/web/static/planning-fonts/*.ttf
+apps/web/static/planning-materials/*.jpg

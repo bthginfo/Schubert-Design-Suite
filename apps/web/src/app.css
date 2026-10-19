@@ -182,6 +182,21 @@ h1,h2,h3{text-wrap:balance;letter-spacing:-.025em}
 
 .app-shell input::placeholder,.app-shell textarea::placeholder{color:var(--muted);opacity:1}
 
+/* A restrained depth hierarchy: navigation behind the work, focused surfaces above it. */
+.app-shell .sidebar{background:var(--navigation-surface,var(--wash))}
+.app-shell .topbar{background:var(--paper);box-shadow:0 4px 20px #00000004}
+.app-shell .panel,.app-shell .metric{border-color:transparent;box-shadow:var(--surface-shadow)}
+.app-shell .modal,.app-shell dialog{box-shadow:var(--overlay-shadow)}
+.app-shell .nav-item{border-radius:9px}
+.app-shell .btn{border-radius:9px;transition:background .16s ease,box-shadow .16s ease,transform .16s ease}
+.app-shell .btn.primary{box-shadow:0 3px 8px color-mix(in srgb,var(--forest) 14%,transparent)}
+.app-shell .btn:active:not(:disabled){transform:translateY(1px)}
+.app-shell .field input,.app-shell .field select,.app-shell .field textarea{border-radius:9px}
+.app-shell .modal-header,.app-shell .modal-footer{background:var(--surface-raised,var(--paper))}
+.app-shell .modal-backdrop{background:light-dark(rgb(19 29 40 / .4),rgb(3 9 20 / .72))}
+.app-shell .data-table tbody tr:hover{background:color-mix(in srgb,var(--forest) 4%,var(--paper))}
+@media(prefers-reduced-motion:reduce){.app-shell .btn{transition:none}.app-shell .btn:active:not(:disabled){transform:none}}
+
 /* Shared disclosures and narrow action surfaces. */
 .app-shell{--chart-muted:color-mix(in srgb,var(--forest) 58%,var(--paper));--chart-secondary:var(--warning)}
 .app-shell .btn{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}

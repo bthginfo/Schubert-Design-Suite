@@ -1,0 +1,104 @@
+[
+  {
+    "id": "Marble012",
+    "source": "https://ambientcg.com/a/Marble012",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://docs.ambientcg.com/license/",
+    "dimensionsCm": {
+      "x": 0,
+      "y": 0
+    },
+    "files": {
+      "color": {
+        "path": "/planning-materials/Marble012-color.jpg",
+        "sha256": "a34b55c889c6b3819d2c351b6409bfd0baf0a0a55b073441850627dfebcdcd1e",
+        "bytes": 1220876
+      }
+    }
+  },
+  {
+    "id": "Travertine009",
+    "source": "https://ambientcg.com/a/Travertine009",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://docs.ambientcg.com/license/",
+    "dimensionsCm": {
+      "x": 120,
+      "y": 120
+    },
+    "files": {
+      "color": {
+        "path": "/planning-materials/Travertine009-color.jpg",
+        "sha256": "6561c87d92aef321aef4095fbcc5518cec4d711e642be6beaa90d13829e6cd2b",
+        "bytes": 922573
+      }
+    }
+  },
+  {
+    "id": "Marble019",
+    "source": "https://ambientcg.com/a/Marble019",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://docs.ambientcg.com/license/",
+    "dimensionsCm": {
+      "x": 0,
+      "y": 0
+    },
+    "files": {
+      "color": {
+        "path": "/planning-materials/Marble019-color.jpg",
+        "sha256": "71648451058b5db8c36dc849cfdd36be9641cf8b9a7bb7ce5aa479d450567609",
+        "bytes": 768050
+      }
+    }
+  },
+  {
+    "id": "Granite007A",
+    "source": "https://ambientcg.com/a/Granite007A",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://docs.ambientcg.com/license/",
+    "dimensionsCm": {
+      "x": 0,
+      "y": 0
+    },
+    "files": {
+      "color": {
+        "path": "/planning-materials/Granite007A-color.jpg",
+        "sha256": "7eec5150896ce1d313e8b66729a10b45173dc170eb185b7d7163b451d55d3074",
+        "bytes": 1663249
+      }
+    }
+  },
+  {
+    "id": "Granite006B",
+    "source": "https://ambientcg.com/a/Granite006B",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://docs.ambientcg.com/license/",
+    "dimensionsCm": {
+      "x": 0,
+      "y": 0
+    },
+    "files": {
+      "color": {
+        "path": "/planning-materials/Granite006B-color.jpg",
+        "sha256": "0c6d44af7cf85b04a3c0f941e9dbd8e6507700698c3f0bc36171e115b8dbb195",
+        "bytes": 1978966
+      }
+    }
+  },
+  {
+    "id": "Granite007B",
+    "source": "https://ambientcg.com/a/Granite007B",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://docs.ambientcg.com/license/",
+    "dimensionsCm": {
+      "x": 0,
+      "y": 0
+    },
+    "files": {
+      "color": {
+        "path": "/planning-materials/Granite007B-color.jpg",
+        "sha256": "6e53da0efc3179d62abb75a2d655b0cee58a6e2c2705f2e70a2dc328412ed069",
+        "bytes": 1663021
+      }
+    }
+  }
+]

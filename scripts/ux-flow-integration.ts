@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {withTenant,rows,one,insert,insertMany} from '@schubert/db';
-import {executeCommand,loadPage,invalidateReads,baseData,prepareAssistantContext,assistantInputSchema,applyAIProposal} from '@schubert/application';
+import {executeCommand,loadPage,invalidateReads,baseData,prepareAssistantContext,assistantInputSchema,applyAIProposal,register} from '@schubert/application';
 import {searchPlanningProducts} from '../packages/application/src/catalog-search.js';
 import {validatePlanningReferences} from '../packages/application/src/planning.js';
 import {rectangleContour} from '@schubert/geometry';
@@ -11,6 +11,24 @@ import {planningDraftOperations} from '../packages/ai/src/planning-draft.js';
 export async function uxFlowIntegration(actor:(role:string)=>ActorContext,test:(label:string,run:()=>Promise<void>)=>Promise<void>){
  const owner=actor('Owner'),employee=actor('Employee');
  const call=(ctx:ActorContext,name:string,payload:object={},record?:any,key=randomUUID())=>executeCommand(ctx,{name,payload,id:record?.id,expectedVersion:record?.version,idempotencyKey:key});
+ await test('An explicitly aborted PostgreSQL command retries atomically without duplicate business, audit or outbox rows',async()=>{
+  let attempts=0;const name='test.deadlock.retry.'+randomUUID().replaceAll('-',''),marker=randomUUID(),key=randomUUID();
+  register(name,'orders',async r=>{const row=await r.insert('tasks',{title:'Synthetic deadlock rollback '+marker,status:'open'});if(++attempts===1)await r.db.query("DO $$ BEGIN RAISE EXCEPTION 'synthetic deadlock rollback' USING ERRCODE='40P01'; END $$;");return row;});
+  const result=await call(owner,name,{},undefined,key);assert.equal(attempts,2);assert.equal((await call(owner,name,{},undefined,key)).id,result.id);assert.equal(attempts,2);
+  const counts=await withTenant(owner,db=>one<any>(db,'SELECT (SELECT count(*)::int FROM tasks WHERE title=$1) tasks,(SELECT count(*)::int FROM audit_events WHERE action=$2) audit,(SELECT count(*)::int FROM outbox_events WHERE event_type=$3) outbox',['Synthetic deadlock rollback '+marker,name,name+'.v1']));assert.deepEqual(counts,{tasks:1,audit:1,outbox:1});
+ });
+ await test('Real stone reference import is complete, tenant scoped and does not forge technical approvals',async()=>{
+  const imported=await call(owner,'catalog.stones.import');assert.equal(imported.total,96);
+  const found=await withTenant(owner,db=>rows<any>(db,"SELECT * FROM material_spec_versions WHERE properties->>'sourceCatalog'=$1",['rossittis-public-2026-10-19-v1']));assert.equal(found.length,96);assert.ok(found.every(row=>!row.approved_at&&row.status==='source_reference'&&row.properties.sourceUrl.startsWith('https://rossittis.de/material/')&&/^[a-f0-9]{64}$/.test(row.properties.sourceHash)));
+  const repeat=await call(owner,'catalog.stones.import');assert.equal(repeat.added,0);await assert.rejects(()=>call(employee,'catalog.stones.import'));
+ });
+ await test('Expanded onboarding persists later version-3 stations and remains backward compatible',async()=>{
+  const prior=await withTenant(owner,db=>one<any>(db,'SELECT * FROM user_onboarding WHERE actor_id=$1',[owner.actorId]));
+  const saved=await call(owner,'account.onboarding.update',{status:'deferred',step:19,guideVersion:3},prior);
+  assert.equal(saved.guide_version,3);assert.equal(saved.step,19);
+  const legacy=await call(owner,'account.onboarding.update',{status:'deferred',step:4,guideVersion:2},saved);assert.equal(legacy.guide_version,2);
+  await assert.rejects(()=>call(owner,'account.onboarding.update',{status:'deferred',step:21,guideVersion:3},legacy));
+ });
  await test('Photo-edit and chat previews retain document binding with separate image resolutions',async()=>{
   // Metadata-only routing fixture. No worker or external storage is invoked by this test.
   const source=await withTenant(owner,async db=>{const common=baseData(owner),blob=await insert(db,'blob_objects',{...common,storage_key:'synthetic-preview-routing/'+randomUUID(),provider:'integration_fixture',content_hash:'a'.repeat(64),mime_type:'image/png',size_bytes:1}),document=await insert(db,'documents',{...common,name:'Synthetic preview-routing metadata',original_name:'synthetic.png',mime_type:'image/png',size_bytes:1,content_hash:blob.content_hash,status:'available'}),version=await insert(db,'document_versions',{...common,document_id:document.id,blob_object_id:blob.id,content_hash:blob.content_hash,revision:1,status:'available'});await db.query('UPDATE documents SET current_version_id=$1 WHERE id=$2',[version.id,document.id]);return{id:version.id,documentId:document.id,blobId:blob.id};});

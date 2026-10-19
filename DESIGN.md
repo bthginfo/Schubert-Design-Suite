@@ -14,21 +14,21 @@ colors:
   clay-hover: "light-dark(#723921,#ffd3bd)"
   slate: "light-dark(#4b5868,#bdcbdc)"
   slate-hover: "light-dark(#34404f,#d7e0ec)"
-  on-accent: "light-dark(#ffffff,#15201c)"
-  canvas: "light-dark(#f6f5f2,#151a18)"
-  paper: "light-dark(#ffffff,#1d2421)"
-  ink: "light-dark(#202522,#ecf0ed)"
-  muted: "light-dark(#58625b,#b5c1b9)"
-  line: "light-dark(#dfe3de,#46524a)"
-  wash: "light-dark(#eeefea,#29332d)"
+  on-accent: "light-dark(#ffffff,#101827)"
+  canvas: "light-dark(#f6f5f2,#0d1422)"
+  paper: "light-dark(#ffffff,#151f30)"
+  ink: "light-dark(#202522,#eef3fc)"
+  muted: "light-dark(#58625b,#b8c6d9)"
+  line: "light-dark(#dfe3de,#40546e)"
+  wash: "light-dark(#eeefea,#1c2b40)"
   bronze: "light-dark(#8a6c44,#dbbd89)"
   danger: "light-dark(#993c35,#ffb3a9)"
-  danger-wash: "light-dark(#fff0ed,#402925)"
+  danger-wash: "light-dark(#fff0ed,#37232d)"
   warning: "light-dark(#7a581e,#f1cc88)"
-  warning-wash: "light-dark(#faf0d9,#393222)"
+  warning-wash: "light-dark(#faf0d9,#302c24)"
   success: "light-dark(#315c4c,#a3d8b6)"
-  success-wash: "light-dark(#eaf2ec,#26392d)"
-  accent-wash: "light-dark(color-mix(in srgb,#315c4c 9%,#fff),color-mix(in srgb,#9fd5ba 12%,#1d2421))"
+  success-wash: "light-dark(#eaf2ec,#18332f)"
+  accent-wash: "light-dark(color-mix(in srgb,#315c4c 9%,#fff),color-mix(in srgb,#9fd5ba 12%,#151f30))"
 typography:
   headline:
     fontFamily: "Inter, sans-serif"
@@ -337,3 +337,7 @@ Die dreizehn aktuellen Aufnahmen unter `.impeccable/review/appearance-*.png` bel
 - **Don't** Theme-Polling, KI-Aufrufe oder zusätzliche Gerätemodus-Schreibvorgänge einführen.
 - **Don't** diesen dokumentierten Implementierungsstand als abgeschlossene fachliche oder visuelle Gesamtfreigabe ausgeben.
 
+
+## Navy and studio interaction - 19 October 2026
+
+The requested dark visual world uses navy backgrounds, a separate navigation depth and slightly raised work surfaces. Directed shadows remain restrained; accent choices retain distinct light/dark names and contrast. Technical drawing paper keeps its physical light color. Studios offer fullscreen, directly visible lettering, independent grid display/object snapping/grid snapping, shape choices, per-corner radius controls and a sourced material library. Shape and material selection use visual previews; technical manufacturer evidence remains separate from the design preview.

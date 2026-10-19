@@ -253,4 +253,5 @@ add('demo_datasets',{records:'jsonb',coverage:'jsonb',dataset_version:'integer N
 add('user_preferences',{actor_id:'text NOT NULL',accent:'text NOT NULL',mode:'text NOT NULL'});
 
 // Columns introduced by the versioned catalog migrations, also used by bounded bulk imports.
+add('material_spec_versions',{revision:'integer NOT NULL',content_hash:'text',approved_at:'timestamptz'});
 add('product_variant_versions',{approved_at:'timestamptz',approved_by:'text',validation_report:'jsonb'});

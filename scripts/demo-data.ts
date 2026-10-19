@@ -9,6 +9,7 @@ import {modules,designSnapshotSchema,type ActorContext} from '@schubert/contract
 import {rolePermissions,calculateLines,DomainError} from '@schubert/domain';
 import {withTenant,one,rows,closePools} from '@schubert/db';
 import {register,executeCommand,hash,ingestUpload,type Runtime} from '@schubert/application';
+import {expandDemoData}from'./demo-expansion.js';
 
 const production=process.argv.includes('--production'),dryRun=process.argv.includes('--dry-run');
 if(!production)config({path:'.env.testing.local',quiet:true});
@@ -35,6 +36,9 @@ try{
 const datasetName='Schubert · Testbetrieb 2026-10 · v1';
 let preview:any;
 try{
+ if(process.argv.includes('--stones')){console.log(JSON.stringify(await executeCommand(ctx,{name:'catalog.stones.import',idempotencyKey:'stone-catalog-2026-10-19-v1',payload:{}})));}
+ else if(process.argv.includes('--expand')){await expandDemoData(ctx,{dryRun,production});}
+ else{
  const prior=await withTenant(ctx,db=>one<any>(db,'SELECT * FROM demo_datasets WHERE name=$1',[datasetName]));
  if(prior){console.log(JSON.stringify({alreadyInstalled:true,id:prior.id,records:prior.records.length,coverage:prior.coverage}));}
  else{
@@ -157,5 +161,6 @@ try{
    const result=await executeCommand(ctx,{name:'system.demo.install',idempotencyKey:'schubert-training-2026-10-v1',payload:{reason:'Vom Betreiber angeforderte, klar gekennzeichnete Testdaten bis zum Produktivstart.'}});
    await mkdir('work',{recursive:true});await writeFile('work/demo-manifest-'+(production?'production':'synthetic')+'.json',JSON.stringify(result,null,2));console.log(JSON.stringify({installed:true,id:result.id,records:result.records?.length,coverage:result.coverage}));
   }catch(e){if(dryRun&&e instanceof DomainError&&e.code==='DEMO_PREFLIGHT_COMPLETE')console.log(JSON.stringify({preflight:true,rolledBack:true,...preview}));else throw e;}
+ }
  }
 }finally{await closePools();}
