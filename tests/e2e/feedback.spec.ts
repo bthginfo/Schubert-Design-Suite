@@ -45,8 +45,8 @@ test('Feedback captures useful actions without field values; retries once, triag
 });
 test('Only SuperAdmin reviews feedback; off disables stale clients and on restores the button',async({page,browser})=>{
  test.setTimeout(150000);await login(page);await page.goto('/settings?tab=feedback');
- const other=await browser.newContext({baseURL:'http://127.0.0.1:5173'}),employee=await other.newPage();await login(employee,'EMPLOYEE');await employee.goto('/help');await expect(employee.getByRole('button',{name:'Feedback',exact:true})).toBeVisible();
- const ownerContext=await browser.newContext({baseURL:'http://127.0.0.1:5173'}),owner=await ownerContext.newPage();await login(owner,'OWNER');await owner.goto('/settings?tab=feedback');await expect(owner.getByRole('heading',{name:'Rückmeldungen aus dem Testbetrieb'})).toHaveCount(0);
+ const other=await browser.newContext({baseURL:process.env.UAT_BASE_URL||'http://127.0.0.1:5173'}),employee=await other.newPage();await login(employee,'EMPLOYEE');await employee.goto('/help');await expect(employee.getByRole('button',{name:'Feedback',exact:true})).toBeVisible();
+ const ownerContext=await browser.newContext({baseURL:process.env.UAT_BASE_URL||'http://127.0.0.1:5173'}),owner=await ownerContext.newPage();await login(owner,'OWNER');await owner.goto('/settings?tab=feedback');await expect(owner.getByRole('heading',{name:'Rückmeldungen aus dem Testbetrieb'})).toHaveCount(0);
  const anyLink=await page.locator('.feedback-row').first().getAttribute('href');if(anyLink){const id=new URL(anyLink,'http://test.invalid').searchParams.get('report');expect((await owner.request.get('/api/v1/feedback/'+id+'/export')).status()).toBe(403);expect((await employee.request.get('/api/v1/feedback/'+id+'/export')).status()).toBe(403);}
  const denied=await call(owner,'feedback.settings.update',{enabled:false},1);expect(denied.status()).toBe(403);
  await employee.getByRole('button',{name:'Feedback',exact:true}).click();await employee.getByLabel('Ihr Kommentar',{exact:false}).fill('Dieser Kommentar darf nach dem Ausschalten nicht gespeichert werden.');

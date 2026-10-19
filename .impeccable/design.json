@@ -1,236 +1,595 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-18T14:17:07.1653861Z",
+  "generatedAt": "2026-10-19T10:02:34.017Z",
   "title": "Design System: SCHUBERT Design Suite",
   "extensions": {
     "colorMeta": {
       "forest": {
         "role": "primary",
-        "displayName": "Waldgrün / Mintgrün"
+        "displayName": "Waldgrün / Mintgrün",
+        "tonalRamp": [
+          "oklch(15.00% 0.05544 167.73)",
+          "oklch(26.43% 0.05544 167.73)",
+          "oklch(37.86% 0.05544 167.73)",
+          "oklch(49.29% 0.05544 167.73)",
+          "oklch(60.71% 0.05544 167.73)",
+          "oklch(72.14% 0.05544 167.73)",
+          "oklch(83.57% 0.05544 167.73)",
+          "oklch(95.00% 0.05544 167.73)"
+        ]
       },
       "forest-dark": {
         "role": "primary",
-        "displayName": "Waldgrün / Mintgrün · Hover"
+        "displayName": "Waldgrün / Mintgrün · Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.04714 165.41)",
+          "oklch(26.43% 0.04714 165.41)",
+          "oklch(37.86% 0.04714 165.41)",
+          "oklch(49.29% 0.04714 165.41)",
+          "oklch(60.71% 0.04714 165.41)",
+          "oklch(72.14% 0.04714 165.41)",
+          "oklch(83.57% 0.04714 165.41)",
+          "oklch(95.00% 0.04714 165.41)"
+        ]
       },
       "ocean": {
         "role": "primary",
-        "displayName": "Ozeanblau / Hellblau"
+        "displayName": "Ozeanblau / Hellblau",
+        "tonalRamp": [
+          "oklch(15.00% 0.12679 256.34)",
+          "oklch(26.43% 0.12679 256.34)",
+          "oklch(37.86% 0.12679 256.34)",
+          "oklch(49.29% 0.12679 256.34)",
+          "oklch(60.71% 0.12679 256.34)",
+          "oklch(72.14% 0.12679 256.34)",
+          "oklch(83.57% 0.12679 256.34)",
+          "oklch(95.00% 0.12679 256.34)"
+        ]
       },
       "ocean-hover": {
         "role": "primary",
-        "displayName": "Ozeanblau / Hellblau · Hover"
+        "displayName": "Ozeanblau / Hellblau · Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.10769 256.79)",
+          "oklch(26.43% 0.10769 256.79)",
+          "oklch(37.86% 0.10769 256.79)",
+          "oklch(49.29% 0.10769 256.79)",
+          "oklch(60.71% 0.10769 256.79)",
+          "oklch(72.14% 0.10769 256.79)",
+          "oklch(83.57% 0.10769 256.79)",
+          "oklch(95.00% 0.10769 256.79)"
+        ]
       },
       "violet": {
         "role": "primary",
-        "displayName": "Violett / Flieder"
+        "displayName": "Violett / Flieder",
+        "tonalRamp": [
+          "oklch(15.00% 0.14300 300.33)",
+          "oklch(26.43% 0.14300 300.33)",
+          "oklch(37.86% 0.14300 300.33)",
+          "oklch(49.29% 0.14300 300.33)",
+          "oklch(60.71% 0.14300 300.33)",
+          "oklch(72.14% 0.14300 300.33)",
+          "oklch(83.57% 0.14300 300.33)",
+          "oklch(95.00% 0.14300 300.33)"
+        ]
       },
       "violet-hover": {
         "role": "primary",
-        "displayName": "Violett / Flieder · Hover"
+        "displayName": "Violett / Flieder · Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.11771 301.24)",
+          "oklch(26.43% 0.11771 301.24)",
+          "oklch(37.86% 0.11771 301.24)",
+          "oklch(49.29% 0.11771 301.24)",
+          "oklch(60.71% 0.11771 301.24)",
+          "oklch(72.14% 0.11771 301.24)",
+          "oklch(83.57% 0.11771 301.24)",
+          "oklch(95.00% 0.11771 301.24)"
+        ]
       },
       "rose": {
         "role": "primary",
-        "displayName": "Beere / Rosé"
+        "displayName": "Beere / Rosé",
+        "tonalRamp": [
+          "oklch(15.00% 0.12109 355.02)",
+          "oklch(26.43% 0.12109 355.02)",
+          "oklch(37.86% 0.12109 355.02)",
+          "oklch(49.29% 0.12109 355.02)",
+          "oklch(60.71% 0.12109 355.02)",
+          "oklch(72.14% 0.12109 355.02)",
+          "oklch(83.57% 0.12109 355.02)",
+          "oklch(95.00% 0.12109 355.02)"
+        ]
       },
       "rose-hover": {
         "role": "primary",
-        "displayName": "Beere / Rosé · Hover"
+        "displayName": "Beere / Rosé · Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.10337 354.45)",
+          "oklch(26.43% 0.10337 354.45)",
+          "oklch(37.86% 0.10337 354.45)",
+          "oklch(49.29% 0.10337 354.45)",
+          "oklch(60.71% 0.10337 354.45)",
+          "oklch(72.14% 0.10337 354.45)",
+          "oklch(83.57% 0.10337 354.45)",
+          "oklch(95.00% 0.10337 354.45)"
+        ]
       },
       "clay": {
         "role": "primary",
-        "displayName": "Terrakotta / Apricot"
+        "displayName": "Terrakotta / Apricot",
+        "tonalRamp": [
+          "oklch(15.00% 0.10361 41.06)",
+          "oklch(26.43% 0.10361 41.06)",
+          "oklch(37.86% 0.10361 41.06)",
+          "oklch(49.29% 0.10361 41.06)",
+          "oklch(60.71% 0.10361 41.06)",
+          "oklch(72.14% 0.10361 41.06)",
+          "oklch(83.57% 0.10361 41.06)",
+          "oklch(95.00% 0.10361 41.06)"
+        ]
       },
       "clay-hover": {
         "role": "primary",
-        "displayName": "Terrakotta / Apricot · Hover"
+        "displayName": "Terrakotta / Apricot · Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.08812 42.67)",
+          "oklch(26.43% 0.08812 42.67)",
+          "oklch(37.86% 0.08812 42.67)",
+          "oklch(49.29% 0.08812 42.67)",
+          "oklch(60.71% 0.08812 42.67)",
+          "oklch(72.14% 0.08812 42.67)",
+          "oklch(83.57% 0.08812 42.67)",
+          "oklch(95.00% 0.08812 42.67)"
+        ]
       },
       "slate": {
         "role": "primary",
-        "displayName": "Graphit / Silbergrau"
+        "displayName": "Graphit / Silbergrau",
+        "tonalRamp": [
+          "oklch(15.00% 0.03090 253.77)",
+          "oklch(26.43% 0.03090 253.77)",
+          "oklch(37.86% 0.03090 253.77)",
+          "oklch(49.29% 0.03090 253.77)",
+          "oklch(60.71% 0.03090 253.77)",
+          "oklch(72.14% 0.03090 253.77)",
+          "oklch(83.57% 0.03090 253.77)",
+          "oklch(95.00% 0.03090 253.77)"
+        ]
       },
       "slate-hover": {
         "role": "primary",
-        "displayName": "Graphit / Silbergrau · Hover"
+        "displayName": "Graphit / Silbergrau · Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.03043 254.20)",
+          "oklch(26.43% 0.03043 254.20)",
+          "oklch(37.86% 0.03043 254.20)",
+          "oklch(49.29% 0.03043 254.20)",
+          "oklch(60.71% 0.03043 254.20)",
+          "oklch(72.14% 0.03043 254.20)",
+          "oklch(83.57% 0.03043 254.20)",
+          "oklch(95.00% 0.03043 254.20)"
+        ]
       },
       "on-accent": {
         "role": "neutral",
-        "displayName": "Text auf Akzent"
+        "displayName": "Text auf Akzent",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0)",
+          "oklch(26.43% 0.00000 0)",
+          "oklch(37.86% 0.00000 0)",
+          "oklch(49.29% 0.00000 0)",
+          "oklch(60.71% 0.00000 0)",
+          "oklch(72.14% 0.00000 0)",
+          "oklch(83.57% 0.00000 0)",
+          "oklch(95.00% 0.00000 0)"
+        ]
       },
       "canvas": {
         "role": "neutral",
-        "displayName": "Arbeitsfläche"
+        "displayName": "Äußerer Rahmen",
+        "tonalRamp": [
+          "oklch(15.00% 0.00796 253.85)",
+          "oklch(26.43% 0.00796 253.85)",
+          "oklch(37.86% 0.00796 253.85)",
+          "oklch(49.29% 0.00796 253.85)",
+          "oklch(60.71% 0.00796 253.85)",
+          "oklch(72.14% 0.00796 253.85)",
+          "oklch(83.57% 0.00796 253.85)",
+          "oklch(95.00% 0.00796 253.85)"
+        ]
       },
       "paper": {
         "role": "neutral",
-        "displayName": "Bedienfläche"
+        "displayName": "Bedienfläche",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0)",
+          "oklch(26.43% 0.00000 0)",
+          "oklch(37.86% 0.00000 0)",
+          "oklch(49.29% 0.00000 0)",
+          "oklch(60.71% 0.00000 0)",
+          "oklch(72.14% 0.00000 0)",
+          "oklch(83.57% 0.00000 0)",
+          "oklch(95.00% 0.00000 0)"
+        ]
       },
       "ink": {
         "role": "neutral",
-        "displayName": "Primärer Text"
+        "displayName": "Primärer Text",
+        "tonalRamp": [
+          "oklch(15.00% 0.04057 263.48)",
+          "oklch(26.43% 0.04057 263.48)",
+          "oklch(37.86% 0.04057 263.48)",
+          "oklch(49.29% 0.04057 263.48)",
+          "oklch(60.71% 0.04057 263.48)",
+          "oklch(72.14% 0.04057 263.48)",
+          "oklch(83.57% 0.04057 263.48)",
+          "oklch(95.00% 0.04057 263.48)"
+        ]
       },
       "muted": {
         "role": "neutral",
-        "displayName": "Sekundärer Text"
+        "displayName": "Sekundärer Text",
+        "tonalRamp": [
+          "oklch(15.00% 0.03265 256.55)",
+          "oklch(26.43% 0.03265 256.55)",
+          "oklch(37.86% 0.03265 256.55)",
+          "oklch(49.29% 0.03265 256.55)",
+          "oklch(60.71% 0.03265 256.55)",
+          "oklch(72.14% 0.03265 256.55)",
+          "oklch(83.57% 0.03265 256.55)",
+          "oklch(95.00% 0.03265 256.55)"
+        ]
       },
       "line": {
         "role": "neutral",
-        "displayName": "Konturen und Trennlinien"
+        "displayName": "Äußere Kontur",
+        "tonalRamp": [
+          "oklch(15.00% 0.01383 258.35)",
+          "oklch(26.43% 0.01383 258.35)",
+          "oklch(37.86% 0.01383 258.35)",
+          "oklch(49.29% 0.01383 258.35)",
+          "oklch(60.71% 0.01383 258.35)",
+          "oklch(72.14% 0.01383 258.35)",
+          "oklch(83.57% 0.01383 258.35)",
+          "oklch(95.00% 0.01383 258.35)"
+        ]
+      },
+      "line-soft": {
+        "role": "neutral",
+        "displayName": "Innere Trennlinie",
+        "tonalRamp": [
+          "oklch(15.00% 0.00744 260.73)",
+          "oklch(26.43% 0.00744 260.73)",
+          "oklch(37.86% 0.00744 260.73)",
+          "oklch(49.29% 0.00744 260.73)",
+          "oklch(60.71% 0.00744 260.73)",
+          "oklch(72.14% 0.00744 260.73)",
+          "oklch(83.57% 0.00744 260.73)",
+          "oklch(95.00% 0.00744 260.73)"
+        ]
       },
       "wash": {
         "role": "neutral",
-        "displayName": "Zurückgesetzte Fläche"
+        "displayName": "Gruppenfläche",
+        "tonalRamp": [
+          "oklch(15.00% 0.00742 260.73)",
+          "oklch(26.43% 0.00742 260.73)",
+          "oklch(37.86% 0.00742 260.73)",
+          "oklch(49.29% 0.00742 260.73)",
+          "oklch(60.71% 0.00742 260.73)",
+          "oklch(72.14% 0.00742 260.73)",
+          "oklch(83.57% 0.00742 260.73)",
+          "oklch(95.00% 0.00742 260.73)"
+        ]
       },
-      "bronze": {
+      "navigation-surface": {
         "role": "neutral",
-        "displayName": "Bestehender Bronze-Akzent"
+        "displayName": "Getönte Navigation",
+        "tonalRamp": [
+          "oklch(15.00% 0.00796 253.85)",
+          "oklch(26.43% 0.00796 253.85)",
+          "oklch(37.86% 0.00796 253.85)",
+          "oklch(49.29% 0.00796 253.85)",
+          "oklch(60.71% 0.00796 253.85)",
+          "oklch(72.14% 0.00796 253.85)",
+          "oklch(83.57% 0.00796 253.85)",
+          "oklch(95.00% 0.00796 253.85)"
+        ]
+      },
+      "workspace-surface": {
+        "role": "neutral",
+        "displayName": "Eingesetzter Arbeitsraum",
+        "tonalRamp": [
+          "oklch(15.00% 0.00341 247.86)",
+          "oklch(26.43% 0.00341 247.86)",
+          "oklch(37.86% 0.00341 247.86)",
+          "oklch(49.29% 0.00341 247.86)",
+          "oklch(60.71% 0.00341 247.86)",
+          "oklch(72.14% 0.00341 247.86)",
+          "oklch(83.57% 0.00341 247.86)",
+          "oklch(95.00% 0.00341 247.86)"
+        ]
+      },
+      "input-surface": {
+        "role": "neutral",
+        "displayName": "Zurückgesetzte Eingabe",
+        "tonalRamp": [
+          "oklch(15.00% 0.00341 247.86)",
+          "oklch(26.43% 0.00341 247.86)",
+          "oklch(37.86% 0.00341 247.86)",
+          "oklch(49.29% 0.00341 247.86)",
+          "oklch(60.71% 0.00341 247.86)",
+          "oklch(72.14% 0.00341 247.86)",
+          "oklch(83.57% 0.00341 247.86)",
+          "oklch(95.00% 0.00341 247.86)"
+        ]
       },
       "danger": {
         "role": "neutral",
-        "displayName": "Fehlertext"
+        "displayName": "Fehlertext",
+        "tonalRamp": [
+          "oklch(15.00% 0.12634 27.10)",
+          "oklch(26.43% 0.12634 27.10)",
+          "oklch(37.86% 0.12634 27.10)",
+          "oklch(49.29% 0.12634 27.10)",
+          "oklch(60.71% 0.12634 27.10)",
+          "oklch(72.14% 0.12634 27.10)",
+          "oklch(83.57% 0.12634 27.10)",
+          "oklch(95.00% 0.12634 27.10)"
+        ]
       },
       "danger-wash": {
         "role": "neutral",
-        "displayName": "Fehlerfläche"
+        "displayName": "Fehlerfläche",
+        "tonalRamp": [
+          "oklch(15.00% 0.01678 31.08)",
+          "oklch(26.43% 0.01678 31.08)",
+          "oklch(37.86% 0.01678 31.08)",
+          "oklch(49.29% 0.01678 31.08)",
+          "oklch(60.71% 0.01678 31.08)",
+          "oklch(72.14% 0.01678 31.08)",
+          "oklch(83.57% 0.01678 31.08)",
+          "oklch(95.00% 0.01678 31.08)"
+        ]
       },
       "warning": {
         "role": "neutral",
-        "displayName": "Warntext"
+        "displayName": "Warntext",
+        "tonalRamp": [
+          "oklch(15.00% 0.08587 77.20)",
+          "oklch(26.43% 0.08587 77.20)",
+          "oklch(37.86% 0.08587 77.20)",
+          "oklch(49.29% 0.08587 77.20)",
+          "oklch(60.71% 0.08587 77.20)",
+          "oklch(72.14% 0.08587 77.20)",
+          "oklch(83.57% 0.08587 77.20)",
+          "oklch(95.00% 0.08587 77.20)"
+        ]
       },
       "warning-wash": {
         "role": "neutral",
-        "displayName": "Warnfläche"
+        "displayName": "Warnfläche",
+        "tonalRamp": [
+          "oklch(15.00% 0.03210 87.29)",
+          "oklch(26.43% 0.03210 87.29)",
+          "oklch(37.86% 0.03210 87.29)",
+          "oklch(49.29% 0.03210 87.29)",
+          "oklch(60.71% 0.03210 87.29)",
+          "oklch(72.14% 0.03210 87.29)",
+          "oklch(83.57% 0.03210 87.29)",
+          "oklch(95.00% 0.03210 87.29)"
+        ]
       },
       "success": {
         "role": "neutral",
-        "displayName": "Erfolgstext"
+        "displayName": "Erfolgstext",
+        "tonalRamp": [
+          "oklch(15.00% 0.05544 167.73)",
+          "oklch(26.43% 0.05544 167.73)",
+          "oklch(37.86% 0.05544 167.73)",
+          "oklch(49.29% 0.05544 167.73)",
+          "oklch(60.71% 0.05544 167.73)",
+          "oklch(72.14% 0.05544 167.73)",
+          "oklch(83.57% 0.05544 167.73)",
+          "oklch(95.00% 0.05544 167.73)"
+        ]
       },
       "success-wash": {
         "role": "neutral",
-        "displayName": "Erfolgsfläche"
+        "displayName": "Erfolgsfläche",
+        "tonalRamp": [
+          "oklch(15.00% 0.01162 153.67)",
+          "oklch(26.43% 0.01162 153.67)",
+          "oklch(37.86% 0.01162 153.67)",
+          "oklch(49.29% 0.01162 153.67)",
+          "oklch(60.71% 0.01162 153.67)",
+          "oklch(72.14% 0.01162 153.67)",
+          "oklch(83.57% 0.01162 153.67)",
+          "oklch(95.00% 0.01162 153.67)"
+        ]
       },
       "accent-wash": {
         "role": "primary",
-        "displayName": "Zurückgenommene Auswahlfläche · Schubert-Standard"
+        "displayName": "Sanfte Akzentauswahl",
+        "tonalRamp": [
+          "oklch(15.00% 0.00446 179.73)",
+          "oklch(26.43% 0.00446 179.73)",
+          "oklch(37.86% 0.00446 179.73)",
+          "oklch(49.29% 0.00446 179.73)",
+          "oklch(60.71% 0.00446 179.73)",
+          "oklch(72.14% 0.00446 179.73)",
+          "oklch(83.57% 0.00446 179.73)",
+          "oklch(95.00% 0.00446 179.73)"
+        ]
       }
     },
     "typographyMeta": {
       "headline": {
         "displayName": "Seitenüberschrift",
-        "purpose": "Bestehende Überschrift im Seitenkopf; mobil 28px."
+        "purpose": "Seitenkopf; mobil 28px."
       },
       "title": {
+        "displayName": "Abschnittsüberschrift",
+        "purpose": "Allgemeine Abschnittsüberschriften."
+      },
+      "panel-title": {
         "displayName": "Panelüberschrift",
-        "purpose": "Bestehender Titel im regulären Panelkopf."
+        "purpose": "Titel regulärer Panelköpfe."
       },
       "body": {
         "displayName": "Grundschrift",
-        "purpose": "Tatsächlicher Grundwert der globalen Kaskade."
+        "purpose": "Grundschrift des Arbeitsrahmens."
       },
       "body-copy": {
         "displayName": "Erklärender Text",
-        "purpose": "Seitenbeschreibungen, Einführung und Darstellungseinstellungen."
+        "purpose": "Seitenbeschreibungen und erklärender Text."
       },
       "label": {
         "displayName": "Beschriftung",
-        "purpose": "Reguläre Formularbeschriftungen."
+        "purpose": "Sichtbare Formularbeschriftungen."
       },
       "button": {
-        "displayName": "Schaltflächentext",
-        "purpose": "Reguläre Desktop-Schaltflächen mit eigener Zeilenhöhe."
+        "displayName": "Handlung",
+        "purpose": "Reguläre Desktopaktionen; eigene Zeilenhöhe."
+      },
+      "field": {
+        "displayName": "Eingabe",
+        "purpose": "Reguläre Formularfelder mit zurückgesetzter Fläche."
+      },
+      "status": {
+        "displayName": "Status",
+        "purpose": "Kompakte semantische Statuslabels."
       },
       "mobile-field": {
         "displayName": "Mobile Eingabe",
-        "purpose": "Bestehende lesbare Eingabegröße auf kleinen Bildschirmen."
+        "purpose": "Lesbare Eingaben auf kleinen Bildschirmen."
       }
     },
     "shadows": [
       {
+        "name": "workspace-inset",
+        "value": "0 2px 16px light-dark(#1d34400a, #00000030)",
+        "purpose": "Leichte räumliche Trennung des eingesetzten Arbeitsraums vom äußeren Rahmen."
+      },
+      {
+        "name": "surface-shadow",
+        "value": "0 3px 12px light-dark(#23354a08,#00000024)",
+        "purpose": "Aktive Bereichssegmente, reguläre aktive Tabs und schwebende Einstiege."
+      },
+      {
+        "name": "overlay-shadow",
+        "value": "0 20px 64px light-dark(#23354a22,#00000066)",
+        "purpose": "Gemeinsame modale Überlagerungen."
+      },
+      {
         "name": "sidebar-overlay",
-        "value": "0 16px 55px #26342814",
-        "purpose": "Bestehendes --shadow für die eingeblendete mobile Seitennavigation."
-      },
-      {
-        "name": "modal-overlay",
-        "value": "0 25px 120px #0d201c4d",
-        "purpose": "Bestehender Dialogschatten; keine reguläre Karten-Erhebung."
-      },
-      {
-        "name": "input-focus",
-        "value": "0 0 0 3px #315c4c0d",
-        "purpose": "Bestehender zusätzlicher Fokusschatten an Formularfeldern; die sichtbare Fokuslinie verwendet den semantischen Akzent."
+        "value": "0 16px 55px #182a4820",
+        "purpose": "Eingeblendete mobile Seitennavigation."
       },
       {
         "name": "studio-active-view",
         "value": "0 1px 3px #233f2820",
-        "purpose": "Bestehende aktive Ansichtsoption des Studios."
+        "purpose": "Aktive Ansichtsoption im Planungsstudio."
       },
       {
         "name": "companion-drawer",
         "value": "0 14px 65px #00000028",
-        "purpose": "Rechter Begleiter auf Desktopansichten; begrenzte Überlagerung über der Arbeitsfläche."
+        "purpose": "Begrenzter rechter Begleiter auf Desktopansichten."
       },
       {
         "name": "guided-tour",
         "value": "0 18px 54px rgb(0 0 0 / .25)",
-        "purpose": "Erklärungskarte der geführten Einführung über der abgedunkelten tatsächlichen Seite."
+        "purpose": "Erklärungskarte der Einführung über der tatsächlichen Seite."
       }
     ],
     "motion": [
       {
         "name": "button-state",
-        "value": "background .15s, transform .15s",
-        "purpose": "Bestehender Übergang von regulären Schaltflächen."
+        "value": "background .16s ease, border-color .16s ease, transform .16s ease",
+        "purpose": "Reguläre Hover-, Kontur- und Druckzustände; bei reduzierter Bewegung ohne Übergang und Druckverschiebung."
       },
       {
         "name": "navigation-state",
-        "value": "background .15s, color .15s",
-        "purpose": "Bestehender Übergang der Seitennavigation."
+        "value": "background .16s ease, color .16s ease",
+        "purpose": "Seitennavigation; bei reduzierter Bewegung ohne Übergang."
+      },
+      {
+        "name": "field-state",
+        "value": "border-color .15s ease, background .15s ease",
+        "purpose": "Hover und Fokus regulärer Eingaben."
+      },
+      {
+        "name": "table-row-state",
+        "value": "background .14s ease",
+        "purpose": "Leichte Hover-Fläche der Datensatzzeilen."
       },
       {
         "name": "mobile-sidebar",
-        "value": "transform .2s",
-        "purpose": "Bestehendes Einblenden der mobilen Seitennavigation."
-      },
-      {
-        "name": "reduced-motion",
-        "value": ".01ms",
-        "purpose": "Bestehende globale Begrenzung von Animation und Transition bei prefers-reduced-motion: reduce; keine zusätzliche Theme-Animation."
+        "value": "transform .2s ease",
+        "purpose": "Einblenden der mobilen Seitennavigation."
       },
       {
         "name": "disclosure-indicator",
-        "value": "transform .15s",
-        "purpose": "Richtungswechsel des gemeinsamen Aufklappindikators; globale Regel für reduzierte Bewegung gilt."
+        "value": "transform .15s ease",
+        "purpose": "Richtungswechsel des gemeinsamen Aufklappindikators."
       },
       {
         "name": "guided-tour-arrival",
         "value": "tour-arrive .18s cubic-bezier(.16,1,.3,1)",
-        "purpose": "Erklärungskarte bewegt sich beim Erscheinen von translateY(5px) zu translateY(0), ausschließlich bei prefers-reduced-motion: no-preference."
+        "purpose": "Ankunft der Tourkarte von translateY(5px) zu translateY(0), ausschließlich ohne Bewegungsreduktion."
+      },
+      {
+        "name": "reduced-motion",
+        "value": ".01ms",
+        "purpose": "Globale Begrenzung von Animationen und Übergängen; Animation einmalig, kein sanftes Scrollen."
       }
     ],
     "breakpoints": [
+      {
+        "name": "studio-wide",
+        "value": "1600px"
+      },
+      {
+        "name": "studio-and-settings-compact",
+        "value": "1250px"
+      },
       {
         "name": "desktop-compact",
         "value": "1200px"
       },
       {
-        "name": "content-single-column",
-        "value": "1000px"
+        "name": "section-navigation-compact",
+        "value": "1100px"
       },
       {
-        "name": "app-mobile",
-        "value": "760px"
-      },
-      {
-        "name": "appearance-compact",
-        "value": "650px"
+        "name": "utility-and-detail-compact",
+        "value": "1050px"
       },
       {
         "name": "studio-inspector-below",
         "value": "1020px"
       },
       {
+        "name": "settings-and-usage-single-column",
+        "value": "1000px"
+      },
+      {
+        "name": "dashboard-single-column",
+        "value": "900px"
+      },
+      {
+        "name": "app-mobile",
+        "value": "760px"
+      },
+      {
         "name": "studio-mobile",
         "value": "720px"
+      },
+      {
+        "name": "appearance-compact",
+        "value": "650px"
       }
     ]
   },
@@ -239,91 +598,91 @@
       "name": "Primäraktion",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Reguläre Schaltfläche mit umbrechender Beschriftung, Hover, sichtbarem Fokus und aktivem Zustand. Mindesthöhe Desktop 44px, mobil 48px.",
-      "html": "<button type=\"button\" class=\"ds-btn-primary\">Darstellung speichern</button>",
-      "css": ".ds-btn-primary{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 16px;border:1px solid var(--forest,#315c4c);background:var(--forest,#315c4c);color:var(--on-accent,#fff);border-radius:8px;font:500 13px/1.4 Inter,sans-serif;letter-spacing:-.01em;cursor:pointer;max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;transition:background .15s,transform .15s}.ds-btn-primary:hover:not(:disabled){background:var(--forest-dark,#244638);border-color:var(--forest-dark,#244638)}.ds-btn-primary:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn-primary:active:not(:disabled){transform:translateY(1px)}.ds-btn-primary:disabled{cursor:not-allowed;opacity:.5}@media(max-width:760px){.ds-btn-primary{min-height:48px;font-size:14px;padding:12px 16px;white-space:normal}}"
+      "description": "Gewählter Akzent, familienabhängiger Hover und sichtbarer Fokus; Desktop-Mindesthöhe 42px, mobil 48px.",
+      "html": "<button class=\"ds-btn ds-btn-primary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg>Änderungen speichern</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:0;max-width:100%;min-height:42px;padding:10px 15px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--paper,#fff);color:var(--ink,#192337);font-family:Inter,sans-serif;font-size:13px;font-weight:500;line-height:1.5;letter-spacing:-.012em;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}.ds-btn svg{flex-shrink:0}.ds-btn:hover:not(:disabled){background:var(--wash,#f0f3f8);border-color:color-mix(in srgb,var(--muted,#5d6a7c) 40%,var(--line,#dfe5ee))}.ds-btn:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn:active:not(:disabled){transform:translateY(1px)}.ds-btn:disabled{opacity:.5;cursor:not-allowed}@media(max-width:760px){.ds-btn{min-height:48px;padding:12px 15px;font-size:14px}}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active:not(:disabled){transform:none}}.ds-btn-primary{border-color:transparent;background:var(--forest,#315c4c);color:var(--on-accent,#fff)}.ds-btn-primary:hover:not(:disabled){border-color:transparent;background:var(--forest-dark,#244638)}"
     },
     {
       "name": "Sekundäraktion",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Reguläre Schaltfläche mit umbrechender Beschriftung, Hover, sichtbarem Fokus und aktivem Zustand. Mindesthöhe Desktop 44px, mobil 48px.",
-      "html": "<button type=\"button\" class=\"ds-btn-secondary\">Zurück</button>",
-      "css": ".ds-btn-secondary{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 16px;border:1px solid var(--line,#dfe3de);background:var(--paper,#fff);color:var(--ink,#202522);border-radius:8px;font:500 13px/1.4 Inter,sans-serif;letter-spacing:-.01em;cursor:pointer;max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;transition:background .15s,transform .15s}.ds-btn-secondary:hover:not(:disabled){background:var(--wash,#eeefea);border-color:var(--line,#dfe3de)}.ds-btn-secondary:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn-secondary:active:not(:disabled){transform:translateY(1px)}.ds-btn-secondary:disabled{cursor:not-allowed;opacity:.5}@media(max-width:760px){.ds-btn-secondary{min-height:48px;font-size:14px;padding:12px 16px;white-space:normal}}"
+      "description": "Konturierte ergänzende Aktion auf der Bedienfläche.",
+      "html": "<button class=\"ds-btn\">Unterlagen öffnen<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:0;max-width:100%;min-height:42px;padding:10px 15px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--paper,#fff);color:var(--ink,#192337);font-family:Inter,sans-serif;font-size:13px;font-weight:500;line-height:1.5;letter-spacing:-.012em;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}.ds-btn svg{flex-shrink:0}.ds-btn:hover:not(:disabled){background:var(--wash,#f0f3f8);border-color:color-mix(in srgb,var(--muted,#5d6a7c) 40%,var(--line,#dfe5ee))}.ds-btn:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn:active:not(:disabled){transform:translateY(1px)}.ds-btn:disabled{opacity:.5;cursor:not-allowed}@media(max-width:760px){.ds-btn{min-height:48px;padding:12px 15px;font-size:14px}}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active:not(:disabled){transform:none}}"
     },
     {
       "name": "Ghost-Aktion",
       "kind": "button",
       "refersTo": "button-ghost",
-      "description": "Reguläre Schaltfläche mit umbrechender Beschriftung, Hover, sichtbarem Fokus und aktivem Zustand. Mindesthöhe Desktop 44px, mobil 48px.",
-      "html": "<button type=\"button\" class=\"ds-btn-ghost\">Abbrechen</button>",
-      "css": ".ds-btn-ghost{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 16px;border:1px solid transparent;background:transparent;color:var(--ink,#202522);border-radius:8px;font:500 13px/1.4 Inter,sans-serif;letter-spacing:-.01em;cursor:pointer;max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;transition:background .15s,transform .15s}.ds-btn-ghost:hover:not(:disabled){background:var(--wash,#eeefea);border-color:var(--line,#dfe3de)}.ds-btn-ghost:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn-ghost:active:not(:disabled){transform:translateY(1px)}.ds-btn-ghost:disabled{cursor:not-allowed;opacity:.5}@media(max-width:760px){.ds-btn-ghost{min-height:48px;font-size:14px;padding:12px 16px;white-space:normal}}"
+      "description": "Zurückgenommene Aktion ohne Kontur im Ruhezustand.",
+      "html": "<button class=\"ds-btn ds-btn-ghost\">Abbrechen</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:0;max-width:100%;min-height:42px;padding:10px 15px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--paper,#fff);color:var(--ink,#192337);font-family:Inter,sans-serif;font-size:13px;font-weight:500;line-height:1.5;letter-spacing:-.012em;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}.ds-btn svg{flex-shrink:0}.ds-btn:hover:not(:disabled){background:var(--wash,#f0f3f8);border-color:color-mix(in srgb,var(--muted,#5d6a7c) 40%,var(--line,#dfe5ee))}.ds-btn:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn:active:not(:disabled){transform:translateY(1px)}.ds-btn:disabled{opacity:.5;cursor:not-allowed}@media(max-width:760px){.ds-btn{min-height:48px;padding:12px 15px;font-size:14px}}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active:not(:disabled){transform:none}}.ds-btn-ghost{border-color:transparent;background:transparent}"
     },
     {
       "name": "Gefahrenaktion",
       "kind": "button",
       "refersTo": "button-danger",
-      "description": "Reguläre Schaltfläche mit umbrechender Beschriftung, Hover, sichtbarem Fokus und aktivem Zustand. Mindesthöhe Desktop 44px, mobil 48px.",
-      "html": "<button type=\"button\" class=\"ds-btn-danger\">Löschen</button>",
-      "css": ".ds-btn-danger{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 16px;border:1px solid var(--line,#dfe3de);background:var(--danger-wash,#fff0ed);color:var(--danger,#993c35);border-radius:8px;font:500 13px/1.4 Inter,sans-serif;letter-spacing:-.01em;cursor:pointer;max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;transition:background .15s,transform .15s}.ds-btn-danger:hover:not(:disabled){background:var(--wash,#eeefea);border-color:var(--line,#dfe3de)}.ds-btn-danger:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn-danger:active:not(:disabled){transform:translateY(1px)}.ds-btn-danger:disabled{cursor:not-allowed;opacity:.5}@media(max-width:760px){.ds-btn-danger{min-height:48px;font-size:14px;padding:12px 16px;white-space:normal}}"
+      "description": "Semantische Fehlerfläche für eine ausdrücklich benannte Gefahrenaktion.",
+      "html": "<button class=\"ds-btn ds-btn-danger\">Entwurf verwerfen</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:0;max-width:100%;min-height:42px;padding:10px 15px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--paper,#fff);color:var(--ink,#192337);font-family:Inter,sans-serif;font-size:13px;font-weight:500;line-height:1.5;letter-spacing:-.012em;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}.ds-btn svg{flex-shrink:0}.ds-btn:hover:not(:disabled){background:var(--wash,#f0f3f8);border-color:color-mix(in srgb,var(--muted,#5d6a7c) 40%,var(--line,#dfe5ee))}.ds-btn:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-btn:active:not(:disabled){transform:translateY(1px)}.ds-btn:disabled{opacity:.5;cursor:not-allowed}@media(max-width:760px){.ds-btn{min-height:48px;padding:12px 15px;font-size:14px}}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active:not(:disabled){transform:none}}.ds-btn-danger{background:var(--danger-wash,#fff0ed);color:var(--danger,#993c35)}"
     },
     {
       "name": "Beschriftetes Eingabefeld",
       "kind": "input",
       "refersTo": "input-field",
-      "description": "Bestehendes Formularfeld; sichtbares Label, semantischer Platzhalter und Fokus. Kein zusätzlicher Laufzeitcode erforderlich.",
-      "html": "<label class=\"ds-field\"><span>Bezeichnung</span><input type=\"text\" placeholder=\"Bezeichnung eingeben\"/><small>Bitte eine eindeutige Bezeichnung verwenden.</small></label>",
-      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;min-width:0;color:var(--ink,#202522);font:500 13px/1.55 Inter,sans-serif;letter-spacing:-.01em}.ds-field input{box-sizing:border-box;width:100%;min-height:46px;border:1px solid var(--line,#dfe3de);background:var(--paper,#fff);padding:12px 13px;border-radius:8px;color:var(--ink,#202522);font:400 14px/1.55 Inter,sans-serif;caret-color:var(--forest,#315c4c);transition:border-color .15s,box-shadow .15s}.ds-field input::placeholder{color:var(--muted,#58625b);opacity:1}.ds-field input:hover{border-color:var(--line,#dfe3de)}.ds-field input:focus{border-color:var(--line,#dfe3de);box-shadow:0 0 0 3px #315c4c0d}.ds-field input:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-field input[aria-invalid=true]{border-color:var(--danger,#993c35)}.ds-field small{color:var(--muted,#58625b);font-size:12px;line-height:1.65;font-weight:400;max-width:70ch}@media(max-width:760px){.ds-field{font-size:14px}.ds-field input{font-size:16px;min-height:48px}.ds-field small{font-size:13px}}"
+      "description": "Zurückgesetztes Feld mit sichtbarem Label, Hilfe, Hover und Akzentfokus; Mindesthöhe 46px.",
+      "html": "<div class=\"ds-field\"><label for=\"ds-project-name\">Projektname</label><input id=\"ds-project-name\" placeholder=\"Bezeichnung eingeben\"/><span class=\"ds-field-help\">So finden Sie die Planung später wieder.</span></div>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:7px;min-width:0;max-width:390px;font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-field label{color:var(--ink,#192337);font-size:13px;font-weight:500;line-height:1.55}.ds-field input{width:100%;min-width:0;max-width:100%;min-height:46px;padding:11px 13px;border:1px solid var(--line,#dfe5ee);border-radius:9px;background:var(--input-surface,#f8fafc);color:var(--ink,#192337);font:400 14px/1.6 Inter,sans-serif;letter-spacing:-.012em;transition:border-color .15s ease,background .15s ease}.ds-field input::placeholder{color:var(--muted,#5d6a7c);opacity:1}.ds-field input:hover{border-color:color-mix(in srgb,var(--muted,#5d6a7c) 45%,var(--line,#dfe5ee))}.ds-field input:focus{border-color:var(--forest,#315c4c);background:var(--paper,#fff);box-shadow:none}.ds-field input:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-field input[aria-invalid=true]{border-color:var(--danger,#993c35)}.ds-field input:disabled{opacity:.5}.ds-field-help{color:var(--muted,#5d6a7c);font-size:12px;line-height:1.65}@media(max-width:760px){.ds-field input{min-height:48px;padding:12px;font-size:16px}.ds-field label{font-size:14px}.ds-field-help{font-size:13px}}@media(prefers-reduced-motion:reduce){.ds-field input{transition:none}}"
     },
     {
-      "name": "Aktive Seitennavigation",
+      "name": "Navigation und aktiver Bereich",
       "kind": "nav",
       "refersTo": "navigation-active",
-      "description": "Aktiver Eintrag im persönlichen Arbeitsbereich, einschließlich Akzentkontrast für das bestehende Symbol.",
-      "html": "<nav class=\"ds-nav\" aria-label=\"Arbeitsbereiche\"><a class=\"ds-nav-item\" href=\"#appearance\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 3-1 3-3 1-2 4 2 3v4l4 2 3-2 3 2 4-2v-4l2-3-2-4-3-1-1-3zM16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0\"></path></svg><span>Meine Einstellungen</span></a></nav>",
-      "css": ".ds-nav{display:flex;flex-direction:column;gap:5px;background:var(--wash,#eeefea);padding:17px}.ds-nav-item{box-sizing:border-box;display:flex;align-items:center;gap:12px;min-height:45px;padding:11px 15px;border-radius:8px;background:var(--forest,#315c4c);color:var(--on-accent,#fff);font:600 13px/1.55 Inter,sans-serif;letter-spacing:-.01em;text-decoration:none;transition:background .15s,color .15s}.ds-nav-item:hover{background:var(--forest,#315c4c)}.ds-nav-item:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-nav-item svg{flex:none;color:var(--on-accent,#fff)}@media(max-width:760px){.ds-nav-item{font-size:14px;min-height:48px}}"
+      "description": "Sanfte Akzentauswahl in der linken Navigation; aktives Bereichssegment auf erhabener Bedienfläche.",
+      "html": "<div class=\"ds-navigation\"><nav class=\"ds-rail\" aria-label=\"Arbeitsbereiche\"><a class=\"ds-nav-item ds-current\" href=\"#heute\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10H3zM9 20v-7h6v7\"/></svg>Heute</a><a class=\"ds-nav-item\" href=\"#auftraege\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg>Aufträge</a></nav><nav class=\"ds-sections\" aria-label=\"Bereiche\"><a class=\"ds-section ds-section-current\" href=\"#kunden\" aria-current=\"page\">Kunden</a><a class=\"ds-section\" href=\"#angebote\">Angebote</a><a class=\"ds-section\" href=\"#auftraege\">Aufträge</a></nav></div>",
+      "css": ".ds-navigation{display:flex;align-items:flex-start;flex-wrap:wrap;gap:22px;font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-rail{display:flex;flex-direction:column;gap:3px;width:204px;padding:14px;background:var(--navigation-surface,#eef2f7)}.ds-nav-item{display:flex;align-items:center;gap:11px;min-height:40px;padding:9px 13px;border-radius:9px;color:var(--muted,#5d6a7c);font-size:13px;font-weight:500;line-height:1.55;text-decoration:none;transition:background .16s ease,color .16s ease}.ds-nav-item:hover{background:color-mix(in srgb,var(--paper,#fff) 65%,transparent);color:var(--ink,#192337)}.ds-nav-item.ds-current{color:var(--forest,#315c4c);background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff));font-weight:600}.ds-sections{display:inline-flex;align-items:stretch;gap:3px;max-width:100%;padding:4px;border:1px solid var(--line,#dfe5ee);border-radius:10px;background:var(--wash,#f0f3f8)}.ds-section{display:flex;align-items:center;justify-content:center;min-height:35px;padding:8px 14px;border-radius:7px;color:var(--muted,#5d6a7c);font-size:12px;font-weight:500;line-height:1.5;text-decoration:none;white-space:nowrap}.ds-section:hover{color:var(--ink,#192337)}.ds-section-current{background:var(--paper,#fff);color:var(--forest,#315c4c);box-shadow:var(--surface-shadow,0 3px 12px light-dark(#23354a08,#00000024));font-weight:600}.ds-nav-item:focus-visible,.ds-section:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-nav-item{transition:none}}"
     },
     {
       "name": "Erfolgsstatus",
       "kind": "chip",
       "refersTo": "status-success",
-      "description": "Nicht interaktiver Zustand mit lesbarer Bedeutung und ergänzendem Punkt; keine persönliche Akzentumfärbung.",
-      "html": "<span class=\"ds-status\"><span class=\"ds-status-dot\" aria-hidden=\"true\"></span>Gespeichert</span>",
-      "css": ".ds-status{display:inline-flex;align-items:center;gap:5px;font:500 11px/1.5 Inter,sans-serif;letter-spacing:-.01em;padding:4px 8px;border-radius:6px;white-space:nowrap;background:var(--success-wash,#eaf2ec);color:var(--success,#315c4c)}.ds-status-dot{width:4px;height:4px;border-radius:50%;background:currentColor}"
+      "description": "Nicht interaktiver, semantisch gefärbter Zustand mit ausgeschriebenem Namen.",
+      "html": "<span class=\"ds-status\"><span class=\"ds-status-dot\" aria-hidden=\"true\"></span>Freigegeben</span>",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;background:var(--success-wash,#eaf2ec);color:var(--success,#315c4c);font-family:Inter,sans-serif;font-size:11px;font-weight:500;line-height:1.4;letter-spacing:-.012em;white-space:nowrap}.ds-status-dot{width:4px;height:4px;border-radius:50%;background:currentColor}"
     },
     {
-      "name": "Reguläres Panel",
+      "name": "Arbeits-Panel",
       "kind": "card",
       "refersTo": "panel",
-      "description": "Bestehende ruhige Bedienfläche mit Kopf und Inhaltsbereich; keine zusätzliche dekorative Erhebung.",
-      "html": "<section class=\"ds-panel\" aria-labelledby=\"ds-panel-title\"><header class=\"ds-panel-header\"><div><h2 id=\"ds-panel-title\">Ihre Darstellung</h2><p>Ihre Farben. Ihr Arbeitsbereich. Auf allen Geräten mit Ihrem Zugang.</p></div></header><div class=\"ds-panel-body\"><p>Wählen Sie eine Akzentfarbe und das Erscheinungsbild. Die Vorschau zeigt Ihre Auswahl vor dem Speichern.</p></div></section>",
-      "css": ".ds-panel{min-width:0;background:var(--paper,#fff);color:var(--ink,#202522);border:1px solid var(--line,#dfe3de);border-radius:12px;font:400 15px/1.55 Inter,sans-serif;letter-spacing:-.01em}.ds-panel-header{padding:22px 26px;border-bottom:1px solid var(--line,#dfe3de);display:flex;justify-content:space-between;align-items:center;gap:16px}.ds-panel-header h2{margin:0;font-size:17px;font-weight:600;letter-spacing:-.025em}.ds-panel-header p{color:var(--muted,#58625b);font-size:13px;line-height:1.65;margin:5px 0 0}.ds-panel-body{padding:26px}.ds-panel-body p{margin:0;font-size:14px;line-height:1.7;max-width:70ch;color:var(--muted,#58625b)}@media(max-width:760px){.ds-panel-header{padding:21px 20px}.ds-panel-body{padding:22px 20px}}"
+      "description": "Fein konturierte Bedienfläche mit getrenntem Kopf, Inhalt und optionalem Aktionsfuß.",
+      "html": "<section class=\"ds-panel\"><header class=\"ds-panel-header\"><div><h2>Aktuelle Aufträge</h2><p>Der nächste Schritt bleibt sichtbar.</p></div></header><div class=\"ds-panel-body\"><p>Öffnen Sie einen Auftrag, um Planung und Unterlagen zu sehen.</p><a class=\"ds-panel-link\" href=\"#auftraege\">Alle Aufträge<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></a></div></section>",
+      "css": ".ds-panel{min-width:0;max-width:480px;border:1px solid var(--line,#dfe5ee);border-radius:14px;background:var(--paper,#fff);color:var(--ink,#192337);font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-panel-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:21px 24px;border-bottom:1px solid var(--line-soft,#edf0f5)}.ds-panel-header h2{margin:0;font-size:16px;font-weight:600;line-height:1.4;letter-spacing:-.02em}.ds-panel-header p{margin:4px 0 0;color:var(--muted,#5d6a7c);font-size:13px;line-height:1.6}.ds-panel-body{padding:24px}.ds-panel-body p{margin:0;color:var(--muted,#5d6a7c);font-size:14px;line-height:1.7}.ds-panel-link{display:inline-flex;align-items:center;gap:6px;margin-top:18px;color:var(--forest,#315c4c);font-size:13px;font-weight:500;line-height:1.6;text-decoration:none}.ds-panel-link:hover{text-decoration:underline}.ds-panel-link:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}@media(max-width:760px){.ds-panel{border-radius:12px}.ds-panel-header{padding:19px 18px}.ds-panel-body{padding:22px 18px}}"
     },
     {
       "name": "Akzentwahl · heller Vorschau-Modus",
       "kind": "custom",
       "refersTo": "appearance-choice",
-      "description": "Quellgetreuer heller Zustand der sechs nativen Radiooptionen. Der Produktbestand aktualisiert Namen und Farbfelder nach dem gewählten Modus; dieser eigenständige Ausschnitt zeigt ausdrücklich Hell und enthält keine Speicherlogik.",
-      "html": "<fieldset class=\"ds-appearance\"><legend>Akzentfarbe</legend><p>Für Buttons, Links und Ihre aktuelle Auswahl.</p><div class=\"ds-accent-choices\"><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"forest\" checked/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#315c4c,#9fd5ba);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Waldgrün</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"ocean\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#245aa0,#a3c9ff);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Ozeanblau</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"violet\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#6b45a0,#d0b5f6);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Violett</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"rose\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#984368,#f2b3cd);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Beere</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"clay\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#934c31,#edb79d);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Terrakotta</span></label><label class=\"ds-accent-choice\"><input type=\"radio\" name=\"ds-accent\" value=\"slate\"/><span class=\"ds-accent-swatch\" style=\"color-scheme:light;background:light-dark(#4b5868,#bdcbdc);color:light-dark(#fff,#15201c)\" aria-hidden=\"true\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"></path></svg></span><span>Graphit</span></label></div></fieldset>",
-      "css": ".ds-appearance{min-width:0;border:0;padding:0;margin:0;color:var(--ink,#202522);font:400 15px/1.55 Inter,sans-serif;letter-spacing:-.01em}.ds-appearance legend{padding:0;font-size:14px;font-weight:600}.ds-appearance>p{font-size:13px;color:var(--muted,#58625b);margin:5px 0 13px}.ds-accent-choices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.ds-accent-choice{box-sizing:border-box;position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:12px 5px;border:1px solid var(--line,#dfe3de);border-radius:10px;cursor:pointer;font-size:12px}.ds-accent-choice:has(:checked){border-color:var(--forest,#315c4c);background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff))}.ds-accent-swatch{display:grid;place-items:center;width:34px;height:34px;border-radius:50%}.ds-accent-swatch svg{visibility:hidden}.ds-accent-choice:has(:checked) .ds-accent-swatch svg{visibility:visible}.ds-accent-choice input{position:absolute;opacity:0;width:100%;height:100%;inset:0;margin:0;cursor:pointer}.ds-accent-choice:has(:focus-visible){outline:2px solid var(--forest,#315c4c);outline-offset:3px}@media(max-width:650px){.ds-accent-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.ds-accent-choice{min-height:82px}}"
+      "description": "Sechs native Radiooptionen im ausdrücklich hellen Vorschauzustand; die Anwendung aktualisiert Namen und Farben nach dem gewählten Modus.",
+      "html": "<fieldset class=\"ds-appearance\"><legend>Akzentfarbe</legend><p>Für Buttons, Links und Ihre aktuelle Auswahl.</p><div class=\"ds-accent-choices\"><label><input type=\"radio\" name=\"ds-accent\" value=\"forest\" checked/><span class=\"ds-swatch\" style=\"background:#315c4c\" aria-hidden=\"true\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg></span><span>Waldgrün</span></label><label><input type=\"radio\" name=\"ds-accent\" value=\"ocean\"/><span class=\"ds-swatch\" style=\"background:#245aa0\" aria-hidden=\"true\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg></span><span>Ozeanblau</span></label><label><input type=\"radio\" name=\"ds-accent\" value=\"violet\"/><span class=\"ds-swatch\" style=\"background:#6b45a0\" aria-hidden=\"true\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg></span><span>Violett</span></label><label><input type=\"radio\" name=\"ds-accent\" value=\"rose\"/><span class=\"ds-swatch\" style=\"background:#984368\" aria-hidden=\"true\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg></span><span>Beere</span></label><label><input type=\"radio\" name=\"ds-accent\" value=\"clay\"/><span class=\"ds-swatch\" style=\"background:#934c31\" aria-hidden=\"true\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg></span><span>Terrakotta</span></label><label><input type=\"radio\" name=\"ds-accent\" value=\"slate\"/><span class=\"ds-swatch\" style=\"background:#4b5868\" aria-hidden=\"true\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg></span><span>Graphit</span></label></div></fieldset>",
+      "css": ".ds-appearance{min-width:0;margin:0;padding:0;border:0;font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-appearance legend{padding:0;color:var(--ink,#192337);font-size:14px;font-weight:600;line-height:1.55}.ds-appearance>p{margin:5px 0 14px;color:var(--muted,#5d6a7c);font-size:13px;line-height:1.6}.ds-accent-choices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;max-width:650px}.ds-accent-choices label{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;padding:13px 5px;border:1px solid transparent;border-radius:10px;color:var(--muted,#5d6a7c);font-size:12px;line-height:1.55;cursor:pointer}.ds-accent-choices input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.ds-accent-choices label:has(input:checked){border-color:var(--line,#dfe5ee);background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff));color:var(--ink,#192337)}.ds-accent-choices label:has(input:focus-visible){outline:2px solid var(--forest,#315c4c);outline-offset:3px}.ds-swatch{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;color:#fff;box-shadow:inset 0 0 0 1px #0000000c}.ds-swatch svg{visibility:hidden}.ds-accent-choices input:checked+.ds-swatch svg{visibility:visible}.ds-appearance:disabled{opacity:.6}@media(max-width:650px){.ds-accent-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.ds-accent-choices label{min-height:84px}}"
     },
     {
       "name": "Aufklappbare Hilfe",
       "kind": "custom",
       "refersTo": "disclosure",
-      "description": "Gemeinsames natives Aufklappmuster für ergänzende Hilfe; offene und geschlossene Zustände, sichtbarer Fokus und umbrechende Beschriftung.",
-      "html": "<details class=\"ds-disclosure\"><summary>Diese Seite verstehen</summary><p>Wählen Sie den passenden Bereich und öffnen Sie den Vorgang, mit dem Sie weiterarbeiten möchten.</p></details>",
-      "css": ".ds-disclosure{font:400 15px/1.55 Inter,sans-serif;color:var(--ink,#202522);letter-spacing:-.01em}.ds-disclosure>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:48px;padding:14px 16px;border-radius:10px;background:var(--wash,#eeefea);color:var(--ink,#202522);font-size:13px;font-weight:500;line-height:1.6;overflow-wrap:anywhere;cursor:pointer}.ds-disclosure>summary::-webkit-details-marker{display:none}.ds-disclosure>summary:hover{background:color-mix(in srgb,var(--forest,#315c4c) 7%,var(--wash,#eeefea))}.ds-disclosure>summary:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-disclosure>summary::after{content:\"\";width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);margin:-4px 3px 0 auto;flex:none;transition:transform .15s}.ds-disclosure[open]>summary{margin-bottom:14px}.ds-disclosure[open]>summary::after{transform:rotate(225deg);margin-top:4px}.ds-disclosure>p{font-size:13px;line-height:1.7;color:var(--muted,#58625b);margin:14px 0 10px}@media(max-width:760px){.ds-disclosure>summary{font-size:14px;min-height:50px}}@media(prefers-reduced-motion:reduce){.ds-disclosure>summary::after{transition-duration:.01ms}}"
+      "description": "Gemeinsames natives Hilfemuster mit offenem und geschlossenem Zustand, Akzentfokus und umbrechendem Titel.",
+      "html": "<details class=\"ds-disclosure\"><summary>So arbeiten die Bereiche zusammen</summary><p>Öffnen Sie den passenden Vorgang und prüfen Sie den nächsten Schritt.</p></details>",
+      "css": ".ds-disclosure{max-width:520px;color:var(--ink,#192337);font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-disclosure>summary{display:flex;align-items:center;gap:12px;min-height:49px;padding:14px 16px;border:1px solid var(--line,#dfe5ee);border-radius:10px;background:var(--paper,#fff);font-size:13px;font-weight:500;line-height:1.6;list-style:none;overflow-wrap:anywhere;cursor:pointer}.ds-disclosure>summary::-webkit-details-marker{display:none}.ds-disclosure>summary:hover{background:var(--input-surface,#f8fafc)}.ds-disclosure>summary:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-disclosure>summary::after{content:'';flex:none;width:7px;height:7px;margin:-4px 3px 0 auto;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .15s ease}.ds-disclosure[open]>summary{margin-bottom:14px}.ds-disclosure[open]>summary::after{margin-top:4px;transform:rotate(225deg)}.ds-disclosure>p{margin:0;color:var(--muted,#5d6a7c);font-size:13px;line-height:1.7}@media(max-width:760px){.ds-disclosure>summary{min-height:52px;font-size:14px}}@media(prefers-reduced-motion:reduce){.ds-disclosure>summary::after{transition:none}}"
     }
   ],
   "narrative": {
-    "northStar": "Das ruhige Arbeitswerkzeug",
-    "overview": "Die SCHUBERT Design Suite ist ein hochwertiges, ruhiges Arbeitswerkzeug für einen Handwerksbetrieb. Die Oberfläche unterstützt deutschsprachige Menschen mit unterschiedlicher digitaler Erfahrung durch klare Beschriftungen, sichtbare Zustände und vertraute Formularabläufe. Die bestätigte Richtung bleibt sachlich: Inter, warme helle Flächen und Waldgrün als Schubert-Standard.\n\nDie persönliche Darstellung erweitert diese bestehende Identität um sechs geprüfte Farbfamilien und die Modi Hell, Dunkel und Wie mein Gerät. Sie verändert den Bedienrahmen, nicht die fachliche Bedeutung von Plänen, Originalschriftbildern oder Materialien. Abstände, Typografie und bestehende Komponentenformen bleiben erhalten.",
+    "northStar": "Das präzise Arbeitsprodukt",
+    "overview": "Die SCHUBERT Design Suite ist ein modernes, hochwertiges Arbeitsprodukt für einen Handwerksbetrieb. Eine kompakte, leicht getönte Navigationsleiste fasst einen deutlich eingesetzten Arbeitsraum ein. Kühles Porzellan im hellen Modus und tiefes Navy im dunklen Modus verbinden präzise Konturen, lesbare Inter-Typografie und zurückhaltende räumliche Tiefe.\n\nDie Oberfläche richtet sich an deutschsprachige Menschen mit unterschiedlicher digitaler Erfahrung. Sichtbare Handlungsnamen, vertraute Formulare und klar getrennte Arbeitsbereiche tragen die Bedienung. Sechs persönliche Akzentfamilien und die drei Darstellungsmodi verändern den Rahmen; fachliche Statusfarben, technisches Zeichenpapier, Originalschriftbilder und reale Materialien behalten ihre Bedeutung.",
     "keyCharacteristics": [
-      "Ruhige, flächige Oberflächen mit präzisen Konturen.",
-      "Akzent für Handlung, Navigation und Auswahl; eigene Bedeutungsfarben für Status.",
-      "Lesbare deutsche Namen, ergänzende Symbole und sichtbarer Tastaturfokus.",
-      "Persönliche Auswahl mit Vorschau und ausdrücklichem Speichern."
+      "Kompakte Navigation und ein klar abgegrenzter, eingesetzter Arbeitsraum.",
+      "Kühle neutrale Flächen mit feiner Kontur und gezielter, weicher Tiefe.",
+      "Ausgewählter Akzent für aktuelle Position, primäre Handlung und Auswahl.",
+      "Lesbare deutsche Beschriftungen, erkennbare Zustände und erreichbare Aktionen."
     ],
     "rules": [
       {
@@ -337,39 +696,39 @@
         "section": "colors"
       },
       {
-        "name": "Bestehende Schrift",
-        "body": "Inter bleibt die bestehende Anwendungsschrift. Ein generischer Design-Detektorhinweis auf Inter ist als bekannte Bestandsentscheidung akzeptiert und kein Auftrag zum Schriftaustausch.",
+        "name": "Lesbare Handlung",
+        "body": "Aktionen haben verständliche Namen. Symbole ergänzen Text; längere Namen dürfen zwischen vollständigen Wörtern auf die nächste Zeile wechseln.",
         "section": "typography"
       },
       {
-        "name": "Fläche vor Schatten",
-        "body": "Reguläre Bedienflächen werden durch Tonwert und Kontur gegliedert. Bestehende Schatten dienen begrenzten Überlagerungen oder Zuständen; zusätzliche dekorative Schatten sind nicht Bestandteil dieser Erweiterung.",
-        "section": "elevation"
+        "name": "Erreichbare Aktion",
+        "body": "Scrollbare Inhalte halten Abschluss- und Schließaktionen erreichbar. Desktop-Hilfe und Feedback nutzen den reservierten Platz über dem Profil; modale Oberflächen bleiben frei von schwebendem Feedback.",
+        "section": "layout"
       },
       {
-        "name": "Erreichbare Aktion",
-        "body": "Lange Beschriftungen dürfen umbrechen. Scrollbare Inhalte, Dialoge und Hilfeansichten halten ihre Abschluss- und Schließaktionen erreichbar; schwebendes Feedback verdeckt keine geöffnete Hilfe oder modale Oberfläche.",
-        "section": "layout"
+        "name": "Gezielte Tiefe",
+        "body": "Tonwert und Kontur trennen Arbeitsflächen. Weiche Schatten setzen den Arbeitsraum, aktive Segmente und schwebende Hilfe räumlich ab; sie ersetzen keine verständliche Hierarchie.",
+        "section": "elevation"
       }
     ],
     "dos": [
-      "Do vorhandene semantische Farbvariablen für Bedienflächen, Text, Konturen, Auswahl und Status verwenden.",
-      "Do Farbfeld und sichtbaren Farbnamen auf den gewählten Vorschau-Modus abstimmen, einschließlich der Geräteeinstellung.",
-      "Do Text oder Symbol zusätzlich zur Farbe verwenden und Tastaturfokus sichtbar halten.",
-      "Do die vorhandenen Abstands-, Typografie- und Responsive-Regeln weiterverwenden; komponentenspezifische Unterschiede bleiben dokumentierter Bestand.",
+      "Do semantische Flächentokens für Navigation, Arbeitsraum, Eingaben, Text und Konturen verwenden.",
+      "Do die aktuelle Position mit weicher Akzentfläche in der Navigation und einem erhabenen aktiven Bereichssegment zeigen.",
+      "Do zusammengehörige Filter und Datentabelle in einem gemeinsamen Container ausrichten.",
+      "Do sichtbare Feldbeschriftungen, verständliche deutsche Aktionen und einen klaren Tastaturfokus erhalten.",
+      "Do Farbfeld und sichtbaren Farbnamen auf den gewählten Vorschau-Modus abstimmen.",
+      "Do Aktionsgruppen als ganze Einheiten umbrechen lassen und lange deutsche Aktionsnamen an Wortgrenzen halten.",
       "Do Originalschriftbilder, Zeichenpapier, Materialien, 3D-Inhalte und PDF-Farben fachlich unverändert darstellen.",
-      "Do Speichern, Ladezustand, Erfolg und Fehler nachvollziehbar anzeigen und Fehlermeldungen nach der auslösenden Aktion fokussieren.",
-      "Do lange Aktionsnamen umbrechen lassen und bei scrollbaren Dialog- und Hilfeinhalten die Abschlussaktionen erreichbar halten.",
-      "Do umfangreiche Bereichslisten und ergänzende Hilfen über beschriftete, tastaturbedienbare Auswahl- und Aufklappmuster zugänglich machen.",
-      "Do fehlende bestätigte Diagrammwerte ausdrücklich benennen und auf kleinen Bildschirmen lesbare Monatszeilen verwenden."
+      "Do fehlende bestätigte Werte ausdrücklich benennen und mobile Auswertungen als lesbare Monatszeilen anbieten.",
+      "Do Speichern, Ladezustand, Erfolg und Fehler nachvollziehbar anzeigen und Fehlermeldungen in der betroffenen Oberfläche sichtbar machen."
     ],
     "donts": [
       "Don't persönliche Akzentfarben als Ersatz für Fehler-, Warn- oder Erfolgsfarben einsetzen.",
-      "Don't Inter wegen eines generischen Detektorhinweises austauschen oder aus dieser Erweiterung eine neue Markenidentität ableiten.",
-      "Don't freie CSS-Farbwerte, neue Farbverläufe oder zusätzliche Paletten aus den Dokumentationsbeispielen ableiten.",
-      "Don't light-dark()-Deklarationen in statische UI-Styles verschieben, wenn der Build daraus private Hilfsvariablen erzeugt; die zentrale Inline-Grenze bleibt maßgeblich.",
-      "Don't Theme-Polling, KI-Aufrufe oder zusätzliche Gerätemodus-Schreibvorgänge einführen.",
-      "Don't diesen dokumentierten Implementierungsstand als abgeschlossene fachliche oder visuelle Gesamtfreigabe ausgeben."
+      "Don't den Arbeitsrahmen wieder zu einer gleichförmig flachen Fläche ohne erkennbare Navigation, Arbeitsraum und Eingabeflächen machen.",
+      "Don't dekorative Verläufe, übergroße Pillenflächen, zusätzliche Vorspänne oder ornamentale Symbolkacheln als neue Anwendungsmuster einführen.",
+      "Don't alle Fachflächen auf denselben Radius, dieselbe Schriftgröße oder dieselbe Informationsdichte vereinheitlichen.",
+      "Don't physisches Zeichenpapier dunkel einfärben oder technische Vorlagen durch eine UI-Farbwahl verändern.",
+      "Don't aus Vorschaubeispielen neue Laufzeitfarben, zusätzliche Theme-Abfragen, Polling oder KI-Aufrufe ableiten."
     ]
   }
 }
