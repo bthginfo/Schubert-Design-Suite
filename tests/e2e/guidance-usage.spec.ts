@@ -1,3 +1,4 @@
+import {chooseSelect,nativeSelect} from './select-choice.js';
 import {login as sharedLogin} from './login.js';
 ﻿import {test,expect,type Page} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -34,14 +35,14 @@ test('Page-specific help, searchable FAQs and restartable personal onboarding',a
  await page.getByRole('button',{name:'Einführung neu starten'}).click();await expect(page.getByRole('dialog',{name:'Einmal gemeinsam durch die Suite'})).toBeVisible();await page.getByRole('button',{name:'Für später schließen'}).click();await expect(page.locator('.onboarding')).toHaveCount(0);await page.reload();await expect(page.locator('.onboarding')).toHaveCount(0);
 });
 test('Numbering preview, persisted settings and actual quote allocation',async({page})=>{
- await login(page);await page.goto('/settings?tab=numbering');await expect(page.getByRole('heading',{name:'Ihre Nummernkreise'})).toBeVisible();await page.getByLabel('Welche Nummer möchten Sie einstellen?').selectOption('quotes');
+ await login(page);await page.goto('/settings?tab=numbering');await expect(page.getByRole('heading',{name:'Ihre Nummernkreise'})).toBeVisible();await chooseSelect(page,page.getByLabel('Welche Nummer möchten Sie einstellen?'),'quotes');
  await page.getByLabel('Aufbau der Nummer *',{exact:true}).fill('TEST-AN/{JJ}/{NR}');await page.getByLabel('Mindeststellen der laufenden Nummer *',{exact:true}).fill('4');
  const input=page.getByLabel(/Nächste freie Nummer/),next=Number(await input.inputValue())+25;await input.fill(String(next));await page.getByLabel('Grund und Grundlage des Startstands *',{exact:true}).fill('Synthetischer Browsertest des Umstiegs im laufenden Jahr.');
  const preview=await page.locator('.numbering-preview strong').innerText();await capture(page,'numbering');await page.getByLabel('Eigene Passphrase bestätigen *',{exact:true}).fill(process.env.TEST_OWNER_PASSWORD!);await page.getByRole('button',{name:'Nummernkreis speichern'}).click();await expect(page.getByRole('status').filter({hasText:'Nummernkreis gespeichert'})).toBeVisible();
  const headers={origin:new URL(page.url()).origin};const call=async(name:string,payload:object)=>{const response=await page.request.post('/api/v1/commands',{headers,data:{name,payload,idempotencyKey:randomUUID()}});expect(response.ok()).toBeTruthy();return(await response.json()).result;};
  const customer=await call('crm.customer.create',{name:'TEST · Nummernkreis '+randomUUID().slice(0,6),party_type:'person'});
  const quote=await call('sales.quote.create',{title:'TEST · Konfigurierte Angebotsnummer',customer_id:customer.id,lines:[{description:'Testleistung',quantity:'1',unit:'piece',unit_price:'100',tax_rate:'19',discount_percent:'0',line_type:'item',optional:false,selected:true}]});expect(quote.number).toBe(preview);
- await page.reload();await page.getByLabel('Welche Nummer möchten Sie einstellen?').selectOption('quotes');await expect(input).toHaveValue(String(next+1));await page.getByRole('link',{name:'Hilfe zu dieser Seite'}).click();await expect(page.getByText('Nummernkreise beim Umstieg',{exact:true})).toBeVisible();
+ await page.reload();await chooseSelect(page,page.getByLabel('Welche Nummer möchten Sie einstellen?'),'quotes');await expect(input).toHaveValue(String(next+1));await page.getByRole('link',{name:'Hilfe zu dieser Seite'}).click();await expect(page.getByText('Nummernkreise beim Umstieg',{exact:true})).toBeVisible();
 });
 test('Employees have help but cannot view administrative usage or numbering',async({page})=>{
  await login(page,'EMPLOYEE');await expect(page.getByRole('link',{name:'Verbrauch im Detail'})).toHaveCount(0);await page.goto('/help');await expect(page.getByRole('heading',{name:'Wie können wir Ihnen helfen?'})).toBeVisible();await expect(page.getByText('KI-Verbrauch und Verbindungen',{exact:true})).toHaveCount(0);

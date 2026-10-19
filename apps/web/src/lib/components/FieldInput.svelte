@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
   import {valueLabels} from '#lib/client/api.ts';
   import {countries,normalizeCountry} from '@schubert/contracts';
   import type {Field} from '#lib/client/types.ts';
@@ -20,7 +21,7 @@
   {:else}
     <label for={id}>{field.label}{field.required?' *':''}{field.internal?' · intern':''}</label>
     {#if field.key==='country'}
-      <select {id} value={normalizeCountry(String(value||''))||value||''} onchange={(event)=>value=event.currentTarget.value} required={field.required} aria-invalid={!!error} aria-describedby={descriptions} autocomplete="country">
+      <select use:searchableSelect={normalizeCountry(String(value||''))||value||''} {id} value={normalizeCountry(String(value||''))||value||''} onchange={(event)=>value=event.currentTarget.value} required={field.required} aria-invalid={!!error} aria-describedby={descriptions} autocomplete="country">
         <option value="">Bitte auswählen</option>
         {#if value&&!normalizeCountry(String(value))}<option value={value}>Bisherige Angabe prüfen: {value}</option>{/if}
         {#each countries as country}<option value={country.value}>{country.label}</option>{/each}
@@ -32,7 +33,7 @@
     {:else if field.type==='reference'}
       {#key (field.reference||field.key)+':' +(referenceParentId||'')+':' +(referenceAsOf||'')+':'+(referenceKind||'')}<ReferencePicker {id} bind:value reference={field.reference||field.key.replace(/_id$/,'')} initial={lookups[field.reference||field.key.replace(/_id$/,'')]||[]} required={field.required} invalid={!!error} describedBy={descriptions} parentId={referenceParentId} asOf={referenceAsOf} kind={referenceKind} emptyText={emptyReference}/>{/key}
     {:else if field.type==='select'}
-      <select {id} bind:value required={field.required} aria-invalid={!!error} aria-describedby={descriptions}>
+      <select use:searchableSelect={value} {id} bind:value required={field.required} aria-invalid={!!error} aria-describedby={descriptions}>
         <option value="">Bitte auswählen</option>
         {#each field.options||[] as option}<option value={option.value}>{field.key==='priority'?valueLabels[option.value]||option.label:option.label!==option.value?option.label:valueLabels[option.value]||option.label}</option>{/each}
       </select>

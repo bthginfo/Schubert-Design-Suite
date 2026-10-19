@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
  import {onMount,tick,untrack} from 'svelte';
  import {goto,refreshAll} from '$app/navigation';
  import {page} from '$app/state';
@@ -49,7 +50,7 @@
  {#if rect}<div class="tour-highlight" style:left={rect.x+'px'} style:top={rect.y+'px'} style:width={rect.width+'px'} style:height={rect.height+'px'} aria-hidden="true"></div>{/if}
  <section bind:this={card} class="tour-card" class:appearance={step.id==='appearance'} style:left={position.left+'px'} style:top={position.top+'px'} aria-busy={busy}>
   <header><span class="tour-count">Schritt {index+1} von {steps.length}</span><button class="text-link" disabled={busy} onclick={()=>finish('deferred')}>Für später schließen</button></header>
-  <div class="tour-station"><label for="tour-station">Station direkt wählen</label><select id="tour-station" value={index} disabled={busy} onchange={(event)=>move(Number(event.currentTarget.value))}>{#each steps as station,i}<option value={i}>{i+1}. {station.title}</option>{/each}</select></div>
+  <div class="tour-station"><label for="tour-station">Station direkt wählen</label><select use:searchableSelect={index} id="tour-station" value={index} disabled={busy} onchange={(event)=>move(Number(event.currentTarget.value))}>{#each steps as station,i}<option value={i}>{i+1}. {station.title}</option>{/each}</select></div>
   <div class="tour-content"><h2 bind:this={heading} id="tour-title" tabindex="-1">{step.title}</h2><p id="tour-description">{step.body}</p>
    {#if step.id==='appearance'}<AppearancePicker bind:accent bind:mode disabled={busy}/>{/if}
    <p class="tour-hint">{step.hint}</p>

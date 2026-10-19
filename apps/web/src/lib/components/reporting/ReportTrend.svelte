@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
   import type {Row} from '#lib/client/types.ts';
   import {display} from '#lib/client/api.ts';
   import {reportMonthDrilldown,reportMetrics,reportMoney,reportNumber,reportQuantity} from '#lib/client/reports.ts';
@@ -15,7 +16,7 @@
   function monthHref(row:Row){return reportMonthDrilldown(definition?.href||selected.href,String(row.month||''),from,to,business,row.currency||currency||'',selected.key);}
 </script>
 <section class="panel"><header class="panel-header"><div><h2>Monatsentwicklung</h2><p>Eine Kennzahl wählen und jeden Monatswert bis zur Quelle nachvollziehen.</p></div><Icon name="chart" size={19}/></header><div class="panel-body">
-  <div class="field trend-select"><label for="trend-metric">Welche Entwicklung möchten Sie sehen?</label><select id="trend-metric" bind:value={metric}>{#each reportMetrics.filter(item=>['ordered_net','invoiced_net','performance_value','received_payments'].includes(item.key)) as item}<option value={item.key}>{item.label}</option>{/each}</select><p class="field-help">{definition?.description||selected.help}</p></div>
+  <div class="field trend-select"><label for="trend-metric">Welche Entwicklung möchten Sie sehen?</label><select use:searchableSelect={metric} id="trend-metric" bind:value={metric}>{#each reportMetrics.filter(item=>['ordered_net','invoiced_net','performance_value','received_payments'].includes(item.key)) as item}<option value={item.key}>{item.label}</option>{/each}</select><p class="field-help">{definition?.description||selected.help}</p></div>
   {#if series.length}
     {#each currencies as unit}
       {@const group=series.filter(row=>row.currency===unit)}

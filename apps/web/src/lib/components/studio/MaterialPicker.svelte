@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
  import ReferencePicker from'../ReferencePicker.svelte';import{stoneAppearance}from'./stone-appearance.ts';
  let{id,materials=[],value='',onchange}:{id:string;materials?:any[];value?:string;onchange:(value:string)=>void}=$props();
  let expanded=$state(false),search=$state(''),family=$state(''),limit=$state(12);
@@ -8,7 +9,7 @@
 </script>
 <ReferencePicker {id} reference="material-versions" initial={materials.map(m=>({id:m.id,name:m.name}))} {value} {onchange}/>
 <details class="material-library" bind:open={expanded}><summary>Steinbibliothek durchsuchen{#if catalog.length}<span>{catalog.length}</span>{/if}</summary>{#if expanded}
- {#if catalog.length}<div class="library-filters"><label>Stein suchen<input type="search" bind:value={search} oninput={()=>limit=12} placeholder="Name oder Herkunft"/></label><label>Gesteinsart<select bind:value={family} onchange={()=>limit=12}><option value="">Alle Gesteinsarten</option>{#each families as item}<option value={item}>{item}</option>{/each}</select></label></div>
+ {#if catalog.length}<div class="library-filters"><label>Stein suchen<input type="search" bind:value={search} oninput={()=>limit=12} placeholder="Name oder Herkunft"/></label><label>Gesteinsart<select use:searchableSelect={family} bind:value={family} onchange={()=>limit=12}><option value="">Alle Gesteinsarten</option>{#each families as item}<option value={item}>{item}</option>{/each}</select></label></div>
  <div class="material-options" role="group" aria-label="Material auswählen">{#each matches.slice(0,limit) as material}{@const appearance=stoneAppearance(material)}<button type="button" aria-pressed={value===material.id} class:chosen={value===material.id} onclick={()=>onchange(material.id)}><span class="swatch" style={`background-color:${appearance.color};background-image:url('${appearance.path}')`} aria-hidden="true"></span><strong>{material.name.replace(' · Katalogreferenz','')}</strong><small>{material.properties.stoneType} · {material.properties.origin??'Herkunft offen'}</small></button>{/each}</div>
  {#if !matches.length}<p>Keine passenden Steine. Ändern Sie den Namen oder die Gesteinsart.</p>{/if}{#if matches.length>limit}<button type="button" class="btn small" onclick={()=>limit+=12}>Weitere {Math.min(12,matches.length-limit)} Materialien</button>{/if}
  <p class="material-note">Reale Handelsnamen mit Quellenbezug. Die Muster zeigen eine repräsentative Gesteinsstruktur. Das genaue Plattenbild, Liefermaß und die Eignung prüfen Sie anhand des Lieferantenmusters.</p>

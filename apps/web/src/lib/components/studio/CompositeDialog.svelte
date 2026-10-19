@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
   import{onMount}from'svelte';
   import{invalidateAll}from'$app/navigation';
   import{command}from'#lib/client/api.ts';
@@ -16,11 +17,11 @@
   <header><span>BESTAND ERHALTEN · KONZEPT PRÜFEN</span><h2 id="composite-title">Das Original bleibt im Bild.</h2><p>Gespeichertes Renderbild und Schutzmaske sichern jeden Pixel der Bestandsinschrift. Außerhalb der Maske wird der zugeordnete Bildkandidat verwendet.</p></header>
   <form onsubmit={submit}>
     {#if error}<p class="alert danger" role="alert">{error}</p>{/if}{#if notice}<p class="alert" role="status">{notice}</p>{/if}
-    <label>Abgeschlossenes Originalrender dieser Revision<select bind:value={sourceId} required><option value="">Original mit archivierter Bestandsmaske auswählen</option>{#each originals as job}<option value={job.job_run_id??job.id}>{job.profile==='final'?'Finale Ansicht':'Kundenansicht'} · {job.result.width} × {job.result.height} Pixel</option>{/each}</select></label>
+    <label>Abgeschlossenes Originalrender dieser Revision<select use:searchableSelect={sourceId} bind:value={sourceId} required><option value="">Original mit archivierter Bestandsmaske auswählen</option>{#each originals as job}<option value={job.job_run_id??job.id}>{job.profile==='final'?'Finale Ansicht':'Kundenansicht'} · {job.result.width} × {job.result.height} Pixel</option>{/each}</select></label>
     {#if !originals.length}<p class="hint">Zuerst die vorhandene Inschrift aus ihren lizenzierten Originalen korrekt platzieren, sperren und ein vollständiges Render mit Schutzmaske erzeugen. Ein Hersteller-Shopbild allein liefert keine exakten Originalzeichen.</p>{/if}
-    <label>Geprüfter PNG-Bildkandidat derselben Revision<select bind:value={candidateId} required><option value="">Versionierten Kandidaten auswählen</option>{#each candidates as document}<option value={document.version_id??document.id}>{document.name}</option>{/each}</select></label>
+    <label>Geprüfter PNG-Bildkandidat derselben Revision<select use:searchableSelect={candidateId} bind:value={candidateId} required><option value="">Versionierten Kandidaten auswählen</option>{#each candidates as document}<option value={document.version_id??document.id}>{document.name}</option>{/each}</select></label>
     <label class="upload">Kandidaten dieser Revision zuordnen<input type="file" accept="image/png" onchange={upload} disabled={busy}/></label><a href="/documents" target="_blank" rel="noreferrer">Dateiprüfung in der Dokumentenakte öffnen</a>
-    <label>Nutzungsnachweis für den Kandidaten<select bind:value={rightsId} required><option value="">Konkrete verfügbare Nachweisversion auswählen</option>{#each documents as document}<option value={document.version_id??document.id}>{document.name}</option>{/each}</select></label>
+    <label>Nutzungsnachweis für den Kandidaten<select use:searchableSelect={rightsId} bind:value={rightsId} required><option value="">Konkrete verfügbare Nachweisversion auswählen</option>{#each documents as document}<option value={document.version_id??document.id}>{document.name}</option>{/each}</select></label>
     <label>Persönliche Prüfung und dokumentierter Nutzungsumfang<textarea bind:value={statement} minlength="20" maxlength="5000" required rows="4" placeholder="Quelle, Berechtigung zur Kundenvisualisierung, geprüfter Bildausschnitt und Umfang der Bearbeitung"></textarea></label>
     <label class="check"><input type="checkbox" bind:checked={sameCamera} required/> Kandidat und Original verwenden denselben unveränderten Kameraausschnitt und dieselbe native Pixelgröße.</label>
     <label class="check"><input type="checkbox" bind:checked={usage} required/> Die Verwendung des Kandidaten für dieses Kundenkonzept ist durch den ausgewählten Nachweis gedeckt.</label>

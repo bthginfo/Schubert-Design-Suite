@@ -1,3 +1,4 @@
+import {chooseSelect,nativeSelect,studioAction} from './select-choice.js';
 import {login} from './login.js';
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -25,8 +26,8 @@ test('Customer: required fields, invalid email, Unicode, country and persisted r
   await dialog.locator('#field-name').fill(unique+' Müller & Söhne');
   await dialog.locator('#field-email').fill('keine-adresse');await dialog.getByRole('button',{name:'Speichern',exact:true}).click();await expect(dialog).toBeVisible();
   await dialog.locator('#field-email').fill('uat@example.invalid');
-  await dialog.locator('#field-party_type').selectOption('organization');
-  await dialog.locator('#field-country').selectOption({label:'Deutschland'});
+  await chooseSelect(page,dialog.locator('#field-party_type'),'organization');
+  await chooseSelect(page,dialog.locator('#field-country'),{label:'Deutschland'});
   await dialog.getByRole('button',{name:'Speichern',exact:true}).click();await expect(dialog).toBeHidden();
   await page.getByRole('link',{name:unique+' Müller & Söhne',exact:true}).first().click();
   await expect(page.getByRole('heading',{name:unique+' Müller & Söhne',exact:true})).toBeVisible();
@@ -69,7 +70,7 @@ test('Reference pickers exclude erased customers and keep all workflow filters a
 test('Quote: comma amounts and unselected options survive save and reopening',async({page})=>{
   await login(page);await navigate(page,'/quotes');await page.getByRole('button',{name:'Angebot anlegen',exact:true}).first().click();const dialog=page.getByRole('dialog');
   await dialog.locator('#field-title').fill(unique+' Angebot');
-  const customer=dialog.locator('#field-customer_id');const option=await customer.locator('option').evaluateAll(options=>options.map(o=>(o as HTMLOptionElement).value).find(Boolean));expect(option).toBeTruthy();await customer.selectOption(option!);
+  const customer=dialog.locator('#field-customer_id');const option=await customer.locator('option').evaluateAll(options=>options.map(o=>(o as HTMLOptionElement).value).find(Boolean));expect(option).toBeTruthy();await chooseSelect(page,customer,option!);
   for(let i=0;i<2;i++){
     await dialog.getByRole('button',{name:'Position hinzufügen',exact:true}).click();
     await dialog.locator('#line-description-'+i).fill(i?'Zusätzliche Pflege · optional':'Naturstein einschließlich Zuschnitt');
@@ -163,12 +164,12 @@ for(const kind of ['Raum','Stele'])test('Studio '+kind+': saved geometry, views,
   await page.getByRole('button',{name:'Front',exact:true}).click();await expect(svg).toBeVisible();
   await expect(page.locator('.revision-chip')).toHaveText(revision);
   const responsePromise=context.waitForEvent('response',{predicate:response=>response.url().includes('/export?kind=pdf'),timeout:60000});
-  await page.getByRole('button',{name:'Planungs-PDF',exact:true}).click();const response=await responsePromise;expect(response.status()).toBe(200);
+  await studioAction(page,'Planungs-PDF');const response=await responsePromise;expect(response.status()).toBe(200);
   // Chromium hands inline PDF navigations to its viewer, which owns the original response body.
   const originalFile=await page.request.get(response.url(),{timeout:60000});expect(originalFile.status()).toBe(200);
   const pdf=await originalFile.body();expect((await PDFDocument.load(pdf)).getPageCount()).toBeGreaterThan(0);
   await mkdir('work/uat-pdfs',{recursive:true});await writeFile('work/uat-pdfs/'+kind+'.pdf',pdf);
-  await page.getByRole('button',{name:'Stückliste',exact:true}).click();await expect(page.getByRole('heading',{name:'Stück- und Bearbeitungsliste',exact:true})).toBeVisible();expect(await page.locator('.bom-panel tbody tr').count()).toBeGreaterThan(0);
+  await studioAction(page,'Stückliste');await expect(page.getByRole('heading',{name:'Stück- und Bearbeitungsliste',exact:true})).toBeVisible();expect(await page.locator('.bom-panel tbody tr').count()).toBeGreaterThan(0);
   for(const width of [1440,375]){
     await page.setViewportSize({width,height:1000});expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
     const a11y=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();expect(a11y.violations).toEqual([]);

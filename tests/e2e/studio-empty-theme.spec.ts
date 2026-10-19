@@ -17,7 +17,7 @@ test('Empty memorial and room canvases remain readable and usable in light and d
   for(const project of projects){
    await page.goto('/studio/'+project.project.id+'?variant='+project.variant.id);const card=page.locator('.canvas-empty-content');await expect(card).toBeVisible();
    expect(await page.locator('.canvas-panel>svg').evaluate(node=>getComputedStyle(node).backgroundColor)).toBe('rgb(246, 247, 242)');
-   expect(await card.evaluate(node=>getComputedStyle(node).backgroundColor)).toBe(mode==='light'?'rgb(255, 255, 255)':'rgb(21, 31, 48)');
+   expect(await card.evaluate(node=>getComputedStyle(node).backgroundColor)).toBe(mode==='light'?'rgb(255, 255, 255)':'rgb(24, 36, 55)');
    const audit=await new AxeBuilder({page}).include('.canvas-empty-content').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations).toEqual([]);
    await page.screenshot({path:'.impeccable/review/empty-'+project.kind+'-'+mode+'-desktop.png'});
    if(mode==='dark'){await page.setViewportSize({width:375,height:812});await card.scrollIntoViewIfNeeded();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(376);await page.screenshot({path:'.impeccable/review/empty-'+project.kind+'-'+mode+'-mobile.png'});await page.setViewportSize({width:1440,height:1000});}

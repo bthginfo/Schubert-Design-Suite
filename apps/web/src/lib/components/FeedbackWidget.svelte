@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
   import {onMount,tick} from 'svelte';
   import {page} from '$app/state';
   import {feedbackCategories,feedbackPage,feedbackStepLabel,type FeedbackContext} from '@schubert/contracts';
@@ -39,7 +40,7 @@
   {:else}<form onsubmit={submit}>
     <div class="feedback-body">
       <p class="feedback-source"><Icon name="file" size={16}/><span>Ihre Rückmeldung zu <strong>{source.label}</strong></span></p>
-      <div class="field"><label for="feedback-category">Worum geht es?</label><select id="feedback-category" bind:value={category} onchange={changed} disabled={busy}>{#each Object.entries(feedbackCategories) as [value,label]}<option {value}>{label}</option>{/each}</select></div>
+      <div class="field"><label for="feedback-category">Worum geht es?</label><select use:searchableSelect={category} id="feedback-category" bind:value={category} onchange={changed} disabled={busy}>{#each Object.entries(feedbackCategories) as [value,label]}<option {value}>{label}</option>{/each}</select></div>
       <div class="field"><label for="feedback-message">Ihr Kommentar <span aria-hidden="true">*</span></label><textarea id="feedback-message" bind:value={message} oninput={changed} required minlength="5" maxlength="5000" rows="5" disabled={busy} placeholder="Zum Beispiel: Im Grundriss kann ich die Tür nicht verschieben. Ich habe …" aria-describedby="feedback-comment-help"></textarea><span class="field-help" id="feedback-comment-help">Was haben Sie versucht und was ist passiert? Bitte keine Passwörter oder vertraulichen Kundendaten eintragen.</span></div>
       <details><summary>Gewünschtes Verhalten ergänzen <span class="muted">· optional</span></summary><div class="field"><label for="feedback-expected">Was hätten Sie erwartet?</label><textarea id="feedback-expected" bind:value={expected} oninput={changed} maxlength="2000" rows="3" disabled={busy}></textarea></div></details>
       <div class="feedback-diagnostics"><label class="check-field"><input type="checkbox" bind:checked={includeContext} onchange={changed} disabled={busy}/><span>Letzte Bedienschritte zur Fehlersuche mitsenden</span></label><p class="field-help">Bis zu 40 Schritte der letzten 15 Minuten vor dem Öffnen, Seitennamen und Browsertyp. Keine Feldinhalte, Dateien oder Bildschirmaufnahmen. Die aktuelle Seite und Ihr Name werden immer mitgesendet.</p>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
   import {goto} from '$app/navigation';
   import Icon from './Icon.svelte';
   let {items,active,label}:{items:{slug:string;label:string}[];active:string;label:string}=$props();
@@ -14,7 +15,7 @@
 <nav class="section-navigation" aria-label={`${label}: Bereiche`}>
   <div class="section-bar">
     <div class="section-links">{#each visible as item}<a href={`/${item.slug}`} aria-current={active===item.slug?'page':undefined} class:active={active===item.slug}>{item.label}</a>{/each}</div>
-    <div class="section-mobile"><label class="sr-only" for="section-location">Bereich in {label}</label><select id="section-location" value={active} onchange={(event)=>goto('/'+event.currentTarget.value)}>{#each items as item}<option value={item.slug}>{item.label}</option>{/each}</select></div>
+    <div class="section-mobile"><label class="sr-only" for="section-location">Bereich in {label}</label><select use:searchableSelect={active} id="section-location" value={active} onchange={(event)=>goto('/'+event.currentTarget.value)}>{#each items as item}<option value={item.slug}>{item.label}</option>{/each}</select></div>
     {#if items.length>visible.length}<button class="section-trigger" bind:this={trigger} aria-expanded={expanded} aria-controls="section-directory" onclick={()=>expanded=!expanded}><Icon name="grid" size={16}/>Alle Bereiche<Icon name="chevron" size={14}/></button>{/if}
   </div>
   {#if expanded}<div id="section-directory" class="section-directory" role="group" tabindex="-1" aria-label={`Alle Bereiche in ${label}`}>

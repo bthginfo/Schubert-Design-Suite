@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
   import type {DesignSnapshot,DesignOperation} from '@schubert/contracts';
   import {parseMillimetres} from '@schubert/geometry';
   let {snapshot,measureId,label,elementId,field,onchange,actorId='',evidence=[],disabled=false,canConfirm=false}:{snapshot:DesignSnapshot;measureId:string|null;label:string;elementId?:string;field?:string;onchange:(ops:DesignOperation[])=>void;actorId?:string;evidence?:any[];disabled?:boolean;canConfirm?:boolean}=$props();
@@ -20,7 +21,7 @@
     <label>Gemessener Wert (mm)<input bind:value inputmode="decimal" required/></label>
     <label>Messmethode<input bind:value={method} placeholder="Zum Beispiel Laser mit Kontrollmessung" required/></label>
     <label>Gemessen am<input type="datetime-local" bind:value={when} required/></label>
-    <label>Revisionsgebundene Evidenz<select bind:value={evidenceId} required><option value="">Nachweis auswählen</option>{#each evidence as entry}<option value={entry.version_id??entry.document_version_id??entry.id}>{entry.name??entry.title??entry.original_name??entry.id}</option>{/each}</select></label>
+    <label>Revisionsgebundene Evidenz<select use:searchableSelect={evidenceId} bind:value={evidenceId} required><option value="">Nachweis auswählen</option>{#each evidence as entry}<option value={entry.version_id??entry.document_version_id??entry.id}>{entry.name??entry.title??entry.original_name??entry.id}</option>{/each}</select></label>
     {#if !evidence.length}<p>Erst einen Messnachweis in der Dokumentenakte ablegen. Ein freies Bild ist kein bestätigtes Aufmaß.</p>{/if}
     <div class="tolerance"><label>Toleranz + (mm)<input bind:value={plus} inputmode="decimal" required/></label><label>Toleranz − (mm)<input bind:value={minus} inputmode="decimal" required/></label></div>
     <div class="survey-actions"><button type="button" class="btn small" onclick={()=>survey=false}>Abbrechen</button><button type="submit" class="btn small primary" disabled={!evidence.length}>Aufmaß speichern</button></div>

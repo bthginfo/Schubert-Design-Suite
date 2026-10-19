@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {searchableSelect} from '#lib/client/searchable-select.ts';
  import type{DesignElement,DesignSnapshot,DesignOperation}from'@schubert/contracts';
  import MeasurementField from'./MeasurementField.svelte';
  import ReferencePicker from'../ReferencePicker.svelte';
@@ -14,7 +15,7 @@
 </script>
 <div class="layer-editor"><h3>Schichtaufbau</h3><p>{element.kind==='room'?'Reihenfolge von der festgelegten Fertigfußbodenoberfläche nach unten.':element.kind==='wall'?'Reihenfolge je Wandseite vom Kern nach außen. Links und rechts folgen der Richtung vom Anfangs- zum Endknoten.':'Reihenfolge je Seite von der lokalen Bezugsebene nach außen. Oberhalb folgt der lokalen Flächennormalen.'} Fehlende Stärken verhindern eine erfundene Lage nachfolgender Schichten.</p>
  {#each layers as layer,index (layer.id)}<article><header><strong>Schicht {index+1}</strong><div><button type="button" aria-label={`Schicht ${index+1} nach vorne`} onclick={()=>order(index,-1)} disabled={disabled||index===0}>↑</button><button type="button" aria-label={`Schicht ${index+1} nach hinten`} onclick={()=>order(index,1)} disabled={disabled||index===layers.length-1}>↓</button><button type="button" onclick={()=>remove(index)} {disabled}>Entfernen</button></div></header>
-  {#if element.kind!=='room'}<label>Bauteilseite<select value={layer.side} onchange={event=>update(index,{side:event.currentTarget.value as Layer['side']})} {disabled}>{#each Object.entries(sides).filter(([side])=>element.kind==='wall'||side==='top'||side==='bottom') as [key,name]}<option value={key}>{name}</option>{/each}</select></label>{/if}
+  {#if element.kind!=='room'}<label>Bauteilseite<select use:searchableSelect={layer.side} value={layer.side} onchange={event=>update(index,{side:event.currentTarget.value as Layer['side']})} {disabled}>{#each Object.entries(sides).filter(([side])=>element.kind==='wall'||side==='top'||side==='bottom') as [key,name]}<option value={key}>{name}</option>{/each}</select></label>{/if}
   <label for={'layer-material-'+layer.id}>Konkreter Materialstand</label><ReferencePicker id={'layer-material-'+layer.id} reference="material-versions" initial={materials.map(m=>({id:m.version_id??m.id,name:m.name??m.label}))} bind:value={()=>layer.materialSpecVersionId.startsWith('unassigned')?'':layer.materialSpecVersionId,v=>update(index,{materialSpecVersionId:v||'unassigned:material'})}/>
   <label for={'layer-product-'+layer.id}>Eingefrorener Beschaffungsartikel</label><ReferencePicker id={'layer-product-'+layer.id} reference="product-versions" initial={products.map(p=>({id:p.product_variant_version_id??p.version_id??p.id,name:(p.name??p.sku)+' · '+(p.sku??'')}))} bind:value={()=>layer.productVariantVersionId??'',v=>update(index,{productVariantVersionId:v||null})}/>
   <MeasurementField {snapshot} measureId={layer.thicknessMeasureId} label={`Schicht ${index+1} · Stärke`} {actorId} {canConfirm} evidence={documents} {disabled} onchange={onchange}/>

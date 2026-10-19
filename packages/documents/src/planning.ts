@@ -103,7 +103,7 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
     if(y-height<75){page=newPage('Stück- und Bearbeitungsliste · Fortsetzung');y=A4[1]-125;tableHead();}
     labels.forEach((row,i)=>draw(page,row,44,y-i*15,11));draw(page,decimalLabel(item.quantity),389,y,10);draw(page,item.unit,460,y,10);
     rows.forEach((row,i)=>draw(page,row,44,y-labels.length*15-3-i*13,9,muted));
-    y-=height;page.drawLine({start:{x:36,y:y+7},end:{x:A4[0]-36,y:y+7},thickness:.4,color:line});
+    y-=height;page.drawLine({start:{x:36,y:y+16},end:{x:A4[0]-36,y:y+16},thickness:.4,color:line});
   }
   if(y<135){page=newPage('Mengengrundlage');y=A4[1]-125;}
   label(page,'Mengen entstehen aus dieser Revision. Kein pauschaler Verschnitt, keine erfundenen Einkaufsdaten, keine Gewichtsannahme ohne belegte Materialdichte. Modellierte Ausschnitte werden explizit abgezogen. Flächenregeln für die Abrechnung separat fachlich bestätigen.',36,y-10,10,A4[0]-72);
