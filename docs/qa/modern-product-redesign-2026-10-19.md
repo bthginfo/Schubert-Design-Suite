@@ -22,6 +22,8 @@ Die Oberfläche verwendet einen kompakten Navigationsbereich, einen eingesetzten
 
 Die erste Browserrunde fand einen realen Kontrastfehler an der dunklen Studio-Beschriftung; dieser ist behoben. Zwei weitere Fehlschläge betrafen einen fest verdrahteten Testport. Die betroffenen Tests verwenden jetzt die tatsächlich konfigurierte lokale Adresse, statt versehentlich eine andere Anwendung zu prüfen. Die finale Gesamtrunde bestand alle Fälle.
 
+Die zusätzliche CI-Runde fand anschließend eine veraltete Hellmodus-Farberwartung im bestehenden Unit-Test. Der Test prüft jetzt die neue Porzellanfläche und auch die zusätzliche Navy-Arbeitsfläche. Danach bestanden lokal erneut alle 322 Unit-Tests; Anwendungsquelltext und bereits geprüfte Ansichten wurden dadurch nicht verändert.
+
 Die unabhängige Designprüfung und ihre begrenzten Nachprüfungen behandelten die Sichtbarkeit der Arbeit auf der Startseite, Studio-Beschriftungen, Kontrast, Filterdichte, verdeckte Aktionen, Dokumentationskonsistenz und die Schattenkorrektur. `DESIGN.md` und `.impeccable/design.json` wurden mit dem finalen Quelltext abgeglichen.
 
 Die Prüfung verwendet Chromium/Edge und ersetzt keinen Test auf jedem realen Mobilgerät. Sie bescheinigt die genannten Abläufe und Ansichten, keine allgemeine Fehlerfreiheit. Bezahlte KI-Bilderstellung wurde in dieser visuellen Änderung nicht erneut ausgelöst. Vorhandene TEST-Daten bleiben erhalten. Es entstehen keine zusätzlichen laufenden Datenbankabfragen, KI-Aufrufe, externen Schriftabrufe oder Dienste durch die Umgestaltung.
