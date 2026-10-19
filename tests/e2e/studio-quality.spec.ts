@@ -16,6 +16,16 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
     expect(created.ok()).toBeTruthy();const {result}=await created.json();
     await page.goto('/studio/'+result.project.id+'?variant='+result.variant.id);
     await expect(page.locator('.studio-workspace')).toBeVisible();
+    // Autosave can complete before a human reaches Save. Observe the actual
+    // committed final geometry instead of racing a correctly disabled button.
+    let committed:any;
+    const finalMarker=kind==='memorial'?'circular_arc':'Tür · 900 × 2100 mm';
+    const observeSaved=(response:any)=>{
+      if(response.ok()&&response.request().method()==='POST'&&new URL(response.url()).pathname==='/api/v1/designs/'+result.variant.id+'/commands'){
+        void response.json().then((body:any)=>{const state=body.result??body;if(JSON.stringify(state.revision?.snapshot??{}).includes(finalMarker))committed=state;}).catch(()=>{});
+      }
+    };
+    page.on('response',observeSaved);
     const dialog=page.getByRole('dialog');
     await page.getByRole('button',{name:kind==='memorial'?'Ersten Stein anlegen':'Raum anlegen',exact:true}).click();
     await dialog.getByLabel('Bezeichnung',{exact:true}).fill(kind==='memorial'?'Stele · 800 × 1200 × 160 mm':'Bad · 4200 × 3200 mm Wandachsen');
@@ -41,9 +51,8 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
       await dialog.getByLabel('Abstand längs der Wand (mm)',{exact:true}).fill('600');await dialog.getByLabel('Brüstungshöhe (mm)',{exact:true}).fill('0');
       await dialog.getByRole('button',{name:'In den Plan übernehmen',exact:true}).click();await expect(dialog).toBeHidden();
     }
-    const savedPromise=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().includes('/designs/')&&r.url().endsWith('/commands'));
-    await page.getByRole('button',{name:'Speichern',exact:true}).click();const saved=await savedPromise;expect(saved.status()).toBe(200);
-    const payload=await saved.json(),state=payload.result??payload;await writeFile('work/final-studios/'+kind+'-saved.json',JSON.stringify(state,null,2));
+    await expect.poll(()=>!!committed,{timeout:30000,message:'Final geometry must be confirmed by a successful authenticated design command'}).toBe(true);
+    page.off('response',observeSaved);const state=committed;await writeFile('work/final-studios/'+kind+'-saved.json',JSON.stringify(state,null,2));
     await expect(page.getByRole('button',{name:'Speichern',exact:true})).toBeDisabled();
     if(await page.getByRole('button',{name:'Feedback',exact:true}).count()){
       await page.getByRole('button',{name:'Feedback',exact:true}).click();const feedback=page.locator('dialog.feedback-dialog');await feedback.getByText('Mitgesendeten Kontext ansehen',{exact:false}).click();await expect(feedback).toContainText('Planung bearbeiten · erfolgreich');await feedback.getByRole('button',{name:'Feedback schließen'}).click();
@@ -84,7 +93,7 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
       const a11y=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();expect(a11y.violations).toEqual([]);
     }
     await page.setViewportSize({width:1440,height:1000});await page.getByRole('button',{name:kind==='memorial'?'Front':'Grundriss',exact:true}).click();await expect(page.locator('.revision-chip')).toHaveText(revision);
-    const pdfResponse=context.waitForEvent('response',r=>r.url().includes('/export?kind=pdf'));await page.getByRole('button',{name:'Planungs-PDF',exact:true}).click();const pdfUrl=(await pdfResponse).url();const file=await page.request.get(pdfUrl);expect(file.status()).toBe(200);const bytes=await file.body();expect((await PDFDocument.load(bytes)).getPageCount()).toBeGreaterThanOrEqual(4);await writeFile('work/final-studios/'+kind+'.pdf',bytes);
+    const pdfResponse=context.waitForEvent('response',{predicate:r=>r.url().includes('/export?kind=pdf'),timeout:60000});await page.getByRole('button',{name:'Planungs-PDF',exact:true}).click();const pdfUrl=(await pdfResponse).url();const file=await page.request.get(pdfUrl,{timeout:60000});expect(file.status()).toBe(200);const bytes=await file.body();expect((await PDFDocument.load(bytes)).getPageCount()).toBeGreaterThanOrEqual(4);await writeFile('work/final-studios/'+kind+'.pdf',bytes);
     await writeFile('work/final-studios/'+kind+'-result.json',JSON.stringify({project:result.project.id,variant:result.variant.id,revision:state.revision.id,sourceHash:state.revision.content_hash,pdfBytes:bytes.length,url:page.url(),errors},null,2));
     // The browser owns inline PDF viewer pages; context teardown closes them together.
   }

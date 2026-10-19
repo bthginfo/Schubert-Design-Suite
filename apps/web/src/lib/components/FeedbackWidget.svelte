@@ -6,7 +6,7 @@
   import {command} from '#lib/client/api.ts';
   import type {AppData} from '#lib/client/types.ts';
   import Icon from './Icon.svelte';
-  let {data}:{data:AppData}=$props();
+  let {data,launcher=true}:{data:AppData;launcher?:boolean}=$props();
   let dialog:HTMLDialogElement;
   let message=$state(''),expected=$state(''),category=$state<keyof typeof feedbackCategories>('bug'),includeContext=$state(true);
   let snapshot=$state<FeedbackContext|null>(null),source=$state({path:'/',label:'Arbeitsbereich'}),busy=$state(false),error=$state(''),receipt=$state('');
@@ -32,7 +32,7 @@
   function changed(){draftKey=crypto.randomUUID();}
 </script>
 
-{#if enabled}<button class="feedback-fab" data-feedback-private aria-haspopup="dialog" aria-keyshortcuts="Alt+Shift+F" onclick={show} title="Feedback geben · Alt + Umschalt + F"><Icon name="pen" size={17}/>Feedback</button>{/if}
+{#if enabled&&launcher}<button class="feedback-fab" data-feedback-private aria-haspopup="dialog" aria-keyshortcuts="Alt+Shift+F" onclick={show} title="Feedback geben · Alt + Umschalt + F"><Icon name="pen" size={17}/>Feedback</button>{/if}
 <dialog bind:this={dialog} class="feedback-dialog" data-feedback-private aria-labelledby="feedback-title" oncancel={e=>{e.preventDefault();close();}} onclose={()=>open=false}>
   <header><div><h2 id="feedback-title">{receipt?'Vielen Dank für Ihre Rückmeldung.':'Was können wir verbessern?'}</h2><p>{receipt?'Ihr Hinweis hilft uns, die Suite im Alltag besser zu machen.':'Ein Fehler, eine unklare Stelle oder eine Idee – wir hören zu.'}</p></div><button class="icon-button" aria-label="Feedback schließen" onclick={close} disabled={busy}><Icon name="close"/></button></header>
   {#if receipt}<div class="feedback-success" role="status"><Icon name="check" size={28}/><strong>{receipt} wurde gespeichert.</strong><p>Der Superadmin kann Ihren Kommentar und den mitgesendeten Kontext jetzt prüfen.</p></div><footer><button id="feedback-done" class="btn primary" onclick={close}>Fertig</button></footer>

@@ -1,4 +1,5 @@
 import {appearanceIntegration} from './appearance-integration.js';
+import {flowContextIntegration} from './flow-context-integration.js';
 import {uxFlowIntegration} from './ux-flow-integration.js';
 import {feedbackIntegration} from './feedback-integration.js';
 import 'dotenv/config';
@@ -103,5 +104,6 @@ await test('Personal onboarding is persisted, optimistic and cannot target anoth
 await feedbackIntegration(actor,test);
 await appearanceIntegration(actor,test);
 await uxFlowIntegration(actor,test);
+await flowContextIntegration(actor,test);
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}

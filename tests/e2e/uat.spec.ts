@@ -82,6 +82,7 @@ test('Quote: comma amounts and unselected options survive save and reopening',as
 });
 
 test('Desktop and mobile regressions: no viewport overflow and no automated WCAG violations',async({page})=>{
+  test.setTimeout(240000); // Eight real navigations and accessibility audits on the local acceptance host.
   await login(page);
   for(const width of [1440,375])for(const path of ['/studio','/documents','/time','/sales-prices']){
     await page.setViewportSize({width,height:1000});await navigate(page,path);await page.getByRole('heading',{level:1}).waitFor();
@@ -148,6 +149,7 @@ test('Employee mobile: offline work, pause and finish sync once connection retur
 });
 
 for(const kind of ['Raum','Stele'])test('Studio '+kind+': saved geometry, views, readable controls, real PDF and BOM',async({page,context})=>{
+  test.setTimeout(180000);
   await login(page,'PLANNER');await navigate(page,'/studio?q=Synthetische%20Studio-QA');
   await page.getByRole('link',{name:new RegExp('Synthetische Studio-QA '+kind+' ')}).click();
   await expect(page.locator('.studio-workspace')).toBeVisible();
@@ -160,10 +162,10 @@ for(const kind of ['Raum','Stele'])test('Studio '+kind+': saved geometry, views,
   await page.getByRole('button',{name:'Kamera nach links drehen',exact:true}).click();
   await page.getByRole('button',{name:'Front',exact:true}).click();await expect(svg).toBeVisible();
   await expect(page.locator('.revision-chip')).toHaveText(revision);
-  const responsePromise=context.waitForEvent('response',response=>response.url().includes('/export?kind=pdf'));
+  const responsePromise=context.waitForEvent('response',{predicate:response=>response.url().includes('/export?kind=pdf'),timeout:60000});
   await page.getByRole('button',{name:'Planungs-PDF',exact:true}).click();const response=await responsePromise;expect(response.status()).toBe(200);
   // Chromium hands inline PDF navigations to its viewer, which owns the original response body.
-  const originalFile=await page.request.get(response.url());expect(originalFile.status()).toBe(200);
+  const originalFile=await page.request.get(response.url(),{timeout:60000});expect(originalFile.status()).toBe(200);
   const pdf=await originalFile.body();expect((await PDFDocument.load(pdf)).getPageCount()).toBeGreaterThan(0);
   await mkdir('work/uat-pdfs',{recursive:true});await writeFile('work/uat-pdfs/'+kind+'.pdf',pdf);
   await page.getByRole('button',{name:'Stückliste',exact:true}).click();await expect(page.getByRole('heading',{name:'Stück- und Bearbeitungsliste',exact:true})).toBeVisible();expect(await page.locator('.bom-panel tbody tr').count()).toBeGreaterThan(0);

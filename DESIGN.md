@@ -190,14 +190,14 @@ components:
 
 **Creative North Star: "Das präzise Arbeitsprodukt"**
 
-Die SCHUBERT Design Suite ist ein modernes, hochwertiges Arbeitsprodukt für einen Handwerksbetrieb. Eine kompakte, leicht getönte Navigationsleiste fasst einen deutlich eingesetzten Arbeitsraum ein. Kühles Porzellan im hellen Modus und tiefes Navy im dunklen Modus verbinden präzise Konturen, lesbare Inter-Typografie und zurückhaltende räumliche Tiefe.
+Die SCHUBERT Design Suite ist ein modernes, hochwertiges Arbeitsprodukt für einen Handwerksbetrieb. Eine ein- und ausklappbare, leicht getönte Navigationsleiste fasst einen deutlich eingesetzten Arbeitsraum ein. Kühles Porzellan im hellen Modus und tiefes Navy im dunklen Modus verbinden präzise Konturen, lesbare Inter-Typografie und zurückhaltende räumliche Tiefe. Eine statische, schwache Akzentaufhellung liegt im Hintergrund des Arbeitsraums.
 
 Die Oberfläche richtet sich an deutschsprachige Menschen mit unterschiedlicher digitaler Erfahrung. Sichtbare Handlungsnamen, vertraute Formulare und klar getrennte Arbeitsbereiche tragen die Bedienung. Sechs persönliche Akzentfamilien und die drei Darstellungsmodi verändern den Rahmen; fachliche Statusfarben, technisches Zeichenpapier, Originalschriftbilder und reale Materialien behalten ihre Bedeutung.
 
 **Key Characteristics:**
 
-- Kompakte Navigation und ein klar abgegrenzter, eingesetzter Arbeitsraum.
-- Kühle neutrale Flächen mit feiner Kontur und gezielter, weicher Tiefe.
+- Ausklappbare Navigation, kompakte Symbolleiste und ein klar abgegrenzter Arbeitsraum.
+- Kühle neutrale Flächen mit feiner Kontur, statischer Hintergrundaufhellung und gezielter Tiefe.
 - Ausgewählter Akzent für aktuelle Position, primäre Handlung und Auswahl.
 - Lesbare deutsche Beschriftungen, erkennbare Zustände und erreichbare Aktionen.
 
@@ -266,23 +266,25 @@ Im Studio haben Seitenkopf, Werkzeugleiste, Elementbaum und Inspektor eigene kom
 
 ## Layout
 
-Der Desktoprahmen setzt die Arbeitsfläche mit Außenabstand (12px) neben eine feste Navigation (232px). Unter (1200px) wird die Navigation schmaler (214px). Die obere Utility-Leiste bleibt kompakt (64px Mindesthöhe); Inhalte sind auf maximal (1640px) begrenzt und seitlich regulär (32px), auf kompakten Desktops (25px) eingerückt. Im Inhaltsbereich bilden (22px) zwischen Gruppen und (24px) in Panels den häufigsten Rhythmus. Die Frontmatter-Abstände sind beobachtete Rollenwerte, keine zusätzlichen Laufzeitvariablen.
+Der Desktoprahmen setzt die Arbeitsfläche mit Außenabstand (12px) neben eine fest positionierte Navigation (232px). Unter (1200px) ist die ausgeklappte Navigation schmaler (214px); die eingeklappte Symbolleiste bleibt auf Desktopansichten (76px) breit. Ein sichtbarer Schalter klappt sie ein und aus. Die Auswahl wird pro angemeldeter Person in diesem Browser gespeichert; bei gesperrtem Browserspeicher bleibt die Bedienung möglich. Die obere Utility-Leiste bleibt kompakt (64px Mindesthöhe); Inhalte sind auf maximal (1640px) begrenzt und seitlich regulär (32px), auf kompakten Desktops (25px) eingerückt. Im Inhaltsbereich bilden (22px) zwischen Gruppen und (24px) in Panels den häufigsten Rhythmus. Die Frontmatter-Abstände sind beobachtete Rollenwerte, keine zusätzlichen Laufzeitvariablen.
 
 Zusammengehörige Filter und die Tabelle liegen in einem gemeinsamen Container. Die Filterzeile bleibt auf ausreichend breiten Ansichten einzeilig und darf bei Platzmangel umbrechen; Suchfeld, Status, Anwenden und Ergebniszahl bleiben zusammen. Formulare verwenden gewöhnlich zwei Spalten mit horizontalem Abstand (22px) und vertikalem Abstand (23px). Einstellungen besitzen eine eigene schmale Bereichsnavigation (188px), unter (1000px) kompakter (165px).
 
 Die Tagesübersicht ordnet tatsächliche Termine beziehungsweise aktuelle Aufträge und den Aufmerksamkeitsbereich vor den Summen an. Eine leere Terminplanung wird als kompakte Hinweiszeile behandelt. Summen erscheinen als zusammenhängender Streifen; der KI-Verbrauch erhält eine kompakte unterstützende Zeile. Der Testbetrieb bleibt als zurückhaltender, wahrheitsgemäßer Kontext über den Inhalten sichtbar.
 
-Unter (760px) entfällt der eingesetzte Außenrahmen. Die linke Navigation wird zur ausklappbaren Ansicht; die beschriftete untere Navigation bleibt erreichbar. Inhaltsabstand (17px), reguläre Buttons und Felder mit Mindesthöhe (48px) sowie Eingabeschrift (16px) unterstützen kleine Bildschirme. Datentabellen werden dort zu lesbaren Datensatzkarten. Bereichs- und Einstellungsnavigation wechseln zu beschrifteten nativen Auswahlen. Die sechs Akzentoptionen wechseln unter (650px) von sechs auf drei Spalten; die Modusoptionen stehen dann untereinander.
+Bei (760px) und darunter entfällt der eingesetzte Außenrahmen. Die linke Navigation öffnet unabhängig von der Desktopauswahl als modale Schublade mit begrenztem Tastaturfokus; die geschlossene Schublade ist nicht fokussierbar. Escape, Schließknopf und Hintergrund schließen sie, der Fokus kehrt zum Menüknopf zurück. Die beschriftete untere Navigation bleibt erreichbar. Inhaltsabstand (17px), reguläre Buttons und Felder mit Mindesthöhe (48px) sowie Eingabeschrift (16px) unterstützen kleine Bildschirme. Datentabellen werden dort zu lesbaren Datensatzkarten. Bereichs- und Einstellungsnavigation wechseln zu beschrifteten nativen Auswahlen. Die sechs Akzentoptionen wechseln unter (650px) von sechs auf drei Spalten; die Modusoptionen stehen dann untereinander.
 
-Das Studio behält seinen dreiteiligen Editor aus Elementbaum, Arbeitsansicht und Inspektor. Unter (1020px) wandert der Inspektor unter die Arbeitsansicht; unter (720px) stehen die Bereiche untereinander. Die Werkzeugleiste darf in vollständigen Gruppen umbrechen. Kopfaktionen bleiben auf Desktopansichten vollständige Wörter; mobil stehen sie in zwei Spalten. Der Vollbildmodus nutzt denselben Rahmen und dieselben semantischen Flächen.
+Das Studio behält seinen dreiteiligen Editor aus Elementbaum, Arbeitsansicht und Inspektor. Unter (1020px) wandert der Inspektor unter die Arbeitsansicht; unter (720px) stehen die Bereiche untereinander. Die Werkzeugleiste darf in vollständigen Gruppen umbrechen. Kopfaktionen bleiben auf Desktopansichten vollständige Wörter; mobil stehen sie in zwei Spalten. Der Vollbildmodus nutzt dieselben semantischen Flächen. Der einzige Assistenteneinstieg folgt in das native oder vergrößerte Studio-Vollbild. Am Ende des Studios und des Inspektors bleibt Platz (88px), im Vollbild zusätzlicher Abschlussabstand, für den schwebenden Einstieg.
 
-**The Erreichbare Aktion Rule.** Scrollbare Inhalte halten Abschluss- und Schließaktionen erreichbar. Desktop-Hilfe und Feedback nutzen den reservierten Platz über dem Profil; modale Oberflächen bleiben frei von schwebendem Feedback.
+**The Erreichbare Aktion Rule.** Scrollbare Inhalte halten Abschluss- und Schließaktionen erreichbar und lassen Platz für den Assistenteneinstieg unten rechts. Feedback steht im Fuß der Seitenleiste über dem Profil; modale Oberflächen und die offene mobile Navigation blenden den Assistenteneinstieg aus.
 
 ## Elevation & Depth
 
-Das Produkt verbindet Tonwert, feine Konturen und weiche räumliche Tiefe. Der eingesetzte Arbeitsraum hebt sich leicht vom äußeren Rahmen ab; aktive Segmente und die schwebenden Einstiege erhalten eine kleine Erhebung. Dialoge und Begleiter verwenden eine deutlichere, begrenzte Überlagerung. Reguläre Panels benötigen keine zusätzliche Einzelerhebung. Die exakten Schattenwerte stehen in den Sidecar-Erweiterungen.
+Das Produkt verbindet Tonwert, feine Konturen und weiche räumliche Tiefe. Der eingesetzte Arbeitsraum hebt sich leicht vom äußeren Rahmen ab; aktive Segmente und der schwebende Assistenteneinstieg erhalten eine kleine Erhebung. Im oberen Hintergrund des Arbeitsraums liegt eine einzelne radiale Aufhellung mit geringem Anteil des gewählten Akzents (7%), die zur transparenten Fläche ausläuft. Sie ist statisch; Panels, Eingaben und Bedienflächen bleiben deckend. Dialoge und Begleiter verwenden eine deutlichere, begrenzte Überlagerung. Reguläre Panels benötigen keine zusätzliche Einzelerhebung. Die exakten Schattenwerte stehen in den Sidecar-Erweiterungen.
 
 **The Gezielte Tiefe Rule.** Tonwert und Kontur trennen Arbeitsflächen. Weiche Schatten setzen den Arbeitsraum, aktive Segmente und schwebende Hilfe räumlich ab; sie ersetzen keine verständliche Hierarchie.
+
+**The Ein Hintergrundlicht Rule.** Die statische Akzentaufhellung gehört zum Hintergrund des Arbeitsraums. Einzelne Panels und Bedienelemente erhalten daraus keine eigenen farbigen Lichtkränze.
 
 Kurze Übergänge begleiten Hover, Konturwechsel, Navigation und aktive Zustände. Reguläre Aktionen verschieben sich beim Drücken leicht (1px). Die globale Regel für reduzierte Bewegung begrenzt Animationen und Übergänge; die ergänzende Produktregel entfernt die entsprechenden Zustandsübergänge und die Druckverschiebung. Die persönliche Darstellung benötigt keine zusätzliche Animation.
 
@@ -306,7 +308,9 @@ Sichtbare Labels stehen über zurückgesetzten, fein konturierten Eingaben. Feld
 
 ### Navigation
 
-Die aktuelle Position erscheint in der linken Leiste als sanfte Akzentfläche mit Akzenttext und gleichfarbigem Symbol. Inaktive Einträge bleiben auf dem getönten Navigationsgrund zurückgenommen. Die Bereichsnavigation zeigt bis zu vier Kernbereiche und hält den geöffneten Bereich sichtbar; das aktive Segment sitzt auf `paper` mit kleinem Schatten. **Alle Bereiche** öffnet ein durchsuchbares Verzeichnis. Escape schließt es und führt den Fokus zum Auslöser zurück.
+Die aktuelle Position erscheint in der linken Leiste als sanfte Akzentfläche mit Akzenttext, gleichfarbigem Symbol und zugänglicher Positionsangabe. Inaktive Einträge bleiben auf dem getönten Navigationsgrund zurückgenommen. In der kompakten Desktopansicht bleiben die vollständigen zugänglichen Namen erhalten; sichtbare Hinweise erscheinen bei Zeigerkontakt und Tastaturfokus neben der Leiste außerhalb ihres scrollbaren Bereichs. Ein- und Ausklappen, Feedback, Profil und Abmelden bleiben erreichbar. Der Navigationsinhalt scrollt getrennt vom Fußbereich.
+
+Die Bereichsnavigation zeigt bis zu vier Kernbereiche und hält den geöffneten Bereich sichtbar; das aktive Segment sitzt auf `paper` mit kleinem Schatten. **Alle Bereiche** öffnet ein durchsuchbares Verzeichnis. Escape schließt es und führt den Fokus zum Auslöser zurück.
 
 Reguläre Tabs folgen derselben Segmentform: ruhiger Gruppenhintergrund, heller beziehungsweise erhöhter aktiver Eintrag. Einstellungen verwenden stattdessen eine vertikale, sanft akzentuierte Liste. Mobile native Auswahlen bieten jeweils die vollständige Bereichsliste.
 
@@ -326,11 +330,25 @@ Ergänzende Hilfen verwenden native `details`/`summary` mit sichtbarer Richtungs
 
 ### Begleiter, Dialoge und Einführung
 
-Assistent und aktiviertes Testfeedback erhalten auf Desktopansichten einen reservierten schwebenden Bereich innerhalb der linken Leiste über dem Profil. Die Navigation reserviert dafür Platz. Mobil führt die Utility-Leiste zum Assistenten, aktiviertes Feedback erhält seinen eigenen Platz in der unteren Navigation.
+Der Assistent besitzt genau einen schwebenden, beschrifteten Einstieg unten rechts. Er verwendet den gewählten Akzent, eine kompakte rechteckige Rundung (14px) und einen weichen Schatten. Mobil sitzt er mit sicherem Abstand über der unteren Navigation und berücksichtigt den Gerätesicherheitsabstand. Beim Öffnen ersetzt ihn der Begleiter. Der gesamte Begleiter folgt im Studio in das native oder vergrößerte Vollbild und kehrt danach an seinen ursprünglichen Platz zurück. Modale Dialoge, Einführung und die offene mobile Navigation halten den Einstieg verborgen.
+
+Aktiviertes Testfeedback steht als regulärer Eintrag im Fuß der linken Leiste über dem Profil; in der kompakten Leiste behält es sein Symbol, seinen zugänglichen Namen und den Fokus-/Zeigerhinweis. Mobil ist es zusätzlich in der unteren Navigation erreichbar. Es öffnet einen nativen Dialog; der gemeinsame Rückmeldedialog erzeugt keinen zweiten schwebenden Einstieg.
 
 Der Begleiter trennt **Hilfe für diese Seite** und **Chat** mit beschrifteten Auswahlflächen. Vorschläge gelangen zuerst in das Eingabefeld; **Senden** startet die Anfrage. Unterlagen und Modelloptionen bleiben aufklappbar. Der Desktopbegleiter ist eine begrenzte rechte Überlagerung; mobil begrenzt er den Fokus und stellt ihn beim Schließen wieder her. Dialoginhalte dürfen scrollen; Aktionsfüße bleiben erreichbar.
 
 Die Einführung hebt reale Seitenbereiche mit Akzentkontur und abgedunkeltem Umfeld hervor. Schrittzahl, Erklärung und Zurück/Weiter bleiben an der Karte zusammen; die Karte richtet sich am sichtbaren Fenster aus. Die persönliche Darstellung bildet den letzten Schritt. Fehlerrückmeldungen erscheinen innerhalb der betroffenen Oberfläche und werden dort sichtbar fokussiert.
+
+### Kontext und nächste Schritte
+
+Auftragsakten führen über klar benannte, berechtigungsabhängige Links in die zugehörigen Planungen, Arbeitspakete, Einsätze, Bestellungen und Rechnungen. Fachbereiche öffnen die gefilterte Übersicht und bei erlaubter Anlage ein neues Formular mit passendem Bezug. Nicht geladene Dokumentübersichten werden als nicht geladen benannt; sie gelten nicht als belegte Leere.
+
+Kundenakten bieten passende Einstiege zu Anfrage, Angebot und Auftrag; Lieferantenakten zu Bestellung und Eingangsrechnung. Aus einer Bestellung lässt sich eine Eingangsrechnung mit diesem Bezug vorbereiten. Ein neues Formular zeigt die übernommenen Beziehungen mit Namen. Es übernimmt nur passende, verfügbare Referenzoptionen und zulässige Datumswerte; vorhandene Datensätze werden durch einen Einstiegslink nicht verändert. Der Einstieg öffnet das Formular einmal. Erst ausdrückliches Speichern übernimmt einen neuen Datensatz.
+
+Suche, Zurücksetzen der Suchfelder und Weiterblättern erhalten die übrigen Filterbezüge. **Anwenden** beziehungsweise Enter übermittelt Suchtext und Status gemeinsam; eine Statusauswahl allein startet keine zweite Filterung. Der sichtbare Kontext nennt die aktive Beziehung.
+
+### Einsatzkalender
+
+Tag, Woche und Monat teilen dieselbe beschriftete Zeitraum- und Mitarbeiterauswahl. Ein ausgewählter Tag bestimmt die Tagesliste und die Aktion **Einsatz für diesen Tag anlegen**. Das neue Einsatzformular schlägt für diesen Tag lokale Zeiten (08:00–09:00) sowie einen gewählten verfügbaren Mitarbeiter und den bestehenden Auftragsbezug vor. Die Angaben bleiben bearbeitbar; das Öffnen des Formulars speichert keinen Einsatz.
 
 ### Persönliche Darstellung
 
@@ -342,9 +360,15 @@ Die Vorschau ändert sich sofort; die übrige Anwendung folgt nach **Darstellung
 
 Der Editor gruppiert Werkzeuge durch feine Trennungen und verbindet Elementliste, Zeichenfläche und Inspektor zu einem Arbeitsbereich. Kontext, Maßstab und Hinweise um die Zeichenfläche lesen die Theme-Tokens; nur die eigentliche technische SVG-Zeichenfläche behält helles Papier und ihre fachlichen Farben. Reale Schriftreferenzen, Formvorschauen und Materialabbildungen bleiben überprüfbare Inhalte. Die kurze X-/Y-/Z-Beschriftung des Auswahlversatzes steht mit Einheit neben vollständig benannten Eingaben.
 
+Eine auftragsbezogene Planungsübersicht benennt den Auftrag und bietet die Rückkehr zu seiner Akte. Suche, Zurücksetzen und Weiterblättern erhalten diesen Bezug. Ein neues Planungsprojekt schlägt ihn nur aus den verfügbaren Aufträgen vor; bestehende Projekte behalten ihren eigenen Bezug. Der Rückweg aus dem Editor führt zur Planungsübersicht des tatsächlichen Auftrags.
+
+Vor einem Seiten- oder Variantenwechsel mit noch nicht übertragenen Änderungen fragt ein nativer Dialog nach **Weiter bearbeiten**, **Speichern und wechseln** oder **Ohne Speichern wechseln**. Auch ein laufender Speichervorgang zählt dabei als offen. Der gespeicherte Weg setzt erst nach erfolgreicher Übernahme aller offenen Änderungen fort; Fehler und Konflikte bleiben sichtbar. Eine lokale Sitzungssicherung wird ausdrücklich als mögliche Wiederherstellung beschrieben, nicht als bestätigtes Speichern. Beim Schließen oder Neuladen des Browsers erscheint die native Warnung nur, solange Änderungen nicht übertragen sind. Reine Ansichtswechsel benötigen diese Rückfrage nicht.
+
+Abhängige Elemente nennen ihr Bezugsbauteil beziehungsweise ihre Bezugswand im Dialog. Eine passende Auswahl wird bevorzugt; ohne passende Auswahl wird nur ein einziges geeignetes Ziel automatisch übernommen. Bei mehreren Zielen ist eine bewusste Wahl nötig. Fehlt die Voraussetzung, führt **Zuerst Stein anlegen** beziehungsweise **Zuerst Wand anlegen** zum passenden ersten Schritt und erhält die Eingaben des abhängigen Elements. Kurze Hinweise erklären Ziehen, Pfeiltasten (1mm), Umschalt (10mm) und Alt beim Ziehen zum vorübergehenden Ausschalten des Einrastens.
+
 Monatsbalken beziehen sich auf eine sichtbare Nullachse und führen zu ihren Belegen. Ein fehlender bestätigter Wert erhält einen offenen Kreis und verständlichen Text. Mobil erscheint derselbe Zeitraum als Folge von Monatszeilen mit ausgeschriebenem Wert und Balken. Negative Werte nutzen die semantische Warnfarbe.
 
-Die Quellengrundlage bilden [app.css](apps/web/src/app.css), [appearance.ts](packages/contracts/src/appearance.ts), der [Seitenrahmen](apps/web/src/routes/[...path]/+page.svelte) sowie Dashboard, SectionNavigation, Settings, AppearancePicker, RecordList, WorkflowGuide, Studio und AiUsageSummary. Die ergänzenden Begleiter-, Einführungs- und Diagrammmuster sind in ihren bestehenden Komponenten belegt.
+Die Quellengrundlage bilden [app.css](apps/web/src/app.css), [appearance.ts](packages/contracts/src/appearance.ts), der [Seitenrahmen](apps/web/src/routes/[...path]/+page.svelte) sowie Dashboard, SectionNavigation, Settings, AppearancePicker, RecordDetail, RecordList, RecordEditor, DispatchCalendar, WorkflowGuide, Studio und AddElementDialog. Assistant, FeedbackWidget und der Vollbildbegleiter belegen die Einstiegs- und Überlagerungsregeln; die Einführungs- und Diagrammmuster sind in ihren bestehenden Komponenten belegt.
 
 ## Do's and Don'ts
 
@@ -359,12 +383,16 @@ Die Quellengrundlage bilden [app.css](apps/web/src/app.css), [appearance.ts](pac
 - **Do** Originalschriftbilder, Zeichenpapier, Materialien, 3D-Inhalte und PDF-Farben fachlich unverändert darstellen.
 - **Do** fehlende bestätigte Werte ausdrücklich benennen und mobile Auswertungen als lesbare Monatszeilen anbieten.
 - **Do** Speichern, Ladezustand, Erfolg und Fehler nachvollziehbar anzeigen und Fehlermeldungen in der betroffenen Oberfläche sichtbar machen.
+- **Do** kompakte Navigationssymbole mit vollständigen zugänglichen Namen und sichtbaren Hinweisen bei Zeigerkontakt und Tastaturfokus versehen.
+- **Do** Auftrags-, Kunden- und Lieferantenbezüge in nächste Formulare mitnehmen und übernommene Beziehungen verständlich benennen.
+- **Do** offene Studioänderungen vor dem Verlassen klären und bei mehreren passenden Bezugsbauteilen eine bewusste Auswahl verlangen.
 
 ### Don't:
 
 - **Don't** persönliche Akzentfarben als Ersatz für Fehler-, Warn- oder Erfolgsfarben einsetzen.
 - **Don't** den Arbeitsrahmen wieder zu einer gleichförmig flachen Fläche ohne erkennbare Navigation, Arbeitsraum und Eingabeflächen machen.
-- **Don't** dekorative Verläufe, übergroße Pillenflächen, zusätzliche Vorspänne oder ornamentale Symbolkacheln als neue Anwendungsmuster einführen.
+- **Don't** zusätzliche farbige Lichtkränze, animierte oder dekorative Verläufe auf Panels und Bedienelementen, übergroße Pillenflächen, zusätzliche Vorspänne oder ornamentale Symbolkacheln als neue Anwendungsmuster einführen.
 - **Don't** alle Fachflächen auf denselben Radius, dieselbe Schriftgröße oder dieselbe Informationsdichte vereinheitlichen.
 - **Don't** physisches Zeichenpapier dunkel einfärben oder technische Vorlagen durch eine UI-Farbwahl verändern.
 - **Don't** aus Vorschaubeispielen neue Laufzeitfarben, zusätzliche Theme-Abfragen, Polling oder KI-Aufrufe ableiten.
+- **Don't** fehlende geladene Daten als belegte Leere, lokale Sitzungssicherung als bestätigtes Speichern oder vorgeschlagene Formularwerte als bereits ausgeführte Handlung darstellen.

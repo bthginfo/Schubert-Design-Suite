@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-19T10:02:34.017Z",
+  "generatedAt": "2026-10-19T12:46:45.316Z",
   "title": "Design System: SCHUBERT Design Suite",
   "extensions": {
     "colorMeta": {
@@ -476,7 +476,7 @@
       {
         "name": "surface-shadow",
         "value": "0 3px 12px light-dark(#23354a08,#00000024)",
-        "purpose": "Aktive Bereichssegmente, reguläre aktive Tabs und schwebende Einstiege."
+        "purpose": "Aktive Bereichssegmente und reguläre aktive Tabs."
       },
       {
         "name": "overlay-shadow",
@@ -502,6 +502,11 @@
         "name": "guided-tour",
         "value": "0 18px 54px rgb(0 0 0 / .25)",
         "purpose": "Erklärungskarte der Einführung über der tatsächlichen Seite."
+      },
+      {
+        "name": "assistant-fab",
+        "value": "0 7px 24px light-dark(#23354a24, #00000055)",
+        "purpose": "Der eine schwebende Assistenteneinstieg unten rechts."
       }
     ],
     "motion": [
@@ -638,9 +643,9 @@
       "name": "Navigation und aktiver Bereich",
       "kind": "nav",
       "refersTo": "navigation-active",
-      "description": "Sanfte Akzentauswahl in der linken Navigation; aktives Bereichssegment auf erhabener Bedienfläche.",
-      "html": "<div class=\"ds-navigation\"><nav class=\"ds-rail\" aria-label=\"Arbeitsbereiche\"><a class=\"ds-nav-item ds-current\" href=\"#heute\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10H3zM9 20v-7h6v7\"/></svg>Heute</a><a class=\"ds-nav-item\" href=\"#auftraege\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg>Aufträge</a></nav><nav class=\"ds-sections\" aria-label=\"Bereiche\"><a class=\"ds-section ds-section-current\" href=\"#kunden\" aria-current=\"page\">Kunden</a><a class=\"ds-section\" href=\"#angebote\">Angebote</a><a class=\"ds-section\" href=\"#auftraege\">Aufträge</a></nav></div>",
-      "css": ".ds-navigation{display:flex;align-items:flex-start;flex-wrap:wrap;gap:22px;font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-rail{display:flex;flex-direction:column;gap:3px;width:204px;padding:14px;background:var(--navigation-surface,#eef2f7)}.ds-nav-item{display:flex;align-items:center;gap:11px;min-height:40px;padding:9px 13px;border-radius:9px;color:var(--muted,#5d6a7c);font-size:13px;font-weight:500;line-height:1.55;text-decoration:none;transition:background .16s ease,color .16s ease}.ds-nav-item:hover{background:color-mix(in srgb,var(--paper,#fff) 65%,transparent);color:var(--ink,#192337)}.ds-nav-item.ds-current{color:var(--forest,#315c4c);background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff));font-weight:600}.ds-sections{display:inline-flex;align-items:stretch;gap:3px;max-width:100%;padding:4px;border:1px solid var(--line,#dfe5ee);border-radius:10px;background:var(--wash,#f0f3f8)}.ds-section{display:flex;align-items:center;justify-content:center;min-height:35px;padding:8px 14px;border-radius:7px;color:var(--muted,#5d6a7c);font-size:12px;font-weight:500;line-height:1.5;text-decoration:none;white-space:nowrap}.ds-section:hover{color:var(--ink,#192337)}.ds-section-current{background:var(--paper,#fff);color:var(--forest,#315c4c);box-shadow:var(--surface-shadow,0 3px 12px light-dark(#23354a08,#00000024));font-weight:600}.ds-nav-item:focus-visible,.ds-section:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-nav-item{transition:none}}"
+      "description": "Ausgeklappte Navigation und aktive Bereichssegmente; die kompakte 76px-Leiste behält Namen, Fokus-/Zeigerhinweise und den Fußbereich mit Feedback, Profil und Abmelden.",
+      "html": "<div class=\"ds-navigation\"><nav class=\"ds-rail\" aria-label=\"Arbeitsbereiche\"><a class=\"ds-nav-item ds-current\" href=\"#heute\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10H3zM9 20v-7h6v7\"/></svg>Heute</a><a class=\"ds-nav-item\" href=\"#kunden\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg>Kunden &amp; Projekte</a></nav><nav class=\"ds-compact-rail\" aria-label=\"Kompakte Hauptnavigation\"><button class=\"ds-compact-item\" aria-label=\"Seitenleiste ausklappen\" aria-expanded=\"false\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M9 3v18m4-13 4 4-4 4\"/></svg><span class=\"ds-rail-hint\" aria-hidden=\"true\">Seitenleiste ausklappen</span></button><a class=\"ds-compact-item ds-current\" href=\"#heute\" aria-label=\"Heute\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10H3zM9 20v-7h6v7\"/></svg><span class=\"ds-rail-hint\" aria-hidden=\"true\">Heute</span></a><a class=\"ds-compact-item\" href=\"#kunden\" aria-label=\"Kunden &amp; Projekte\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg><span class=\"ds-rail-hint\" aria-hidden=\"true\">Kunden &amp; Projekte</span></a><div class=\"ds-compact-footer\"><button class=\"ds-compact-item ds-feedback\" aria-label=\"Feedback\" aria-haspopup=\"dialog\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"m16 3 5 5M4 15 16 3a2.1 2.1 0 0 1 5 5L9 20l-6 1 1-6Z\"/></svg><span class=\"ds-rail-hint\" aria-hidden=\"true\">Feedback geben</span></button><a class=\"ds-compact-item ds-avatar\" href=\"#zugang\" aria-label=\"Mein Zugang und persönliche Einstellungen\">JS<span class=\"ds-rail-hint\" aria-hidden=\"true\">Mein Zugang und persönliche Einstellungen</span></a><button class=\"ds-compact-item\" aria-label=\"Abmelden\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9\"/></svg><span class=\"ds-rail-hint\" aria-hidden=\"true\">Abmelden</span></button></div></nav><nav class=\"ds-sections\" aria-label=\"Bereiche\"><a class=\"ds-section ds-section-current\" href=\"#kunden\" aria-current=\"page\">Kunden</a><a class=\"ds-section\" href=\"#anfragen\">Anfragen</a><a class=\"ds-section\" href=\"#auftraege\">Aufträge</a></nav></div>",
+      "css": ".ds-navigation{display:flex;align-items:flex-start;flex-wrap:wrap;gap:22px;font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-rail{display:flex;flex-direction:column;gap:3px;width:232px;box-sizing:border-box;padding:14px;background:var(--navigation-surface,#eef2f7)}.ds-nav-item{display:flex;align-items:center;gap:11px;min-height:40px;padding:9px 13px;border-radius:9px;color:var(--muted,#5d6a7c);font-size:13px;font-weight:500;line-height:1.55;text-decoration:none;transition:background .16s ease,color .16s ease}.ds-nav-item:hover{background:color-mix(in srgb,var(--paper,#fff) 65%,transparent);color:var(--ink,#192337)}.ds-nav-item.ds-current{color:var(--forest,#315c4c);background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff));font-weight:600}.ds-sections{display:inline-flex;align-items:stretch;gap:3px;max-width:100%;padding:4px;border:1px solid var(--line,#dfe5ee);border-radius:10px;background:var(--wash,#f0f3f8)}.ds-section{display:flex;align-items:center;justify-content:center;min-height:35px;padding:8px 14px;border-radius:7px;color:var(--muted,#5d6a7c);font-size:12px;font-weight:500;line-height:1.5;text-decoration:none;white-space:nowrap}.ds-section:hover{color:var(--ink,#192337)}.ds-section-current{background:var(--paper,#fff);color:var(--forest,#315c4c);box-shadow:var(--surface-shadow,0 3px 12px light-dark(#23354a08,#00000024));font-weight:600}.ds-nav-item:focus-visible,.ds-section:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-nav-item{transition:none}}.ds-compact-rail{display:flex;flex-direction:column;gap:3px;width:76px;box-sizing:border-box;padding:18px 10px;background:var(--navigation-surface,#eef2f7);color:var(--muted,#5d6a7c)}.ds-compact-item{position:relative;display:flex;align-items:center;justify-content:center;min-height:44px;padding:12px 0;border:0;border-radius:9px;background:transparent;color:var(--muted,#5d6a7c);font:500 13px/1.55 Inter,sans-serif;text-decoration:none;cursor:pointer}.ds-compact-item:hover{background:color-mix(in srgb,var(--paper,#fff) 65%,transparent);color:var(--ink,#192337)}.ds-compact-item.ds-current{background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff));color:var(--forest,#315c4c)}.ds-compact-item:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-compact-footer{display:flex;flex-direction:column;gap:7px;margin-top:16px;padding-top:13px;border-top:1px solid var(--line,#dfe5ee)}.ds-feedback{border:1px solid color-mix(in srgb,var(--forest,#315c4c) 40%,var(--line,#dfe5ee));background:var(--paper,#fff);color:var(--forest,#315c4c)}.ds-feedback:hover{background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff))}.ds-avatar{align-self:center;width:36px;min-height:36px;padding:0;background:var(--paper,#fff);color:var(--forest,#315c4c);font-size:11px;font-weight:600}.ds-rail-hint{position:absolute;left:calc(100% + 10px);top:50%;z-index:2;display:none;width:max-content;max-width:270px;transform:translateY(-50%);padding:10px 13px;border-radius:8px;background:var(--surface-raised,var(--paper,#fff));color:var(--ink,#192337);box-shadow:var(--overlay-shadow,0 20px 64px light-dark(#23354a22,#00000066));font:400 12px/1.5 Inter,sans-serif;pointer-events:none}.ds-compact-item:hover>.ds-rail-hint,.ds-compact-item:focus-visible>.ds-rail-hint{display:block}"
     },
     {
       "name": "Erfolgsstatus",
@@ -667,20 +672,20 @@
       "css": ".ds-appearance{min-width:0;margin:0;padding:0;border:0;font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-appearance legend{padding:0;color:var(--ink,#192337);font-size:14px;font-weight:600;line-height:1.55}.ds-appearance>p{margin:5px 0 14px;color:var(--muted,#5d6a7c);font-size:13px;line-height:1.6}.ds-accent-choices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;max-width:650px}.ds-accent-choices label{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;padding:13px 5px;border:1px solid transparent;border-radius:10px;color:var(--muted,#5d6a7c);font-size:12px;line-height:1.55;cursor:pointer}.ds-accent-choices input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.ds-accent-choices label:has(input:checked){border-color:var(--line,#dfe5ee);background:var(--accent-wash,color-mix(in srgb,#315c4c 9%,#fff));color:var(--ink,#192337)}.ds-accent-choices label:has(input:focus-visible){outline:2px solid var(--forest,#315c4c);outline-offset:3px}.ds-swatch{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;color:#fff;box-shadow:inset 0 0 0 1px #0000000c}.ds-swatch svg{visibility:hidden}.ds-accent-choices input:checked+.ds-swatch svg{visibility:visible}.ds-appearance:disabled{opacity:.6}@media(max-width:650px){.ds-accent-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.ds-accent-choices label{min-height:84px}}"
     },
     {
-      "name": "Aufklappbare Hilfe",
+      "name": "Schwebender Assistent",
       "kind": "custom",
-      "refersTo": "disclosure",
-      "description": "Gemeinsames natives Hilfemuster mit offenem und geschlossenem Zustand, Akzentfokus und umbrechendem Titel.",
-      "html": "<details class=\"ds-disclosure\"><summary>So arbeiten die Bereiche zusammen</summary><p>Öffnen Sie den passenden Vorgang und prüfen Sie den nächsten Schritt.</p></details>",
-      "css": ".ds-disclosure{max-width:520px;color:var(--ink,#192337);font-family:Inter,sans-serif;letter-spacing:-.012em}.ds-disclosure>summary{display:flex;align-items:center;gap:12px;min-height:49px;padding:14px 16px;border:1px solid var(--line,#dfe5ee);border-radius:10px;background:var(--paper,#fff);font-size:13px;font-weight:500;line-height:1.6;list-style:none;overflow-wrap:anywhere;cursor:pointer}.ds-disclosure>summary::-webkit-details-marker{display:none}.ds-disclosure>summary:hover{background:var(--input-surface,#f8fafc)}.ds-disclosure>summary:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-disclosure>summary::after{content:'';flex:none;width:7px;height:7px;margin:-4px 3px 0 auto;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .15s ease}.ds-disclosure[open]>summary{margin-bottom:14px}.ds-disclosure[open]>summary::after{margin-top:4px;transform:rotate(225deg)}.ds-disclosure>p{margin:0;color:var(--muted,#5d6a7c);font-size:13px;line-height:1.7}@media(max-width:760px){.ds-disclosure>summary{min-height:52px;font-size:14px}}@media(prefers-reduced-motion:reduce){.ds-disclosure>summary::after{transition:none}}"
+      "refersTo": "button-primary",
+      "description": "Ein beschrifteter Einstieg unten rechts über dem statisch aufgehellten Arbeitsraum; in der Anwendung folgt derselbe Begleiter dem nativen oder vergrößerten Studio-Vollbild.",
+      "html": "<div class=\"ds-assistant-workspace\"><button class=\"ds-assistant-trigger\" aria-label=\"Assistent öffnen\" aria-haspopup=\"dialog\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z\"/></svg>Assistent</button></div>",
+      "css": ".ds-assistant-workspace{position:relative;min-height:165px;max-width:560px;border-radius:16px;background:radial-gradient(ellipse 86% 580px at 72% -140px,color-mix(in srgb,var(--forest,#315c4c) 7%,transparent),transparent 74%),var(--workspace-surface,#f8fafc)}.ds-assistant-trigger{position:absolute;right:28px;bottom:24px;display:flex;align-items:center;gap:10px;min-height:50px;padding:13px 19px;border:0;border-radius:14px;background:var(--forest,#315c4c);color:var(--on-accent,#fff);box-shadow:0 7px 24px light-dark(#23354a24,#00000055);font:600 13px/1.55 Inter,sans-serif;letter-spacing:-.012em;cursor:pointer}.ds-assistant-trigger:hover{background:var(--forest-dark,#244638)}.ds-assistant-trigger:focus-visible{outline:3px solid var(--forest,#315c4c);outline-offset:3px}.ds-assistant-trigger svg{flex-shrink:0}"
     }
   ],
   "narrative": {
     "northStar": "Das präzise Arbeitsprodukt",
-    "overview": "Die SCHUBERT Design Suite ist ein modernes, hochwertiges Arbeitsprodukt für einen Handwerksbetrieb. Eine kompakte, leicht getönte Navigationsleiste fasst einen deutlich eingesetzten Arbeitsraum ein. Kühles Porzellan im hellen Modus und tiefes Navy im dunklen Modus verbinden präzise Konturen, lesbare Inter-Typografie und zurückhaltende räumliche Tiefe.\n\nDie Oberfläche richtet sich an deutschsprachige Menschen mit unterschiedlicher digitaler Erfahrung. Sichtbare Handlungsnamen, vertraute Formulare und klar getrennte Arbeitsbereiche tragen die Bedienung. Sechs persönliche Akzentfamilien und die drei Darstellungsmodi verändern den Rahmen; fachliche Statusfarben, technisches Zeichenpapier, Originalschriftbilder und reale Materialien behalten ihre Bedeutung.",
+    "overview": "Die SCHUBERT Design Suite ist ein modernes, hochwertiges Arbeitsprodukt für einen Handwerksbetrieb. Eine ein- und ausklappbare, leicht getönte Navigationsleiste fasst einen deutlich eingesetzten Arbeitsraum ein. Kühles Porzellan im hellen Modus und tiefes Navy im dunklen Modus verbinden präzise Konturen, lesbare Inter-Typografie und zurückhaltende räumliche Tiefe. Eine statische, schwache Akzentaufhellung liegt im Hintergrund des Arbeitsraums.\n\nDie Oberfläche richtet sich an deutschsprachige Menschen mit unterschiedlicher digitaler Erfahrung. Sichtbare Handlungsnamen, vertraute Formulare und klar getrennte Arbeitsbereiche tragen die Bedienung. Sechs persönliche Akzentfamilien und die drei Darstellungsmodi verändern den Rahmen; fachliche Statusfarben, technisches Zeichenpapier, Originalschriftbilder und reale Materialien behalten ihre Bedeutung.",
     "keyCharacteristics": [
-      "Kompakte Navigation und ein klar abgegrenzter, eingesetzter Arbeitsraum.",
-      "Kühle neutrale Flächen mit feiner Kontur und gezielter, weicher Tiefe.",
+      "Ausklappbare Navigation, kompakte Symbolleiste und ein klar abgegrenzter Arbeitsraum.",
+      "Kühle neutrale Flächen mit feiner Kontur, statischer Hintergrundaufhellung und gezielter Tiefe.",
       "Ausgewählter Akzent für aktuelle Position, primäre Handlung und Auswahl.",
       "Lesbare deutsche Beschriftungen, erkennbare Zustände und erreichbare Aktionen."
     ],
@@ -702,12 +707,17 @@
       },
       {
         "name": "Erreichbare Aktion",
-        "body": "Scrollbare Inhalte halten Abschluss- und Schließaktionen erreichbar. Desktop-Hilfe und Feedback nutzen den reservierten Platz über dem Profil; modale Oberflächen bleiben frei von schwebendem Feedback.",
+        "body": "Scrollbare Inhalte halten Abschluss- und Schließaktionen erreichbar und lassen Platz für den Assistenteneinstieg unten rechts. Feedback steht im Fuß der Seitenleiste über dem Profil; modale Oberflächen und die offene mobile Navigation blenden den Assistenteneinstieg aus.",
         "section": "layout"
       },
       {
         "name": "Gezielte Tiefe",
         "body": "Tonwert und Kontur trennen Arbeitsflächen. Weiche Schatten setzen den Arbeitsraum, aktive Segmente und schwebende Hilfe räumlich ab; sie ersetzen keine verständliche Hierarchie.",
+        "section": "elevation"
+      },
+      {
+        "name": "Ein Hintergrundlicht",
+        "body": "Die statische Akzentaufhellung gehört zum Hintergrund des Arbeitsraums. Einzelne Panels und Bedienelemente erhalten daraus keine eigenen farbigen Lichtkränze.",
         "section": "elevation"
       }
     ],
@@ -720,15 +730,19 @@
       "Do Aktionsgruppen als ganze Einheiten umbrechen lassen und lange deutsche Aktionsnamen an Wortgrenzen halten.",
       "Do Originalschriftbilder, Zeichenpapier, Materialien, 3D-Inhalte und PDF-Farben fachlich unverändert darstellen.",
       "Do fehlende bestätigte Werte ausdrücklich benennen und mobile Auswertungen als lesbare Monatszeilen anbieten.",
-      "Do Speichern, Ladezustand, Erfolg und Fehler nachvollziehbar anzeigen und Fehlermeldungen in der betroffenen Oberfläche sichtbar machen."
+      "Do Speichern, Ladezustand, Erfolg und Fehler nachvollziehbar anzeigen und Fehlermeldungen in der betroffenen Oberfläche sichtbar machen.",
+      "Do kompakte Navigationssymbole mit vollständigen zugänglichen Namen und sichtbaren Hinweisen bei Zeigerkontakt und Tastaturfokus versehen.",
+      "Do Auftrags-, Kunden- und Lieferantenbezüge in nächste Formulare mitnehmen und übernommene Beziehungen verständlich benennen.",
+      "Do offene Studioänderungen vor dem Verlassen klären und bei mehreren passenden Bezugsbauteilen eine bewusste Auswahl verlangen."
     ],
     "donts": [
       "Don't persönliche Akzentfarben als Ersatz für Fehler-, Warn- oder Erfolgsfarben einsetzen.",
       "Don't den Arbeitsrahmen wieder zu einer gleichförmig flachen Fläche ohne erkennbare Navigation, Arbeitsraum und Eingabeflächen machen.",
-      "Don't dekorative Verläufe, übergroße Pillenflächen, zusätzliche Vorspänne oder ornamentale Symbolkacheln als neue Anwendungsmuster einführen.",
+      "Don't zusätzliche farbige Lichtkränze, animierte oder dekorative Verläufe auf Panels und Bedienelementen, übergroße Pillenflächen, zusätzliche Vorspänne oder ornamentale Symbolkacheln als neue Anwendungsmuster einführen.",
       "Don't alle Fachflächen auf denselben Radius, dieselbe Schriftgröße oder dieselbe Informationsdichte vereinheitlichen.",
       "Don't physisches Zeichenpapier dunkel einfärben oder technische Vorlagen durch eine UI-Farbwahl verändern.",
-      "Don't aus Vorschaubeispielen neue Laufzeitfarben, zusätzliche Theme-Abfragen, Polling oder KI-Aufrufe ableiten."
+      "Don't aus Vorschaubeispielen neue Laufzeitfarben, zusätzliche Theme-Abfragen, Polling oder KI-Aufrufe ableiten.",
+      "Don't fehlende geladene Daten als belegte Leere, lokale Sitzungssicherung als bestätigtes Speichern oder vorgeschlagene Formularwerte als bereits ausgeführte Handlung darstellen."
     ]
   }
 }
