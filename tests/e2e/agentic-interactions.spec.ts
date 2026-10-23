@@ -223,6 +223,14 @@ test("AI: structured clarification, explicit boundaries, cancellation and fresh 
                   "Welche Materialstärke ist bestätigt?",
                 ],
                 assumptions: ["Die angegebenen Maße sind ungeprüfte Planmaße."],
+                skillsUsed: [
+                  {
+                    id: "schubert-memorial-de",
+                    label: "Grabmal & Inschrift",
+                    version: "1.0.0",
+                    jurisdiction: "DE",
+                  },
+                ],
               }
             : {
                 text: "Neue Anfrage nach dem Abbruch bestätigt.",
@@ -241,6 +249,16 @@ test("AI: structured clarification, explicit boundaries, cancellation and fresh 
   ).toBeChecked();
   await panel.getByLabel("Maßwerte beibehalten", { exact: true }).check();
   await panel.getByRole("button", { name: "Senden", exact: true }).click();
+  await panel.getByText("Verwendete Fachhilfe", { exact: true }).click();
+  await expect(panel.locator(".reply-skills")).toContainText(
+    "Grabmal & Inschrift",
+  );
+  await expect(panel.locator(".reply-skills")).toContainText(
+    "Deutschland · Version 1.0.0",
+  );
+  await expect(
+    panel.getByRole("combobox", { name: /skill|fachhilfe/i }),
+  ).toHaveCount(0);
   await expect(
     panel.getByRole("heading", { name: "Noch zu klären", exact: true }),
   ).toBeVisible();
@@ -633,6 +651,14 @@ test("Backoffice: structured draft feedback, safe cancellation and mobile footer
           text: "Bitte die vereinbarte Oberfläche konkretisieren.",
           missingInputs: ["Welche Oberfläche wurde vereinbart?"],
           assumptions: ["Der Preis ist eine unbestätigte Eingabe."],
+          skillsUsed: [
+            {
+              id: "schubert-office-drafts-de",
+              label: "Büro & Entwürfe",
+              version: "1.0.0",
+              jurisdiction: "DE",
+            },
+          ],
         },
       },
     });
@@ -641,6 +667,10 @@ test("Backoffice: structured draft feedback, safe cancellation and mobile footer
   await editor
     .getByRole("button", { name: "Eingaben prüfen", exact: true })
     .click();
+  await editor.getByText("Verwendete Fachhilfe", { exact: true }).click();
+  await expect(editor.locator(".reply-skills")).toContainText(
+    "Büro & Entwürfe",
+  );
   await editor
     .getByLabel("Welche Oberfläche wurde vereinbart?", { exact: true })
     .fill("Geschliffen, vom Kunden bestätigt.");

@@ -1,5 +1,6 @@
 import {appearanceIntegration} from './appearance-integration.js';
 import {assistantWorkflowIntegration} from './assistant-workflow-integration.js';
+import {aiSkillsIntegration} from './ai-skills-integration.js';
 import {manufacturerAssetsIntegration} from './manufacturer-assets-integration.js';
 import {flowContextIntegration} from './flow-context-integration.js';
 import {uxFlowIntegration} from './ux-flow-integration.js';
@@ -109,5 +110,6 @@ await uxFlowIntegration(actor,test);
 await flowContextIntegration(actor,test);
 await assistantWorkflowIntegration(actor,test);
 await manufacturerAssetsIntegration(actor,test);
+await aiSkillsIntegration(actor,test);
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}

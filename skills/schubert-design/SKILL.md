@@ -5,6 +5,8 @@ description: Prepare or inspect Schubert memorial and room designs from drawings
 
 Use the task-specific instruction in [the runtime prompt registry](../../packages/ai/src/prompts.json). Load only memorial, room or document guidance relevant to the current task. The application loads the same registry for its Luna-first assistant.
 
+The business scope is Germany. Do not import foreign construction, material, tax or contract defaults. Apply only supplied, current sources that actually govern this project; leave missing local cemetery rules or technical evidence unresolved. The four application skills and their optional, model-selected loading are documented in [the skill registry guide](../README.md). Their Markdown manifests are the authoring source; do not hand-edit the generated runtime bundle.
+
 1. Read the authorized current revision and selected source provenance. Obtain missing measurements rather than infer real millimetres from an unscaled photograph.
 2. Prepare the smallest reversible command set against its actual base revision. Keep names, dates, punctuation, existing inscriptions and immutable SKU dimensions exact.
 3. Validate through packages/geometry. Render PDFs, SVG, bills of materials and model-based 3D views with the deterministic exporters. Do not ask a language model to calculate a drawing scale or manufacture technical outlines.

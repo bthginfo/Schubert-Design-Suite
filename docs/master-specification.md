@@ -1301,6 +1301,8 @@ Der Agent löst die aktuellen unterstützten Modell-IDs anhand offizieller Dokum
 
 Die Vercel AI SDK kann für Svelte-Streaming/Transport genutzt werden, wenn die installierte Version die benötigte SvelteKit-/OpenAI-Fähigkeit unterstützt. Die OpenAI-Anbindung bleibt explizit am Provideradapter; kein ungefragter Anbieterwechsel. Vercel AI Gateway ist eine spätere Infrastrukturwahl, nicht Voraussetzung für die Verwendung des ausdrücklich gewünschten OpenAI-Kontos.
 
+Vier eigene Fachskills unterstützen Grabmal/Inschrift, Raum/Naturstein, ausgewählte Herstellerunterlagen und konkrete Büroentwürfe. Fachlicher Geltungsbereich ist ausschließlich Deutschland; konkrete Satzungs-, Norm- und Herstelleranforderungen benötigen aktuelle, auftragsbezogen passende Quellen. Der Server begrenzt nur die verfügbaren Fachhilfen. Die KI entscheidet selbst, ob sie direkt antwortet oder eine beziehungsweise zwei tatsächlich passende Fachhilfen über ein schreibgeschütztes Werkzeug anfordert. Nutzer müssen keinen Skill auswählen. Ein begrenztes Nachladen und höchstens eine abschließende Anbieteranfrage teilen sich eine vorab reservierte Kostenobergrenze. Ein Skill gewährt keine zusätzlichen Rechte und ersetzt keine deterministische Prüfung oder menschliche Freigabe. Autorenquelle, Bündelung und Nachweise stehen in [skills/README.md](../skills/README.md).
+
 ### 14.5 Tool- und Vorschlagsverträge
 
 Tools beispielsweise `getCurrentContext`, `searchPermittedDocuments`, `getPriceCandidates`, `createQuoteDraft`, `proposeDesignChanges`, `validateDesign`, `getJobCostBreakdown`, `draftEmail`. Keine universelle Funktion `run_sql`, `fetch_any_url` oder `execute_code`.

@@ -8,6 +8,16 @@ export function normalizeUsage(raw:any){
   input_text_tokens:tokens(raw?.input_tokens_details?.text_tokens),input_image_tokens:tokens(raw?.input_tokens_details?.image_tokens),
   reasoning_tokens:tokens(raw?.output_tokens_details?.reasoning_tokens)}};
 }
+
+/** Missing usage in either paid response must keep the reservation unresolved. */
+export function aggregateTextResponses(responses:readonly {id?:string;usage?:unknown}[]){
+ const id=responses.at(-1)?.id??null;
+ const usage=responses.map(response=>normalizeUsage(response.usage));
+ if(!usage.length||usage.some(item=>item.input===null||item.output===null))return{id,usage:undefined};
+ const sum=(key:'input'|'output')=>usage.reduce((total,item)=>total+item[key]!,0);
+ const details=(keys:('cached_tokens'|'cache_write_tokens'|'reasoning_tokens')[])=>Object.fromEntries(keys.flatMap(key=>usage.some(item=>item.details[key]!==null)?[[key,usage.reduce((total,item)=>total+(item.details[key]??0),0)]]:[]));
+ return{id,usage:{input_tokens:sum('input'),output_tokens:sum('output'),input_tokens_details:details(['cached_tokens','cache_write_tokens']),output_tokens_details:details(['reasoning_tokens'])}};
+}
 export function taskType(context:Record<string,any>,review=false){
  if(context.entityType==='probe')return 'connection_test';
  if(['planning','studio','memorial','room_plan'].includes(context.entityType)){

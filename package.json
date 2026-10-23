@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "build": "pnpm --filter @schubert/web build && node scripts/build-worker.mjs",
-    "check": "pnpm --filter @schubert/web check && tsc --noEmit",
+    "build": "node scripts/build-ai-skills.mjs --check && pnpm --filter @schubert/web build && node scripts/build-worker.mjs",
+    "check": "node scripts/build-ai-skills.mjs --check && pnpm --filter @schubert/web check && tsc --noEmit",
     "test": "vitest run",
     "test:integration": "tsx scripts/integration-test.ts",
     "test:e2e": "playwright test",

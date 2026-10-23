@@ -2,6 +2,7 @@ import {z} from 'zod';
 
 export const planningStepSchema=z.enum(['geometry','design','review','output']);
 export type PlanningStep=z.infer<typeof planningStepSchema>;
+export type AssistantSkillUsage={id:string;label:string;version:string;jurisdiction:'DE'};
 export const planningGuardrailsSchema=z.strictObject({
   preserveMeasurements:z.boolean().default(false),
   preserveWording:z.boolean().default(false),

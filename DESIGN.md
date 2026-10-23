@@ -392,6 +392,8 @@ Formulare im Büro besitzen eine schmale Abschnittsleiste mit direkten Sprungzie
 
 Die Herstellerbibliothek erklärt Original, Studiozuordnung und Verwendung in drei kurzen Schritten. Der zweistufige Dialog speichert zuerst den fortsetzbaren Entwurf und prüft dann Datei und Nutzungsgrundlage. In den Studios entscheidet die Dateieignung über **Als Planvorlage öffnen**, **Kontur übernehmen** oder **Als KI-Referenz auswählen**. Nicht erfüllte Voraussetzungen erhalten einen konkreten nächsten Schritt. Die Auswahl startet keine kostenpflichtige Verarbeitung.
 
+Optionale Fachhilfen werden von der KI gewählt und benötigen keine zusätzliche Nutzereinstellung. Nur tatsächlich geladene Hilfen erscheinen in einer zurückhaltenden, per Tastatur bedienbaren Aufklappzeile **Verwendete Fachhilfe** bei der zugehörigen Antwort. Dort stehen Name, Deutschlandbezug und Version. Rückfragen und die nächste Aktion behalten die visuelle Priorität. Eine Fachhilfe behauptet weder Normkonformität noch technische Freigabe.
+
 Kurze Einblendungen und dezente Hover-/Fokusübergänge unterstützen die Orientierung. `prefers-reduced-motion` deaktiviert diese Bewegungen. Bedienelemente bleiben während Speichervorgängen eindeutig gesperrt; Fehler erscheinen am betroffenen Ablauf.
 
 Der Editor gibt der Zeichenfläche den verbleibenden Arbeitsraum. **Auswahl**, **Verschieben**, **Hand** und **Hinzufügen** bilden die Bearbeitungsreihe; Front, Seite, Drauf beziehungsweise Grundriss und 3D bilden die eigene Ansichtsgruppe. **Einpassen** und die Zoomsteuerung bleiben erreichbar. Die Bedienelemente **Elemente** und **Eigenschaften** stehen mit Rückgängig/Wiederholen direkt an der Zeichenfläche; Auswahlstatus und Maßeinheit erklären den aktuellen Bezug.

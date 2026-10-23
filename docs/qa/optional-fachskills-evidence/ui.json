@@ -1,0 +1,50 @@
+{
+  "providerTransport": "synthetic UI response",
+  "results": [
+    {
+      "kind": "memorial",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "keyboardDisclosure": true,
+      "accessibilityViolations": 0,
+      "overflow": false
+    },
+    {
+      "kind": "memorial",
+      "theme": "dark",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "keyboardDisclosure": true,
+      "accessibilityViolations": 0,
+      "overflow": false
+    },
+    {
+      "kind": "room_plan",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "keyboardDisclosure": true,
+      "accessibilityViolations": 0,
+      "overflow": false
+    },
+    {
+      "kind": "room_plan",
+      "theme": "dark",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "keyboardDisclosure": true,
+      "accessibilityViolations": 0,
+      "overflow": false
+    }
+  ],
+  "browserErrors": []
+}
