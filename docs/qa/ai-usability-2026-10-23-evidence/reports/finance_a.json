@@ -1,0 +1,194 @@
+{
+  "persona": "finance_a",
+  "role": "Karin, 51, erfahrene Buchhalterin im deutschen Steinmetzbetrieb; App: UX Karin Beck / Finanzen",
+  "startedAt": "2026-10-23T12:58:42.724Z",
+  "finishedAt": "2026-10-23T13:07:44Z",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/finance_a/0002-1792760386856.png",
+        "Broker finance_a: Status filtern → Ausgestellt → Anwenden; /invoices?status=issued: 0 Einträge",
+        "Broker finance_a: /receivables und /payments: jeweils 0 Einträge"
+      ],
+      "notes": "Offene Forderungen gefunden, Bestand leer. Beispielrechnung Nicht auszustellender Prüffall geöffnet: Entwurf, Ausgabe ausstehend, noch nicht übergeben, Zahlung offen; 238,00 EUR brutto. Kein ausgestellter Beleg im sichtbaren Bestand; dessen tatsächliche Originalausgabe deshalb nicht vergleichbar. Keine Ausstellung oder Zahlung ausgelöst."
+    },
+    {
+      "id": "G2",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/finance_a/0003-1792760557878.png",
+        "work/ai-usability/evidence/finance_a/0007-1792760793467.png",
+        "work/ai-usability/evidence/finance_a/0006-1792760763301.png",
+        "Broker finance_a: Lieferant UX finance_a Steinhandel gespeichert; LF-2026-00001, Aktiv",
+        "Broker finance_a: Auftragssuche UX finance_a → UX finance_a · Badumbau Testweg ausgewählt"
+      ],
+      "notes": "Ein eigener Lieferant angelegt. Ein Eingangsrechnungsformular mit Beleg TEST-2026-A, Rechnungsdatum 23.10.2026, 2,5 m² × 280,00 EUR netto und 19 % USt tatsächlich ausgefüllt. Auftragsbezug gefunden und ausgewählt. Eigener synthetischer PDF-Upload scheitert an nicht eingerichtetem privatem Speicher; Pflichtfeld Original verhindert das Speichern. Genau ein Rechnungsentwurf bearbeitet, keiner gespeichert. Danach unspeicherbare Eingaben ausdrücklich verworfen."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/finance_a/0006-1792760763301.png",
+        "work/ai-usability/evidence/finance_a/0007-1792760793467.png"
+      ],
+      "notes": "Entwurfsvorschau korrekt: netto 700,00 EUR, USt 133,00 EUR, brutto 833,00 EUR. Fehlendes Original beim Speichern am Feld markiert. KI-Kontext und Nichtverfügbarkeit geprüft; Schaltfläche Eingaben prüfen deaktiviert, da OpenAI-Projekt, Modell und Budget fehlen. Keine KI-Antwortqualität und keine serverseitig gespeicherten Summen bewertbar."
+    }
+  ],
+  "findings": [
+    {
+      "id": "finance_a-F1",
+      "severity": "P1",
+      "title": "Nicht eingerichteter Dateispeicher verhindert Original und damit den Eingangsrechnungsentwurf",
+      "observation": "Nach Auswahl der eigenen PDF finance_a-TEST-2026-A.pdf und Klick auf Privat hochladen erscheint: Privater Dateispeicher ist noch nicht eingerichtet. Die übrigen Funktionen bleiben verfügbar. Das spätere Speichern der Eingangsrechnung markiert Original als ungültig: Bitte wählen Sie einen Eintrag aus der Liste. Kein eigener Beleg wurde gespeichert.",
+      "expectation": "Den synthetischen Originalbeleg hochladen und die Eingangsrechnung anschließend als Entwurf speichern können.",
+      "impact": "Die Kernaufgabe bleibt in dieser Umgebung unvollständig; alle übrigen Rechnungsangaben und die Auftragszuordnung können nur vorübergehend eingegeben werden.",
+      "route": "/documents; /supplier-invoices",
+      "steps": [
+        "Rechnungseingang öffnen und Eingangsrechnung anlegen.",
+        "Pflichtfeld Original ohne eigenen hochgeladenen Beleg feststellen; leeres Formular abbrechen.",
+        "Dokumente öffnen, eigene synthetische PDF auswählen, Privat hochladen klicken.",
+        "Konfigurationsmeldung lesen.",
+        "Eingangsrechnungsformular mit eigenen Daten ausfüllen und Speichern klicken."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_a/0003-1792760557878.png",
+        "work/ai-usability/evidence/finance_a/0007-1792760793467.png"
+      ],
+      "confidence": "high",
+      "category": "environment",
+      "recommendation": "Privaten Dateispeicher in der Testumgebung bereitstellen; danach Speicherung und Belegbezug erneut prüfen."
+    },
+    {
+      "id": "finance_a-F2",
+      "severity": "P2",
+      "title": "Auftragsauswahl empfiehlt Stammdatenanlage, obwohl der vorhandene Auftrag über Suche auffindbar ist",
+      "observation": "Beim Öffnen des Formulars steht unter Auftrag: Noch kein Eintrag auswählbar. Legen Sie die zugehörigen Stammdaten zuerst an. Nach Eingabe von UX finance_a in die darunterliegende Suche und Klick auf Suchen erscheint der vorbereitete Auftrag UX finance_a · Badumbau Testweg und lässt sich auswählen.",
+      "expectation": "Ein vorhandener berechtigter Auftrag ist auswählbar oder die leere Vorauswahl erklärt zuerst die notwendige Suche.",
+      "impact": "Die Meldung lässt mich zunächst an fehlenden Stammdaten zweifeln und veranlasst eine unnötige Prüfung. Andere Buchungskräfte könnten einen bereits vorhandenen Auftrag neu anlegen wollen.",
+      "route": "/supplier-invoices",
+      "steps": [
+        "Eingangsrechnung anlegen öffnen.",
+        "Text unter der noch leeren Auswahl Auftrag lesen.",
+        "In die zweite Suche Name oder Belegnummer UX finance_a eingeben.",
+        "Zugehöriges Suchen klicken; Auftragsauswahl öffnen.",
+        "Vorbereiteten Auftrag auswählen."
+      ],
+      "evidence": [
+        "Broker finance_a: Erstes Eingangsrechnungsformular und Auftragssuche; Auswahl vorher leer, danach 1 berechtigter Eintrag",
+        "work/ai-usability/evidence/finance_a/0007-1792760793467.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Vor einer Suche einen neutralen Suchhinweis anzeigen; eine Stammdatenanlage erst nach erfolgloser Suche empfehlen."
+    },
+    {
+      "id": "finance_a-F3",
+      "severity": "P2",
+      "title": "Das erforderliche Original führt aus dem Rechnungseingangsformular heraus",
+      "observation": "Die Seite erklärt Original zuerst hochladen, bietet aber als Hauptaktion Eingangsrechnung anlegen. Im Formular ist Original Pflicht; dort sind eine Dateiauswahl und Weitere Einträge suchen vorhanden, jedoch keine von mir sichtbare Upload-Aktion oder Verknüpfung zum Dokumenteneingang. Ich musste das noch leere Formular abbrechen und über die Hauptnavigation Dokumente öffnen.",
+      "expectation": "Den erforderlichen Originalbeleg vor oder während der Entwurfserfassung über eine unmittelbar erkennbare Aktion aufnehmen können.",
+      "impact": "Zusätzlicher Bereichswechsel und erneutes Öffnen des Formulars; bei bereits ausgefüllten Angaben würde ich wegen des später beobachteten Verwerfendialogs eine Fortsetzungsmöglichkeit benötigen. In meinem ersten, noch leeren Formular entstand kein Datenverlust.",
+      "route": "/supplier-invoices",
+      "steps": [
+        "Rechnungseingang öffnen.",
+        "Eingangsrechnung anlegen klicken.",
+        "Pflichtfeld Original und dessen Auswahl öffnen.",
+        "Ohne passenden eigenen Beleg Formular abbrechen.",
+        "Über die Hauptnavigation Dokumente zum Upload wechseln."
+      ],
+      "evidence": [
+        "Broker finance_a: Original-Auswahlliste mit 41 vorhandenen Testdateien; kein eigener Beleg und keine Upload-Aktion im Formular",
+        "work/ai-usability/evidence/finance_a/0007-1792760793467.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Beim Pflichtfeld Original eine erkennbare Aufnahmeaktion oder einen Weg mit Rückkehr zum ungespeicherten Entwurf anbieten."
+    },
+    {
+      "id": "finance_a-F4",
+      "severity": "P3",
+      "title": "Die Rechnungsübersicht zeigt den Auftrag als technische Kennung",
+      "observation": "In der geöffneten Beispielrechnung zeigt Angaben im Überblick unter Auftrag ausschließlich 9dfa9edb-ff2e-49b3-9a7f-c94347bafdad. In dieser Übersicht ist die Kennung kein sichtbarer Link; beim Kunden erscheint hingegen ein verständlicher verlinkter Name.",
+      "expectation": "Den zugehörigen Auftrag anhand von Bezeichnung oder Auftragsnummer unmittelbar wiedererkennen.",
+      "impact": "Für die fachliche Plausibilitätskontrolle ist der Auftrag in dieser Übersicht nicht erkennbar. Andere Register wurden dafür nicht geprüft; ich behaupte keine vollständige Verknüpfungssperre.",
+      "route": "/invoices/de0620bc-2dc7-4d1d-8baf-9716f5890bb4",
+      "steps": [
+        "Vorhandenen Nicht auszustellenden Prüffall öffnen.",
+        "Angaben im Überblick lesen und Auftrag mit Kundenbezug vergleichen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_a/0002-1792760386856.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Auftragsbezeichnung beziehungsweise Geschäftsnummer anzeigen und bei Berechtigung verlinken."
+    },
+    {
+      "id": "finance_a-F5",
+      "severity": "P3",
+      "title": "Rechnungsstatusfilter mischt Deutsch mit validated",
+      "observation": "Der Statusfilter der Ausgangsrechnungen bietet Alle Status, Entwurf, validated und Ausgestellt an.",
+      "expectation": "Die Prüfphase ist für eine deutsche Buchhaltung fachlich verständlich auf Deutsch beschriftet.",
+      "impact": "Die Bedeutung von validated muss ich aus dem Ablauf herleiten. Die Trennung zwischen Entwurf und geprüfter Rechnung ist dadurch weniger unmittelbar.",
+      "route": "/invoices",
+      "steps": [
+        "Rechnungsliste öffnen.",
+        "Status filtern öffnen und angebotene Zustände lesen."
+      ],
+      "evidence": [
+        "Broker finance_a: click Status filtern; listbox enthält validated"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Den sichtbaren Status deutsch und fachlich eindeutig benennen."
+    },
+    {
+      "id": "finance_a-F6",
+      "severity": "P2",
+      "title": "KI-Prüfung ist mangels Konfiguration nicht ausführbar",
+      "observation": "Entwurf mit KI prüfen erläutert die Prüfung aktueller Eingaben und die anschließende manuelle Speicherung. Der Bereich Diese Angaben werden übermittelt nennt Bezeichnung, Belegwährung, 1 von 1 Positionen und den Ausfüllstand der Grundangaben. Darunter steht OpenAI-Projekt, Modell und Kostenbudget noch einzurichten; Eingaben prüfen ist deaktiviert.",
+      "expectation": "Eine unverbindliche Prüfung des eigenen Entwurfs bei verfügbarer KI starten und vor Übernahme fachlich prüfen können.",
+      "impact": "Kontext und Nichtverfügbarkeit sind nachvollziehbar, eine KI-Prüfung oder Antwortqualität kann in dieser Umgebung nicht beurteilt werden.",
+      "route": "/supplier-invoices",
+      "steps": [
+        "Eigenen Entwurf mit einer Position ausfüllen.",
+        "Entwurf mit KI prüfen aufklappen.",
+        "Diese Angaben werden übermittelt aufklappen.",
+        "Konfigurationshinweis und deaktivierte Startaktion lesen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_a/0006-1792760763301.png"
+      ],
+      "confidence": "high",
+      "category": "environment",
+      "recommendation": "Für einen Antwortqualitätstest die ausgewiesene KI-Konfiguration bereitstellen."
+    }
+  ],
+  "strengths": [
+    "Dezimalkomma bei Menge und Preisen akzeptiert; Vorschau 2,5 m² × 280,00 EUR mit 19 % korrekt und gut lesbar als 700,00 / 133,00 / 833,00 EUR angezeigt.",
+    "Rechnungsdetail trennt Status, Belegstatus, Ausgabe, Versand und Zahlung sichtbar in einer eigenen Karte. Die Liste erklärt die getrennten Schritte ausdrücklich.",
+    "Leere offene Forderungen erklären, dass bestätigte Einträge nach dem zugehörigen Prüf- oder Buchungsschritt erscheinen.",
+    "Speichern des unvollständigen Entwurfs führt zum fehlenden Pflichtfeld Original und zeigt eine konkrete Feldmeldung; kein blindes Erfolgssignal.",
+    "Der KI-Bereich erklärt manuelle Speicherung, übermittelte Angaben, fehlende Konfiguration und den ausdrücklich nötigen Startklick.",
+    "Abbrechen bei ausgefülltem Formular fragt nach Weiter bearbeiten oder Ungespeicherte Eingaben verwerfen; bewusstes Verwerfen funktionierte.",
+    "1440 × 1000: klare Überschriften, ruhige Karten und sichtbare Fußaktionen im langen Formular. Die optionale KI ist optisch nachgeordnet."
+  ],
+  "limits": [
+    "Simulierter rollenbasierter Black-box-Test, keine echte menschliche Nutzerstudie.",
+    "Offene Forderungen, Zahlungen und ausgestellte Rechnungen im sichtbaren Bestand leer. Kein ausgestelltes Original oder bezahlter Fall vergleichbar; vorhandene Beispielrechnung blieb unverändert.",
+    "Privater Dateispeicher nicht eingerichtet. Eigene PDF nur lokal erstellt und im Browser ausgewählt, Upload nicht erfolgreich; keine gespeicherte Eingangsrechnung.",
+    "KI nicht konfiguriert. Keine Anfrage gesendet, keine Antwortqualität oder Übernahme geprüft.",
+    "Deutsches Datum 23.10.2026 ließ sich durch die Browserbefehlsfunktion nicht in ein natives input[type=date] füllen (Malformed value). Danach technisch erforderlichen ISO-Wert 2026-10-23 verwendet. Dies ist keine belegte App-Datumsvalidierungsstörung.",
+    "Ein Klick auf zusammengezogenen Text Entwurf mit KI prüfen Optional fand keinen Locator. Nach inspect und Klick auf den tatsächlichen Text Entwurf mit KI prüfen funktionierte das Aufklappen; kein Produktfehler daraus abgeleitet.",
+    "Nur Desktop gemäß Bürotätigkeit geprüft; keine Aussage über mobile Nutzung.",
+    "Nur ein eigener Lieferant angelegt: UX finance_a Steinhandel, LF-2026-00001, sichtbarer Status Aktiv. Keine Rechnung ausgestellt, Zahlung gebucht, Freigabe oder Zuordnung einer Zahlung ausgelöst.",
+    "Zeitangabe beginnt mit der ersten gesicherten Screenshot-Evidenz; Browserinteraktion etwa neun Minuten. Kontext nach Ende geschlossen."
+  ],
+  "browserActionsApprox": 73
+}

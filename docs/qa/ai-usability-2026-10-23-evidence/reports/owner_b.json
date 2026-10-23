@@ -1,0 +1,134 @@
+{
+  "persona": "owner_b",
+  "role": "Maren, 39, kaufmännische Mitinhaberin eines deutschen Steinmetzbetriebs; App-Name UX Maren Koch",
+  "startedAt": "2026-10-23T13:10:09Z",
+  "finishedAt": "2026-10-23T13:19:38Z",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/owner_b/0001-1792761019514.png",
+        "work/ai-usability/evidence/owner_b/0002-1792761063475.png",
+        "work/ai-usability/evidence/owner_b/0003-1792761079689.png",
+        "work/ai-usability/evidence/owner_b/0019-1792761486869.png"
+      ],
+      "notes": "Onboarding gestartet, bis Kunden & Projekte verfolgt und pausiert. Hauptbereiche verständlich; Hilfe bietet Einführung fortsetzen. Persönliche Aufmerksamkeit blieb teilweise unklar: zwei gleichlautende Angebotsmeldungen ohne identifizierbaren Vorgangsbezug; beim geöffneten Hinweis kein Auftrag und nur eine Kennung als Verantwortlicher."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/owner_b/0004-1792761112429.png",
+        "work/ai-usability/evidence/owner_b/0011-1792761329699.png",
+        "work/ai-usability/evidence/owner_b/0012-1792761344296.png",
+        "work/ai-usability/evidence/owner_b/0013-1792761374390.png"
+      ],
+      "notes": "Eigene Aufgabe UX owner_b · Kundentelefonat Familie Linden als vorläufigen internen Entwurf gespeichert, Nummer TAS-2026-00002, Status Offen. Auftrag UX finance_b · Badumbau Testweg zugeordnet, Verantwortlich UX Maren Koch per Suche und ArrowDown/Enter gewählt, Fälligkeit 26.10.2026. Über Aufgaben durchsuchen und Anwenden mit UX owner_b als einzigem Treffer wiedergefunden. Nicht begonnen oder erledigt. Keine Änderungen am verknüpften Auftrag. Verantwortlichenname ist im Editor erhalten, wird in der Akte jedoch als UUID angezeigt."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/owner_b/0008-1792761264251.png",
+        "work/ai-usability/evidence/owner_b/0009-1792761277269.png",
+        "work/ai-usability/evidence/owner_b/0014-1792761391286.png",
+        "work/ai-usability/evidence/owner_b/0015-1792761415277.png",
+        "work/ai-usability/evidence/owner_b/0018-1792761455290.png"
+      ],
+      "notes": "Am eigenen noch ungespeicherten Entwurf KI-Bereich und Übermittlungsdetails geöffnet. Aufgabe, Fällig am, Beschreibung und Ausfüllstand werden ausdrücklich genannt; andere Akten und interne Einzelkosten ausgeschlossen. Manuelles Speichern und Start erst nach explizitem Klick klar. Eingaben prüfen ist wegen fehlender OpenAI-Einrichtung deaktiviert; keine KI-Ausgabe erzeugt. Auswertungen sowie Administration > Buchhaltung gefunden und nur gelesen."
+    }
+  ],
+  "findings": [
+    {
+      "id": "owner_b-F1",
+      "severity": "P2",
+      "title": "Die Aufgabenakte zeigt die verantwortliche Person als Kennung",
+      "observation": "Im Erstellungsdialog wurde UX Maren Koch als Verantwortlich ausgewählt. Nach Speichern und Wiederöffnen steht in der Akte unter Verantwortlich 2c110bee-2fde-45b7-a8c8-a093eb212fb6. Erneutes Bearbeiten zeigt dagegen wieder UX Maren Koch. Auch ein zuvor geöffneter bestehender Aufmerksamkeitsvorgang zeigte dort eine Kennung.",
+      "expectation": "Die gespeicherte Aufgabe zeigt denselben lesbaren Namen wie die Mitarbeiterauswahl.",
+      "impact": "Die Zuständigkeit kann im normalen Lesemodus nicht beurteilt werden. Zur Namensprüfung ist ein unnötiger Wechsel in den Bearbeitungsdialog nötig.",
+      "route": "/tasks/1ab66165-8936-4c27-b5c2-2f601faf152e",
+      "steps": [
+        "Aufgaben > Aufgabe anlegen öffnen.",
+        "Eigene Aufgabe benennen; Verantwortlich nach Maren durchsuchen.",
+        "UX Maren Koch per ArrowDown und Enter auswählen; Speichern.",
+        "Aufgabe über UX owner_b suchen und öffnen.",
+        "Verantwortlich in der Übersicht lesen; Bearbeiten öffnen und denselben Wert vergleichen; Escape schließt ohne Änderung."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/owner_b/0012-1792761344296.png",
+        "work/ai-usability/evidence/owner_b/0013-1792761374390.png",
+        "work/ai-usability/evidence/owner_b/0003-1792761079689.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "In der Aufgabenübersicht den aufgelösten Mitarbeiternamen anzeigen, wie bereits im Editor."
+    },
+    {
+      "id": "owner_b-F2",
+      "severity": "P2",
+      "title": "Gleichlautende Kostensatz-Hinweise lassen die betroffene Grundlage offen",
+      "observation": "Auswertungen > Daten & Grundlagen 36 zeigt unter Datenlücken zuerst klären zahlreiche gleichlautende Einträge Berechnungsgrundlage ergänzen / Interner Kostensatz fehlt. Auftragsmarge unvollständig. / Prüfung erforderlich. In diesen sichtbaren Einträgen fehlen ein Personen- oder Auftragsname und ein direkter Prüf-Link. Weiter unten nennen andere Hinweise dagegen konkrete Aufträge und bieten Grundlage prüfen an.",
+      "expectation": "Nach Öffnen der 36 Hinweise ist erkennbar, welche konkrete Grundlage bei wem fehlt und wo sie geprüft werden kann.",
+      "impact": "Ich kann die gleichlautenden Hinweise weder zuordnen noch unmittelbar bearbeiten und müsste die Ursache in anderen Bereichen suchen.",
+      "route": "/reports",
+      "steps": [
+        "Auswertungen öffnen.",
+        "Daten & Grundlagen 36 wählen.",
+        "Zu Datenlücken zuerst klären scrollen und die sichtbaren Kostensatz-Einträge lesen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/owner_b/0015-1792761415277.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Betroffene Person oder betroffenen Vorgang pro Hinweis nennen und eine passende Prüfansicht verlinken; gleichartige Hinweise bei Bedarf bündeln."
+    },
+    {
+      "id": "owner_b-F3",
+      "severity": "P2",
+      "title": "Aufmerksamkeitsmeldungen zu angenommenen Angeboten führen ohne konkreten Vorgangsbezug weiter",
+      "observation": "Heute zeigte zwei gleichlautende Meldungen Angebot wurde angenommen mit dem Text Mitteilung und tatsächlichen Originalstand öffnen: /orders. Die erste öffnete eine Aufgabenakte, in der Auftrag als — erschien. Verknüpfte Vorgänge zeigte lediglich die allgemeine Erklärung, Verknüpfungen über die Übersicht zu öffnen. Welches Angebot beziehungsweise welcher Auftrag gemeint war, wurde auf diesem Weg nicht deutlich.",
+      "expectation": "Eine Meldung zu einem angenommenen Angebot nennt Kunde oder Angebotsnummer und führt zur betroffenen Akte oder zu einer klaren nächsten Prüfung.",
+      "impact": "Die kaufmännische Priorisierung stockt: zwei Meldungen lassen sich im Überblick nicht unterscheiden; nach dem Öffnen bleibt die konkrete Folgearbeit offen.",
+      "route": "/ und /tasks/cbca20a1-eb34-4a64-ab6e-36abb21914e9",
+      "steps": [
+        "Heute öffnen und Das braucht Aufmerksamkeit lesen.",
+        "Erste Meldung Angebot wurde angenommen öffnen.",
+        "Auftragsbezug in Angaben im Überblick lesen.",
+        "Verknüpfte Vorgänge öffnen; keine Geschäftsdaten ändern."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/owner_b/0002-1792761063475.png",
+        "work/ai-usability/evidence/owner_b/0003-1792761079689.png",
+        "work/ai-usability/evidence/owner_b/0022-1792761546586.png"
+      ],
+      "confidence": "medium",
+      "category": "product",
+      "recommendation": "Konkreten Vorgangsbezug und einen eindeutigen nächsten Schritt anzeigen. Fehlt der Bezug in den Daten, dies ausdrücklich benennen statt nur einen technischen Pfad zu zeigen."
+    }
+  ],
+  "strengths": [
+    "Ruhige visuelle Hierarchie am Desktop: Hauptnavigation, klarer Seitentitel, abgegrenzte Karten und gut sichtbare Hauptaktionen.",
+    "Einführung erklärt echte Seiten und verändert laut sichtbarem Hinweis keine Geschäftsdaten. Pause war möglich; Hilfe bietet Einführung fortsetzen und neu starten.",
+    "Aufgabenformular erklärt Pflichtfelder, explizites Speichern und den Auftragsbezug. Auftrags- und Personensuche liefern lesbare Treffer; Tastaturauswahl per ArrowDown/Enter funktionierte. Escape schloss den erneut geöffneten Editor.",
+    "Aufgabensuche mit UX owner_b lieferte genau einen Treffer; gespeicherte Aufgabe hatte eine verständliche Nummer, Status und deutsche Datumsanzeige.",
+    "KI-Hilfe erklärt Zweck, Übermittlungsumfang und manuelle Kontrolle. Fehlende Einrichtung wird ausdrücklich genannt und die Prüfaktion korrekt deaktiviert.",
+    "Auswertungen nennen Zeitraum, Datenstand, Währung und Quellenwege; deutsche Geldformate sind verständlich. Administration > Buchhaltung sowie der Freigabestand sind gut auffindbar.",
+    "Kurzer mobiler Sichttest bei 390 × 844: Inhalte werden als schmale Karten dargestellt; Mehr öffnet die Navigation mit gut lesbaren Bereichen."
+  ],
+  "limits": [
+    "Simulierter einzelner Rollen-Durchlauf, keine echte menschliche Nutzerstudie und kein Code-Audit.",
+    "KI war nicht eingerichtet: OpenAI-Projekt, Modell und Kostenbudget noch einzurichten. Keine Anfrage und keine KI-Ausgabe; Antwortqualität und Übernahme/Korrektur eines erzeugten Vorschlags sind nicht bewertbar.",
+    "Bestehende Daten sind synthetisch. Ob der fehlende Quellbezug der Angebotsmeldungen durch Testdaten oder ursprüngliche Verarbeitung entstand, wurde nicht ermittelt; der sichtbare Umgang damit ist dokumentiert.",
+    "Native Datumsfelder zeigten in diesem Browser MM/DD/YYYY bzw. 10/26/2026, während Textausgaben 26.10.2026 zeigten. Browser-Locale nicht geprüft; deshalb kein eigenständiger bestätigter Produktfehler.",
+    "Ein CLI-Versuch, die KI-Zeile nach role=group und vollständigem Namen anzuklicken, fand keinen Locator. Anschließend wurde per sichtbarem Text erfolgreich geöffnet; der Locatorfehler wird nicht als Appfehler gewertet.",
+    "Mobile Prüfung beschränkt auf Heute und das Menü; keine vollständige mobile Formularbearbeitung. Ein unmittelbar nach Größenwechsel sichtbarer Übergang war beim nächsten Screenshot verschwunden.",
+    "Es wurde ausschließlich die eigene gekennzeichnete Aufgabe angelegt. Bestehende Aufträge, Finanzkonfigurationen und Freigaben blieben unverändert. Browser nach 64 Aktionen einschließlich Inspect und Close geschlossen."
+  ],
+  "browserActionsApprox": 64
+}

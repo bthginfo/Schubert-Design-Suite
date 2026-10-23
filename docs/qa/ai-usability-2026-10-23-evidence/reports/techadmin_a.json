@@ -1,0 +1,133 @@
+{
+  "persona": "techadmin_a",
+  "role": "Technischer IT-Betreuer eines deutschen Steinmetzbetriebs; sichtbare Rolle Technik",
+  "startedAt": "2026-10-23T13:24:11.912Z",
+  "finishedAt": "2026-10-23T13:30:48Z",
+  "viewport": { "width": 1440, "height": 1000 },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_a/0003-1792761892046.png",
+        "work/ai-usability/evidence/techadmin_a/0004-1792761917462.png",
+        "work/ai-usability/evidence/techadmin_a/0008-1792762066390.png",
+        "work/ai-usability/evidence/techadmin_a/0015-1792762217170.png"
+      ],
+      "notes": "Jobs gefunden; Abgeschlossen und Nicht verfügbar samt fehlendem privaten Dateispeicher verstanden. Fehlgeschlagen ergab 0 Einträge. Keine System-/Integrationsübersicht gefunden und keinen wartenden Job erreicht."
+    },
+    {
+      "id": "G2",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_a/0005-1792761963146.png",
+        "work/ai-usability/evidence/techadmin_a/0006-1792761979135.png",
+        "work/ai-usability/evidence/techadmin_a/0007-1792762009760.png",
+        "work/ai-usability/evidence/techadmin_a/0009-1792762093238.png"
+      ],
+      "notes": "Ursache aus Liste erkennbar: privater Dateispeicher noch nicht eingerichtet. Grundsätzlicher nächster Schritt daraus ableitbar: Einrichtung/Zuständigkeit klären. Detailseite liefert weder Hinweis noch Jobprotokoll oder konkrete Anleitung; nichts erneut ausgeführt."
+    },
+    {
+      "id": "G3",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_a/0012-1792762142617.png",
+        "work/ai-usability/evidence/techadmin_a/0013-1792762153947.png",
+        "work/ai-usability/evidence/techadmin_a/0016-1792762241886.png"
+      ],
+      "notes": "Sichtbare Navigation bleibt auf Heute, Jobs, persönlichen Zugang und Hilfe beschränkt. Rückkehr über Heute und Verarbeitung funktioniert; mobile Navigation öffnet über Mehr und schließt mit Escape. Keine fachlichen Masken geöffnet."
+    }
+  ],
+  "findings": [
+    {
+      "id": "techadmin_a-F1",
+      "severity": "P2",
+      "title": "Jobdetails verlieren den vorhandenen Fehlerhinweis und liefern keinen technischen Verlauf",
+      "observation": "Liste nennt fehlenden privaten Dateispeicher, einen Versuch und Änderungszeit. Geöffnete Export-Jobübersicht zeigt nur Titel und Status Nicht verfügbar, sonst leeren Inhaltsbereich. Verlauf zeigt Noch kein sichtbarer Verlauf und einen Text über geschäftliche Änderungen/Freigaben. Verknüpfte Vorgänge und Dokumente liefern allgemeine Fachhinweise. Erneut ausführen bleibt die auffällige Hauptaktion; nicht angeklickt. Ein separat geöffnetes Angebots-PDF zeigte dieselbe inhaltsarme Übersicht.",
+      "expectation": "Nach Öffnen eines problematischen Jobs bleiben Ursache, Versuche und Zeit sichtbar; Protokoll und nächster technischer Schritt erklären die Behebung.",
+      "impact": "Liste ist für Diagnose hilfreicher als Detailseite. Eine gezielte Behebung oder Übergabe benötigt Kontext, der dort fehlt.",
+      "route": "/jobs/934f6e82-257a-41ac-85ad-301d71eea7f6",
+      "steps": [
+        "Administration öffnen",
+        "Status Nicht verfügbar wählen und Anwenden betätigen",
+        "Ersten Eingefrorenen Bericht mit Tabellen exportieren öffnen",
+        "Übersicht lesen, anschließend Verlauf, Verknüpfte Vorgänge und Dokumente öffnen",
+        "Zusätzlich Angebots-PDF über die Listensuche finden und dessen Übersicht lesen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_a/0005-1792761963146.png",
+        "work/ai-usability/evidence/techadmin_a/0006-1792761979135.png",
+        "work/ai-usability/evidence/techadmin_a/0008-1792762066390.png",
+        "work/ai-usability/evidence/techadmin_a/0009-1792762093238.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Vorhandenen Fehlerhinweis und Jobmetadaten in Details übernehmen; technischen Verlauf sowie passenden Einrichtungs-/Zuständigkeitshinweis anbieten."
+    },
+    {
+      "id": "techadmin_a-F2",
+      "severity": "P2",
+      "title": "Weg zur System-/Integrationsübersicht bleibt für Technik ungeklärt",
+      "observation": "Administration führt direkt zur Jobliste ohne weitere sichtbare Bereichsnavigation. Hilfesuche Integration ergibt keine passende Anleitung. Meine Einstellungen zeigt persönliche Darstellung und Zugang. Mobile Navigation Mehr bietet dieselben wenigen Bereiche. Allgemeine Hilfe verweist für zusätzliche Rechte auf den Superadmin, erklärt aber nicht den verfügbaren technischen Diagnoseumfang.",
+      "expectation": "Eine lesbare System-/Integrationsübersicht ist erreichbar oder die Oberfläche erklärt, wer sie einsehen kann.",
+      "impact": "Gesamtzustand und konfigurierte Verbindungen lassen sich aus diesem Zugang nicht beurteilen. Ob die Zugriffsbeschränkung beabsichtigt ist, bleibt offen; kein nachgewiesener Berechtigungsfehler.",
+      "route": "/jobs",
+      "steps": [
+        "Administration und sichtbare Navigation prüfen",
+        "Hilfe zu dieser Seite öffnen und nach Integration suchen",
+        "Hilfesuche Bereich lesen: zusätzliche Rechte beim Superadmin",
+        "Meine Einstellungen lesen",
+        "Mobil Mehr öffnen und angebotene Bereiche prüfen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_a/0003-1792761892046.png",
+        "work/ai-usability/evidence/techadmin_a/0007-1792762009760.png",
+        "work/ai-usability/evidence/techadmin_a/0010-1792762108682.png",
+        "work/ai-usability/evidence/techadmin_a/0013-1792762153947.png"
+      ],
+      "confidence": "medium",
+      "category": "product",
+      "recommendation": "Verfügbaren Diagnoseumfang und Zuständigkeit im technischen Einstieg erklären; gegebenenfalls eine lesbare Statusübersicht verlinken."
+    },
+    {
+      "id": "techadmin_a-F3",
+      "severity": "P3",
+      "title": "Nicht verfügbar verwendet dieselbe grüne Statusdarstellung wie Abgeschlossen",
+      "observation": "Desktopliste, mobile Karten und Details zeigen beide Zustände als blassgrüne Plakette mit grünem Punkt. Die Wörter unterscheiden sie korrekt.",
+      "expectation": "Jobs mit technischem Handlungsbedarf lassen sich beim Überfliegen zusätzlich visuell von erfolgreichen Jobs unterscheiden.",
+      "impact": "Farbgebung unterstützt die schnelle Zustandsprüfung nicht; jeder Status muss gelesen werden.",
+      "route": "/jobs",
+      "steps": [
+        "Gemischte Jobliste auf Desktop lesen",
+        "Nicht verfügbare Exportjobs und abgeschlossene Mitteilungsjobs vergleichen",
+        "Dieselben Zustände bei 390 × 844 in mobilen Karten und Details lesen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_a/0003-1792761892046.png",
+        "work/ai-usability/evidence/techadmin_a/0012-1792762142617.png",
+        "work/ai-usability/evidence/techadmin_a/0014-1792762179152.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Ergänzendes eindeutiges Symbol oder abweichende Statusdarstellung für Nicht verfügbar nutzen."
+    }
+  ],
+  "strengths": [
+    "Einstieg bietet Verarbeitung prüfen direkt an.",
+    "Suche und Statusfilter funktionieren; Pfeiltaste, Enter, Tab und Enter konnten Nicht verfügbar anwenden.",
+    "Leerer Fehlerfilter wird mit Keine passenden Einträge und Filter zurücksetzen verständlich erklärt.",
+    "Mobile Karten passen zur Breite; Mehr und Escape funktionieren.",
+    "Heute und Verarbeitung ermöglichen eine zuverlässige Rückkehr."
+  ],
+  "limits": [
+    "Zeitbeginn entspricht erster gespeicherter Evidenz; Login erfolgte wenige Sekunden davor. Browserinteraktion dauerte etwa 6,5 Minuten; danach Bericht erstellt.",
+    "Privater Dateispeicher ist laut sichtbarem Hinweis noch nicht eingerichtet: Umgebungslimit, kein nachgewiesener PDF-/Exportproduktfehler.",
+    "Kein fehlgeschlagener Job im angewendeten Filter und kein wartender Datensatz erreicht. Statusauswahl bot Fehlgeschlagen, Nicht verfügbar und Abgeschlossen; Suche Wart darin ohne Treffer. Keine Aussage über die Qualität einer Wartediagnose.",
+    "Abgeschlossene Jobs belegen nur angezeigte Abschlüsse; keine externen Zustellungen oder vollständigen Integrationsfunktionen überprüft.",
+    "Keine KI-Antwortqualität beurteilt, keine Jobs erneut ausgeführt, keine Schlüssel, Integrationen, Rollen oder Geschäftsdaten geändert, keine externen Aktionen ausgelöst.",
+    "Nur Protokoll, Browserleitfaden und eigenen Brief gelesen; keine Anwendungssourcen, APIs, Datenbanken oder fremden Berichte.",
+    "Ergänzende Mobilprüfung mit 390 × 844. Sieben Screenshots selbst angesehen: 0001, 0003, 0005, 0008, 0011, 0012, 0014.",
+    "Browserkontext nach Evidenzaufnahme geschlossen."
+  ],
+  "browserActionsApprox": 56
+}

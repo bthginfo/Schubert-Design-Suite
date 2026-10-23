@@ -1,0 +1,90 @@
+{
+  "persona": "superadmin_b",
+  "role": "David Scholl – SuperAdmin, Benutzerverwaltung und Backofficeunterstützung im deutschen Steinmetzbetrieb",
+  "startedAt": "2026-10-23T13:15:23Z",
+  "finishedAt": "2026-10-23T13:23:33Z",
+  "viewport": { "width": 1280, "height": 900 },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": ["work/ai-usability/evidence/superadmin_b/0005-1792761425636.png"],
+      "notes": "Genau einen eigenen Zugang UX superadmin_b Demo mit ux-superadmin-b@example.invalid und Standardrolle Büro/Office angelegt. Zufällige lange initiale Passphrase und ownPassword-Bestätigung verwendet. Erfolgsmeldung und aktiver Eintrag gesehen. Keine Nachricht gesendet."
+    },
+    {
+      "id": "G2",
+      "status": "partial",
+      "evidence": ["work/ai-usability/evidence/superadmin_b/0006-1792761439993.png", "work/ai-usability/evidence/superadmin_b/0007-1792761463173.png", "work/ai-usability/evidence/superadmin_b/0010-1792761568362.png", "work/ai-usability/evidence/superadmin_b/0011-1792761599534.png"],
+      "notes": "Ausschließlich beim eigenen neuen Benutzer zusätzliche Fähigkeit Herstellerbibliothek verwalten begründet und bestätigt. Erneutes Öffnen zeigte Version 2, Office/Büro unverändert und Fähigkeit angehakt. Eigener Zugang im Beschäftigtenformular per Namen auswählbar. Profilanlage mit sichtbarem Pflichtumfang sowie zweiter Versuch mit Beschäftigungsbeginn scheiterten an derselben allgemeinen Validierung. Keine konkrete Korrektur erkennbar; ungespeicherten Profilentwurf ausdrücklich verworfen."
+    },
+    {
+      "id": "G3",
+      "status": "achieved",
+      "evidence": ["work/ai-usability/evidence/superadmin_b/0015-1792761664349.png", "work/ai-usability/evidence/superadmin_b/0016-1792761676709.png", "work/ai-usability/evidence/superadmin_b/0017-1792761721672.png"],
+      "notes": "Bibliothek und Integrationsstatus gefunden. Nichtverfügbarkeit sichtbar; E-Mail/OpenAI erklären Einrichtung konkret. Bei technischen Diensten blieb der Anschlussweg unklar. Keine Integrationsänderung oder kostenpflichtige Verarbeitung gestartet."
+    }
+  ],
+  "findings": [
+    {
+      "id": "superadmin_b-F1",
+      "severity": "P2",
+      "title": "Beschäftigtenprofil scheitert ohne Benennung des zu korrigierenden Felds",
+      "observation": "Das Formular kennzeichnet nur Bezeichnung als Pflichtfeld. Mit Bezeichnung, eigener Benutzer-ID, E-Mail und Team meldete Speichern: Eingaben prüfen. Erforderliche Werte fehlen oder sind ungültig. Ein weiterer Versuch mit Beschäftigungsbeginn am 23.10.2026 zeigte dieselbe Meldung. Im oberen und unteren Formularteil war kein konkreter Feldhinweis sichtbar.",
+      "expectation": "Der sichtbare Pflichtumfang genügt für ein minimales Profil oder die Rückmeldung nennt die noch erforderliche Korrektur.",
+      "impact": "Mitarbeitereinbindung blieb unvollständig; keine gezielte Korrektur möglich. Technische Ursache aus der UI nicht bestimmbar.",
+      "route": "http://127.0.0.1:5173/team",
+      "steps": ["Team & Dispo → Team → Beschäftigter anlegen", "Eigene Bezeichnung, E-Mail und Team eintragen, UX superadmin_b Demo als Benutzer-ID auswählen", "Speichern", "Nach allgemeinem Fehler Beschäftigt ab auf 23.10.2026 ergänzen und erneut speichern", "Oberen und unteren Formularteil prüfen, anschließend ungespeicherte Eingaben verwerfen"],
+      "evidence": ["work/ai-usability/evidence/superadmin_b/0010-1792761568362.png", "work/ai-usability/evidence/superadmin_b/0011-1792761599534.png"],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Betroffene Felder mit konkreter Korrekturanweisung markieren und tatsächlichen Pflichtumfang vor dem Speichern ausweisen."
+    },
+    {
+      "id": "superadmin_b-F2",
+      "severity": "P2",
+      "title": "Lange Zugangsliste trennt Finden, Ändern und Anlegen räumlich",
+      "observation": "Knapp 50 hohe Zugangskarten ohne sichtbare lokale Suche oder Filter. Eigener neuer Zugang alphabetisch weit unten. Rolle prüfen öffnete den Änderungsbereich unter der gesamten Liste. Mobil lag auch Zugang gezielt anlegen hinter allen Einträgen; einzelne Rollenschaltflächen brachen ungünstig über drei Zeilen um.",
+      "expectation": "Gerade angelegten Zugang schnell finden und den Zugriff direkt beim ausgewählten Eintrag bearbeiten können.",
+      "impact": "Viel Scrollen und schwächerer Zusammenhang zwischen ausgewähltem Zugang und Änderungsformular; auf schmalem Bildschirm längerer Weg zur Anlage.",
+      "route": "http://127.0.0.1:5173/settings?tab=users",
+      "steps": ["Administration → Zugänge & Rollen", "Eigenen Bürozugang anlegen", "Neuen alphabetischen Eintrag aufsuchen und Rolle prüfen öffnen", "Zum Änderungsbereich unter der Liste scrollen", "Bei 390 × 844 die Liste und den nachfolgenden Anlagebereich ansehen"],
+      "evidence": ["work/ai-usability/evidence/superadmin_b/0003-1792761369584.png", "work/ai-usability/evidence/superadmin_b/0005-1792761425636.png", "work/ai-usability/evidence/superadmin_b/0006-1792761439993.png", "work/ai-usability/evidence/superadmin_b/0018-1792761758221.png", "work/ai-usability/evidence/superadmin_b/0019-1792761766433.png"],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Lokale Suche und sichtbare Anlageaktion ergänzen; ausgewählten Zugang und Änderung zusammenhalten oder direkt zum Änderungsformular führen."
+    },
+    {
+      "id": "superadmin_b-F3",
+      "severity": "P3",
+      "title": "Technische gesperrte Dienste nennen keinen verständlichen Anschlussweg",
+      "observation": "E-Mail und OpenAI haben konkrete Einrichtungslinks und Erläuterungen. Bei Dateispeicher, Dateiprüfung und 3D-Rendering stehen dagegen technische Texte wie Privater Virenprüfer noch einzurichten und Isolierter Dokument-/Blender-Worker noch einzurichten. Im geprüften Bereich kein zugehöriger Einrichtungsweg oder Ansprechpartner. Kontextuelle Hilfesuche nach Dateispeicher ergab 0 Anleitungen; allgemeine Eskalation verweist auf den Superadmin, meine eigene Rolle.",
+      "expectation": "Administrative Nutzer erkennen, welche Einrichtung sie selbst erledigen können und wer die übrigen Voraussetzungen herstellt.",
+      "impact": "Nichtverfügbarkeit verständlich sichtbar, aber nächster organisatorischer Schritt für technische Dienste bleibt offen.",
+      "route": "http://127.0.0.1:5173/settings?tab=integrations",
+      "steps": ["Administration → Integrationen", "Dienststatus und angebotene Einrichtung ansehen", "Hilfe zu dieser Seite öffnen", "Nach Dateispeicher suchen"],
+      "evidence": ["work/ai-usability/evidence/superadmin_b/0016-1792761676709.png", "work/ai-usability/evidence/superadmin_b/0017-1792761721672.png"],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Pro technischem Dienst einen verständlichen nächsten Schritt sowie die erforderliche IT-Zuständigkeit und Informationen nennen."
+    }
+  ],
+  "strengths": [
+    "Administration → Zugänge & Rollen gut auffindbar; Büro sinnvoll vorausgewählt; Passphrasen-Mindestlänge und eigene Bestätigung verständlich.",
+    "Gezielte Bibliotheksfähigkeit einzeln vergeben und durch erneutes Öffnen bestätigt, ohne globale Rolle auszuweiten; Grund, Reauthentifizierung und bewusste Bestätigung begleiten die Änderung.",
+    "Tab-Fokus auf Anlagebutton sichtbar; Enter löste die Anlage erfolgreich aus.",
+    "Beschäftigtenformular erklärt Verbindung zur Anmeldung und sagt ausdrücklich, dass die E-Mail-Eingabe keine Nachricht versendet.",
+    "Ungespeicherte Beschäftigtendaten werden durch eine ausdrückliche Verwerfbestätigung geschützt.",
+    "Herstellerbibliothek erläutert Original, Studiozuordnung und getrennte Planvorlagen-/KI-Nutzung in drei Schritten und bietet Zugriff vergeben an.",
+    "E-Mail-/OpenAI-Einrichtung, Budgetabgrenzung und kostenpflichtiger Verbindungstest verständlich beschrieben."
+  ],
+  "limits": [
+    "Umgebung: Laut Oberfläche sind Dateispeicher, Archiv, E-Mail, OpenAI, Dateiprüfung und 3D-Rendering nicht eingerichtet. Tatsächliche Verarbeitung und KI-Antwortqualität nicht bewertet; keine Schlüssel, Testmails oder kostenpflichtigen Tests verwendet.",
+    "Harness: Nach Navigation teilweise vorherige Ansicht bzw. Ladezustand; durch anschließende Inspektion geklärt. Lange Gesamtsnapshots schnitten Dialoge ab; gezielte Dialoginspektion und Screenshots verwendet.",
+    "Harness: Hintergrundklicks während Modal-/Verwerfbestätigung liefen in Timeouts. Ein Hintergrundsuchfeld konnte vom Werkzeug trotzdem gefüllt werden. Daraus keine Produktfehler oder menschlich erreichbaren Abläufe abgeleitet.",
+    "Harness: Eigene zufällige initiale Passphrase erschien einmal im CLI-Accessibility-Snapshot trotz Screenshotmaskierung. Kein Wert im Bericht wiedergegeben; weitere betroffene Ausgaben vor Anzeige maskiert.",
+    "Umgebung: Native Datumsfelder zeigten mm/dd/yyyy; Browser-Ländereinstellung nicht geprüft. Keine eindeutige Produktursache behauptet.",
+    "Bewertung begrenzt auf sichtbare Black-box-Nutzung; keine Quellen, APIs, Datenbanken oder fremden Berichte gelesen. Hauptviewport 1280 × 900, ergänzende mobile Sichtprüfung 390 × 844.",
+    "74 Browserbefehle einschließlich Inspektionen und Evidenz, etwa 46 Bedienhandlungen. Browser geschlossen."
+  ],
+  "browserActionsApprox": 74
+}

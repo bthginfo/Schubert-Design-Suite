@@ -1,0 +1,147 @@
+{
+  "persona": "hr_b",
+  "role": "Jonas, 30, neuer Mitarbeiter der Personalverwaltung eines deutschen Steinmetzbetriebs; App-Name UX Jonas Frank",
+  "startedAt": "2026-10-23T13:11:15Z",
+  "finishedAt": "2026-10-23T13:16:19Z",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/hr_b/0002-1792761142774.png",
+        "work/ai-usability/evidence/hr_b/0004-1792761194400.png",
+        "work/ai-usability/evidence/hr_b/0008-1792761370182.png"
+      ],
+      "notes": "Eigene synthetische Bürozeit 22.10.2026, 09:00–10:00, ohne Pause und ohne Auftrag gespeichert. Grund/Tätigkeit mit UX hr_b gekennzeichnet. Erfolgsmeldung vorhanden; nach Auswahl des 22.10. ist 01:00:00 sichtbar. Nach Verlassen und erneutem Aufruf weiterhin vorhanden. Auftrag war kein Pflichtfeld; nur Zuordnung offen verfügbar. Der ausführliche Text blieb im vollständigen Nachweis erhalten, war aber nur als JSON lesbar."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/hr_b/0003-1792761179388.png",
+        "work/ai-usability/evidence/hr_b/0005-1792761211562.png"
+      ],
+      "notes": "Bereich Zeiten sachlich prüfen unter Meine Arbeitszeit gefunden. Eigenen Tag über Tag prüfen & abgeben eingereicht. Stand Eingereicht Version 2; Korrektur beantragen danach deaktiviert, mit verständlicher Erklärung zur Rückgabe durch zuständige Person. Eigene Abgabe prüfen deaktiviert und Hinweis Eigene Abgaben genehmigt eine andere Person sichtbar. Keine Freigabe und keine Änderung fremder Zeiten. Prüfung als andere Person oder final genehmigte Sperre nicht ausgeführt."
+    },
+    {
+      "id": "G3",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/hr_b/0006-1792761269890.png",
+        "work/ai-usability/evidence/hr_b/0007-1792761298641.png"
+      ],
+      "notes": "Urlaub & Abwesenheit über Alle Bereiche gefunden; zuvor auch Eigene Anträge im Zeitkonto sichtbar. Leere Übersicht und Antragsformular untersucht, Art Urlaub gewählt. Keine Daten gespeichert; Änderung über Warnung zu ungespeicherten Eingaben verworfen. Helfertext erklärt automatische persönliche Zuordnung, einschließlich Bis-Datum und 0,5 Tage. Arbeitstage verlangen bestätigtes Arbeitsmodell; keine Werte geraten."
+    }
+  ],
+  "findings": [
+    {
+      "id": "hr_b-F1",
+      "severity": "P2",
+      "title": "Tätigkeit und Nachtragsgrund sind im normalen Zeitnachweis nicht wiederzufinden",
+      "observation": "Im Pflichtfeld Tätigkeit / Grund der Nacherfassung stand ein konkreter UX hr_b-Büroarbeitsgrund. Nach dem Speichern zeigten Tagesverlauf, Bestätigte Auftragszuordnung und der geöffnete normale Originalnachweis lediglich Allgemeines. Erst das zweite Aufklappen Vollständigen Nachweis ansehen zeigte den eingegebenen Text unter notes in einem rohen JSON-Block mit technischen Feldern und IDs. Der Text war somit gespeichert, aber fachlich schlecht auffindbar.",
+      "expectation": "Ich wollte die Beschreibung meiner Büroarbeit beim Kontrollieren des Nachtrags wieder lesen können.",
+      "impact": "Zur Nachvollziehbarkeit musste ich zwei Nachweisbereiche öffnen und einen technischen Datenblock lesen. Vor der Abgabe war die konkrete Tätigkeit in der normalen Ansicht nicht kontrollierbar.",
+      "route": "http://127.0.0.1:5173/time?date=2026-10-22",
+      "steps": [
+        "Meine Arbeitszeit → Zeit nachtragen öffnen.",
+        "22.10.2026 09:00–10:00, keine Pause, Zuordnung offen und konkreten UX hr_b-Grund eintragen; speichern.",
+        "Tag auswählen auf 22.10.2026 stellen; Anzeige Allgemeines beobachten.",
+        "Eigene Sitzung → Unveränderte Originalaufzeichnungen ansehen → Vollständigen Nachweis ansehen öffnen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/hr_b/0002-1792761142774.png",
+        "work/ai-usability/evidence/hr_b/0003-1792761179388.png",
+        "work/ai-usability/evidence/hr_b/0004-1792761194400.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Tätigkeit und Nachtragsgrund als beschrifteten Klartext bei Sitzung und Tageskontrolle zeigen; technischen Vollnachweis nur ergänzend anbieten."
+    },
+    {
+      "id": "hr_b-F2",
+      "severity": "P3",
+      "title": "Tag prüfen & abgeben reicht sofort ein und sperrt Korrekturen",
+      "observation": "Ein Klick auf Tag prüfen & abgeben führte ohne weitere Prüfzusammenfassung unmittelbar zu Der Tag wurde zur Prüfung eingereicht und Eingereicht Version 2. Korrektur beantragen wurde gesperrt. Erst danach erklärte die Sitzung, dass eine andere zuständige Person die Abgabe für Änderungen zurückgeben muss. Die Beschriftung enthält zwar abgeben, der Teil prüfen eröffnet aber keinen zusätzlichen Prüfschritt.",
+      "expectation": "Vor dem unsicheren Schritt erwartete ich eine letzte gemeinsame Sicht auf den Zeitraum, meine Tätigkeit und die Folgen der Abgabe.",
+      "impact": "Als neuer Nutzer musste ich die Änderungssperre nach dem Einreichen verstehen; der konkrete Tätigkeitstext war vorher ohnehin nicht in Klartext sichtbar. Die Sperre selbst ist fachlich nachvollziehbar und wurde respektiert.",
+      "route": "http://127.0.0.1:5173/time?date=2026-10-22",
+      "steps": [
+        "Eigene nachgetragene Stunde im Tagesverlauf ansehen.",
+        "Tag prüfen & abgeben einmal klicken.",
+        "Erfolgsmeldung, Status Eingereicht und deaktivierte Korrektur kontrollieren."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/hr_b/0003-1792761179388.png",
+        "work/ai-usability/evidence/hr_b/0005-1792761211562.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Direktaktion klar Tag zur Prüfung einreichen nennen und die Änderungssperre schon davor erklären oder eine kurze Prüfzusammenfassung anbieten."
+    },
+    {
+      "id": "hr_b-F3",
+      "severity": "P3",
+      "title": "Abwesenheitsübersicht zeigt keine Zeitraumspalten",
+      "observation": "Die leere Abwesenheitstabelle hatte die Spalten Nummer, Mitarbeiter, Status und Zuletzt geändert sowie Öffnen. Von, Bis, Art oder beanspruchte Arbeitstage waren als Spalten nicht vorhanden.",
+      "expectation": "In einer Abwesenheitsübersicht möchte ich zuerst erkennen, wer wann fehlt.",
+      "impact": "Die Übersicht priorisiert Vorgangsverwaltung. Ob und wie vorhandene Zeilen ihren Zeitraum zusätzlich darstellen, konnte ich ohne gespeicherte Anträge nicht prüfen; die sichtbare Spaltenstruktur bietet dafür keinen Platz.",
+      "route": "http://127.0.0.1:5173/leave",
+      "steps": [
+        "Meine Arbeitszeit → Alle Bereiche → Urlaub & Abwesenheit öffnen.",
+        "Spalten der leeren Übersicht mit den Feldern des Antragsformulars vergleichen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/hr_b/0006-1792761269890.png",
+        "work/ai-usability/evidence/hr_b/0007-1792761298641.png"
+      ],
+      "confidence": "medium",
+      "category": "product",
+      "recommendation": "Zeitraum und Abwesenheitsart in der Übersicht sichtbar machen."
+    },
+    {
+      "id": "hr_b-F4",
+      "severity": "P3",
+      "title": "Hilfe für Personal beginnt mit fachfremden Fragen und erklärt Zeitabgabe nicht",
+      "observation": "Die kontextbezogene Hilfe zu Urlaub & Abwesenheit funktionierte. Unter Häufige Fragen standen zunächst Inschrift auf dem Stein, Steinformen, Planungsstudio und Lieferplatten. Die Suche nach abgeben lieferte keine Anleitung. Die vorgeschlagene Suche Zeit zeigte Arbeitszeit erfassen mit Timer, Nachtrag und Offline-Übertragung, aber ohne den Ablauf Einreichen, Prüfen und Rückgabe.",
+      "expectation": "Als neuer HR-Nutzer erwartete ich Hilfe zu meinen sichtbaren Arbeitsbereichen und zur Zeitprüfung.",
+      "impact": "Zusätzliches Suchen und irrelevante Inhalte; die konkreten Prozesshinweise auf der Zeitseite waren hilfreicher als die Anleitung.",
+      "route": "http://127.0.0.1:5173/help?from=leave",
+      "steps": [
+        "Urlaub & Abwesenheit → Hilfe zu dieser Seite öffnen.",
+        "Häufige Fragen lesen.",
+        "Anleitungen und Fragen nach abgeben durchsuchen.",
+        "Alternativ Zeit suchen und Arbeitszeit erfassen lesen."
+      ],
+      "evidence": [
+        "Automatisches Aktionsprotokoll hr_b: Hilfeaufruf und Suchbegriffe abgeben und Zeit"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "HR-Themen und den Übergang von Erfassung zu Prüfung vor fachfremden FAQs anbieten."
+    }
+  ],
+  "strengths": [
+    "Einführung bietet einen direkten Sprung zur Zeiterfassung und erklärt Nacherfassung, Pausen und Offline-Verhalten verständlich.",
+    "Die Büroarbeitszeit ließ sich ohne erfundenen Kundenauftrag speichern. Pflichtfelder und Pausenbestätigung waren verständlich.",
+    "Gespeicherter Zeitraum und erfolgreiche Einreichung wurden klar zurückgemeldet; der eigene Eintrag blieb nach Navigation erhalten.",
+    "Eigene Freigabe ist deaktiviert; Sperre nach Abgabe und nötige Rückgabe durch andere Person werden verständlich erklärt.",
+    "Die Hauptnavigation für Personal blieb kompakt; es erschienen keine fachfremden Produktions- oder Rechnungsbereiche darin.",
+    "Escape schloss die geöffnete Auftragsauswahl, Tab führte sichtbar zum Tätigkeitsfeld. Der Fokus war deutlich erkennbar.",
+    "Antragsformular erklärt einschließlich Bis-Datum sowie 0,5 Tage; Abbrechen schützt geänderte Eingaben durch eine verständliche Verwerfen-Warnung."
+  ],
+  "limits": [
+    "Simulierter Black-box-Test, keine menschliche Nutzerforschung, kein Quellcode-/API-/Datenbankzugriff. Rund fünf Minuten Browserzeit und 50 Aktionen; alle drei Ziele erreicht, daher kein künstliches Verlängern auf 10–15 Minuten.",
+    "Der zugewiesene Browser zeigte native Datumsfelder als mm/dd/yyyy beziehungsweise AM/PM, während gerenderte Nachweise deutsche Datumsangaben verwendeten. Browser-Lokalisierung nicht geändert; Produkt- und Umgebungseinfluss hier nicht getrennt bewertbar.",
+    "Zeitkonto meldete Anfangssaldo fehlt und Urlaub verfügbar Nicht hinterlegt. Keine Eröffnung, kein Arbeitsmodell und keine Rechts-/Anspruchswerte ergänzt.",
+    "Keine fremden Abgaben zur Prüfung vorhanden; eigene Abgabe nur bis Eingereicht untersucht. Keine Genehmigung, Ablehnung oder endgültig genehmigte Sperre praktisch getestet.",
+    "Abwesenheitsübersicht war leer. Antragseinstieg untersucht und verworfen; keine echten beanspruchten Arbeitstage/Anspruchsdaten geraten. Keine Aussage über spätere Antragsentscheidung oder ausgefüllte Listenzeilen.",
+    "Nach dem Speichern des gestrigen Nachtrags blieb zunächst der heutige leere Tagesverlauf sichtbar; ich musste 22.10. selbst wählen. Beim Wiederaufruf ebenfalls heute als Standard.",
+    "KI war für diese drei Ziele nicht erforderlich und wurde nicht gestartet. Keine Aussage zu Antwortqualität oder Anbieter-Verfügbarkeit.",
+    "Nur vorgegebener Desktop-Viewport geprüft; keine Aussage zu mobiler Bedienbarkeit."
+  ],
+  "browserActionsApprox": 50
+}

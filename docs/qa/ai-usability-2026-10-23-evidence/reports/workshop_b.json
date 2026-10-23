@@ -1,0 +1,293 @@
+{
+  "persona": "workshop_b",
+  "role": "UX Mira Braun, 29, Steinmetzgesellin; Smartphone in deutscher Werkstatt",
+  "startedAt": "2026-10-23T12:58:06.941Z",
+  "finishedAt": "2026-10-23T13:27:56.346Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0004-1792760311791.png",
+        "work/ai-usability/evidence/workshop_b/0005-1792760322298.png",
+        "work/ai-usability/evidence/workshop_b/0006-1792760338976.png",
+        "work/ai-usability/evidence/workshop_b/0027-1792760551078.png"
+      ],
+      "notes": "Eigenen Einsatz direkt auf Heute gefunden. Auftrag AUF-2026-00016, zwei Fensterbänke jeweils 1200 × 250 × 30 mm, Hinweis Maße vor Ort prüfen und keine Fertigungsfreigabe. Arbeitspaket Kanten bearbeiten: Werkstatt, 2 Sollstunden, Kante poliert, Status Offen. Auftrag Entwurf; Planung Aufmaß offen; Ausführung Noch nicht geplant."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0008-1792760353779.png",
+        "work/ai-usability/evidence/workshop_b/0009-1792760371401.png",
+        "work/ai-usability/evidence/workshop_b/0010-1792760378073.png",
+        "work/ai-usability/evidence/workshop_b/0001-1792761996645.png",
+        "work/ai-usability/evidence/workshop_b/0003-1792762018042.png",
+        "work/ai-usability/evidence/workshop_b/0004-1792762029404.png",
+        "work/ai-usability/evidence/workshop_b/0005-1792762044012.png",
+        "work/ai-usability/evidence/workshop_b/0006-1792762068139.png",
+        "work/ai-usability/evidence/workshop_b/0007-1792762076346.png"
+      ],
+      "notes": "Im Nachtest nach Ergänzung des synthetischen Fixtures erreicht: eigenes Reststück 1250 × 300 × 30 mm und eigene Rohplatte 1300 × 600 × 30 mm im UX Testlager gefunden, je 1 Stück. Reststück für beide Fensterbänke zu klein; Platte nach sichtbaren Maßen grundsätzlich passend. Genau 1 Stück der eigenen Platte für den eigenen Auftrag reserviert; Bestätigung und Status Reserviert, Version 2 sichtbar. Das ursprüngliche leere Lager bleibt als behobenes Fixture-Limit dokumentiert.",
+      "initialStatus": "blocked",
+      "initialNotes": "Lager ungesucht und nach Zurücksetzen mit Alle Status: 0 Einträge. Suche Fensterbank ohne Treffer. Bereichsauswahl bot Lager, Inventur, Lagerorte; keine gesonderte Reststückansicht. Daher keinen passenden Bestand, keine Reservierung und keine Bestandseinheit prüfbar. Ursache der leeren Sicht unbekannt; kein bestätigter Produktdefekt.",
+      "retestId": "G2-retest-20261023"
+    },
+    {
+      "id": "G3",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0013-1792760419244.png",
+        "work/ai-usability/evidence/workshop_b/0015-1792760441760.png",
+        "work/ai-usability/evidence/workshop_b/0017-1792760452704.png",
+        "work/ai-usability/evidence/workshop_b/0020-1792760474418.png",
+        "work/ai-usability/evidence/workshop_b/0024-1792760520833.png",
+        "work/ai-usability/evidence/workshop_b/0025-1792760528158.png",
+        "work/ai-usability/evidence/workshop_b/0026-1792760540332.png",
+        "work/ai-usability/evidence/workshop_b/0028-1792760580054.png"
+      ],
+      "notes": "Eigene Stoppuhr mit Auftrag und Tätigkeit Bearbeitung / Werkstatt gestartet und nach 29 Sekunden per Feierabend beendet. Eigene Rückmeldung auf Meine Zeit sowie interne Testnotiz am Auftrag gespeichert. Uneinheitlichen Zeitstatus durch manuelles Synchronisieren aufgelöst. Bearbeiten-Dialog ohne Eingabe geöffnet und per Escape geschlossen. Über feste mobile Navigation sicher zu Heute zurückgekehrt; Browser geschlossen. Keine Tagesabgabe, Freigabe oder externe Nachricht."
+    }
+  ],
+  "findings": [
+    {
+      "id": "workshop_b-F1",
+      "severity": "P2",
+      "title": "Beendete Stoppuhr und gespeicherte Sitzung zeigen zunächst widersprüchliche Zustände",
+      "observation": "Nach Feierabend zeigte die Stoppuhr Arbeitstag beendet, Bestätigt und 00:00:29; der Tagesverlauf enthielt das Ende 15:00:48. Weiter unten blieb Meine erfassten Sitzungen auf 15:00 – läuft, working Version 1; Korrektur beantragen war deaktiviert und Bis in der bestätigten Auftragszuordnung leer. Das blieb bis zum manuellen Synchronisieren sichtbar. Danach stand Beendet Version 2 mit Endzeit in beiden Ansichten.",
+      "expectation": "Nach bestätigtem Feierabend sollte ich in allen Zeitansichten erkennen können, dass meine eigene Zeit beendet ist.",
+      "impact": "Vor dem Weglegen des Smartphones blieb unklar, welcher Anzeige ich vertrauen kann. Ich brauchte einen zusätzlichen Abgleich. Kein Datenverlust beobachtet.",
+      "route": "http://127.0.0.1:5173/time",
+      "steps": [
+        "Arbeitszeit live mitlaufen lassen öffnen.",
+        "Eigenen Auftrag und Bearbeitung / Werkstatt wählen, Arbeit starten.",
+        "Kurze eigene Rückmeldung speichern, nach 29 Sekunden Feierabend wählen.",
+        "Meine erfassten Sitzungen ansehen: läuft trotz bestätigtem Ende.",
+        "Synchronisieren wählen; Sitzung wechselt zu Beendet Version 2."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0017-1792760452704.png",
+        "work/ai-usability/evidence/workshop_b/0018-1792760462251.png",
+        "work/ai-usability/evidence/workshop_b/0020-1792760474418.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Die gespeicherten Sitzungen und die Auftragszuordnung nach bestätigtem Stopp mit aktualisieren oder ihren noch alten Stand sichtbar kennzeichnen."
+    },
+    {
+      "id": "workshop_b-F2",
+      "severity": "P3",
+      "title": "Maße, Arbeitsanweisung und Ausführungsstand liegen beim mobilen Auftrag weit unten",
+      "observation": "Im ersten 390 × 844-Ausschnitt der Auftragsakte sah ich Titel, Bearbeiten, Auftrag bestätigen, Reiter und den Anfang der Übersicht mit Auftragswährung. Die Maße und der Prüfhinweis standen erst nach Scrollen in Notizen. Arbeitspaket und Aktueller Stand folgten darunter; für die konkrete Kantenanweisung öffnete ich zusätzlich das Arbeitspaket.",
+      "expectation": "Beim Öffnen meines Werkstattauftrags wollte ich Maße, Anweisung und Arbeitsstatus zuerst sehen.",
+      "impact": "Die Kerninformationen waren erreichbar und lesbar, erforderten aber Scrollen zwischen Verwaltungsangaben und einen weiteren Aufruf. Das bremst eine kurze Maßkontrolle am Smartphone.",
+      "route": "http://127.0.0.1:5173/orders/dc4f9478-1b65-411f-b996-a942d1e0c1cb",
+      "steps": [
+        "Eigenen Einsatz auf Heute öffnen.",
+        "Ersten mobilen Ausschnitt ansehen.",
+        "Etwa 620 px nach unten zu den Notizen scrollen.",
+        "Arbeitspaket öffnen und später Aktueller Stand unterhalb der Arbeitspakete ansehen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0004-1792760311791.png",
+        "work/ai-usability/evidence/workshop_b/0005-1792760322298.png",
+        "work/ai-usability/evidence/workshop_b/0027-1792760551078.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Für die Werkstatt eine kompakte Zusammenfassung mit Arbeitsanweisung, Maßen und Ausführungsstand nahe dem Auftragskopf anbieten."
+    },
+    {
+      "id": "workshop_b-F3",
+      "severity": "P3",
+      "title": "Schwebender Assistent verdeckt auf dem Smartphone Teile des Inhalts",
+      "observation": "Der breite Assistent-Button blieb unten rechts über dem Seiteninhalt. In Kommunikation überlagerte er den unteren rechten Teil der Bereichsauswahl und Teile des Hinweises unter Interne Notiz. Auch beim Scrollen in der Auftragsübersicht lag er vor Tabellen-/Karteninhalt.",
+      "expectation": "Ich wollte Formularhinweise und Status ohne überdeckte Textstellen lesen.",
+      "impact": "Zusätzliches Verschieben des Ausschnitts war nötig, um verdeckte Stellen zu lesen. Keine blockierte Speicherung beobachtet.",
+      "route": "http://127.0.0.1:5173/orders/dc4f9478-1b65-411f-b996-a942d1e0c1cb",
+      "steps": [
+        "Kommunikation am eigenen Auftrag öffnen.",
+        "Bereich Interne Notiz und den Hinweis darunter im mobilen Ausschnitt ansehen.",
+        "Auf der Übersicht zu Notizen und Arbeitspaketen scrollen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0022-1792760492796.png",
+        "work/ai-usability/evidence/workshop_b/0005-1792760322298.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Auf kleinen Ansichten Platz für die schwebende Aktion vorsehen oder eine einklappbare kleinere Darstellung anbieten."
+    },
+    {
+      "id": "workshop_b-E1",
+      "severity": "P2",
+      "title": "Im sichtbaren Lager fehlen Bestände für den Materialtest",
+      "observation": "Lager & Naturstein zeigte ohne Suchbegriff und mit Alle Status 0 Einträge sowie Hier sind noch keine Einträge. Suche nach Fensterbank zeigte Keine passenden Einträge. Nach Filter zurücksetzen blieb die Sicht leer; Status filtern bot nur Alle Status.",
+      "expectation": "Für zwei Fensterbänke wollte ich einen Bestand oder ein Reststück mit Einheit und Reservierungsstand lesen.",
+      "impact": "G2 konnte nicht abgeschlossen werden. Weder passende Abmessungen noch verfügbare/reservierte Menge oder Einheit waren überprüfbar.",
+      "route": "http://127.0.0.1:5173/stock",
+      "steps": [
+        "Mehr → Einkauf & Lager öffnen.",
+        "Ungefilterte leere Liste ansehen.",
+        "Fensterbank suchen und Anwenden wählen.",
+        "Filter zurücksetzen; Bereichs- und Statusauswahl prüfen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0008-1792760353779.png",
+        "work/ai-usability/evidence/workshop_b/0009-1792760371401.png",
+        "work/ai-usability/evidence/workshop_b/0010-1792760378073.png"
+      ],
+      "confidence": "high",
+      "category": "environment",
+      "recommendation": "Für einen erneuten Materialtest einen lesbaren passenden synthetischen Bestand samt Einheit und Reservierung vorbereiten; Ursache der leeren Sicht vorher klären.",
+      "resolution": {
+        "status": "resolved-fixture",
+        "retestId": "G2-retest-20261023",
+        "notes": "Der ursprüngliche Beobachtungsbefund bleibt erhalten. Nach Ergänzung des Fixtures waren beide eigenen Bestände sichtbar und G2 wurde erreicht. Keine Appcode-Korrektur aus diesem Nachtest abgeleitet.",
+        "evidence": [
+          "work/ai-usability/evidence/workshop_b/0001-1792761996645.png",
+          "work/ai-usability/evidence/workshop_b/0003-1792762018042.png",
+          "work/ai-usability/evidence/workshop_b/0004-1792762029404.png",
+          "work/ai-usability/evidence/workshop_b/0005-1792762044012.png",
+          "work/ai-usability/evidence/workshop_b/0006-1792762068139.png",
+          "work/ai-usability/evidence/workshop_b/0007-1792762076346.png"
+        ]
+      }
+    },
+    {
+      "id": "workshop_b-F4",
+      "severity": "P3",
+      "title": "Reservierungsdialog nennt die konkrete Einheit der Menge nicht erneut",
+      "observation": "Die Bestandsübersicht nennt Menge 1 und Einheit Stück. Im Dialog Material reservieren stehen Objektname, Version, Status, Auftrag und Reservierte Menge; die konkrete Einheit Stück wird dort nicht wiederholt. Der Hinweis spricht lediglich von der angegebenen Einheit. Ich trug 1 aufgrund der zuvor gelesenen Stückeinheit ein.",
+      "expectation": "Beim Bestätigen einer Reservierungsmenge wollte ich direkt neben dem Eingabefeld sehen, dass ich Stück reserviere.",
+      "impact": "Die Einheit musste ich mir aus der Bestandsakte merken. Die eigene Reservierung gelang; keine falsche Menge beobachtet.",
+      "route": "http://127.0.0.1:5173/stock/7956bff9-484e-403e-add2-7b0acbb091a6",
+      "steps": [
+        "Eigene Naturstein-Testplatte öffnen und Einheit Stück lesen.",
+        "Material reservieren öffnen.",
+        "Reservierte Menge mit Hinweis zur angegebenen Einheit betrachten.",
+        "Eigenen Auftrag wählen und 1 Stück reservieren."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0004-1792762029404.png",
+        "work/ai-usability/evidence/workshop_b/0005-1792762044012.png",
+        "work/ai-usability/evidence/workshop_b/0006-1792762068139.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Die konkrete Bestandseinheit, hier Stück, neben dem Mengenfeld und in der Bestätigung wiederholen.",
+      "retestId": "G2-retest-20261023"
+    }
+  ],
+  "strengths": [
+    "Eigener Einsatz und eigener Auftrag sind auf Heute direkt sichtbar und öffnen dieselbe passende Akte.",
+    "Maße mit mm und Hinweis keine Fertigungsfreigabe sind als Text gut lesbar; der konkrete Kantenhinweis steht im Arbeitspaket.",
+    "Die Stoppuhr bietet verständliche Aktionen und unterscheidet lokal gespeichert, ausstehend und bestätigt.",
+    "Rückmeldung und interne Notiz erhalten klare Speicherbestätigungen und erscheinen anschließend in der jeweiligen Liste.",
+    "Der mobile Bearbeiten-Dialog hat große Felder und dauerhaft sichtbare Schließen-/Speichern-Aktionen. Escape schließt ihn; auch die Einführung ließ sich per Escape pausieren.",
+    "Die feste mobile Navigation ermöglicht die Rückkehr zu Heute aus tief gescrollten Ansichten.",
+    "Nachtest G2: Bestandsart, Menge, Einheit Stück und Maße mit mm sind in der Akte lesbar. Die eigene Reservierung bestätigt den Schritt und ändert den Bestand sichtbar auf Reserviert / Version 2."
+  ],
+  "limits": [
+    "Simulierter Testnutzer, keine echte menschliche Nutzerforschung. Chromium-Viewport 390 × 844, kein physisches Smartphone und keine reale Handschuh-/Touchbedienung.",
+    "49 Browseraktionen einschließlich Start, Ansichtsprüfungen und Schließen; knapp fünf Minuten Browserinteraktion. Früher als der Zeitrichtwert beendet, da G1/G3 erreicht waren und G2 an der leeren sichtbaren Lagerliste endete.",
+    "Leeres Lager kann Testdaten- oder Sichtbarkeitsursachen haben. Keine Quellen, APIs oder Datenbanken untersucht; kein Produktfehler daraus abgeleitet.",
+    "Maße dieses vorbereiteten Auftrags standen in Notizen. Nicht geprüft, wie andere Auftragsarten strukturierte Maße darstellen.",
+    "Keine KI-Funktion gestartet; keine Aussage über Antwortqualität oder Anbieter-Verfügbarkeit. Keine Offlineprüfung.",
+    "Keine Leistungsmenge gebucht, weil keine reale Bearbeitung ausgeführt wurde. Deutsche Dezimaleingabe blieb damit ungeprüft.",
+    "Nur eigener kurzer Zeittest, eigene Rückmeldung und eigene interne Notiz geschrieben. Keine fremden Bestände, Auftragsstatus, Freigaben oder Tagesabgaben geändert.",
+    "Mindestens zehn relevante mobile Screenshots selbst angesehen, darunter Einstieg, Auftrag/Notizen, leeres Lager, Arbeitszeit, widersprüchliche Sitzung, Kommunikation, Dialog und Rückkehr.",
+    "Nachtrag G2: Das ursprüngliche Lager-Fixture-Limit wurde behoben und G2 erreicht; insgesamt 68 Browseraktionen über Ersttest und Nachtest. Die übrigen ursprünglichen Produktbefunde bleiben unverändert."
+  ],
+  "browserActionsApprox": 68,
+  "retests": [
+    {
+      "id": "G2-retest-20261023",
+      "startedAt": "2026-10-23T13:26:36.645Z",
+      "finishedAt": "2026-10-23T13:27:56.346Z",
+      "timeBasis": "Zeitraum der Nachtest-Screenshots; Browserstart lag kurz davor und Schließen kurz danach. Lokal etwa 15:26–15:28 Uhr.",
+      "reason": "Der Parent meldete den ursprünglich fehlenden synthetischen Fixture-Bestand als ergänzt; laut Auftrag blieb der Appcode unverändert.",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browserActionsApprox": 19,
+      "screenshotsViewed": [
+        "work/ai-usability/evidence/workshop_b/0003-1792762018042.png",
+        "work/ai-usability/evidence/workshop_b/0005-1792762044012.png",
+        "work/ai-usability/evidence/workshop_b/0007-1792762076346.png"
+      ],
+      "status": "achieved",
+      "steps": [
+        "Eigene Sitzung neu gestartet; Mehr → Einkauf & Lager.",
+        "Eigenes Reststück geöffnet und Maße/Einheit gelesen.",
+        "Zur Liste zurück und eigene Testplatte geöffnet.",
+        "Material reservieren geöffnet, eigenen Auftrag ausgewählt, Menge 1 eingetragen und eigene Testreservierung bestätigt.",
+        "Bestätigung, Version 2 und Status Reserviert geprüft; Browserkontext geschlossen."
+      ],
+      "materials": [
+        {
+          "name": "UX workshop_b · Naturstein-Testrest",
+          "record": "MAT-2026-00004",
+          "route": "/stock/bac430e9-cdba-46e3-8453-a86d4be761f6",
+          "kind": "Reststück",
+          "location": "UX Testlager ux-20261023-c04396",
+          "quantity": 1,
+          "unit": "Stück",
+          "widthMm": 1250,
+          "lengthMm": 300,
+          "thicknessMm": 30,
+          "observedStatus": "Verfügbar",
+          "assessment": "Für eine Fensterbank 1200 × 250 × 30 mm grundsätzlich genügend Fläche, für beide Fensterbänke als einzelnes Reststück zu klein. Keine Zuschnitt- oder Fertigungsprüfung."
+        },
+        {
+          "name": "UX workshop_b · Naturstein-Testplatte",
+          "record": "MAT-2026-00003",
+          "route": "/stock/7956bff9-484e-403e-add2-7b0acbb091a6",
+          "kind": "Rohplatte",
+          "location": "UX Testlager ux-20261023-c04396",
+          "quantity": 1,
+          "unit": "Stück",
+          "widthMm": 1300,
+          "lengthMm": 600,
+          "thicknessMm": 30,
+          "statusBefore": "Verfügbar",
+          "statusAfter": "Reserviert",
+          "versionAfter": 2,
+          "assessment": "Die sichtbaren Maße bieten grundsätzlich Platz für zwei Fensterbänke 1200 × 250 × 30 mm nebeneinander. Tatsächliche Eignung und Zuschnitt bleiben ungeprüft."
+        }
+      ],
+      "mutation": {
+        "action": "Material reservieren",
+        "stock": "UX workshop_b · Naturstein-Testplatte",
+        "quantity": 1,
+        "unit": "Stück",
+        "order": "UX workshop_b · Fensterbänke Testweg",
+        "confirmation": "Der Arbeitsschritt wurde bestätigt.",
+        "movementsBooked": false,
+        "cutsDocumented": false,
+        "foreignStockChanged": false
+      },
+      "evidence": [
+        "work/ai-usability/evidence/workshop_b/0001-1792761996645.png",
+        "work/ai-usability/evidence/workshop_b/0003-1792762018042.png",
+        "work/ai-usability/evidence/workshop_b/0004-1792762029404.png",
+        "work/ai-usability/evidence/workshop_b/0005-1792762044012.png",
+        "work/ai-usability/evidence/workshop_b/0006-1792762068139.png",
+        "work/ai-usability/evidence/workshop_b/0007-1792762076346.png"
+      ],
+      "limits": [
+        "Nur sichtbare Größen und Stückeinheit verglichen; keine Materialart oder Herstellerqualität belegt.",
+        "Keine Zuschnittbuchung, Bestandsbewegung, Fertigungsfreigabe oder fremde Menge geändert.",
+        "Reservierungsbestätigung und Statuswechsel sichtbar; die Auftragsverknüpfung wurde im Dialog gewählt, danach keine separate Reservierungsliste geprüft."
+      ]
+    }
+  ],
+  "initialBrowserActionsApprox": 49,
+  "initialFinishedAt": "2026-10-23T13:03:00.054Z"
+}

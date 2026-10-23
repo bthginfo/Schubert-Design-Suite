@@ -1,0 +1,199 @@
+{
+  "persona": "techadmin_b",
+  "role": "Dana, 27, neue technische Administratorin eines deutschen Steinmetzbetriebs; sichtbare Rolle Technik",
+  "startedAt": "2026-10-23T13:24:20.332Z",
+  "finishedAt": "2026-10-23T13:32:25.941Z",
+  "timeBasis": "Beginn anhand des ersten gesicherten Screenshots; start lag wenige Sekunden davor. Rund sechs Minuten Browsernutzung, anschließend Bericht.",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "additionalViewports": [
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_b/0002-1792761913159.png",
+        "work/ai-usability/evidence/techadmin_b/0007-1792762032815.png",
+        "work/ai-usability/evidence/techadmin_b/0008-1792762089510.png"
+      ],
+      "notes": "KI-Chat nennt noch einzurichtendes OpenAI-Projekt, Modell und Kostenbudget. Dokumentjobs nennen fehlenden privaten Dateispeicher. Verarbeitung zeigt abgeschlossene Mitteilungsjobs, aber daraus folgt keine geprüfte externe Zustellung. Kein eigener System-/Integrationsüberblick über die angebotene Navigation gefunden; Administration öffnet Verarbeitung, Meine Einstellungen nur den persönlichen Zugang. Hilfesuche Integration und System ohne Treffer."
+    },
+    {
+      "id": "G2",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_b/0003-1792761926900.png",
+        "work/ai-usability/evidence/techadmin_b/0006-1792761999586.png"
+      ],
+      "notes": "Jobakte geöffnet und Übersicht, Verlauf, verknüpfte Vorgänge sowie Dokumente geprüft. Keine technischen Protokolle gefunden; die Übersicht zeigt nur Status. Konkrete Supportfrage im Feedbackformular formuliert und Kontextvorschau gelesen, ohne zu senden. In den gesehenen Diagnose-/Feedbackansichten keine Passwörter, Tokens, Schlüssel, Kundeninhalte oder Dateien angezeigt."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_b/0001-1792761860332.png",
+        "work/ai-usability/evidence/techadmin_b/0008-1792762089510.png",
+        "work/ai-usability/evidence/techadmin_b/0009-1792762145895.png"
+      ],
+      "notes": "Erreichbar: Heute, Verarbeitung mit Jobakten, persönlicher Zugang und Hilfe. Geschäftliche Bereiche und Systemkonfiguration nicht angeboten. FAQ erklärt rollenabhängige Sichtbarkeit und verweist für zusätzliche Rechte auf den Superadmin; Zugang nennt fehlende Kontaktadresse. Keine echte Berechtigungssperrseite über sichtbare Links erreicht. Fachliche Richtigkeit oder technische Durchsetzung der Rechte deshalb nicht verifiziert."
+    }
+  ],
+  "findings": [
+    {
+      "id": "techadmin_b-F1",
+      "severity": "P2",
+      "title": "Jobakte verliert die bereits in der Liste sichtbare Diagnose",
+      "observation": "Die gefilterte Liste zeigt für den Berichtsexport vom 23.10.2026, 15:21 Status Nicht verfügbar, einen Versuch und den Hinweis auf fehlenden privaten Dateispeicher. In der geöffneten Übersicht bleibt die große Inhaltsfläche leer; rechts steht nur Nicht verfügbar. Verlauf meldet Noch kein sichtbarer Verlauf. Verknüpfte Vorgänge verweist auf Angaben in der leeren Übersicht. Dokumente meldet Dokumentübersicht hier nicht geladen und verweist auf einen Dokumentbereich ohne sichtbaren Einstieg. Nach späterem erneuten Öffnen blieb die Übersicht leer. Die hervorgehobene Aktion lautet Erneut ausführen; sie wurde nicht betätigt.",
+      "expectation": "Beim Öffnen eines nicht verfügbaren Jobs den Fehlerhinweis, Zeitpunkt, Versuche, einen technischen Verlauf und einen sicheren nächsten Prüfschritt sehen.",
+      "impact": "Für die Supportfrage muss ich Informationen aus der Liste erinnern oder zurückgehen. Die Jobakte liefert keine zusätzliche Grundlage für die technische Diagnose.",
+      "route": "/jobs/934f6e82-257a-41ac-85ad-301d71eea7f6",
+      "steps": [
+        "Administration öffnen",
+        "Status filtern auf Nicht verfügbar setzen und Anwenden",
+        "Ersten Eingefrorenen Bericht mit Tabellen exportieren vom 23.10.2026, 15:21 öffnen",
+        "Übersicht prüfen",
+        "Verlauf, Verknüpfte Vorgänge und Dokumente öffnen",
+        "Job später erneut über seine bereits beobachtete Adresse öffnen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_b/0002-1792761913159.png",
+        "work/ai-usability/evidence/techadmin_b/0003-1792761926900.png",
+        "work/ai-usability/evidence/techadmin_b/0011-1792762192920.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "In der Jobübersicht mindestens Listenhinweis, Zeitpunkt und Versuche erhalten und einen lesbaren technischen Verlauf beziehungsweise eine konkrete Erklärung seiner Nichtverfügbarkeit anbieten."
+    },
+    {
+      "id": "techadmin_b-F2",
+      "severity": "P2",
+      "title": "Technischer Zugang findet keinen Systemüberblick und keinen Einstieg zu genannten Betriebseinstellungen",
+      "observation": "Sichtbar sind Heute, Administration, Meine Einstellungen und Hilfe & Einführung. Administration führt ausschließlich zur Verarbeitungsliste; Meine Einstellungen zum persönlichen Profil. Im Assistenten verweist die KI-Sperrmeldung auf zuständige Administration und Betriebseinstellungen, bietet aber keinen Link. Auch über Hilfesuche Integration und System war kein passender Inhalt auffindbar. Die FAQ nennt für zusätzliche Rechte den Superadmin; die Kontaktadresse im eigenen Zugang ist nicht hinterlegt.",
+      "expectation": "Als neue technische Administratorin die Konfigurationszustände von KI, Dokumenten und Betrieb lesend zusammenfinden oder klar erfahren, wer mir dafür welchen Zugang geben kann.",
+      "impact": "G1 bleibt teilweise offen. Ich kann nicht unterscheiden, ob ein Überblick fehlt, mein Zugang dafür nicht vorgesehen ist oder ein anderer sichtbarer Einstieg existiert.",
+      "route": "/jobs; /account; /help?from=jobs",
+      "steps": [
+        "Navigation nach der Einführung prüfen",
+        "Administration und Meine Einstellungen öffnen",
+        "Assistent → Chat öffnen und Sperrhinweis lesen",
+        "Hilfebereich nach Integration und System durchsuchen",
+        "FAQ Warum sehe ich einen Bereich nicht? lesen und Ansprechperson im persönlichen Zugang prüfen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_b/0003-1792761926900.png",
+        "work/ai-usability/evidence/techadmin_b/0007-1792762032815.png",
+        "work/ai-usability/evidence/techadmin_b/0008-1792762089510.png",
+        "work/ai-usability/evidence/techadmin_b/0009-1792762145895.png"
+      ],
+      "confidence": "medium",
+      "category": "product",
+      "recommendation": "Einen lesenden Statusüberblick für den vorgesehenen technischen Zugang anbieten oder die Grenze mit eindeutiger Rollenbezeichnung und erreichbarem Kontakt erklären. Die tatsächlich fehlende Kontaktadresse ist ein separater Einrichtungszustand."
+    },
+    {
+      "id": "techadmin_b-F3",
+      "severity": "P3",
+      "title": "Hilfe für die Verarbeitung beschreibt stattdessen die Tagesübersicht",
+      "observation": "Der Begleiter erkennt die Seite als Verarbeitung. Unter Hilfe für diese Seite und Diese Seite verstehen steht dennoch Ihre Tagesübersicht bündelt anstehende Aufgaben, Termine und Aufträge, gefolgt von allgemeinen Navigations- und Speicherhinweisen. Die gesonderte Seitenhilfe nennt Erneut ausführen, erklärt aber keine Jobstatus oder Diagnose.",
+      "expectation": "In dieser Hilfe die Bedeutung von Nicht verfügbar gegenüber Fehlgeschlagen sowie einen passenden Diagnoseweg erklärt bekommen.",
+      "impact": "Die neue Administratorin erhält an der Stelle ihrer Unsicherheit keine Erklärung zum Arbeitszustand und muss selbst weitere Hilfe suchen.",
+      "route": "/jobs/934f6e82-257a-41ac-85ad-301d71eea7f6",
+      "steps": [
+        "Jobakte öffnen",
+        "Assistent öffnen",
+        "Hilfe für diese Seite lesen",
+        "Hilfe zu dieser Seite im Seitenkopf öffnen und mit dem Begleiter vergleichen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_b/0011-1792762192920.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Kurzhilfe mit Begriffen und sicheren Diagnosewegen für die Verarbeitung hinterlegen."
+    },
+    {
+      "id": "techadmin_b-E1",
+      "severity": "P2",
+      "title": "KI-Chat ist in dieser Umgebung noch nicht eingerichtet",
+      "observation": "Chat meldet Noch nicht verfügbar und OpenAI-Projekt, Modell und Kostenbudget noch einzurichten. Nachrichteneingabe, Sprechen und Senden sind deaktiviert. Unter Unterlagen & Modell erscheinen dennoch ein Standardmodell und Kostenrahmen.",
+      "expectation": "Vor einer KI-Anfrage den verfügbaren Betriebszustand verstehen.",
+      "impact": "Es konnte keine KI-Antwort oder Dokumentverarbeitung durch KI bewertet werden. Die Sperre und ihr Einrichtungsgrund waren lesbar.",
+      "route": "/jobs/934f6e82-257a-41ac-85ad-301d71eea7f6",
+      "steps": [
+        "Assistent öffnen",
+        "Chat wählen",
+        "Unterlagen & Modell sowie Kostenrahmen ansehen öffnen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_b/0007-1792762032815.png"
+      ],
+      "confidence": "high",
+      "category": "environment"
+    },
+    {
+      "id": "techadmin_b-E2",
+      "severity": "P2",
+      "title": "Dokumentjobs nennen fehlenden privaten Dateispeicher",
+      "observation": "Nach Statusfilter Nicht verfügbar zeigt die Liste 14 Einträge, darunter Berichtsexporte und Angebots-PDFs, mit Privater Dateispeicher ist noch nicht eingerichtet. Die übrigen Funktionen bleiben verfügbar.",
+      "expectation": "Die Ursache des fehlenden Dokumentergebnisses ohne technischen Rohfehler erkennen.",
+      "impact": "Der Einrichtungsgrund ist verständlich. Die tatsächliche Dokumenterzeugung oder ein erfolgreicher Export konnte hier nicht geprüft werden.",
+      "route": "/jobs?status=unavailable",
+      "steps": [
+        "Status filtern öffnen",
+        "Nicht verfügbar wählen",
+        "Anwenden"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/techadmin_b/0002-1792761913159.png"
+      ],
+      "confidence": "high",
+      "category": "environment"
+    }
+  ],
+  "strengths": [
+    "Die Einführung ist kurz, erklärt die Rollenabhängigkeit der Navigation und sagt ausdrücklich, dass die Tour keine Geschäftsdaten verändert.",
+    "Statusfilter funktionieren; Nicht verfügbar und Fehlgeschlagen werden getrennt angeboten. Bei Fehlgeschlagen erschienen 0 Einträge mit verständlichem Filter-zurücksetzen-Weg.",
+    "Das Feedbackformular war direkt an der Jobakte erreichbar, erlaubt einen ungesendeten Entwurf und zeigt den Seitenbezug.",
+    "Feedback erklärt freiwillige letzte Bedienschritte, 15-Minuten-/40-Schritte-Grenze, keine Feldinhalte/Dateien/Bildschirmaufnahmen sowie immer gesendete Seite und Namen. Die Kontextvorschau enthielt allgemeine Aktionen, Browserdaten, Seitenpfad und App-Version, keine gesehenen Geheimnisse.",
+    "KI-Nichtverfügbarkeit ist erklärt; Änderungen würden laut Hinweis vor Anwendung als Vorschläge gezeigt und fachliche Angaben sind zu prüfen.",
+    "Desktop: gut lesbare Statusliste, viel Weißraum und klar sichtbare Filter. Mobil: Karten statt breiter Tabelle, Mehr öffnet die Navigation; Escape schließt sie und gibt den Fokus sichtbar zurück."
+  ],
+  "limits": [
+    "Simulierter Black-box-Test einer Person; kein Code-, Sicherheits- oder Berechtigungsaudit.",
+    "Keine Quelltexte, APIs, Datenbanken, privaten Manifestdateien oder fremden Berichte gelesen.",
+    "Keine Schlüssel eingetragen, Verbindungen/Rollen/Geschäftsdaten verändert, Jobs neu gestartet oder Nachrichten gesendet.",
+    "Kein Integrationsüberblick auffindbar bedeutet nicht, dass er für andere Rollen nicht existiert. Korrektheit versteckter oder serverseitiger Rechte nicht geprüft.",
+    "Fehlgeschlagen hatte in dieser Sitzung 0 Einträge. Keine Aussagen zur Darstellung tatsächlicher Fehlschläge.",
+    "Abgeschlossene Mitteilungsjobs beweisen hier keine externe Zustellung; diese wurde nicht getestet.",
+    "KI und privater Dateispeicher sind sichtbar nicht eingerichtet. Keine Qualität von KI-Ausgaben oder erfolgreichen Exporten behauptet.",
+    "Kontaktadresse laut persönlichem Zugang nicht hinterlegt; Supportentwurf wurde nicht gesendet, Empfang und Bearbeitung nicht geprüft.",
+    "Ein getByLabel-Füllversuch auf Ihr Kommentar lief in einen Harness-Locator-Timeout. Die anschließende Sichtprüfung zeigte das unveränderte Formular; Füllen über die beobachtete Rolle textbox war erfolgreich. Das wird nicht als Appfehler gezählt.",
+    "Magenta-Flächen im Profilscreenshot sind die vom Browserleitfaden angekündigte Passwortmaskierung.",
+    "Der Browser wurde nach etwa sechs Minuten und 60 Befehlen geschlossen; der Aktionsumfang liegt im Protokollrahmen, die Richtdauer wurde unterschritten."
+  ],
+  "supportDraft": {
+    "sent": false,
+    "text": "UX techadmin_b – Supportfrage: In Verarbeitung steht beim Berichtsexport vom 23.10.2026, 15:21 der Status Nicht verfügbar. Die Liste nennt fehlenden privaten Dateispeicher. In der Jobakte sehe ich dazu keinen Fehlerhinweis oder Verlauf. Welche Ansprechperson prüft die Einrichtung, und wo kann ich den aktuellen Speicherstatus sicher nachlesen? Ich habe den Job nicht erneut ausgeführt.",
+    "evidence": "work/ai-usability/evidence/techadmin_b/0006-1792761999586.png"
+  },
+  "keyboard": "Tab in der Einführung versucht; Weiter gezielt mit Enter ausgelöst und Schrittwechsel geprüft. Escape schloss Feedbackformular und mobile Navigation.",
+  "screenshotsReviewed": [
+    "work/ai-usability/evidence/techadmin_b/0001-1792761860332.png",
+    "work/ai-usability/evidence/techadmin_b/0002-1792761913159.png",
+    "work/ai-usability/evidence/techadmin_b/0003-1792761926900.png",
+    "work/ai-usability/evidence/techadmin_b/0006-1792761999586.png",
+    "work/ai-usability/evidence/techadmin_b/0007-1792762032815.png",
+    "work/ai-usability/evidence/techadmin_b/0008-1792762089510.png",
+    "work/ai-usability/evidence/techadmin_b/0009-1792762145895.png",
+    "work/ai-usability/evidence/techadmin_b/0010-1792762159035.png",
+    "work/ai-usability/evidence/techadmin_b/0011-1792762192920.png"
+  ],
+  "browserActionsApprox": 60,
+  "browserClosed": true
+}

@@ -1,0 +1,150 @@
+{
+  "persona": "employee_b",
+  "role": "Jan, 35, neuer Montagehelfer im deutschen Steinmetzbetrieb; Smartphone und instabiles Netz",
+  "startedAt": "2026-10-23T12:47:05.134Z",
+  "finishedAt": "2026-10-23T12:56:45.734451Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/employee_b/0003-1792759625134.png",
+        "work/ai-usability/evidence/employee_b/0006-1792759654750.png",
+        "work/ai-usability/evidence/employee_b/0008-1792759675644.png"
+      ],
+      "notes": "Unter „Meine Einsätze heute“ eigenen Einsatz gefunden, Auftragsakte geöffnet und passendes Arbeitspaket gelesen. Arbeitsanweisung unter „Abschlusskriterium“: Maße vor Ausführung prüfen, Fensterbank 1200 × 250 × 30 mm, Kante poliert; keine Ausführung/Freigabe."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/employee_b/0011-1792759756382.png",
+        "work/ai-usability/evidence/employee_b/0017-1792759833546.png",
+        "work/ai-usability/evidence/employee_b/0018-1792759841444.png",
+        "work/ai-usability/evidence/employee_b/0023-1792759954420.png",
+        "work/ai-usability/evidence/employee_b/0026-1792760018113.png"
+      ],
+      "notes": "22.10.2026, 08:00–11:30, Pause 09:30–09:45, eigener Auftrag: gespeichert und nach Seitenwechsel erneut gesehen. Tagesverlauf zeigt 01:30:00 + 00:15:00 Pause + 01:45:00 Arbeit. Daraus ergeben sich 3:15 Stunden bzw. 3,25 h netto; dieser Nettowert wurde selbst aus den sichtbaren Blöcken berechnet. Keine Abgabe ausgelöst."
+    },
+    {
+      "id": "G3",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/employee_b/0012-1792759774623.png",
+        "work/ai-usability/evidence/employee_b/0014-1792759784371.png",
+        "work/ai-usability/evidence/employee_b/0016-1792759817571.png",
+        "work/ai-usability/evidence/employee_b/0017-1792759833546.png"
+      ],
+      "notes": "Eigene Sitzung im ausgefüllten, noch nicht gespeicherten Nachtrag kurz offline geschaltet. Ein Speicherversuch, verständlicher Serverfehler, vollständige Formularwerte erhalten. Danach wieder online und einmal erfolgreich gespeichert. Kein Timer gestartet. Hürde: Fehler außerhalb des sichtbaren Mobilabschnitts."
+    },
+    {
+      "id": "G4",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/employee_b/0019-1792759864769.png",
+        "work/ai-usability/evidence/employee_b/0020-1792759892124.png",
+        "work/ai-usability/evidence/employee_b/0023-1792759954420.png",
+        "work/ai-usability/evidence/employee_b/0026-1792760018113.png"
+      ],
+      "notes": "Eigene Zeiten unter „Tagesverlauf“ und „Meine erfassten Sitzungen“ gefunden. Korrekturantrag geöffnet, Prüfen durch andere Person verstanden, probeweise Änderung verworfen. Weg „Tag prüfen & abgeben“ gefunden, wegen Testgrenze keine Abgabe ausgelöst. „Antrag einreichen“ ebenfalls nicht betätigt; Bearbeitungs-/Freigabeergebnis nicht geprüft."
+    }
+  ],
+  "findings": [
+    {
+      "id": "employee_b-F1",
+      "severity": "P2",
+      "title": "Fehler beim Speichern steht außerhalb des sichtbaren Mobilformulars",
+      "observation": "Im ausgefüllten Nachtrag klickte ich offline genau einmal auf „Zeitraum speichern“. Nach „Wird gespeichert …“ war derselbe Knopf wieder aktiv. Der aktuelle Handy-Ausschnitt zeigte weiterhin die Pause, den Auftrag und meine Notiz, aber keine Fehlermeldung. Der Dialog enthielt oberhalb dieses Ausschnitts den Alert „Der Server ist nicht erreichbar. Ihre Eingaben bleiben erhalten. Bitte prüfen Sie die Verbindung.“ Erst das gezielte Zurückscrollen zum Alert machte ihn sichtbar. Alle Eingaben blieben erhalten.",
+      "expectation": "Nach dem Speicherversuch möchte ich am Knopf oder im sichtbaren Formular erkennen, ob mein Nachtrag gespeichert wurde und was ich als Nächstes tun soll.",
+      "impact": "Unten im langen Formular ist unklar, warum Speichern nichts abgeschlossen hat. Das kann unnötige Wiederholungen auslösen. In diesem Test wurde offline nicht erneut blind gespeichert; nach Wiederverbindung gelang ein einzelner weiterer Versuch.",
+      "route": "/time",
+      "steps": [
+        "Eigenen Nachtrag mit einer Pause vollständig ausfüllen.",
+        "Im unteren Formularabschnitt kurz offline schalten.",
+        "Einmal „Zeitraum speichern“ anklicken und nach Abschluss der Rückmeldung prüfen.",
+        "Fehlermeldung oberhalb des sichtbaren Ausschnitts aufsuchen.",
+        "Wieder online schalten und einmal erfolgreich speichern."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/employee_b/0011-1792759756382.png",
+        "work/ai-usability/evidence/employee_b/0014-1792759784371.png",
+        "work/ai-usability/evidence/employee_b/0016-1792759817571.png",
+        "work/ai-usability/evidence/employee_b/0017-1792759833546.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Fehler im sichtbaren Dialogbereich anzeigen oder zum Alert fokussieren; beim Nachtragen vorab deutlich sagen, dass hierfür eine Verbindung nötig ist."
+    },
+    {
+      "id": "employee_b-F2",
+      "severity": "P2",
+      "title": "Eine einfache Endzeitkorrektur verlangt Abgleich mehrerer Zeitblöcke",
+      "observation": "„Korrektur beantragen“ öffnet ein Formular mit Gesamtzeit, Pause und zwei zusätzlichen Arbeitsblöcken für denselben Auftrag. Ich änderte probeweise und ohne Einreichen das oberste „Bis“ von 11:30 auf 11:35. Das „Bis“ bei „Arbeit 2“ blieb bei 11:30. Ein erklärender Text verlangt, dass „Arbeitsintervalle“ zur „Sitzungszeit“ passen. Über die Hilfe gesucht nach „Korrektur“ gab es „Keine passende Anleitung gefunden“. Den Versuch habe ich abgebrochen; der Originalnachtrag blieb bis 11:30 bestehen.",
+      "expectation": "Wenn ich bei einem einzigen Auftrag nur das Arbeitsende berichtigen möchte, sollte ich erkennen, ob eine Endzeitänderung genügt oder welche zweite Angabe ich zusätzlich anpassen muss.",
+      "impact": "Als neuer Montagehelfer muss ich die technische Aufteilung in Sitzung, Pause und Arbeitsintervalle verstehen und mehrere gleich beschriftete „Bis“-Felder abstimmen. Ob Einreichen diesen Zustand ablehnen würde, wurde nicht getestet.",
+      "route": "/time?date=2026-10-22",
+      "steps": [
+        "Nachtrag für gestern im Tagesverlauf auswählen.",
+        "Unter „Meine erfassten Sitzungen“ „Korrektur beantragen“ öffnen.",
+        "Oberstes „Bis“ unverbindlich auf 11:35 ändern.",
+        "Zu „Arbeit 2“ scrollen und dessen unverändertes Ende 11:30 sehen.",
+        "Mit „Abbrechen“ schließen; keinen Antrag einreichen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/employee_b/0019-1792759864769.png",
+        "work/ai-usability/evidence/employee_b/0020-1792759892124.png",
+        "work/ai-usability/evidence/employee_b/0022-1792759914662.png",
+        "work/ai-usability/evidence/employee_b/0024-1792759987174.png",
+        "work/ai-usability/evidence/employee_b/0025-1792759995180.png",
+        "work/ai-usability/evidence/employee_b/0026-1792760018113.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Für einfache Korrekturen an einem Auftrag eine geführte Änderung anbieten; nötige weitere Zeitänderungen unmittelbar und mit Alltagsbegriffen erklären."
+    },
+    {
+      "id": "employee_b-F3",
+      "severity": "P3",
+      "title": "Nach dem Speichern von gestern bleibt der Tagesverlauf auf heute",
+      "observation": "Nach erfolgreichem Speichern des Nachtrags für den 22.10.2026 zeigte die Seite „Die nacherfasste Zeit wurde gespeichert.“, während „Tag auswählen“ unverändert auf 23.10.2026 und der Tagesverlauf auf „Für diesen Tag noch keine Zeit“ stand. Ich stellte den Filter selbst auf den 22.10.2026 um; dann erschienen beide Arbeitsblöcke und die Pause korrekt.",
+      "expectation": "Nach einem Nachtrag möchte ich die gerade gespeicherten Zeiten direkt überprüfen können.",
+      "impact": "Ein zusätzlicher Datumswechsel ist nötig; die leere Tagesansicht passt zunächst nicht zur Erfolgsmeldung. Es trat kein Datenverlust auf.",
+      "route": "/time",
+      "steps": [
+        "Bei heute ausgewähltem Tagesverlauf einen Zeitraum für gestern speichern.",
+        "Erfolgsmeldung und weiter auf heute stehenden Tagesfilter prüfen.",
+        "Tag auswählen auf gestern ändern und die gespeicherten Zeiten sehen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/employee_b/0017-1792759833546.png",
+        "work/ai-usability/evidence/employee_b/0018-1792759841444.png",
+        "work/ai-usability/evidence/employee_b/0023-1792759954420.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Nach dem Speichern zum erfassten Tag wechseln oder einen sichtbaren Link „Nachtrag vom 22.10.2026 prüfen“ anbieten."
+    }
+  ],
+  "strengths": [
+    "„Heute“ zeigt den eigenen heutigen Einsatz mit Uhrzeit, Auftrag und Adresse; das entspricht meiner Erwartung.",
+    "„Zeit nachtragen“ ist auf dem Smartphone als klare Hauptaktion sichtbar. Das Formular fragt tatsächliche Pausen mit verständlichem Hinweis und Bestätigung ab.",
+    "Der Offlinefehler formuliert verständlich, dass Eingaben erhalten bleiben. Tatsächlich blieben Beginn, Ende, Pause, Auftrag und Notiz erhalten.",
+    "Nach Wiederverbindung war der korrekt gespeicherte Zeitraum auch nach einem Seitenwechsel unverändert sichtbar.",
+    "Die Tastaturbedienung des Auftragsfelds mit Pfeiltaste und Enter funktionierte; Escape schloss den unveränderten Korrekturdialog.",
+    "Der Korrekturüberblick sagt ausdrücklich, dass Originalaufzeichnungen bleiben und eine andere Person die begründete Änderung prüft."
+  ],
+  "limits": [
+    "Simulierter einzelner Black-box-Nutzertest, keine Aussage über eine echte Nutzerstichprobe und kein SUS-Wert.",
+    "Vor Testbeginn war der Browser-Broker kurz nicht erreichbar. Nach Wiederherstellung erschien beim Login „Too many requests. Please try again later.“. Parent bestätigte gemeinsame lokale Login-Drossel; ein späterer sichtbarer Anmeldeversuch gelang. Dieser Zugangsausfall ist ein Umgebungslimit, kein aus den Aufgaben abgeleiteter Produktdefekt. Die englische Meldung ohne Wartezeit ist eine zusätzliche sichtbare Sprach-/Orientierungsreibung.",
+    "Native Datum-/Zeitfelder zeigten im Testbrowser 10/22/2026 und AM, während der Tagesverlauf 22.10.2026 verwendet. Ob dies auf der Browserlokalisierung oder der App beruht, wurde nicht geprüft; keine isolierte Produktursache behauptet. Der Treiber befüllte native Felder technisch im ISO-Format; fachlich wurden deutsche Datums-/Zeitwerte verwendet.",
+    "Kein echter mobiler Touchscreen und keine Bildschirmtastatur getestet; Viewport 390 × 844 in der bereitgestellten Browsersitzung.",
+    "Offline wurde nur der ausgefüllte Zeitnachtrag kurz getestet, keine dauerhafte Offline-Nutzung, Browserneustarts oder Timerübertragung.",
+    "Keine KI-Funktion benötigt oder ausgelöst; keine KI-Antwortqualität beurteilt.",
+    "Keine Abgaben, Korrekturanträge, Fertigungsfreigaben oder fremden Datenänderungen ausgelöst. Gespeichert wurde ausschließlich die eigene synthetische Zeit zum zugewiesenen eigenen Auftrag."
+  ],
+  "browserActionsApprox": 55
+}

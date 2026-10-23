@@ -1,0 +1,82 @@
+[
+  {
+    "finding": "planner_a-F1",
+    "path": "selected/planner_a-F1-0010-1792759724122.png"
+  },
+  {
+    "finding": "planner_a-F1",
+    "path": "selected/planner_a-F1-0011-1792759746492.png"
+  },
+  {
+    "finding": "office_b-F1",
+    "path": "selected/office_b-F1-0001-1792759601008.png"
+  },
+  {
+    "finding": "office_b-F1",
+    "path": "selected/office_b-F1-0007-1792759721924.png"
+  },
+  {
+    "finding": "office_b-F2",
+    "path": "selected/office_b-F2-0008-1792759739377.png"
+  },
+  {
+    "finding": "office_b-F2",
+    "path": "selected/office_b-F2-0009-1792759751742.png"
+  },
+  {
+    "finding": "dispatcher_b-F1",
+    "path": "selected/dispatcher_b-F1-0015-1792760746434.png"
+  },
+  {
+    "finding": "dispatcher_b-F1",
+    "path": "selected/dispatcher_b-F1-0006-1792760430091.png"
+  },
+  {
+    "finding": "dispatcher_b-F2",
+    "path": "selected/dispatcher_b-F2-0008-1792760490038.png"
+  },
+  {
+    "finding": "dispatcher_b-F2",
+    "path": "selected/dispatcher_b-F2-0010-1792760629316.png"
+  },
+  {
+    "finding": "employee_b-F1",
+    "path": "selected/employee_b-F1-0011-1792759756382.png"
+  },
+  {
+    "finding": "employee_b-F1",
+    "path": "selected/employee_b-F1-0014-1792759784371.png"
+  },
+  {
+    "finding": "workshop_b-F1",
+    "path": "selected/workshop_b-F1-0017-1792760452704.png"
+  },
+  {
+    "finding": "workshop_b-F1",
+    "path": "selected/workshop_b-F1-0018-1792760462251.png"
+  },
+  {
+    "finding": "superadmin_b-F1",
+    "path": "selected/superadmin_b-F1-0010-1792761568362.png"
+  },
+  {
+    "finding": "superadmin_b-F1",
+    "path": "selected/superadmin_b-F1-0011-1792761599534.png"
+  },
+  {
+    "finding": "techadmin_a-F1",
+    "path": "selected/techadmin_a-F1-0005-1792761963146.png"
+  },
+  {
+    "finding": "techadmin_a-F1",
+    "path": "selected/techadmin_a-F1-0006-1792761979135.png"
+  },
+  {
+    "finding": "techadmin_a-F3",
+    "path": "selected/techadmin_a-F3-0003-1792761892046.png"
+  },
+  {
+    "finding": "techadmin_a-F3",
+    "path": "selected/techadmin_a-F3-0012-1792762142617.png"
+  }
+]

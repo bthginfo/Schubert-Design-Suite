@@ -1,0 +1,155 @@
+{
+  "persona": "employee_a",
+  "role": "UX Tobias Wolf (Tobias, 43), erfahrener deutscher Steinmetz-Monteur; Mitarbeiter am Smartphone",
+  "startedAt": "2026-10-23T12:47:11.794Z",
+  "finishedAt": "2026-10-23T12:57:55.319Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/employee_a/0029-1792759987152.png",
+        "work/ai-usability/evidence/employee_a/0005-1792759664703.png",
+        "work/ai-usability/evidence/employee_a/0006-1792759676592.png"
+      ],
+      "notes": "Heute: zugeteilter Einsatz 23.10.2026 um 07:00, AUF-2026-00013 · UX employee_a · Montage Testweg, Testweg 12, 10115 Berlin. Im Auftrag: zwei Fensterbänke jeweils 1200 × 250 × 30 mm; vor Ort Maße prüfen, keine Fertigungsfreigabe. Im Arbeitspaket: Kante poliert; Maße vor Ausführung prüfen; keine Ausführung oder Freigabe. Vor realem Arbeitsbeginn würde ich die bestätigten Istmaße und Materialangabe mit der Leitung klären. Kein reales Aufmaß behauptet."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/employee_a/0012-1792759762739.png",
+        "work/ai-usability/evidence/employee_a/0014-1792759778640.png",
+        "work/ai-usability/evidence/employee_a/0027-1792759931358.png",
+        "work/ai-usability/evidence/employee_a/0028-1792759956620.png"
+      ],
+      "notes": "Eigene Stoppuhr mit expliziter Zuordnung AUF-2026-00013 und Tätigkeit Aufmaß gestartet, pausiert, weitergeführt und mit Feierabend beendet. Sitzung 23.10.2026, 14:49:17–14:51:36 Europe/Berlin; App zeigt 00:02:01 Arbeit und 00:00:17 Pause. Danach Bestätigt, Beendet Version 4 und 0 ausstehende Übertragungen. Nach Heute → Zeit weiterhin vorhanden. Zustandsprüfung ergab widersprüchliche Zuordnung im Tagesverlauf und fehlenden Laufhinweis in den besuchten Akten-/Dokumentansichten. Kein Tag abgegeben und keine fremde Zeit geändert."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/employee_a/0017-1792759810296.png",
+        "work/ai-usability/evidence/employee_a/0020-1792759846274.png",
+        "work/ai-usability/evidence/employee_a/0021-1792759876953.png",
+        "work/ai-usability/evidence/employee_a/0030-1792760026220.png"
+      ],
+      "notes": "Eigene sachliche Testnotiz über Was wurde erledigt? gespeichert; nach Verlassen und erneuter Rückkehr unter Meine letzten Rückmeldungen mit richtigem Auftrag sichtbar. Rücknavigation zwischen Zeit, Arbeitspaket, Auftrag und Dokumenten gelang. Passende Unterlagen konnten nicht geöffnet werden: Arbeitspaket zeigte Dokumentübersicht hier nicht geladen, der Dokumentbereich 0 Einträge, der Auftrag Noch keine Dokumente verknüpft. Das Fehlen von Testunterlagen ist ein Daten-/Umgebungslimit; keine Behauptung, vorhandene Dokumente seien verloren oder unberechtigt gesperrt."
+    }
+  ],
+  "findings": [
+    {
+      "id": "employee_a-F1",
+      "severity": "P2",
+      "title": "Tagesverlauf meldet offene Zuordnung trotz bestätigtem Auftrag",
+      "observation": "Vor dem Start wurden AUF-2026-00013 und Aufmaß gewählt. Direkt nach Start/Pause zeigte der Tagesverlauf den Auftrag. Nach einem Wechsel zu Arbeitspaket/Dokumenten und zurück zeigten beide Arbeitsabschnitte Arbeit · Zuordnung offen. Gleichzeitig führte Bestätigte Auftragszuordnung denselben Auftrag und Aufmaß auf. Nach Feierabend, Bestätigt, Synchronisieren und erneutem Heute → Zeit blieb dieser Widerspruch bestehen.",
+      "expectation": "Nach der expliziten Auswahl und Bestätigung möchte ich im Tagesverlauf eindeutig sehen, welchem Auftrag meine gespeicherten Arbeitsabschnitte gehören.",
+      "impact": "Vor dem Prüfen des Tages ist unklar, ob ich meine Zeiten noch zuordnen oder korrigieren muss. Das verursacht unnötige Rückfragen und mindert das Vertrauen in die Erfassung; ein tatsächlicher Datenverlust wurde nicht festgestellt.",
+      "route": "http://127.0.0.1:5173/time",
+      "steps": [
+        "Heute → eigenen Einsatz öffnen → eigenes Arbeitspaket → Zeit.",
+        "Arbeitszeit live mitlaufen lassen öffnen; Auftrag AUF-2026-00013 und Tätigkeit Aufmaß auswählen.",
+        "Arbeit starten → Pause → Weiterarbeiten.",
+        "Über Browser zurück das Arbeitspaket und dessen Dokumente öffnen; Dokumente durchsuchen; später zum Auftrag und über Zeit zurückkehren.",
+        "Feierabend; nach Übertragung Tagesverlauf mit Bestätigte Auftragszuordnung vergleichen.",
+        "Synchronisieren betätigen; nach Heute → Zeit erneut prüfen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/employee_a/0012-1792759762739.png",
+        "work/ai-usability/evidence/employee_a/0027-1792759931358.png",
+        "work/ai-usability/evidence/employee_a/0028-1792759956620.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Tagesverlauf und bestätigte Auftragszuordnung einheitlich darstellen oder die fachliche Bedeutung von Zuordnung offen an dieser Stelle erklären."
+    },
+    {
+      "id": "employee_a-F2",
+      "severity": "P2",
+      "title": "Laufende Zeit ist in den besuchten Arbeits- und Dokumentansichten unsichtbar",
+      "observation": "Nach Weiterarbeiten lief die Uhr weiter. In der Arbeitspaketakte, dem Dokumentbereich und der Auftragsakte war kein sichtbarer Laufhinweis vorhanden; die feste mobile Navigation zeigte lediglich Zeit ohne Laufzustand. Erst nach Rückkehr zu Zeit wurde Arbeit läuft mit bereits 00:01:52 sichtbar.",
+      "expectation": "Beim Nachsehen der Montageunterlagen möchte ich erkennen können, dass meine Arbeitszeit für den richtigen Auftrag noch läuft.",
+      "impact": "Auf dem Smartphone muss ich die Unterlagen verlassen, um den Laufzustand zu prüfen. Bei Unterbrechungen kann ich das Stoppen leichter vergessen. Ein unbeabsichtigt weiterlaufender Timer wurde im Test vermieden und anschließend beendet.",
+      "route": "http://127.0.0.1:5173/work-packages/b30f67d7-16aa-4550-8055-f36ed36ea50a",
+      "steps": [
+        "Eigenen Auftrag und Tätigkeit im Timer wählen; starten, pausieren und weiterarbeiten.",
+        "Browser zurück zum eigenen Arbeitspaket; Dokumente öffnen.",
+        "Dokumente durchsuchen und später eigene Auftragsakte öffnen.",
+        "Sichtbaren Seitenkopf und feste mobile Navigation auf einen Laufzustand prüfen.",
+        "Über Zeit zurückkehren: Uhr läuft weiter, Auftrag ist im Timer korrekt."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/employee_a/0015-1792759790583.png",
+        "work/ai-usability/evidence/employee_a/0017-1792759810296.png",
+        "work/ai-usability/evidence/employee_a/0020-1792759846274.png",
+        "work/ai-usability/evidence/employee_a/0022-1792759888736.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "In den Arbeitsansichten einen kompakten sichtbaren Lauf-/Pausenhinweis mit Rückweg zum Timer anbieten."
+    },
+    {
+      "id": "employee_a-F3",
+      "severity": "P3",
+      "title": "Pausenaktionen brechen auf 390 Pixeln mitten im Wort um",
+      "observation": "Im Zustand Sie machen Pause waren die Schaltflächen erreichbar, aber Weiterarbeiten erschien zweizeilig als Weiterarb / eiten und Feierabend als Feieraben / d. Der Timer selbst und die Pause waren gut lesbar.",
+      "expectation": "Die beiden zentralen Aktionen sollten am Smartphone als vollständige Wörter sofort erkennbar sein.",
+      "impact": "Ich konnte weiterarbeiten, musste die Beschriftung aber unnötig zusammensetzen; die Hauptaktionen wirken gedrängt.",
+      "route": "http://127.0.0.1:5173/time",
+      "steps": [
+        "Viewport 390 × 844; eigenen Timer starten.",
+        "Pause betätigen und auf den gespeicherten Pausenzustand warten.",
+        "Die nebeneinander angeordneten Schaltflächen Weiterarbeiten und Feierabend ansehen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/employee_a/0014-1792759778640.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Auf kleinen Breiten volle Aktionswörter erhalten, etwa durch untereinander stehende Schaltflächen."
+    },
+    {
+      "id": "employee_a-F4",
+      "severity": "P3",
+      "title": "Fester Assistent verdeckt Zeitdetails beim mobilen Scrollen",
+      "observation": "Die grüne feste Assistent-Schaltfläche überlagerte bei normalen Scrollpositionen den rechten Bereich der zweiten Arbeitszeile, einschließlich Dauer/Zeittext. In der bestätigten Zuordnungstabelle lag sie ebenfalls über Daten; die rechte Bis-Spalte war bei 390 Pixeln zusätzlich am Bildschirmrand abgeschnitten. Durch weiteres Scrollen ließ sich der Zeitabschnitt lesen.",
+      "expectation": "Beim Prüfen der Zeiten möchte ich Dauer und Ende ohne Überlagerung vollständig sehen.",
+      "impact": "Ich muss nachscrollen und Inhalte nacheinander vergleichen. Das erschwert besonders die ohnehin widersprüchliche Prüfung der Auftragszuordnung.",
+      "route": "http://127.0.0.1:5173/time",
+      "steps": [
+        "Eigene Sitzung beenden.",
+        "Zum Tagesverlauf und anschließend zur Bestätigten Auftragszuordnung scrollen.",
+        "Rechte Dauer-/Zeitangaben mit der festen Assistent-Schaltfläche und dem Bildschirmrand vergleichen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/employee_a/0027-1792759931358.png",
+        "work/ai-usability/evidence/employee_a/0028-1792759956620.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Dem festen Assistenten auf Mobilgeräten einen Platz außerhalb relevanter Inhalte geben und Zeitzuordnungen in vollständig lesbaren Zeilen oder Karten darstellen."
+    }
+  ],
+  "strengths": [
+    "Heute zeigte eigenen Einsatz, 07:00, Auftrag und Einsatzadresse direkt und übersichtlich; kein Suchfilter war nötig.",
+    "Maße und Einschränkung vor Ort prüfen / keine Freigabe waren in den Auftragsnotizen lesbar; das verknüpfte Arbeitspaket ergänzte Kante poliert.",
+    "Der geöffnete Timer zeigte großen Zeitstand, klare Zustände Arbeit läuft / Sie machen Pause / Arbeitstag beendet sowie Auftrag und Tätigkeit.",
+    "Rückmeldung konnte ohne erfundene Leistungsmenge gespeichert werden; eine sichtbare Erfolgsmeldung und Meine letzten Rückmeldungen bestätigten den Inhalt auch nach erneutem Seitenaufruf.",
+    "Tab und Enter ermöglichten die Anmeldung; Escape schloss später die Auftragsauswahl ohne Änderung. Einführung konnte für später geschlossen werden."
+  ],
+  "limits": [
+    "Simulierte Einzelpersona, keine echte menschliche Nutzerforschung und kein SUS-Wert.",
+    "Vor dem produktiven Zugang war der Broker zunächst nicht erreichbar (ECONNREFUSED 127.0.0.1:9323); Parent stellte die Infrastruktur wieder bereit. Separates Harness-Limit, kein Appdefekt.",
+    "Anschließend zeigte Login Too many requests. Please try again later. Nach Pause und erneuter Anmeldung per Enter gelang der Zugang. Parent bestätigte eine gemeinsame lokale Shared-IP-Anmeldedrossel; diese Wartezeit ist nicht Kernaufgabenzeit. Die sichtbare englische Meldung enthielt keine konkrete Wartezeit (Screenshot 0001-1792759594284.png).",
+    "Auftrag und Dokumentbereich enthielten sichtbar keine verknüpften/aufgelisteten Unterlagen. Dokumentinhalt, PDF-Lesbarkeit, Download und Rückkehr aus einem Dokument konnten deshalb nicht bewertet werden.",
+    "Native Datumsauswahl zeigte im Browser 10/23/2026, obwohl umgebende Texte deutsche Daten verwendeten; Browser-/Gerätesprache wurde nicht verifiziert, daher kein separater Produktdefekt behauptet.",
+    "Ein exakter Text-Locator für Arbeitszeit live mitlaufen lassen lief aus; inspect bestätigte unveränderte UI, die sichtbare aufklappbare Zeile ließ sich anschließend mit Teiltext bedienen. Dieser CLI-Fehler ist kein Produktbefund.",
+    "Nur eigene Zeit und eigene markierte Auftragsrückmeldung verändert. Keine Abgabe, Bestätigung, Fertigungsfreigabe, reale Nachricht oder fremde Änderung ausgelöst.",
+    "Keine KI-Funktion genutzt; aus der sichtbaren Assistent-Schaltfläche wird keine Aussage über Antwortqualität oder Verfügbarkeit abgeleitet."
+  ],
+  "browserActionsApprox": 53
+}

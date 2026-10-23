@@ -1,0 +1,170 @@
+{
+  "persona": "planner_b",
+  "role": "Neue Planerin im deutschen Steinmetzbetrieb, Raum- und Badplanung",
+  "startedAt": "2026-10-23T12:44:52Z",
+  "finishedAt": "2026-10-23T12:53:10Z",
+  "viewport": { "width": 1280, "height": 900 },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/planner_b/0001-1792759579297.png",
+        "work/ai-usability/evidence/planner_b/0002-1792759598183.png",
+        "work/ai-usability/evidence/planner_b/1792759822055-Planung.pdf"
+      ],
+      "notes": "UX planner_b · Bad mit lichten Innenmaßen 4200 × 3200 mm, Höhe 2600 mm, Wandstärke ohne Belag 200 mm und Türöffnung 900 mm angelegt. Zusätzliche Entwurfsannahmen: Türhöhe 2100 mm, Abstand 600 mm, Wand 1, links/nach innen. Keine technische Bestätigung."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/planner_b/0004-1792759701918.png",
+        "work/ai-usability/evidence/planner_b/1792759822055-Planung.pdf"
+      ],
+      "notes": "Waschtischplatte 1200 × 550 × 30 mm angelegt, Bianco Carrara C · Katalogreferenz gewählt. Sichtbare Lieferantenreferenz https://rossittis.de/material/bianco-carrara-c mit Stand 2026-10-19; extern nicht geprüft. Wunschmaß und getrennte Aufmaßversion verständlich erkennbar; Aufmaßformular ohne fiktive Bestätigung abgebrochen."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/planner_b/0003-1792759634779.png",
+        "work/ai-usability/evidence/planner_b/0007-1792759777932.png"
+      ],
+      "notes": "KI für Raum/Aufmaß sowie Bauteile/Material geöffnet; aktuelle Auswahl, Schritthilfe, gespeicherte Grundlage und Bearbeitungsgrenzen geprüft. Tiefe probeweise 550,5 mm, dann wieder 550 mm. Kontext blieb verständlich. Senden wegen nicht eingerichtetem OpenAI-Projekt/Modell/Kostenbudget deaktiviert. Keine Antwort- oder Übernahmequalität bewertbar."
+    },
+    {
+      "id": "G4",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/planner_b/0008-1792759804925.png",
+        "work/ai-usability/evidence/planner_b/0009-1792759819868.png",
+        "work/ai-usability/evidence/planner_b/1792759822055-Planung.pdf",
+        "work/ai-usability/evidence/planner_b/0002-1792759965238.png"
+      ],
+      "notes": "Prüfstand mit 17 offenen Nachweisen gelesen; Fertigungsfreigabe korrekt gesperrt. Revision 8 synchronisiert und nach neuer Sitzung wieder geöffnet. Sechsseitiges Entwurfs-PDF heruntergeladen und geprüft, aber Material-ID statt Name sowie fehlende lichte Innenmaße schränken die Vorzeigbarkeit ein. 3D lädt. Keine Freigabe ausgelöst."
+    }
+  ],
+  "findings": [
+    {
+      "id": "planner_b-F1",
+      "severity": "P2",
+      "title": "Planungs-PDF ersetzt den gewählten Stein durch eine Material-ID",
+      "observation": "Die App zeigte Bianco Carrara C · Katalogreferenz und einen Rossittis-Lieferantenlink mit Standdatum. PDF-Seite 4 zeigt stattdessen Materialstand: 1940063e-75a2-4de7-9a94-9dbb3709d611. Materialname und Lieferantenlink fehlen im Text der sechs PDF-Seiten; Seite 4 auch visuell geprüft.",
+      "expectation": "Die vorzeigbare Entwurfsunterlage nennt den ausgewählten Stein und einen nachvollziehbaren Quellenbezug.",
+      "impact": "Die Materialwahl ist für Empfänger des PDFs nicht verständlich; zusätzliche Erläuterung oder Unterlagen nötig.",
+      "route": "http://127.0.0.1:5173/studio/7af1fd34-53bc-4664-baed-639dbba2dfaa?variant=1c077f2c-2d85-4c0f-b362-e70dd16796f5",
+      "steps": [
+        "2 Bauteile & Material öffnen und Steinbauteil ergänzen",
+        "Waschtischplatte 1200 × 550 × 30 mm, Bianco Carrara C wählen",
+        "Lieferantenreferenz mit Standdatum in der App lesen",
+        "Bilder & Exporte öffnen, Planungs-PDF herunterladen",
+        "Stückliste auf PDF-Seite 4 prüfen"
+      ],
+      "evidence": ["work/ai-usability/evidence/planner_b/1792759822055-Planung.pdf"],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Handelsname und verständlichen Materialstand samt Quellenbezug ausgeben; interne ID nur ergänzend verwenden."
+    },
+    {
+      "id": "planner_b-F2",
+      "severity": "P2",
+      "title": "Lichte Innenmaße sind nach Raumübernahme und im PDF nicht direkt ablesbar",
+      "observation": "Lichte Innenmaße 4200 × 3200 mm bei Wandstärke 200 mm eingegeben. Grundriss zeigt 4.400 · Achse und 3.400 · Achse, PDF außerdem geometrische Außenmaße 4.600/3.600 mm. Die lichten Werte fehlen im vollständigen PDF-Text. PDF-Seite 1 und Grundriss visuell geprüft. Keine falsche Geometrie behauptet.",
+      "expectation": "Die für das Bad eingegebenen nutzbaren Innenmaße bleiben direkt ablesbar und stehen in der Besprechungsunterlage.",
+      "impact": "Innenmaße müssen zurückgerechnet oder zusätzlich erklärt werden. Klare Achsbeschriftungen helfen, ersetzen aber die gesuchten Innenmaße nicht.",
+      "route": "http://127.0.0.1:5173/studio/7af1fd34-53bc-4664-baed-639dbba2dfaa?variant=1c077f2c-2d85-4c0f-b362-e70dd16796f5",
+      "steps": [
+        "Raumgeometrie anlegen öffnen",
+        "Lichte Innenmaße wählen, 4200/3200/2600/200 mm eingeben",
+        "In den Plan übernehmen und Maßketten lesen",
+        "Planungs-PDF herunterladen und Seiten 1 sowie 4 prüfen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/planner_b/0001-1792759579297.png",
+        "work/ai-usability/evidence/planner_b/0002-1792759598183.png",
+        "work/ai-usability/evidence/planner_b/1792759822055-Planung.pdf"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Lichte Innenmaße zusätzlich oder über eine erkennbare Wahl des Maßbezugs in Ansicht und PDF anzeigen."
+    },
+    {
+      "id": "planner_b-F3",
+      "severity": "P3",
+      "title": "Waschtischplatte verwendet Grabmalformen und wechselnde Maßbegriffe",
+      "observation": "Bei Bauteilart Waschtisch- / Arbeitsplatte hieß die Grundform Gerade Stele; angebotene Alternativen umfassten Spitzdach, Buchkontur und Verjüngte Stele. Länge 1200 hieß später Breite, Tiefe 550 später Länge / Tiefe und im Prüfstand Höhe / Länge. Die gerade Form ergab eine rechteckige Platte. PDF-Hinweise nannten Inschriftenplan und Friedhofsvorgaben.",
+      "expectation": "Für eine Waschtischplatte passende Grundformnamen und konsistente Länge/Tiefe/Stärke.",
+      "impact": "Unsicherheit, ob der richtige Planungsbereich aktiv ist; zusätzlicher Vergleich anhand der Zahlen statt eindeutiger Begriffe.",
+      "route": "http://127.0.0.1:5173/studio/7af1fd34-53bc-4664-baed-639dbba2dfaa?variant=1c077f2c-2d85-4c0f-b362-e70dd16796f5",
+      "steps": [
+        "Steinbauteil ergänzen öffnen",
+        "Bauteilart Waschtisch- / Arbeitsplatte und Grundform lesen",
+        "Grundform aufklappen",
+        "Gerade Form übernehmen und Maßbezeichnungen in Eigenschaften und Prüfstand vergleichen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/planner_b/0004-1792759701918.png",
+        "work/ai-usability/evidence/planner_b/0008-1792759804925.png",
+        "work/ai-usability/evidence/planner_b/1792759822055-Planung.pdf"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Grundformen und Hinweistext an den Bauteiltyp anpassen; Länge/Tiefe/Stärke durchgehend beibehalten."
+    },
+    {
+      "id": "planner_b-E1",
+      "severity": "P2",
+      "title": "KI-Anfrage durch fehlende Anbietereinrichtung nicht möglich",
+      "observation": "Begleiter nennt Noch nicht verfügbar, fehlendes OpenAI-Projekt/Modell/Kostenbudget und zuständige Administration. Nachricht, Sprechen und Senden deaktiviert. Schrittkontext und Grenzen können gelesen werden.",
+      "expectation": "Für genau den aktuellen Schritt eine Hilfe anfordern und einen Vorschlag prüfen können.",
+      "impact": "Antwortqualität, Quellenverwendung im tatsächlichen Lauf und sichere Übernahme bleiben ungetestet.",
+      "route": "http://127.0.0.1:5173/studio/7af1fd34-53bc-4664-baed-639dbba2dfaa?variant=1c077f2c-2d85-4c0f-b362-e70dd16796f5",
+      "steps": ["KI für diesen Schritt bei Raum & Aufmaß öffnen", "Später bei Bauteile & Material erneut öffnen", "Deaktivierte Anfrage und Einrichtungsbegründung prüfen"],
+      "evidence": [
+        "work/ai-usability/evidence/planner_b/0003-1792759634779.png",
+        "work/ai-usability/evidence/planner_b/0007-1792759777932.png"
+      ],
+      "confidence": "high",
+      "category": "environment"
+    },
+    {
+      "id": "planner_b-H1",
+      "severity": "P2",
+      "title": "Download-Tab unterbricht den Browser-Harness trotz gespeichertem PDF",
+      "observation": "Nach PDF-Klick zeigt ein nachfolgender SVG-Klick Target page, context or browser has been closed. Parent bestätigt gespeichertes PDF und Übernahme eines kurz geöffneten Download-Tabs durch den Broker. Eigene Sitzung geschlossen/neu gestartet, Planung über sichtbare Liste wieder geöffnet; Revision 8 erhalten.",
+      "expectation": "Nach dem Download in derselben Planung weiterarbeiten können.",
+      "impact": "Zusätzliche Anmeldung nötig; kein belegter App-Datenverlust. SVG nicht geprüft.",
+      "route": "http://127.0.0.1:5173/studio/7af1fd34-53bc-4664-baed-639dbba2dfaa?variant=1c077f2c-2d85-4c0f-b362-e70dd16796f5",
+      "steps": ["Planungs-PDF herunterladen", "SVG klicken", "Fehler lesen", "Nach Infrastrukturhinweis eigene Sitzung erneuern und gespeicherte Planung wiederfinden"],
+      "evidence": [
+        "work/ai-usability/evidence/planner_b/1792759822055-Planung.pdf",
+        "work/ai-usability/evidence/planner_b/0002-1792759965238.png"
+      ],
+      "confidence": "high",
+      "category": "harness"
+    }
+  ],
+  "strengths": [
+    "Direkter Tour-Einstieg in Raumplanung und vier verständliche Arbeitsschritte.",
+    "Innenmaß/Wandachse im Raumdialog erklärt; Maße und Millimeter klar bezeichnet.",
+    "Wunschmaß und getrennte Aufmaßversion mit Messmethode, Datum, Evidenz und Toleranzen sichtbar.",
+    "Begleiter benennt Auswahl, Schritt und gespeicherte Grundlage; Änderungen als vor Anwendung zu prüfende Vorschläge angekündigt.",
+    "17 offene Nachweise sperren technische Freigabe, lassen den Entwurf aber bearbeitbar.",
+    "Synchronisationsstand und Revision sichtbar; Revision 8 nach neuer Sitzung erhalten.",
+    "Dezimalkomma 550,5 akzeptiert; Endtiefe 550 im PDF belegt.",
+    "3D-Vorschau lädt; Tab und Escape verwendbar, Strg+S versucht."
+  ],
+  "limits": [
+    "Simulierter Einzeltest, keine reale menschliche Nutzerstudie und kein SUS-Wert.",
+    "KI nicht eingerichtet; keine Anfrage, Ausgabequalität oder reale Vorschlagsübernahme geprüft.",
+    "Lieferantenlink in App gefunden, nicht extern geöffnet und Materialeignung nicht bestätigt.",
+    "Vorübergehender Broker-Ausfall im Onboarding, durch Parent behoben; kein Produktfehler daraus abgeleitet.",
+    "Nach PDF-Download verlor der Harness sein Tab-Ziel. PDF tatsächlich gespeichert, SVG nicht geprüft.",
+    "Im App-Screenshot keine zusätzliche Download-Erfolgsmeldung; native Browseranzeige im Harness nicht zuverlässig erfasst, daher kein Defekturteil allein daraus.",
+    "PDF auf ausdrücklichen Parent-Hinweis als eigene Evidenz per Text sowie Seiten 1 und 4 visuell geprüft.",
+    "Laptop 1280 × 900; kein Mobiltest. Dichte Planansicht mit intern zu scrollenden Eigenschaften, aber lesbar.",
+    "Keine technischen Freigaben, Integrationseinrichtungen oder Bestellungen ausgelöst. Browserkontext am Ende geschlossen."
+  ],
+  "browserActionsApprox": 76
+}

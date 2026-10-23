@@ -1,0 +1,132 @@
+{
+  "persona": "dispatcher_b",
+  "role": "Simon Kranz, 32, neuer stellvertretender Disponent eines deutschen Steinmetzbetriebs; simulierte Testperson",
+  "startedAt": "2026-10-23T12:58:32.558Z",
+  "finishedAt": "2026-10-23T13:06:57.046Z",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/dispatcher_b/0003-1792760355729.png",
+        "work/ai-usability/evidence/dispatcher_b/0008-1792760490038.png",
+        "work/ai-usability/evidence/dispatcher_b/0011-1792760641851.png"
+      ],
+      "notes": "Über Tourstation 4, Woche und Nächster Zeitraum die Woche 26.10.–01.11.2026 überblickt. Eigenen Einsatz UX dispatcher_b · Aufmaß vorbereiten für UX Simon Kranz am 27.10.2026, 09:00–11:00, mit eigenem Auftrag und Arbeitspaket als Entwurf gespeichert. Zuordnung und Zeitraum in der Einsatzakte geprüft."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/dispatcher_b/0009-1792760593038.png",
+        "work/ai-usability/evidence/dispatcher_b/0010-1792760629316.png"
+      ],
+      "notes": "Zweiten eigenen Entwurf UX dispatcher_b · Montage abstimmen für denselben Benutzer, Auftrag und dasselbe Arbeitspaket 27.10., 10:00–12:00 zu speichern versucht. App blockierte mit Mitarbeiter oder Betriebsmittel ist bereits eingeplant. Eingaben blieben erhalten. Beginn/Ende auf 11:00–13:00 geändert und erfolgreich als Entwurf gespeichert. Keine Bestätigung oder fremde Änderung."
+    },
+    {
+      "id": "G3",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/dispatcher_b/0004-1792760372199.png",
+        "work/ai-usability/evidence/dispatcher_b/0012-1792760653319.png",
+        "work/ai-usability/evidence/dispatcher_b/0013-1792760671531.png",
+        "work/ai-usability/evidence/dispatcher_b/0014-1792760718624.png"
+      ],
+      "notes": "Über Einsatzakte zum Auftrag und Arbeitspaket gelangt. Auftragsstatus Entwurf und Notizen mit Arbeitsanweisung gefunden; Arbeitspaket Offen, Sollstunden 2 und Abschlusskriterium mit Maßen/Prüfanweisung gelesen. Arbeitspaket bereits in beiden Entwürfen verknüpft; zwei Stunden passen zum ersten Einsatz. Auftrag > Termine & Team > Einsätze zu diesem Auftrag öffnen führte zur auftragsbezogenen Liste beider Entwürfe. Sollstunden und Anweisung waren im Planungsformular selbst nicht sichtbar."
+    }
+  ],
+  "findings": [
+    {
+      "id": "dispatcher_b-F1",
+      "severity": "P2",
+      "title": "Mitarbeitersuche meldet keinen Treffer, obwohl der eigene Benutzer auswählbar ist",
+      "observation": "Im geöffneten Feld Mitarbeiter * liefert die Eingabe Simon die Meldungen Kein Eintrag gefunden. Versuchen Sie einen anderen Suchbegriff. und 0 Einträge gefunden. Nach Escape, Weitere Einträge suchen, erneut Simon und Suchen meldet ein separater Bereich 1 berechtigte Einträge in der Auswahl oben. Erst erneutes Öffnen des ursprünglichen Feldes zeigt UX Simon Kranz. Das Verhalten wurde am Ende in einem neuen, anschließend abgebrochenen Dialog nochmals bestätigt.",
+      "expectation": "Die Suche im beschrifteten Mitarbeiterfeld findet meinen vorhandenen Benutzer oder weist direkt auf die Suche im vollständigen Bestand hin.",
+      "impact": "Ein neuer Disponent kann den vorhandenen eigenen Benutzer für nicht verfügbar halten. Der funktionierende Weg verlangt eine zweite Suche und den Wechsel zurück in die erste Auswahl; bei beiden angelegten Einsätzen musste ich ihn wiederholen.",
+      "route": "/dispatch?mode=week&date=2026-10-30; erneut /dispatch?order_id=fea0f1c2-1c38-482a-91db-122e8f629bf4",
+      "steps": [
+        "Einsatz anlegen öffnen.",
+        "Mitarbeiter * öffnen und Simon eingeben.",
+        "Leere Trefferliste und Aufforderung zu anderem Suchbegriff sehen.",
+        "Escape, Weitere Einträge suchen unter Mitarbeiter öffnen, Simon eingeben und Suchen klicken.",
+        "Nach der Rückmeldung das ursprüngliche Mitarbeiterfeld erneut öffnen und UX Simon Kranz auswählen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/dispatcher_b/0015-1792760746434.png",
+        "work/ai-usability/evidence/dispatcher_b/0006-1792760430091.png",
+        "work/ai-usability/evidence/dispatcher_b/0011-1792760641851.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Die Suche am Mitarbeiterfeld sollte den vollständigen auswählbaren Bestand durchsuchen oder dort unmittelbar auf den nötigen erweiterten Suchweg verweisen."
+    },
+    {
+      "id": "dispatcher_b-F2",
+      "severity": "P2",
+      "title": "Wochenkarte zeigt für den ausgewählten Mitarbeiter eine Kennung statt seines Namens",
+      "observation": "Nach dem Speichern des ersten eigenen Einsatzes zeigt die Wochenkarte unter der gekürzten Tätigkeit 6460efaa-1e38-42be-b50c-0d2241fcdbc4. Auch die zweite eigene Karte zeigt diese Kennung. Beim Öffnen des ersten Einsatzes steht unter Mitarbeiter korrekt UX Simon Kranz.",
+      "expectation": "Im Teamkalender erkenne ich direkt, welche Person die Tätigkeit übernimmt.",
+      "impact": "Die zentrale Wochenübersicht beantwortet für meine beiden Einsätze die Frage Wer? nicht verständlich. Die Kennung verbraucht mehrere Zeilen, während der Tätigkeitstext gekürzt wird; ich muss zum Prüfen die Akte öffnen.",
+      "route": "/dispatch?mode=week&date=2026-10-30",
+      "steps": [
+        "Eigenen Einsatz für UX Simon Kranz am 27.10.2026 09:00–11:00 als Entwurf speichern.",
+        "Wochenkarte am 27. Oktober lesen.",
+        "UX dispatcher_b · Aufmaß vorbereiten öffnen.",
+        "In der Einsatzakte die korrekte Mitarbeiterangabe UX Simon Kranz vergleichen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/dispatcher_b/0008-1792760490038.png",
+        "work/ai-usability/evidence/dispatcher_b/0010-1792760629316.png",
+        "work/ai-usability/evidence/dispatcher_b/0011-1792760641851.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Den ausgewählten Mitarbeiternamen in der Kalenderkarte anzeigen; Platz für Tätigkeit und Zeit priorisieren."
+    },
+    {
+      "id": "dispatcher_b-F3",
+      "severity": "P2",
+      "title": "Konfliktmeldung nennt weder den kollidierenden Einsatz noch dessen Zeitraum",
+      "observation": "Der zweite eigene Plan 10:00–12:00 wird korrekt blockiert. Oben im Dialog steht allein Mitarbeiter oder Betriebsmittel ist bereits eingeplant. Die Meldung nennt weder die konkrete Person noch den bestehenden Einsatz 09:00–11:00, keinen Konfliktzeitraum und keinen Link. Es war kein Betriebsmittel ausgewählt. Die Formulareingaben bleiben erhalten und eine manuelle Korrektur auf 11:00–13:00 wird anschließend gespeichert.",
+      "expectation": "Nach der angekündigten Konfliktprüfung erfahre ich, womit mein Plan kollidiert und welche Zeit ich zum Korrigieren berücksichtigen muss.",
+      "impact": "Bei meinem gerade selbst angelegten ersten Termin konnte ich die Ursache erinnern. Mit mehreren Einsätzen müsste ich den Konflikt außerhalb des offenen Formulars suchen; der Wortlaut hilft bei der konkreten Korrektur wenig.",
+      "route": "/dispatch?mode=week&date=2026-10-30",
+      "steps": [
+        "Eigenen ersten Einsatz für UX Simon Kranz 27.10.2026 09:00–11:00 speichern.",
+        "Zweiten Einsatz UX dispatcher_b · Montage abstimmen für denselben Benutzer und Auftrag 10:00–12:00 ausfüllen.",
+        "Speichern klicken und die rote Meldung lesen.",
+        "Beginn auf 11:00 und Ende auf 13:00 ändern; erneut speichern.",
+        "In der Übersicht beide eigenen Entwürfe 09:00–11:00 und 11:00–13:00 prüfen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/dispatcher_b/0009-1792760593038.png",
+        "work/ai-usability/evidence/dispatcher_b/0010-1792760629316.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Person, betroffenen Einsatz und bestehenden Zeitraum direkt in der Meldung nennen und das Nachsehen ermöglichen, ohne ausgefüllte Eingaben zu verlieren."
+    }
+  ],
+  "strengths": [
+    "Die Einführung erlaubt einen direkten Sprung zur passenden Station und erklärt, dass die Tour keine Geschäftsdaten ändert.",
+    "Tag, Woche, Monat und die nächste Woche sind ohne Hilfe auffindbar; ein ausgewählter Tag übernimmt sein Datum in das neue Einsatzformular.",
+    "Konfliktprüfung blockiert die Überschneidung tatsächlich. Eingaben bleiben erhalten, und ein direkt anschließender Termin lässt sich als Entwurf speichern.",
+    "Speichern und Abbrechen bleiben am unteren Rand des langen Dialogs sichtbar. Pflichtangaben und noch offene Grundangaben sind erkennbar.",
+    "Einsatzakte, Auftrag und Arbeitspaket sind mit verständlichen Links verbunden. Status, Sollstunden und Prüfanweisung sind in den Akten nachlesbar.",
+    "Auftrag > Termine & Team bietet eine klar bezeichnete, auf den Auftrag gefilterte Übersicht der gespeicherten Einsätze."
+  ],
+  "limits": [
+    "Ein simulierter Black-box-Test einer Persona; keine echte menschliche Nutzerstudie und kein Code- oder Datenbankaudit.",
+    "Die Startzeit entspricht dem ersten gesicherten Screenshot; Login begann wenige Sekunden vorher.",
+    "Nur Laptopansicht 1280 × 900 geprüft. Kein mobiles Nutzungsszenario im Rollenbrief.",
+    "Native Datums-/Zeitfelder erschienen im Testbrowser als mm/dd/yyyy mit AM/PM. Ursache bzw. Browserlocale wurde nicht untersucht; dies wird nicht als gesicherter Produktfehler gewertet. Die Browserhilfe füllte die nativen Felder mit ISO-Werten; deutsche manuelle Datumeingabe wurde damit nicht geprüft.",
+    "Gemeinsame synthetische Umgebung: Während des Tests erschienen Änderungen anderer Testpersonen in der sichtbaren Liste. Sie wurden nicht geöffnet oder geändert.",
+    "Keine Umgebungsblockade beobachtet. KI, Anbieter-Konfiguration und Antwortqualität waren kein Teil dieses Arbeitsablaufs.",
+    "Keine Einsätze, Aufträge oder Arbeitspakete bestätigt, begonnen oder fertig gemeldet. Nur zwei eigene Einsatzentwürfe neu gespeichert; letzter leerer Dialog abgebrochen. Browserkontext geschlossen."
+  ],
+  "browserActionsApprox": 64
+}

@@ -1,0 +1,162 @@
+{
+  "persona": "dispatcher_a",
+  "role": "Petra, 46, erfahrene Einsatzleiterin eines deutschen Steinmetzbetriebs; App-Benutzer UX Petra Vogt, Disposition",
+  "startedAt": "2026-10-23T12:58:13Z",
+  "finishedAt": "2026-10-23T13:06:24Z",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "Browseraktionen 4–28",
+        "work/ai-usability/evidence/dispatcher_a/0003-1792760393064.png",
+        "work/ai-usability/evidence/dispatcher_a/0006-1792760479487.png"
+      ],
+      "notes": "Über Team & Dispo den Montag 26.10.2026 gewählt und über Einsatz für diesen Tag anlegen den Entwurf UX dispatcher_a · Aufmaß Testweg angelegt. Nur UX Petra Vogt zugewiesen, eigener Auftrag UX dispatcher_a · Badumbau Testweg und eigenes Arbeitspaket UX dispatcher_a · Aufmaß und Montage vorbereiten ausgewählt. Beginn 08:00, Ende 10:00; die Detailansicht bestätigt diese lokalen Uhrzeiten und Status Entwurf. Petra wurde erst über Weitere Einträge suchen gefunden."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "Browseraktionen 29–35 und 44–50",
+        "work/ai-usability/evidence/dispatcher_a/0007-1792760513062.png",
+        "work/ai-usability/evidence/dispatcher_a/0008-1792760533107.png",
+        "work/ai-usability/evidence/dispatcher_a/0012-1792760622506.png"
+      ],
+      "notes": "Über Bearbeiten Ende auf 12:00 und Beginn auf 10:00 gesetzt, einmal gespeichert. Akte zeigt Version 2, 26.10.2026 10:00–12:00, denselben Mitarbeiter, Auftrag und dasselbe Arbeitspaket. Kalender zeigt ebenfalls 10:00–12:00. Konflikthinweis vor dem Formular verständlich: Konflikte werden beim Speichern angezeigt. Kein tatsächlicher Überschneidungsfall wurde ausgelöst; Konfliktprüfung daher nicht als bestanden bewertet. Sichtbarer Verlauf blieb leer."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "Browseraktionen 36–62",
+        "work/ai-usability/evidence/dispatcher_a/0012-1792760622506.png",
+        "work/ai-usability/evidence/dispatcher_a/0013-1792760655660.png",
+        "work/ai-usability/evidence/dispatcher_a/0014-1792760683995.png",
+        "work/ai-usability/evidence/dispatcher_a/0015-1792760719808.png"
+      ],
+      "notes": "Tages- und Wochenansicht gefunden; Auftragsakte zeigt Planung Aufmaß offen und Ausführung Noch nicht geplant, Arbeitspaket zeigt Offen und 2 Sollstunden. Vorwärtsverknüpfungen Einsatz → Auftrag/Arbeitspaket funktionieren. Eigene tatsächliche Arbeitszeit und Urlaub & Abwesenheit auffindbar, aber keine Teamkapazität oder Arbeitszeitlage im Kalender gefunden. Abwesenheitsliste leer, Zeitkonto nicht hinterlegt; daraus keine Verfügbarkeit abgeleitet. Petra im Kalenderfilter weder mit Vor- noch Nachnamen auffindbar. Auftragfilter erst unter dem Kalender sichtbar. Am Arbeitspaket liefert Verknüpfte Vorgänge nur einen allgemeinen Hinweis, keine Liste des eigenen Einsatzes."
+    }
+  ],
+  "findings": [
+    {
+      "id": "dispatcher_a-F1",
+      "severity": "P2",
+      "title": "Eigene Mitarbeiterin fehlt in direkter Auswahl und Kalenderfilter",
+      "observation": "Im neuen Einsatz enthielt Mitarbeiter * 41 Einträge einschließlich Bitte auswählen und endete mit UX Paul Jansen. Eingabe Petra ergab Kein Eintrag gefunden. Über Weitere Einträge suchen → Petra → Suchen meldete die App anschließend 1 berechtigten Eintrag; UX Petra Vogt war danach auswählbar. Nach Rückkehr zur Einsatzplanung zeigte Mitarbeiter filtern wieder dieselbe begrenzte Auswahl; Petra und Vogt lieferten jeweils 0 Treffer. Dort war kein zusätzlicher Suchweg sichtbar.",
+      "expectation": "Mit Vor- oder Nachnamen die eigene berechtigte Mitarbeiterin finden und deren Einsätze im Kalender isolieren können.",
+      "impact": "Mehrere zusätzliche Schritte schon beim Anlegen; die gezielte persönliche Kalenderprüfung bleibt blockiert. Die Meldung 0 Einträge suggeriert, dass eine tatsächlich berechtigte Person nicht existiert.",
+      "route": "/dispatch",
+      "steps": [
+        "Team & Dispo öffnen, 26.10.2026 wählen, Einsatz für diesen Tag anlegen.",
+        "Mitarbeiter * öffnen und Petra eingeben: 0 Treffer.",
+        "Escape; Weitere Einträge suchen beim Mitarbeiter öffnen; Petra suchen; UX Petra Vogt auswählen.",
+        "Nach Speicherung und Rückkehr Mitarbeiter filtern öffnen; Petra und anschließend Vogt eingeben: jeweils 0 Treffer."
+      ],
+      "evidence": [
+        "Browseraktionen 10–18 und 57–60",
+        "work/ai-usability/evidence/dispatcher_a/0003-1792760393064.png",
+        "work/ai-usability/evidence/dispatcher_a/0015-1792760719808.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Die sichtbare Namenssuche auf alle berechtigten Mitarbeitenden anwenden; gegebenenfalls klar zwischen geladenen Einträgen und gesamtem Bestand unterscheiden. Auch im Kalender denselben vollständigen Suchweg anbieten."
+    },
+    {
+      "id": "dispatcher_a-F2",
+      "severity": "P2",
+      "title": "Kalender zeigt beim eigenen Einsatz eine Kennung statt Petra Vogt",
+      "observation": "Nach Speicherung zeigte der Monatskalender beim eigenen Einsatz unter Tätigkeit und Uhrzeit die Zeichenfolge 4b845654-8c0f-4903-9b10-910cb2451eb7. Dasselbe erschien in Wochen- und Tagesansicht sowie in der Tagesliste. In der Einsatzakte stand dagegen korrekt UX Petra Vogt. Auch einige bestehende Kalenderkarten zeigten solche Kennungen, andere einen lesbaren Namen.",
+      "expectation": "Auf der Kalenderkarte den zugewiesenen Mitarbeiter erkennen können, ohne die Akte zu öffnen.",
+      "impact": "Für einen schnellen Überblick über parallele Einsätze kann ich die personelle Belegung nicht zuverlässig lesen; ich muss die Details einzeln öffnen.",
+      "route": "/dispatch?order_id=198115af-fb3d-438a-8c66-df2539b01b67&mode=week&date=2026-10-26",
+      "steps": [
+        "Eigenen Entwurf mit Mitarbeiter UX Petra Vogt speichern.",
+        "Kalenderkarte und Tagesliste ansehen: lange Kennung.",
+        "Einsatzakte öffnen: Mitarbeiter UX Petra Vogt.",
+        "Nach Verschiebung wieder Wochen-/Tageskalender öffnen: Kennung bleibt sichtbar."
+      ],
+      "evidence": [
+        "Browseraktionen 26–28, 44–50",
+        "work/ai-usability/evidence/dispatcher_a/0005-1792760467589.png",
+        "work/ai-usability/evidence/dispatcher_a/0006-1792760479487.png",
+        "work/ai-usability/evidence/dispatcher_a/0012-1792760622506.png",
+        "work/ai-usability/evidence/dispatcher_a/0013-1792760655660.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Auf jeder Einsatzkarte lesbare Mitarbeiternamen auflösen; bei fehlender Auflösung einen verständlichen Zustand anzeigen."
+    },
+    {
+      "id": "dispatcher_a-F3",
+      "severity": "P2",
+      "title": "Gespeicherte Terminverschiebung bleibt im sichtbaren Verlauf unsichtbar",
+      "observation": "Der eigene Einsatz wurde von 08:00–10:00 auf 10:00–12:00 geändert. Nach Speichern stand unter Verlauf Nachvollziehbarer Verlauf / Noch kein sichtbarer Verlauf. Eine weitere Inspektion zeigte denselben Leerzustand. Übersicht zeigte Version 2 und die neuen Uhrzeiten; der Status blieb Entwurf.",
+      "expectation": "Unter Verlauf erkennen können, dass der Termin verschoben wurde, einschließlich vorherigem und neuem Zeitraum.",
+      "impact": "Die aktuelle Zeit ist prüfbar, die konkrete Änderung im Team aber nicht nachvollziehbar. Der Text Geschäftliche Änderungen und Freigaben werden mit dem jeweiligen Stand dokumentiert lässt offen, ob Entwurfsänderungen überhaupt dazugehören.",
+      "route": "/dispatch/dcaa0c12-6468-4971-8702-0317cccce734",
+      "steps": [
+        "Eigene Einsatzakte öffnen und Bearbeiten wählen.",
+        "Ende 12:00 und Beginn 10:00 am 26.10.2026 setzen, einmal Speichern.",
+        "Verlauf öffnen und nochmals prüfen: kein sichtbarer Verlauf.",
+        "Übersicht öffnen: Version 2, 10:00–12:00."
+      ],
+      "evidence": [
+        "Browseraktionen 29–35",
+        "work/ai-usability/evidence/dispatcher_a/0007-1792760513062.png",
+        "work/ai-usability/evidence/dispatcher_a/0008-1792760533107.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Terminänderungen im sichtbaren Verlauf mit vorher/nachher dokumentieren oder den Umfang dieses Verlaufs ausdrücklich erklären."
+    },
+    {
+      "id": "dispatcher_a-F4",
+      "severity": "P2",
+      "title": "Auftragfilter ist am Kalender erst unterhalb der Ansicht erkennbar",
+      "observation": "Aus der eigenen Auftragsakte führte Termine & Team → Einsätze zu diesem Auftrag öffnen in die Einsatzplanung. Oben stand weiterhin Gesamtes Team; die konkrete Einschränkung Auswahl für diesen Auftrag / Auftrag: UX dispatcher_a · Badumbau Testweg erschien erst unter dem Kalender. In der gefilterten Woche standen Dienstag bis Sonntag Keine Einsätze geplant. Nach Alle Filter aufheben erschienen am Dienstag zwei weitere Einsätze.",
+      "expectation": "Schon am Kalenderkopf sehen, dass die Übersicht auf einen Auftrag beschränkt ist, bevor ich leere Tage als freie Kapazität deute.",
+      "impact": "Beim Prüfen von Verfügbarkeit muss ich die weiter unten platzierte Filterinformation mitdenken. Eine auftragsbezogene Leerstelle kann wie ein freier Teamtag wirken.",
+      "route": "/dispatch?order_id=198115af-fb3d-438a-8c66-df2539b01b67&mode=week&date=2026-10-26",
+      "steps": [
+        "Eigene Auftragsakte öffnen, Termine & Team wählen.",
+        "Einsätze zu diesem Auftrag öffnen wählen, Montag 26.10. wählen, Woche öffnen.",
+        "Kopf mit Gesamtes Team und leere Wochentage ansehen.",
+        "Weiter unten Auftragfilter lesen; Alle Filter aufheben wählen: zusätzliche Einsätze erscheinen."
+      ],
+      "evidence": [
+        "Browseraktionen 42–48",
+        "work/ai-usability/evidence/dispatcher_a/0010-1792760588785.png",
+        "work/ai-usability/evidence/dispatcher_a/0012-1792760622506.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Alle aktiven Einschränkungen direkt am Kalenderkopf anzeigen und leere Tage entsprechend als Keine Einsätze für diesen Auftrag formulieren."
+    }
+  ],
+  "strengths": [
+    "Team & Dispo ist als Einstieg in die Einsatzplanung gut auffindbar.",
+    "Einsatz für diesen Tag anlegen übernimmt den gewählten 26.10. und einen plausiblen Beginn um 08:00.",
+    "Akte zeigt Tätigkeit, lesbaren Mitarbeiternamen, verlinkten Auftrag, verlinktes Arbeitspaket, Beginn und Ende übersichtlich zusammen.",
+    "Das Formular trennt geplante Einsätze ausdrücklich von tatsächlich erfasster Arbeitszeit; Änderungen werden erst beim Speichern übernommen.",
+    "Die Verschiebung ist ohne Bestätigung/Freigabe als Entwurf möglich; Detailansicht und Kalender zeigen anschließend die neuen Uhrzeiten.",
+    "Escape schließt die geöffnete Mitarbeiterauswahl und verwirft nur den Suchtext, ohne das Einsatzformular zu schließen.",
+    "Seitenhilfe erklärt Tag/Woche/Monat und nennt Überschneidungen, Abwesenheiten und benötigte Geräte als Prüfpunkte."
+  ],
+  "limits": [
+    "Simulierter Black-box-Test mit einer Rolle, keine Studie mit realen menschlichen Nutzenden und keine Code-, API- oder Datenbankprüfung.",
+    "Keine echte Terminüberschneidung ausgelöst; lediglich den Hinweis auf Konfliktprüfung beim Speichern gelesen. Keine Aussage zur tatsächlichen Schutzwirkung.",
+    "Keine Freigabe, Einsatzbestätigung, Nachricht oder Abgabe ausgelöst. Nur ein eigener Einsatzentwurf angelegt und geändert; andere Einsätze ausschließlich im Kalender gelesen.",
+    "Urlaub & Abwesenheit enthielt 0 Einträge; eigenes Zeitkonto meldete bestätigten Anfangssaldo fehlt und Urlaub verfügbar Nicht hinterlegt. Eine fachliche Verfügbarkeitsbewertung war damit nicht möglich.",
+    "Native Datum-/Uhrzeitfelder wurden im bereitgestellten Browser als 10/26/2026 und 08:00 AM dargestellt, während die Akte 26.10.2026, 08:00 zeigte. Ohne Browser-/Systemlocale-Prüfung als Umgebungseinfluss offen gelassen, nicht als gesicherter Produktfehler bewertet.",
+    "Keine KI-Funktion für die Dispositionsaufgabe benötigt oder gestartet; daher keine Aussage zu KI-Ausgaben oder Anbieter-Verfügbarkeit.",
+    "Desktop 1440×1000; mobile Bedienung wurde für diese Desktoprolle nicht getestet.",
+    "Onboarding wurde sichtbar angesehen und mit Für später schließen pausiert. Kernablauf eigenständig erkundet.",
+    "Browserinteraktion dauerte rund 8 Minuten; kein künstliches Verlängern nach Abschluss der sinnvollen Schritte. Bericht anschließend erstellt."
+  ],
+  "browserActionsApprox": 63
+}

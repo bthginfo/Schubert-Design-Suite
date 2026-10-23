@@ -1,0 +1,201 @@
+{
+  "persona": "owner_a",
+  "role": "Andreas, 55, Inhaber und Steinmetzmeister; Geschäftsführung",
+  "startedAt": "2026-10-23T13:07:24.934Z",
+  "finishedAt": "2026-10-23T13:16:51.802Z",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/owner_a/0001-1792760845118.png",
+        "work/ai-usability/evidence/owner_a/0003-1792760903569.png",
+        "work/ai-usability/evidence/owner_a/0004-1792760928089.png",
+        "work/ai-usability/evidence/owner_a/0014-1792761387671.png"
+      ],
+      "notes": "Einsätze, Zieltermine und wirtschaftliche Datenlücken gefunden. Drei konkrete nächste Handlungen abgeleitet: Aufmaß/Planungszuständigkeit für AUF-2026-00008 klären (Aufmaß offen; keine Planung); bestätigte Restschätzung dieses Auftrags anfordern (Auswertungen > Daten & Grundlagen); Bankanfangsbestand/Kontowährung mit dem Büro prüfen (Auswertungen > Fälligkeit & Liquidität). Die wichtigsten offenen Aufgaben ließen sich aus Heute und Aufgabenliste nicht nachvollziehbar priorisieren. Die Auftragsliste zeigt für die acht UX-Aufträge den 26.10.2026; bei AUF-2026-00008 fehlt ein Zieltermin. Keine belastbare Aussage, dass keine weiteren dringenden Vorgänge existieren."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/owner_a/0005-1792760979341.png",
+        "work/ai-usability/evidence/owner_a/0006-1792761039123.png",
+        "Beobachtete Angebotsakte /quotes/b696f83f-f0c8-4ed8-9534-d40ee2f28865",
+        "Beobachtete gefilterte Planung /studio?order=1f05e5ed-80cb-42fd-a3a7-ed5a2c090404"
+      ],
+      "notes": "Mit Umweg nachvollzogen: KD-2026-00031 Synthetischer Integrationstest 1d9d13 → angenommenes Angebot TEST-AN/26/0125 → AUF-2026-00008 → keine Planung → Rechnungsentwurf Nicht auszustellender Prüffall, 238,00 € brutto, Fällig am 23.10.2026. Kundenakte bot keine bestehenden Verknüpfungen. Angebot nach erfolgloser Kundensuche über Titel und gleichen Änderungszeitpunkt gefunden. Der Auftrag hängt sichtbar bei Entwurf/Aufmaß offen/Ausführung noch nicht geplant; die Rechnung bleibt Entwurf. Keine Änderungen an diesen Datensätzen."
+    },
+    {
+      "id": "G3",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/owner_a/0007-1792761154470.png",
+        "work/ai-usability/evidence/owner_a/0008-1792761179743.png",
+        "work/ai-usability/evidence/owner_a/0009-1792761207261.png",
+        "work/ai-usability/evidence/owner_a/0011-1792761283984.png",
+        "work/ai-usability/evidence/owner_a/0013-1792761344483.png"
+      ],
+      "notes": "Grabmalstudio und Raum & Naturstein gefunden und je einen eigenen unverbundenen Probeentwurf erstellt. Vier Arbeitsschritte, mm-Einheiten, getrennte technische Freigabe und Kundenbestätigung verstanden. Im Raumstudio ein Rechteck mit 2500,5 × 3000 × 2400 mm und 120 mm Probewandstärke angelegt; Anzeige Synchronisiert, Entwurf 1 Rev. 2. Präsentationsmöglichkeiten gelesen. Rückkehr über Heute und Alle Aufträge gelungen. Keine Freigabe, Zustimmung, Ausgabe, Nachricht oder externe KI-Anfrage ausgelöst."
+    }
+  ],
+  "findings": [
+    {
+      "id": "owner_a-F1",
+      "severity": "P2",
+      "title": "Kundenakte zeigt unter Verknüpfte Vorgänge keine bestehenden Vorgänge",
+      "observation": "Die Kundenakte KD-2026-00031 zeigte im Reiter Verknüpfte Vorgänge nur den Hinweis, Verknüpfungen über die Übersicht zu öffnen, und Zur Übersicht. Dort standen Kundendaten und Aktionen zum Anlegen neuer Vorgänge. Das bestehende Angebot und der bestehende Auftrag wurden nicht aufgelistet. Diese Beziehungen waren später in der Angebots- und Rechnungsakte sichtbar.",
+      "expectation": "Vom bekannten Kunden aus seine bestehenden Angebote, Aufträge und Rechnungen öffnen und den hängenden Vorgang erkennen.",
+      "impact": "Ich musste zur Angebotsliste wechseln. Suche nach dem eindeutigen Kundennamensbestandteil 1d9d13 lieferte 0 Einträge. Erst Titelsuche mit Vergleich des Änderungszeitpunkts führte zum richtigen Angebot. Für einen kurzen Morgenblick ist dieser Umweg erheblich.",
+      "route": "/customers/3766613f-7dea-4b9c-a465-b8c7fe562600",
+      "steps": [
+        "Auftrag AUF-2026-00008 aus einer Auswertung öffnen.",
+        "Kundenlink Synthetischer Integrationstest 1d9d13 öffnen.",
+        "Verknüpfte Vorgänge wählen.",
+        "Über Büro/Angebote erst Kundennamensbestandteil, dann Titel suchen.",
+        "Angebot TEST-AN/26/0125 öffnen; dort bestätigt sich der Kunden- und Auftragsbezug."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/owner_a/0005-1792760979341.png",
+        "Beobachtete Suche /quotes?q=1d9d13 mit 0 Einträgen",
+        "Beobachtetes Angebot /quotes/b696f83f-f0c8-4ed8-9534-d40ee2f28865"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Bestehende Vorgänge in der Kundenakte mit Nummer, Status und direktem Link anbieten."
+    },
+    {
+      "id": "owner_a-F2",
+      "severity": "P2",
+      "title": "Aufgabe nennt eine Kennung als Verantwortlichen und bietet die Originalanfrage nur als Textpfad",
+      "observation": "In Neue Anfrage bearbeiten stand unter Verantwortlich eine lange Kennung. Beschreibung und Untertitel enthielten /inquiries/5447cec8-5e19-47fc-82fa-8f719893e1c2 als normalen Text, keinen Link. Auftrag und Fälligkeit waren leer. Verknüpfte Vorgänge enthielt nur eine allgemeine Rückverweisung auf die Übersicht.",
+      "expectation": "Bei einer offenen Anfrage erkennen, wer zuständig ist, und die zugrunde liegende Anfrage direkt lesen können.",
+      "impact": "Ich konnte weder die Person zuordnen noch die Anfrage über einen sichtbaren Link öffnen. Beginnen und Erledigen waren deutlich angeboten, obwohl mir der Inhalt zur Entscheidung fehlte; ich habe beide unberührt gelassen.",
+      "route": "/tasks/c81200eb-3eaf-46c1-9d68-09496ee4aa17",
+      "steps": [
+        "Heute > Aufgaben ansehen.",
+        "Erste sichtbare Neue Anfrage bearbeiten öffnen.",
+        "Übersicht und Verknüpfte Vorgänge lesen.",
+        "Zur Übersicht zurückkehren."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/owner_a/0003-1792760903569.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Zuständigen mit Namen und verknüpfte Originalanfrage als benannten Link anzeigen."
+    },
+    {
+      "id": "owner_a-F3",
+      "severity": "P2",
+      "title": "Auftragsliste zeigt bei acht UX-Aufträgen Kundenschlüssel statt Kundennamen",
+      "observation": "In Alle Aufträge stand bei den acht UX-Aufträgen AUF-2026-00013 bis 00020 in der Spalte Kunde derselbe lange Schlüssel. In Heute wurden die dazugehörigen Kundennamen lesbar angezeigt. Andere ältere Zeilen der Auftragsliste zeigten ebenfalls lesbare Kundennamen.",
+      "expectation": "Beim Abgleich von Auftrag und Zieltermin den Kunden ohne Öffnen jeder Akte erkennen.",
+      "impact": "Der Blick auf die Zieltermine 26.10.2026 half, aber die Kundenzuordnung blieb in der Liste unverständlich und uneinheitlich.",
+      "route": "/orders",
+      "steps": [
+        "Aus dem Raumstudio Heute wählen.",
+        "Alle Aufträge öffnen.",
+        "Kundenspalte der UX-Aufträge und älteren Synthetischer Angebotsablauf-Zeilen vergleichen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/owner_a/0014-1792761387671.png",
+        "work/ai-usability/evidence/owner_a/0001-1792760845118.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Den lesbaren Kundennamen in jeder Auftragszeile konsistent auflösen und bei Bedarf verlinken."
+    },
+    {
+      "id": "owner_a-F4",
+      "severity": "P2",
+      "title": "Morgenübersicht und Aufgabenliste erklären die Dringlichkeit offener Aufgaben nicht",
+      "observation": "Heute zeigte zunächst 43 offene Aufgaben und vier Aufmerksamkeitskarten mit allgemeinen Titeln beziehungsweise einem technischen Testtitel. Auf den Karten fehlten Fälligkeit, Priorität und zuständige Person. Die Aufgabenliste bot Nummer, Aufgabe, Status und Zuletzt geändert, aber keine Dringlichkeitsspalte; die geöffnete Anfrage hatte keine Fälligkeit und Priorität Normal.",
+      "expectation": "Als Inhaber morgens erkennen, welche zwei oder drei offenen Aufgaben heute zuerst Aufmerksamkeit benötigen und weshalb.",
+      "impact": "Ich konnte konkrete Folgearbeiten aus Auftrags- und Auswertungsakten ableiten, aber die wichtigsten offenen Aufgaben nicht zuverlässig auswählen. Ich musste mehrere Bereiche öffnen und selbst zusammenführen.",
+      "route": "/ und /tasks",
+      "steps": [
+        "Heute und Das braucht Aufmerksamkeit lesen.",
+        "Aufgaben ansehen öffnen.",
+        "Spalten und die erste Neue Anfrage bearbeiten prüfen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/owner_a/0001-1792760845118.png",
+        "work/ai-usability/evidence/owner_a/0003-1792760903569.png",
+        "Beobachtete Aufgabenliste /tasks"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Dringlichkeit mit Fälligkeit, Priorität, Zuständigkeit und konkretem Vorgangsbezug im Morgenüberblick begründen."
+    },
+    {
+      "id": "owner_a-F5",
+      "severity": "P2",
+      "title": "Wiederholte Kostensatzwarnungen nennen weder Betroffene noch einen Prüfweg",
+      "observation": "Unter Auswertungen > Daten & Grundlagen erschienen zahlreiche gleichlautende Karten Berechnungsgrundlage ergänzen mit Interner Kostensatz fehlt. Auftragsmarge unvollständig. und Prüfung erforderlich. Diese Karten enthielten keinen erkennbaren Namen und keinen Link. Die danach aufgeführten Restschätzungswarnungen nannten dagegen konkrete Auftragsnummern und Grundlage prüfen.",
+      "expectation": "Eine wirtschaftliche Warnung einem Mitarbeiter oder einer Berechnungsgrundlage zuordnen und gezielt zur Klärung weitergehen.",
+      "impact": "Ich verstand die allgemeine Ursache der unvollständigen Marge, konnte aus den wiederholten Kostensatzkarten jedoch keine konkrete einzelne Klärung beginnen. Die langen Wiederholungen erschwerten das Scannen.",
+      "route": "/reports",
+      "steps": [
+        "Auswertungen öffnen.",
+        "Daten & Grundlagen 36 wählen.",
+        "Kostensatzkarten mit den anschließenden Restschätzungswarnungen vergleichen."
+      ],
+      "evidence": [
+        "Beobachteter Bildschirmtext /reports, Reiter Daten & Grundlagen 36",
+        "work/ai-usability/evidence/owner_a/0004-1792760928089.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Warnungen nach Ursache bündeln und betroffene Personen beziehungsweise Grundlagen mit einem Prüfweg nennen."
+    },
+    {
+      "id": "owner_a-F6",
+      "severity": "P3",
+      "title": "Wandstärke wirkt mit Unbekannt offenlassbar, ist beim Rechteckraum aber Pflicht",
+      "observation": "Im Dialog Raum anlegen ließ ich Wandstärke ohne Belag leer; das Feld zeigte Unbekannt. Mit ausgefüllter Breite 2500,5, Tiefe 3000 und Höhe 2400 blieb In den Plan übernehmen im Dialog. Die sichtbare native Pflichtfeldmeldung markierte die Wandstärke. Erst nach Eingabe des eigenen Probewerts 120 wurde der Raum angelegt.",
+      "expectation": "Den gemessenen Innenraum zunächst als unvollständigen Entwurf aufnehmen können oder vor dem Absenden klar erfahren, dass neue Wände eine Wandstärke voraussetzen.",
+      "impact": "Ein zusätzlicher Versuch war nötig. Bei einem echten unvollständigen Aufmaß müsste ich abbrechen oder die fehlende Stärke zuerst beschaffen. Ich habe ausschließlich für meinen synthetischen Proberaum einen Wert gewählt.",
+      "route": "/studio/c5e4bb92-ed2a-4701-a07a-3e583d6b3a41",
+      "steps": [
+        "Eigenen Entwurf UX owner_a Morgenprobe Bad öffnen.",
+        "Raumgeometrie anlegen, Neues Rechteck mit vier Wänden, Lichte Innenmaße verwenden.",
+        "Breite, Tiefe und Höhe ausfüllen; Wandstärke leer lassen.",
+        "In den Plan übernehmen wählen und Pflichtfeldmeldung lesen.",
+        "120 mm als Probewert eintragen und erneut übernehmen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/owner_a/0011-1792761283984.png",
+        "work/ai-usability/evidence/owner_a/0013-1792761344483.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Pflicht für neue Wände vorab erklären oder einen ausdrücklich unvollständigen Entwurf unterstützen."
+    }
+  ],
+  "strengths": [
+    "Die linke Hauptnavigation bleibt im Studio sichtbar; Heute und der Rückweg zu Aufträgen funktionieren.",
+    "Bei 1440 × 1000 sind Überschriften, Statuskarten und primäre Aktionen klar lesbar. Die Studios haben vier verständliche Arbeitsschritte.",
+    "Angebotsakte verlinkt den passenden Kunden und Auftrag. Die gefilterten Wege vom Auftrag zur Planung und Abrechnung benennen den Auftragsbezug ausdrücklich.",
+    "Auswertungen unterscheiden bestätigte Werte von fehlenden Grundlagen und erklären, dass offene Posten keine zugesicherten Zahlungseingänge sind.",
+    "Im Grabmal-Prüfstand sind Kundenbestätigung, technische Fachprüfung und Genehmigung ausdrücklich getrennt; Fertigungsfreigabe bleibt bei leerem Plan gesperrt.",
+    "Deutsche Dezimalangabe 2500,5 wurde im Raumstudio übernommen; gespeicherter Stand war als Synchronisiert, Entwurf 1 Rev. 2 erkennbar.",
+    "Der KI-Begleiter benannte den aktuellen gespeicherten Planstand und gesamten Plan als Kontext, erklärte im Prüfschritt gesperrte Planänderungen und wies vor einer Eingabe auf die fehlende Einrichtung hin."
+  ],
+  "limits": [
+    "Simulierter Black-box-Test einer synthetischen lokalen Umgebung, keine reale menschliche Feldstudie. Dauer der geöffneten Sitzung circa 9,5 Minuten. Nur Desktop 1440 × 1000 geprüft.",
+    "KI war mit OpenAI-Projekt, Modell und Kostenbudget noch einzurichten deaktiviert. Keine KI-Antwortqualität oder tatsächliche KI-Übernahme bewertet; keine Integrationsänderung vorgenommen.",
+    "Keine technischen Nachweise, Herstelleraussagen, rechtlichen Freigaben, Produktionsabläufe, Rechnungsprüfung oder Ausstellungen ausgelöst. Fachliche Richtigkeit der Planung nicht bewertet.",
+    "Synthetische Bestandsdaten enthalten viele ähnliche Titel und fehlende Grundlagen. Fehlende Inhalte wurden nicht als Berechnungsfehler gewertet. Die Aufgabenanzahl änderte sich während der Sitzung von 43 auf 44; Ursache nicht untersucht.",
+    "Escape schloss die Einstiegstour. Der anschließend noch versuchte Schließen-Locator war deshalb erfolglos; kein Appfehler daraus abgeleitet.",
+    "Ein Klickversuch auf Speichern meldete einen Werkzeugfehler. Danach zeigte inspect den synchronisierten Stand Rev. 2 mit deaktiviertem Speichern. Nicht erneut gespeichert und keinen Datenverlust behauptet.",
+    "Eine lokale Ausgabe wurde vom Werkzeug gekürzt und ließ sich in meiner Ergebnisdarstellung nicht als JSON parsen; die spätere sichtbare Feldbelegung bestätigte die Eingabe. Kein Appfehler daraus abgeleitet.",
+    "Datumsfelder zeigten im Browser MM/DD/YYYY und die native Pflichtfeldmeldung erschien englisch. Browser-Locale als mögliche Umgebungsursache nicht geprüft; kein gesicherter App-Übersetzungsfehler.",
+    "Eigene erhaltene Testobjekte: UX owner_a Morgenprobe Grabmal (leerer Entwurf) und UX owner_a Morgenprobe Bad (gespeicherter Rechteckraum). Beide ohne Auftragsbezug. Keine fremden Datensätze geändert oder freigegeben."
+  ],
+  "browserActionsApprox": 69
+}

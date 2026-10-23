@@ -1,0 +1,1285 @@
+{
+  "runId": "ux-20261023-c04396",
+  "baseline": "fbed506d9fb63cf62f7b148942b8ac7c930f54ce",
+  "totals": {
+    "participants": 22,
+    "completed": 22,
+    "actions": 1420,
+    "goals": {
+      "achieved": 37,
+      "partial": 29,
+      "blocked": 4,
+      "not-attempted": 0
+    },
+    "findings": {
+      "product": 75,
+      "environment": 14,
+      "harness": 1
+    },
+    "severities": {
+      "P0": 0,
+      "P1": 4,
+      "P2": 62,
+      "P3": 24
+    }
+  },
+  "results": [
+    {
+      "id": "planner_a",
+      "role": "Planner",
+      "pending": false,
+      "problems": [],
+      "actions": 69,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "blocked"
+        },
+        {
+          "id": "G4",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "planner_a-F1",
+          "severity": "P1",
+          "category": "product",
+          "title": "Planungs-PDF endet zweimal auf roher JSON-Fehlerseite",
+          "confidence": "high"
+        },
+        {
+          "id": "planner_a-F2",
+          "severity": "P3",
+          "category": "product",
+          "title": "Beim Öffnen des Assistenten ist der Grund der Sperre zunächst abgeschnitten",
+          "confidence": "high"
+        },
+        {
+          "id": "planner_a-E1",
+          "severity": "P2",
+          "category": "environment",
+          "title": "KI-Gestaltung in dieser Umgebung nicht eingerichtet",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 18,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "planner_b",
+      "role": "Planner",
+      "pending": false,
+      "problems": [],
+      "actions": 75,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        },
+        {
+          "id": "G4",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "planner_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Planungs-PDF ersetzt den gewählten Stein durch eine Material-ID",
+          "confidence": "high"
+        },
+        {
+          "id": "planner_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Lichte Innenmaße sind nach Raumübernahme und im PDF nicht direkt ablesbar",
+          "confidence": "high"
+        },
+        {
+          "id": "planner_b-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Waschtischplatte verwendet Grabmalformen und wechselnde Maßbegriffe",
+          "confidence": "high"
+        },
+        {
+          "id": "planner_b-E1",
+          "severity": "P2",
+          "category": "environment",
+          "title": "KI-Anfrage durch fehlende Anbietereinrichtung nicht möglich",
+          "confidence": "high"
+        },
+        {
+          "id": "planner_b-H1",
+          "severity": "P2",
+          "category": "harness",
+          "title": "Download-Tab unterbricht den Browser-Harness trotz gespeichertem PDF",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 13,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "office_a",
+      "role": "Office",
+      "pending": false,
+      "problems": [],
+      "actions": 85,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "office_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Verknüpfte Vorgänge der Kundenakte zeigt weder Anfrage noch Angebot",
+          "confidence": "high"
+        },
+        {
+          "id": "office_a-F2",
+          "severity": "P3",
+          "category": "product",
+          "title": "Der Direkteinstieg in eine neue Anfrage führt beim neuen Kunden zu einem Umweg",
+          "confidence": "high"
+        },
+        {
+          "id": "office_a-F3",
+          "severity": "P2",
+          "category": "environment",
+          "title": "KI im ungespeicherten Angebotsformular wegen fehlender Einrichtung nicht nutzbar",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 13,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "office_b",
+      "role": "Office",
+      "pending": false,
+      "problems": [],
+      "actions": 61,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "blocked"
+        },
+        {
+          "id": "G4",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "office_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Kundenakte bietet unter Verknüpfte Vorgänge keine Vorgangsliste",
+          "confidence": "high"
+        },
+        {
+          "id": "office_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Auftragsliste zeigt Kundenkennung; Kundennamensuche liefert keine Treffer",
+          "confidence": "high"
+        },
+        {
+          "id": "office_b-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Verlauf bleibt nach gespeicherter Wunschänderung leer",
+          "confidence": "medium"
+        },
+        {
+          "id": "office_b-E1",
+          "severity": "P2",
+          "category": "environment",
+          "title": "KI-Rückfrage durch fehlende Einrichtung in dieser Umgebung blockiert",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 12,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "employee_a",
+      "role": "Employee",
+      "pending": false,
+      "problems": [],
+      "actions": 52,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "employee_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Tagesverlauf meldet offene Zuordnung trotz bestätigtem Auftrag",
+          "confidence": "high"
+        },
+        {
+          "id": "employee_a-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Laufende Zeit ist in den besuchten Arbeits- und Dokumentansichten unsichtbar",
+          "confidence": "high"
+        },
+        {
+          "id": "employee_a-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Pausenaktionen brechen auf 390 Pixeln mitten im Wort um",
+          "confidence": "high"
+        },
+        {
+          "id": "employee_a-F4",
+          "severity": "P3",
+          "category": "product",
+          "title": "Fester Assistent verdeckt Zeitdetails beim mobilen Scrollen",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 30,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "employee_b",
+      "role": "Employee",
+      "pending": false,
+      "problems": [],
+      "actions": 54,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        },
+        {
+          "id": "G4",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "employee_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Fehler beim Speichern steht außerhalb des sichtbaren Mobilformulars",
+          "confidence": "high"
+        },
+        {
+          "id": "employee_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Eine einfache Endzeitkorrektur verlangt Abgleich mehrerer Zeitblöcke",
+          "confidence": "high"
+        },
+        {
+          "id": "employee_b-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Nach dem Speichern von gestern bleibt der Tagesverlauf auf heute",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 26,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "workshop_a",
+      "role": "Workshop",
+      "pending": false,
+      "problems": [],
+      "actions": 80,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "workshop_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Nach Wiederöffnen steht die gespeicherte Testzeit gleichzeitig als offen und bestätigt zugeordnet da",
+          "confidence": "high"
+        },
+        {
+          "id": "workshop_a-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Teilrückmeldung ist am Auftrag speicherbar, am zugehörigen Arbeitspaket aber nicht auffindbar",
+          "confidence": "high"
+        },
+        {
+          "id": "workshop_a-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Dokumentenreiter des Arbeitspakets nennt keinen belastbaren Unterlagenstand",
+          "confidence": "high"
+        },
+        {
+          "id": "workshop_a-F4",
+          "severity": "P2",
+          "category": "product",
+          "title": "Nach bestätigter Materialreservierung sind Auftrag und reservierte Menge in der Bestandsakte nicht sichtbar",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 18,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "workshop_b",
+      "role": "Workshop",
+      "pending": false,
+      "problems": [],
+      "actions": 68,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "workshop_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Beendete Stoppuhr und gespeicherte Sitzung zeigen zunächst widersprüchliche Zustände",
+          "confidence": "high"
+        },
+        {
+          "id": "workshop_b-F2",
+          "severity": "P3",
+          "category": "product",
+          "title": "Maße, Arbeitsanweisung und Ausführungsstand liegen beim mobilen Auftrag weit unten",
+          "confidence": "high"
+        },
+        {
+          "id": "workshop_b-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Schwebender Assistent verdeckt auf dem Smartphone Teile des Inhalts",
+          "confidence": "high"
+        },
+        {
+          "id": "workshop_b-E1",
+          "severity": "P2",
+          "category": "environment",
+          "title": "Im sichtbaren Lager fehlen Bestände für den Materialtest",
+          "confidence": "high"
+        },
+        {
+          "id": "workshop_b-F4",
+          "severity": "P3",
+          "category": "product",
+          "title": "Reservierungsdialog nennt die konkrete Einheit der Menge nicht erneut",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 35,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "dispatcher_a",
+      "role": "Dispatcher",
+      "pending": false,
+      "problems": [],
+      "actions": 63,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "dispatcher_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Eigene Mitarbeiterin fehlt in direkter Auswahl und Kalenderfilter",
+          "confidence": "high"
+        },
+        {
+          "id": "dispatcher_a-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Kalender zeigt beim eigenen Einsatz eine Kennung statt Petra Vogt",
+          "confidence": "high"
+        },
+        {
+          "id": "dispatcher_a-F3",
+          "severity": "P2",
+          "category": "product",
+          "title": "Gespeicherte Terminverschiebung bleibt im sichtbaren Verlauf unsichtbar",
+          "confidence": "high"
+        },
+        {
+          "id": "dispatcher_a-F4",
+          "severity": "P2",
+          "category": "product",
+          "title": "Auftragfilter ist am Kalender erst unterhalb der Ansicht erkennbar",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 16,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "dispatcher_b",
+      "role": "Dispatcher",
+      "pending": false,
+      "problems": [],
+      "actions": 64,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "dispatcher_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Mitarbeitersuche meldet keinen Treffer, obwohl der eigene Benutzer auswählbar ist",
+          "confidence": "high"
+        },
+        {
+          "id": "dispatcher_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Wochenkarte zeigt für den ausgewählten Mitarbeiter eine Kennung statt seines Namens",
+          "confidence": "high"
+        },
+        {
+          "id": "dispatcher_b-F3",
+          "severity": "P2",
+          "category": "product",
+          "title": "Konfliktmeldung nennt weder den kollidierenden Einsatz noch dessen Zeitraum",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 15,
+      "httpErrors": [
+        {
+          "path": "/api/v1/commands",
+          "status": 409
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "id": "finance_a",
+      "role": "Finance",
+      "pending": false,
+      "problems": [],
+      "actions": 73,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "partial"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "finance_a-F1",
+          "severity": "P1",
+          "category": "environment",
+          "title": "Nicht eingerichteter Dateispeicher verhindert Original und damit den Eingangsrechnungsentwurf",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_a-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Auftragsauswahl empfiehlt Stammdatenanlage, obwohl der vorhandene Auftrag über Suche auffindbar ist",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_a-F3",
+          "severity": "P2",
+          "category": "product",
+          "title": "Das erforderliche Original führt aus dem Rechnungseingangsformular heraus",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_a-F4",
+          "severity": "P3",
+          "category": "product",
+          "title": "Die Rechnungsübersicht zeigt den Auftrag als technische Kennung",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_a-F5",
+          "severity": "P3",
+          "category": "product",
+          "title": "Rechnungsstatusfilter mischt Deutsch mit validated",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_a-F6",
+          "severity": "P2",
+          "category": "environment",
+          "title": "KI-Prüfung ist mangels Konfiguration nicht ausführbar",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 7,
+      "httpErrors": [
+        {
+          "path": "/api/v1/uploads",
+          "status": 503
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "id": "finance_b",
+      "role": "Finance",
+      "pending": false,
+      "problems": [],
+      "actions": 76,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "partial"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "finance_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Quellenlink beim beauftragten Nettowert endet im gesperrten Auftragsbereich",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Kundenreiter Verknüpfte Vorgänge liefert nur einen allgemeinen Hinweis",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_b-F3",
+          "severity": "P2",
+          "category": "product",
+          "title": "Einführung erscheint nach Quellensprung erneut und Schließen erzeugt Datensatzkonflikt",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_b-F4",
+          "severity": "P2",
+          "category": "product",
+          "title": "Auftrag wird in eigener Aufgabe nach Namensauswahl nur als unlesbare Kennung gezeigt",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_b-F5",
+          "severity": "P3",
+          "category": "product",
+          "title": "Rechnungsstatus validated bleibt englisch",
+          "confidence": "high"
+        },
+        {
+          "id": "finance_b-F6",
+          "severity": "P2",
+          "category": "environment",
+          "title": "Exportpaket kann wegen fehlendem privaten Dateispeicher nicht bereitgestellt werden",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 10,
+      "httpErrors": [
+        {
+          "path": "/api/v1/commands",
+          "status": 409
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "id": "owner_a",
+      "role": "Owner",
+      "pending": false,
+      "problems": [],
+      "actions": 69,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "owner_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Kundenakte zeigt unter Verknüpfte Vorgänge keine bestehenden Vorgänge",
+          "confidence": "high"
+        },
+        {
+          "id": "owner_a-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Aufgabe nennt eine Kennung als Verantwortlichen und bietet die Originalanfrage nur als Textpfad",
+          "confidence": "high"
+        },
+        {
+          "id": "owner_a-F3",
+          "severity": "P2",
+          "category": "product",
+          "title": "Auftragsliste zeigt bei acht UX-Aufträgen Kundenschlüssel statt Kundennamen",
+          "confidence": "high"
+        },
+        {
+          "id": "owner_a-F4",
+          "severity": "P2",
+          "category": "product",
+          "title": "Morgenübersicht und Aufgabenliste erklären die Dringlichkeit offener Aufgaben nicht",
+          "confidence": "high"
+        },
+        {
+          "id": "owner_a-F5",
+          "severity": "P2",
+          "category": "product",
+          "title": "Wiederholte Kostensatzwarnungen nennen weder Betroffene noch einen Prüfweg",
+          "confidence": "high"
+        },
+        {
+          "id": "owner_a-F6",
+          "severity": "P3",
+          "category": "product",
+          "title": "Wandstärke wirkt mit Unbekannt offenlassbar, ist beim Rechteckraum aber Pflicht",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 14,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "owner_b",
+      "role": "Owner",
+      "pending": false,
+      "problems": [],
+      "actions": 64,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "owner_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Die Aufgabenakte zeigt die verantwortliche Person als Kennung",
+          "confidence": "high"
+        },
+        {
+          "id": "owner_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Gleichlautende Kostensatz-Hinweise lassen die betroffene Grundlage offen",
+          "confidence": "high"
+        },
+        {
+          "id": "owner_b-F3",
+          "severity": "P2",
+          "category": "product",
+          "title": "Aufmerksamkeitsmeldungen zu angenommenen Angeboten führen ohne konkreten Vorgangsbezug weiter",
+          "confidence": "medium"
+        }
+      ],
+      "screenshots": 24,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "hr_a",
+      "role": "HR",
+      "pending": false,
+      "problems": [],
+      "actions": 66,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "blocked"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "hr_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "HR-Zeitprüfung liegt unter eigener Erfassung und Leistungsrückmeldung",
+          "confidence": "high"
+        },
+        {
+          "id": "hr_a-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Vollständiger Zeitnachweis öffnet technischen JSON-Text",
+          "confidence": "high"
+        },
+        {
+          "id": "hr_a-F3",
+          "severity": "P2",
+          "category": "environment",
+          "title": "Bestätigte Arbeitsgrundlage für eigenen Testantrag nicht auffindbar",
+          "confidence": "medium"
+        }
+      ],
+      "screenshots": 19,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "hr_b",
+      "role": "HR",
+      "pending": false,
+      "problems": [],
+      "actions": 50,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "hr_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Tätigkeit und Nachtragsgrund sind im normalen Zeitnachweis nicht wiederzufinden",
+          "confidence": "high"
+        },
+        {
+          "id": "hr_b-F2",
+          "severity": "P3",
+          "category": "product",
+          "title": "Tag prüfen & abgeben reicht sofort ein und sperrt Korrekturen",
+          "confidence": "high"
+        },
+        {
+          "id": "hr_b-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Abwesenheitsübersicht zeigt keine Zeitraumspalten",
+          "confidence": "medium"
+        },
+        {
+          "id": "hr_b-F4",
+          "severity": "P3",
+          "category": "product",
+          "title": "Hilfe für Personal beginnt mit fachfremden Fragen und erklärt Zeitabgabe nicht",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 8,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "superadmin_a",
+      "role": "SuperAdmin",
+      "pending": false,
+      "problems": [],
+      "actions": 61,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "partial"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "superadmin_a-E1",
+          "severity": "P1",
+          "category": "environment",
+          "title": "Privater Dateispeicher verhindert Originalupload und Studioverwendung",
+          "confidence": "high"
+        },
+        {
+          "id": "superadmin_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Uploadfehler bleibt außerhalb des Blicks und erklärt gespeicherten Entwurf nicht",
+          "confidence": "high"
+        },
+        {
+          "id": "superadmin_a-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Rollenformular erscheint unter langer Personenliste außerhalb des Viewports",
+          "confidence": "high"
+        },
+        {
+          "id": "superadmin_a-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Enter führt Herstellerbibliothekssuche nicht aus",
+          "confidence": "medium"
+        }
+      ],
+      "screenshots": 16,
+      "httpErrors": [
+        {
+          "path": "/api/v1/uploads",
+          "status": 503
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "id": "superadmin_b",
+      "role": "SuperAdmin",
+      "pending": false,
+      "problems": [],
+      "actions": 74,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "achieved"
+        },
+        {
+          "id": "G2",
+          "status": "partial"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "superadmin_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Beschäftigtenprofil scheitert ohne Benennung des zu korrigierenden Felds",
+          "confidence": "high"
+        },
+        {
+          "id": "superadmin_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Lange Zugangsliste trennt Finden, Ändern und Anlegen räumlich",
+          "confidence": "high"
+        },
+        {
+          "id": "superadmin_b-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Technische gesperrte Dienste nennen keinen verständlichen Anschlussweg",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 19,
+      "httpErrors": [
+        {
+          "path": "/api/v1/commands",
+          "status": 422
+        },
+        {
+          "path": "/api/v1/commands",
+          "status": 422
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "id": "taxadvisor_a",
+      "role": "TaxAdvisor",
+      "pending": false,
+      "problems": [],
+      "actions": 52,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "achieved"
+        },
+        {
+          "id": "G3",
+          "status": "blocked"
+        }
+      ],
+      "findings": [
+        {
+          "id": "taxadvisor_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Quellenvorgänge werden angeboten, führen aber in nicht freigegebene Bereiche",
+          "confidence": "high"
+        },
+        {
+          "id": "taxadvisor_a-F2",
+          "severity": "P1",
+          "category": "environment",
+          "title": "Privates Controlling-Exportpaket bleibt wegen fehlendem Dateispeicher nicht verfügbar",
+          "confidence": "high"
+        },
+        {
+          "id": "taxadvisor_a-F3",
+          "severity": "P2",
+          "category": "product",
+          "title": "Viele Hinweise zum fehlenden Kostensatz nennen keinen betroffenen Vorgang",
+          "confidence": "high"
+        },
+        {
+          "id": "taxadvisor_a-F4",
+          "severity": "P3",
+          "category": "product",
+          "title": "Heruntergeladene Übergaben-CSV verwendet technische englische Spaltennamen",
+          "confidence": "high"
+        },
+        {
+          "id": "taxadvisor_a-F5",
+          "severity": "P3",
+          "category": "product",
+          "title": "Erneut erscheinende Einführung meldet beim Pausieren einen Datensatzkonflikt",
+          "confidence": "medium"
+        }
+      ],
+      "screenshots": 8,
+      "httpErrors": [
+        {
+          "path": "/api/v1/commands",
+          "status": 409
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "id": "taxadvisor_b",
+      "role": "TaxAdvisor",
+      "pending": false,
+      "problems": [],
+      "actions": 48,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "partial"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "taxadvisor_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Angebotene Rechnungs- und Auftragsquellen sind für Steuerberatung nicht freigegeben",
+          "confidence": "high"
+        },
+        {
+          "id": "taxadvisor_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Identische Kostensatz-Hinweise lassen sich keinem konkreten Fall zuordnen",
+          "confidence": "high"
+        },
+        {
+          "id": "taxadvisor_b-F3",
+          "severity": "P2",
+          "category": "product",
+          "title": "Einführung kehrt zurück und meldet beim Pausieren einen Änderungskonflikt",
+          "confidence": "high"
+        },
+        {
+          "id": "taxadvisor_b-F4",
+          "severity": "P2",
+          "category": "environment",
+          "title": "Berichtspaket benötigt noch privaten Dateispeicher",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 11,
+      "httpErrors": [
+        {
+          "path": "/api/v1/commands",
+          "status": 409
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "id": "techadmin_a",
+      "role": "TechAdmin",
+      "pending": false,
+      "problems": [],
+      "actions": 56,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "partial"
+        },
+        {
+          "id": "G3",
+          "status": "achieved"
+        }
+      ],
+      "findings": [
+        {
+          "id": "techadmin_a-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Jobdetails verlieren den vorhandenen Fehlerhinweis und liefern keinen technischen Verlauf",
+          "confidence": "high"
+        },
+        {
+          "id": "techadmin_a-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Weg zur System-/Integrationsübersicht bleibt für Technik ungeklärt",
+          "confidence": "medium"
+        },
+        {
+          "id": "techadmin_a-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Nicht verfügbar verwendet dieselbe grüne Statusdarstellung wie Abgeschlossen",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 16,
+      "httpErrors": [],
+      "pageErrors": []
+    },
+    {
+      "id": "techadmin_b",
+      "role": "TechAdmin",
+      "pending": false,
+      "problems": [],
+      "actions": 60,
+      "goals": [
+        {
+          "id": "G1",
+          "status": "partial"
+        },
+        {
+          "id": "G2",
+          "status": "partial"
+        },
+        {
+          "id": "G3",
+          "status": "partial"
+        }
+      ],
+      "findings": [
+        {
+          "id": "techadmin_b-F1",
+          "severity": "P2",
+          "category": "product",
+          "title": "Jobakte verliert die bereits in der Liste sichtbare Diagnose",
+          "confidence": "high"
+        },
+        {
+          "id": "techadmin_b-F2",
+          "severity": "P2",
+          "category": "product",
+          "title": "Technischer Zugang findet keinen Systemüberblick und keinen Einstieg zu genannten Betriebseinstellungen",
+          "confidence": "medium"
+        },
+        {
+          "id": "techadmin_b-F3",
+          "severity": "P3",
+          "category": "product",
+          "title": "Hilfe für die Verarbeitung beschreibt stattdessen die Tagesübersicht",
+          "confidence": "high"
+        },
+        {
+          "id": "techadmin_b-E1",
+          "severity": "P2",
+          "category": "environment",
+          "title": "KI-Chat ist in dieser Umgebung noch nicht eingerichtet",
+          "confidence": "high"
+        },
+        {
+          "id": "techadmin_b-E2",
+          "severity": "P2",
+          "category": "environment",
+          "title": "Dokumentjobs nennen fehlenden privaten Dateispeicher",
+          "confidence": "high"
+        }
+      ],
+      "screenshots": 11,
+      "httpErrors": [],
+      "pageErrors": []
+    }
+  ]
+}

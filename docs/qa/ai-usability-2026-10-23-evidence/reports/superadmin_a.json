@@ -1,0 +1,114 @@
+{
+  "persona": "superadmin_a",
+  "role": "Fachliche Hersteller- und Stammdatenverwaltung / Superadmin",
+  "startedAt": "2026-10-23T13:14:10Z",
+  "finishedAt": "2026-10-23T13:22:26Z",
+  "timestampNote": "Start auf wenige Sekunden angenähert; erster Screenshot um 13:14:16.257 UTC. finishedAt ist der Zeitpunkt unmittelbar nach dem Kontextschluss.",
+  "viewport": { "width": 1440, "height": 1000 },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": ["work/ai-usability/evidence/superadmin_a/0005-1792761385276.png", "work/ai-usability/evidence/superadmin_a/0006-1792761430358.png", "work/ai-usability/evidence/superadmin_a/0007-1792761452399.png"],
+      "notes": "Herstellerbibliothek gefunden und eigenen synthetischen Metadatenentwurf UX superadmin_a · Test Naturstein-Datenblatt angelegt. PDF-Upload scheiterte am nicht eingerichteten privaten Dateispeicher. Kein erfolgreicher Originalupload."
+    },
+    {
+      "id": "G2",
+      "status": "partial",
+      "evidence": ["work/ai-usability/evidence/superadmin_a/0005-1792761385276.png", "work/ai-usability/evidence/superadmin_a/0007-1792761452399.png", "work/ai-usability/evidence/superadmin_a/0008-1792761487684.png"],
+      "notes": "Datenblatt und beide Studios ausgewählt; Herkunft und Datum im Freitext eingetragen. Getrennte Planungs-/KI-Optionen und Übermittlungserklärung gefunden. Planung lokal ausgewählt, KI deaktiviert. Rechtebegründung und Prüfbestätigung eingegeben. Bereitstellung blieb ohne Original gesperrt; Persistenz der Rechte nicht nachgewiesen. Scan und tatsächliche KI-Übermittlung nicht prüfbar."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": ["work/ai-usability/evidence/superadmin_a/0010-1792761539628.png", "work/ai-usability/evidence/superadmin_a/0015-1792761611342.png", "work/ai-usability/evidence/superadmin_a/0016-1792761683502.png"],
+      "notes": "Zugriff vergeben führt zu Zugänge & Rollen; Zusatzfähigkeit Herstellerbibliothek verwalten nur angesehen und abgebrochen. Eigene leere Entwürfe in beiden Studios angelegt und Herstellerdaten-Suche geprüft. Keine passende eigene Originaldatei; Verwendung wegen fehlender Datei nicht abgeschlossen."
+    }
+  ],
+  "findings": [
+    {
+      "id": "superadmin_a-E1",
+      "severity": "P1",
+      "title": "Privater Dateispeicher verhindert Originalupload und Studioverwendung",
+      "observation": "Speichern mit eigenem synthetischem PDF zeigte: Privater Dateispeicher ist noch nicht eingerichtet. Danach existierte nur ein Entwurf ohne Originaldatei. Dateistatus aktualisieren änderte dies nicht; In den Studios bereitstellen blieb deaktiviert.",
+      "expectation": "Nach Datei und Pflichtangaben würde die Originaldatei gespeichert und die Verwendungsprüfung geöffnet.",
+      "impact": "G1 bis G3 bleiben teilweise offen; Dateiablage, Scan, Import und KI-Referenzübermittlung nicht beurteilbar.",
+      "route": "/manufacturer-assets?q=UX+superadmin_a",
+      "steps": ["Herstellerunterlage hinzufügen", "Eigenes synthetisches PDF auswählen", "Bezeichnung, Hersteller, Datenblatt und beide Studios eintragen", "Speichern & Verwendung prüfen", "Meldung lesen", "Eigenen Entwurf wieder öffnen und Dateistatus aktualisieren"],
+      "evidence": ["work/ai-usability/evidence/superadmin_a/0005-1792761385276.png", "work/ai-usability/evidence/superadmin_a/0007-1792761452399.png", "work/ai-usability/evidence/superadmin_a/0015-1792761611342.png", "work/ai-usability/evidence/superadmin_a/0016-1792761683502.png"],
+      "confidence": "high",
+      "category": "environment",
+      "recommendation": "Dateispeicher für einen erneuten Ende-zu-Ende-Test bereitstellen; keine Verfügbarkeit aus dem Metadatenentwurf ableiten."
+    },
+    {
+      "id": "superadmin_a-F1",
+      "severity": "P2",
+      "title": "Uploadfehler bleibt außerhalb des Blicks und erklärt gespeicherten Entwurf nicht",
+      "observation": "Bei aufgeklappten Herkunftshinweisen war die Fehlermeldung nach dem Speichern unterhalb des sichtbaren Dialoginhalts. Schritt 1 blieb sichtbar. Erst nach Scrollen war die Meldung lesbar. Nach Abbrechen und expliziter Suche existierte dennoch der eigene Datensatz mit Datei ergänzen. Erst Schritt 2 erklärte, dass der Entwurf bereits gespeichert war.",
+      "expectation": "Der sichtbare Speicherstatus nennt klar Teilerfolg und fehlendes Original.",
+      "impact": "Unsicherheit über Datenverlust oder notwendigen erneuten Speicherversuch und zusätzlicher Such-/Wiederöffnungsaufwand.",
+      "route": "/manufacturer-assets",
+      "steps": ["Quellenlink & Hinweise ergänzen öffnen und ausfüllen", "Mit ausgewähltem PDF speichern", "Unverändert sichtbaren Formularbereich prüfen", "Zur Meldung scrollen", "Abbrechen", "Eigene Quelle suchen", "Datei ergänzen öffnen und ohne neue Datei fortfahren"],
+      "evidence": ["work/ai-usability/evidence/superadmin_a/0004-1792761372997.png", "work/ai-usability/evidence/superadmin_a/0005-1792761385276.png", "work/ai-usability/evidence/superadmin_a/0006-1792761430358.png", "work/ai-usability/evidence/superadmin_a/0007-1792761452399.png"],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Fehler sichtbar fokussieren und Entwurf gespeichert / Original fehlgeschlagen mit Fortsetzungsaktion erklären."
+    },
+    {
+      "id": "superadmin_a-F2",
+      "severity": "P2",
+      "title": "Rollenformular erscheint unter langer Personenliste außerhalb des Viewports",
+      "observation": "Nach Zugriff vergeben und Rolle prüfen beim ersten sichtbaren synthetischen Zugang wurde das Änderungsformular unter der ganzen Liste eingefügt. Die Feldinspektion zeigte Positionen mehr als 6000 Pixel unterhalb des Viewports. Erst gezieltes Scrollen zeigte die Zusatzfähigkeit Herstellerbibliothek verwalten. Es wurde nichts geändert und abgebrochen.",
+      "expectation": "Rolle prüfen bringt den betroffenen Zugang und sein Formular sofort in den Blick.",
+      "impact": "Klick wirkt zunächst ohne Ergebnis; Bibliothekszugriff ist schwer zu finden.",
+      "route": "/settings?tab=users",
+      "steps": ["Zugriff vergeben aus Herstellerbibliothek", "Rolle prüfen beim ersten sichtbaren synthetischen Zugang", "Seitenzustand und Felder prüfen", "Zur Zusatzfähigkeit scrollen", "Nur ansehen", "Abbrechen"],
+      "evidence": ["work/ai-usability/evidence/superadmin_a/0009-1792761510961.png", "work/ai-usability/evidence/superadmin_a/0010-1792761539628.png"],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Formular am Zugang, in einem Dialog oder mit sichtbarem Fokus und Scrollen öffnen."
+    },
+    {
+      "id": "superadmin_a-F3",
+      "severity": "P3",
+      "title": "Enter führt Herstellerbibliothekssuche nicht aus",
+      "observation": "Nach Eingabe UX superadmin_a und Enter blieben alte Liste und URL ohne q-Parameter bestehen. Erst Suchen setzte q=UX+superadmin_a und zeigte die eigene Quelle.",
+      "expectation": "Enter im Suchfeld führt die Suche aus.",
+      "impact": "Zusätzlicher Mausklick und zunächst unveränderte Ergebnisse.",
+      "route": "/manufacturer-assets",
+      "steps": ["UX superadmin_a in Herstellerunterlagen durchsuchen eingeben", "Enter drücken", "Unveränderte Liste sehen", "Suchen klicken", "Gefilterten eigenen Datensatz sehen"],
+      "evidence": ["work/ai-usability/evidence/superadmin_a/0006-1792761430358.png"],
+      "confidence": "medium",
+      "category": "product",
+      "recommendation": "Enter als Suchauslöser unterstützen."
+    }
+  ],
+  "strengths": [
+    "Herstellerbibliothek direkt und verständlich in der Hauptnavigation.",
+    "Knapp erklärter Ablauf Original, Studio, Verwendung; gut lesbarer Desktopdialog mit klarer primärer Aktion.",
+    "Getrennte Planung und KI-Referenz mit ausdrücklicher Erklärung der Bild-/Textübermittlung an KI-Anbieter.",
+    "Fehlende Originaldatei wird in Schritt 2 verständlich erklärt; Bereitstellung und KI-Option bleiben gesperrt.",
+    "Nutzungsberechtigung verlangt Quelle und Umfang; technische Eignung wird nicht als automatisch geprüft dargestellt.",
+    "In beiden Studios gleicher Herstellerdaten-Einstieg und erklärter leerer Suchzustand.",
+    "Escape funktionierte in Einführungsauswahl und Herstellerdaten-Dialog."
+  ],
+  "limits": [
+    "Simulierter Black-box-Test, keine echte menschliche Nutzerforschung.",
+    "Storage nicht eingerichtet; keine erfolgreiche Dateiablage.",
+    "Scan separat nicht prüfbar, weil keine Originaldatei gespeichert wurde.",
+    "KI-Anbieter-Verfügbarkeit und Ausgabequalität nicht geprüft; kein KI-Job und keine Referenzübermittlung gestartet.",
+    "Herkunft und Datum nur im Freitext eingegeben; kein separates Stand-/Datumsfeld sichtbar. Persistenz dieses Freitexts nicht erneut überprüft.",
+    "Rechte nur lokal im zweiten Schritt eingegeben; dauerhafte Speicherung ohne bereitgestellte Datei nicht belegt.",
+    "Zugriff nur angesehen, keine Benutzer angelegt oder Rollen geändert.",
+    "Desktop 1440 x 1000, mobile Darstellung nicht getestet.",
+    "Ein Inspektionsversuch nutzte nach dem Schrittwechsel den alten Dialogtitel und wurde durch normale Inspektion korrigiert; kein Appfehler.",
+    "Einstiegs-, Formular-, Fehler-, Nutzungs-, Rollen- und beide Studio-Screenshots selbst visuell geprüft."
+  ],
+  "browserActionsApprox": 61,
+  "createdObjects": [
+    { "name": "UX superadmin_a · Test Naturstein-Datenblatt", "type": "Herstellerquelle als Metadatenentwurf", "route": "/manufacturer-assets?q=UX+superadmin_a" },
+    { "name": "UX superadmin_a · Quellenprobe Grabmal", "type": "Leerer eigener Planungsentwurf", "route": "/studio/2f8f531c-d8eb-4008-86b4-bea91634ac9d?variant=a7548ca0-af5a-4764-bfab-91f1c5642043" },
+    { "name": "UX superadmin_a · Quellenprobe Raum", "type": "Leerer eigener Planungsentwurf", "route": "/studio/91ad6dce-aa86-4893-94d8-6ea7301cb89e?variant=ef73a670-465e-4edf-af1c-41a91aed22af" }
+  ],
+  "contextClosed": true
+}

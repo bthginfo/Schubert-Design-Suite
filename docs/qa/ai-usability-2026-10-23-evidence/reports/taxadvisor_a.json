@@ -1,0 +1,173 @@
+{
+  "persona": "taxadvisor_a",
+  "role": "Ute, 58, erfahrene externe deutsche Steuerberaterin; UX Ute Berg, interner Lesezugang",
+  "startedAt": "2026-10-23T13:19:38Z",
+  "finishedAt": "2026-10-23T13:29:44Z",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/taxadvisor_a/0002-1792761615000.png",
+        "work/ai-usability/evidence/taxadvisor_a/0004-1792761662516.png",
+        "work/ai-usability/evidence/taxadvisor_a/0008-1792761925298.png"
+      ],
+      "notes": "Oktober 2026 vollständig mit 01.10.–31.10.2026 angewandt; EUR, Datenstand und Definition des fakturierten Nettowerts sichtbar. Übersicht: beauftragter Nettowert 2.400,00 EUR, fakturierter Nettowert und tatsächliche Zahlungseingänge jeweils 0,00 EUR. Rechnungsquelle und Auftragsquelle nicht freigegeben; Einzelstatus und Belegbezug deshalb nicht fachlich prüfbar. Liquiditätsgrundlagen ausdrücklich noch nicht bestätigt. Testdaten, keine belastbare betriebliche Monatsprüfung."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/taxadvisor_a/0006-1792761752372.png",
+        "work/ai-usability/evidence/taxadvisor_a/0007-1792761807414.png",
+        "work/ai-usability/evidence/taxadvisor_a/1792761807092-datev.csv"
+      ],
+      "notes": "Angebotenen internen Controlling-Export einmal angestoßen; Berichtstand gespeichert, privates Paket wegen nicht eingerichteten Dateispeichers nicht downloadbar. Als angebotene Alternative die DATEV-Übergabenliste mit übernommenem Oktoberzeitraum nach eigener erneuter Anmeldung als CSV tatsächlich heruntergeladen. Datei enthält nur name; starts_on; ends_on; status und keine Datenzeilen, passend zu 0 sichtbaren Übergaben. Auch ungefiltert 0 Übergaben. Download und Umfangsprüfung erreicht; kein inhaltlich gefüllter Finanzexport verfügbar. Keine amtliche Abgabe oder externer Versand."
+    },
+    {
+      "id": "G3",
+      "status": "blocked",
+      "evidence": [
+        "work/ai-usability/evidence/taxadvisor_a/0002-1792761615000.png",
+        "work/ai-usability/evidence/taxadvisor_a/0004-1792761662516.png",
+        "work/ai-usability/evidence/taxadvisor_a/0005-1792761710053.png"
+      ],
+      "notes": "Rechnungskennzahl führte zur gesperrten Rechnungsansicht; erneut laden half nicht. Alternative mit dem nichtnulligen Auftragswert führte ebenfalls in nicht freigegebenen Bereich. Zahlungen und Rechnungseingang waren lesbar, hatten aber jeweils 0 Einträge. Daher keine Position bis zu ihrem Ursprungsbeleg prüfbar. Browser-Zurück stellte den Oktoberzeitraum wieder her, die Unteransicht sprang auf Entwicklung zurück. Fachlich richtige Rechteverweigerung wird nicht als Defekt gewertet; kritisiert wird der zuvor uneingeschränkt angebotene Quellenweg."
+    }
+  ],
+  "findings": [
+    {
+      "id": "taxadvisor_a-F1",
+      "severity": "P2",
+      "title": "Quellenvorgänge werden angeboten, führen aber in nicht freigegebene Bereiche",
+      "observation": "In der Oktoberübersicht waren Fakturierter Nettowert und Beauftragter Nettowert als Quellenvorgänge öffnen verlinkt. Beide Ziele zeigten Dieser Bereich ist nicht freigegeben und Dieser Bereich ist nicht verfügbar. Bei Rechnungen blieb dies nach Erneut laden unverändert. Die Fehlerseite bot Zur Tagesübersicht, aber keinen direkten Rückweg zur gefilterten Auswertung.",
+      "expectation": "Vor dem Klick erwartete ich mindestens lesbaren Zugriff auf die zur freigegebenen Kennzahl gehörenden Belege oder einen vorher sichtbaren Hinweis auf den eingeschränkten Quellenzugang.",
+      "impact": "Eine konkrete Rechnungsposition lässt sich mit diesem Zugang nicht nachprüfen. Die sichtbare Zusage eines direkten Quellenwegs erzeugt einen unnötigen Seitenwechsel und eine Sackgasse.",
+      "route": "/reports?from=2026-10-01&to=2026-10-31",
+      "steps": [
+        "Auswertungen öffnen und 01.10.2026 bis 31.10.2026 auswerten",
+        "Fakturierter Nettowert 0,00 EUR – Quellenvorgänge öffnen anklicken",
+        "Sperrhinweis prüfen und einmal Erneut laden",
+        "Mit Browser-Zurück zurückkehren",
+        "Beauftragter Nettowert 2.400,00 EUR – Quellenvorgänge öffnen anklicken; gleicher Freigabehinweis"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/taxadvisor_a/0002-1792761615000.png",
+        "work/ai-usability/evidence/taxadvisor_a/0004-1792761662516.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Quellenzugriff bereits an der Kennzahl erkennbar machen; bei Sperre den konkreten Leserechtsbedarf und einen Rückweg zum erhaltenen Auswertungsstand anbieten. Keine pauschale Aufhebung der Berechtigungen."
+    },
+    {
+      "id": "taxadvisor_a-F2",
+      "severity": "P1",
+      "title": "Privates Controlling-Exportpaket bleibt wegen fehlendem Dateispeicher nicht verfügbar",
+      "observation": "Nach Auswertungsstand sichern erschien ein gespeicherter Stand für 01.10.–31.10.2026 mit zunächst laufender Verarbeitung. Später und nach Exportstatus aktualisieren stand Export benötigt eine Klärung: Privater Dateispeicher ist noch nicht eingerichtet. Die übrigen Funktionen bleiben verfügbar. Ein Downloadlink für dieses Paket wurde nicht angeboten.",
+      "expectation": "Der angebotene interne Export sollte eine prüfbare Datei für genau den ausgewerteten Oktoberstand bereitstellen.",
+      "impact": "Der vollständige gesicherte Auswertungsstand kann in dieser Umgebung nicht als Datei geprüft oder intern weiterverarbeitet werden.",
+      "route": "/reports?from=2026-10-01&to=2026-10-31",
+      "steps": [
+        "Gesicherte Stände & Übergabe an die Kanzlei öffnen",
+        "Auswertungsstand sichern einmal betätigen",
+        "Nach weiterer lesender Arbeit die Exportliste erneut öffnen",
+        "Exportstatus aktualisieren anklicken und Meldung lesen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/taxadvisor_a/0006-1792761752372.png"
+      ],
+      "confidence": "high",
+      "category": "environment",
+      "recommendation": "Für einen erneuten Exporttest einen eingerichteten privaten Dateispeicher bereitstellen. Die konkrete Fehlermeldung ist verständlich; dieser Befund ist kein Nachweis eines Exportdefekts bei eingerichteter Umgebung."
+    },
+    {
+      "id": "taxadvisor_a-F3",
+      "severity": "P2",
+      "title": "Viele Hinweise zum fehlenden Kostensatz nennen keinen betroffenen Vorgang",
+      "observation": "Unter Daten & Grundlagen 36 folgten viele identische Zeilen Berechnungsgrundlage ergänzen / Interner Kostensatz fehlt. Auftragsmarge unvollständig. / Prüfung erforderlich. In diesen generischen Zeilen sah ich weder einen betroffenen Auftrag noch eine Person oder einen Quellenlink. Spätere Hinweise zur Restschätzung nannten dagegen konkrete Auftragsnummern und boten Grundlage prüfen.",
+      "expectation": "Zu jeder gemeldeten Lücke möchte ich erkennen, welche konkrete Grundlage oder welcher Vorgang betroffen ist, damit ich eine gezielte Rückfrage stellen kann.",
+      "impact": "Die lange Liste erklärt den Fehlertyp, erlaubt mir aber keine nachvollziehbare Zuordnung und erschwert die Vorbereitung einer Prüfliste.",
+      "route": "/reports?from=2026-10-01&to=2026-10-31",
+      "steps": [
+        "Daten & Grundlagen 36 öffnen",
+        "Zu Datenlücken zuerst klären scrollen",
+        "Generische Kostensatzhinweise mit späteren nummerierten Auftragshinweisen vergleichen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/taxadvisor_a/0005-1792761710053.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Betroffene Grundlage bzw. sichtbaren Belegkontext nennen oder identische Hinweise mit prüfbarer Zuordnung bündeln. Die Tatsache fehlender Kostensätze selbst ist ein Testdatenstatus."
+    },
+    {
+      "id": "taxadvisor_a-F4",
+      "severity": "P3",
+      "title": "Heruntergeladene Übergaben-CSV verwendet technische englische Spaltennamen",
+      "observation": "Der Dialog nannte CSV für Tabellenprogramme und übernahm den Oktoberzeitraum. Die tatsächlich heruntergeladene Datei enthielt ausschließlich die Kopfzeile name; starts_on; ends_on; status. In der sichtbaren Liste hießen die entsprechenden Spalten Bezeichnung, Belege ab, Belege bis und Status. Eine Dateispaltenvorschau wurde vor der Erstellung nicht angezeigt.",
+      "expectation": "Die Datei sollte sich ohne Übersetzung technischer Feldnamen mit der angezeigten Übergabenliste abgleichen lassen und vorab klar als Listenexport erkennbar sein.",
+      "impact": "Der Umfang wird erst nach Download eindeutig. Die Datei eignet sich in diesem Test nur als leere Übergabenübersicht, nicht zur Prüfung von Rechnungsdaten.",
+      "route": "/datev?from=2026-10-01&to=2026-10-31",
+      "steps": [
+        "Auswertungen: DATEV-Übergaben öffnen",
+        "Export anklicken",
+        "Eigene Anmeldung erneut bestätigen",
+        "Exportdatei vorbereiten und CSV herunterladen",
+        "Nur die über die UI heruntergeladene CSV auf Umfang prüfen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/taxadvisor_a/0007-1792761807414.png",
+        "work/ai-usability/evidence/taxadvisor_a/1792761807092-datev.csv"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Listenexport ausdrücklich benennen und fachliche Spaltentitel bzw. eine kurze Inhaltsvorschau anbieten. Null Datenzeilen entsprechen hier dem sichtbaren Testbestand und sind kein Exportfehler."
+    },
+    {
+      "id": "taxadvisor_a-F5",
+      "severity": "P3",
+      "title": "Erneut erscheinende Einführung meldet beim Pausieren einen Datensatzkonflikt",
+      "observation": "Nach Hier selbst ausprobieren in der Auswertung und dem Wechsel zur gesperrten Rechnungsquelle erschien die Einführung erneut mit Schritt 1. Für später schließen zeigte danach Der Datensatz wurde inzwischen geändert. Aktuellen Stand laden und Änderungen prüfen. Über Ohne Speichern schließen konnte ich fortfahren.",
+      "expectation": "Nach dem Einstieg in die eigene Arbeit sollte eine Einführung entweder pausiert bleiben oder sich verständlich schließen lassen.",
+      "impact": "Eine zusätzliche modale Unterbrechung verdeckte den eigentlichen Berechtigungshinweis. Der Bezug des geänderten Datensatzes war für mich nicht ersichtlich.",
+      "route": "/invoices?from=2026-10-01&to=2026-10-31&metric=invoiced_net&currency=EUR",
+      "steps": [
+        "Einführung direkt auf Auswertungen nachvollziehen stellen",
+        "Hier selbst ausprobieren wählen",
+        "Rechnungskennzahl öffnen",
+        "Bei erneut angezeigter Einführung Für später schließen wählen",
+        "Konflikthinweis lesen und Ohne Speichern schließen verwenden"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/taxadvisor_a/0003-1792761643022.png"
+      ],
+      "confidence": "medium",
+      "category": "product",
+      "recommendation": "Beim Schließen der Einführung ihren eigenen Zustand klar benennen und den angebotenen Weg ohne Speicherung gut erkennbar halten. Ursache des Konflikts und Persistenz wurden nicht untersucht; kein allgemeiner Speicherfehler behauptet."
+    }
+  ],
+  "strengths": [
+    "Einstieg und Einführung bieten einen direkt passenden Weg zu Auswertungen; Station lässt sich gezielt auswählen.",
+    "Angewandter Zeitraum, Berichtswährung EUR und Datenstand stehen unmittelbar bei den Kennzahlen; Begriffe wie fakturierter Nettowert und Behandlung von Anzahlungen werden erklärt.",
+    "Liquiditätsansicht kennzeichnet fehlenden Bankanfangsbestand bzw. Kontowährung und ersetzt unbekannte Bestände nicht durch Null. Annahmen und Unsicherheit sind lesbar.",
+    "CSV-Export zeigt den übernommenen Zeitraum und Format vorab, fordert eine eigene erneute Anmeldung und meldet die Bereitstellung verständlich.",
+    "Enter löste Auswerten aus; Escape schloss den fertigen CSV-Exportdialog.",
+    "Die Hilfe erklärt Rollenbegrenzung und nennt den Superadmin für zusätzliche Rechte. Es wurden keine Geschäftsänderungsaktionen ausgeführt."
+  ],
+  "limits": [
+    "Synthetischer Testbetrieb, einzelne simulierte Persona; keine echte menschliche Nutzerforschung und keine fachliche Bestätigung der Zahlen.",
+    "Kein beleggefüllter Zahlungseingang, Rechnungseingang oder DATEV-Übergabebestand für diesen Zugang sichtbar; keine Zeilen oder Ursprungsdateien dafür erfindbar.",
+    "Ausgangsrechnungen und Aufträge wurden als nicht freigegeben gemeldet. Ob dies die beabsichtigte Mandanten-/Rollenfreigabe ist, wurde nicht geprüft. Die fachlich richtige Sperre ist kein Defekt.",
+    "Privater Dateispeicher laut UI nicht eingerichtet; Umfang und Inhalt eines vollständigen Controlling-Pakets nicht prüfbar.",
+    "Nur ein interner Auswertungsstand über die angebotene Aktion erzeugt. Die App vergab Controlling 2026-10-01 bis 2026-10-31 automatisch; es wurde kein Namensfeld angeboten. Keine Buchung, Belegänderung, Freigabe, Abgabe, Integrationsänderung oder externer Versand.",
+    "Desktop 1440 × 1000 geprüft. Datumsfelder erschienen im Screenshot als 10/01/2026 und 10/31/2026, während der angewandte Zeitraum deutsch angezeigt wurde. Browserlokalisierung nicht untersucht; daraus kein gesicherter Appfehler abgeleitet. Kein eigener Mobiltest.",
+    "KI nicht gestartet und keine KI-Antwortqualität bewertet. Datenhinweise nannten sich sichtbar regelbasiert und keine KI-Schätzung.",
+    "Neben den drei Testanweisungen ausschließlich sichtbare UI, eigene Screenshots und die tatsächlich über die UI heruntergeladene CSV betrachtet. Keine Sourcen, APIs, Datenbanken, Zugangsdaten oder fremden Berichte gelesen.",
+    "startedAt orientiert sich an der ersten gesicherten Einstiegsaufnahme; kleine Abweichung zum eigentlichen Startaufruf möglich. Browser nach 52 Befehlen einschließlich Start/Close geschlossen."
+  ],
+  "browserActionsApprox": 52
+}

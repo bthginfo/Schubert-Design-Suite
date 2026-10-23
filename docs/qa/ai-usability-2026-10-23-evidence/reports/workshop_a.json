@@ -1,0 +1,205 @@
+{
+  "persona": "workshop_a",
+  "role": "Ralf, 57, erfahrener Werkstattvorarbeiter im deutschen Steinmetzbetrieb; App-Name UX Ralf Klein",
+  "startedAt": "2026-10-23T12:57:53.729Z",
+  "finishedAt": "2026-10-23T13:11:46Z",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/workshop_a/0002-1792760316305.png",
+        "Browseraktionen 7–14 und 51: Auftragsübersicht, Arbeitspaket, jeweilige Dokumentbereiche und allgemeine Dokumentliste"
+      ],
+      "notes": "Stand des Hauptlaufs: Eigenen Auftrag AUF-2026-00015 und Arbeitspaket WOR-2026-00003 gefunden. Auftrag: zwei Fensterbänke je 1200 × 250 × 30 mm. Abschlusskriterium: Maße vor Ausführung prüfen, Kante poliert, keine Ausführung oder Freigabe. Planung Aufmaß offen, Ausführung noch nicht geplant; Auftrag hat null verknüpfte Dokumente, allgemeine Dokumentliste null Einträge. Für Fertigung fehlen geprüftes Aufmaß/Zeichnung und konkrete Materialzuordnung. Die fehlenden Daten verhindern keine Feststellung dieses offenen Stands, begrenzen aber die Beurteilung der Dokumentarbeit. Synthetische Materialreservierung inzwischen im G2-Nachtest erfolgt; Produkt-/Materialfestlegung bleibt offen."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/workshop_a/0003-1792760415595.png",
+        "Browseraktionen 16–30: leeres Lager, eigener ungespeicherter Reststückentwurf, Auswahl Reststück/m² und Abbruch",
+        "work/ai-usability/evidence/workshop_a/0001-1792760957352.png",
+        "work/ai-usability/evidence/workshop_a/0002-1792760975848.png",
+        "work/ai-usability/evidence/workshop_a/0003-1792760994655.png",
+        "work/ai-usability/evidence/workshop_a/0004-1792761044518.png",
+        "work/ai-usability/evidence/workshop_a/0005-1792761060961.png",
+        "Nachtest-Aktionen 1–18 vom 23.10.2026, 13:09:03–13:11:46 UTC"
+      ],
+      "notes": "Im Hauptlauf durch leeres Lager-Fixture nur teilweise möglich. Nach ergänztem synthetischem Bestand eigenen Rest MAT-2026-00002 (1250 × 300 × 30 mm, 1 Stück) und eigene Rohplatte MAT-2026-00001 (1300 × 600 × 30 mm, 1 Stück), beide im UX-Testlager und zunächst Verfügbar, gefunden. Reststück für beide Fensterbänke zusammen zu klein; Platte für zwei Rechtecke 1200 × 250 mm geometrisch plausibel. Genau 1 Stück ausschließlich der eigenen Platte über Material reservieren für UX workshop_a · Fensterbänke Testweg reserviert. Dialogauswahl und Menge vor Ausführen geprüft. Danach Bestätigung, Version 2 und Status Reserviert; Bestandsmenge weiterhin 1 Stück. Keine Bewegungs-/Zuschnittbuchung, kein fremder Bestand verändert. Produkt blieb im synthetischen Datensatz leer; keine Aussage zu realer Steinqualität oder Fertigungsfreigabe. Ziel des synthetischen Materialnachvollzugs erreicht, spätere Auftrags-/Mengenkontrolle in der Bestandsakte bleibt eingeschränkt (F4)."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/workshop_a/0004-1792760495728.png",
+        "work/ai-usability/evidence/workshop_a/0005-1792760524332.png",
+        "work/ai-usability/evidence/workshop_a/0006-1792760565087.png",
+        "work/ai-usability/evidence/workshop_a/0010-1792760666004.png",
+        "Browseraktionen 41–45, 48–50 und 55–61"
+      ],
+      "notes": "Eigene synthetische Arbeitszeit am 23.10.2026 von 07:00 bis 07:30 ohne Pause gespeichert und eigenem Auftrag zugeordnet. Sachliche Rückmeldung zur Arbeitsvorbereitung, offenen Maßen/Unterlagen/Material und nächstem Klärungsschritt gespeichert; nach Verlassen und Wiederöffnen weiterhin sichtbar. Kein Tag abgegeben oder freigegeben. Rückmeldung lässt nur Auftrag auswählen, kein Arbeitspaket. Am Arbeitspaket kein eigenes Feld für Teilfortschritt gefunden; Status passend zur nicht begonnenen Fertigung Offen belassen. Beim Wiederöffnen widerspricht Tagesverlauf mit Zuordnung offen der bestätigten Auftragszuordnung, auch nach Synchronisierung."
+    }
+  ],
+  "findings": [
+    {
+      "id": "workshop_a-F1",
+      "severity": "P2",
+      "title": "Nach Wiederöffnen steht die gespeicherte Testzeit gleichzeitig als offen und bestätigt zugeordnet da",
+      "observation": "Direkt nach Speichern zeigte der Tagesverlauf den gewählten Auftrag. Nach Wechsel zum eigenen Arbeitspaket/Auftrag und zurück zu Meine Zeit zeigte derselbe Zeitraum 23.10.2026, 07:00–07:30 im Tagesverlauf Arbeit · Zuordnung offen. Direkt darunter enthielt Bestätigte Auftragszuordnung den eigenen Auftrag und denselben Zeitraum; auch die geöffneten Originalaufzeichnungen enthielten den Auftrag. Synchronisieren bestätigte den geladenen Übertragungsstand, änderte diesen Widerspruch aber nicht.",
+      "expectation": "Nach erfolgreicher Speicherung und erneutem Öffnen erwarte ich im Tagesverlauf denselben bestätigten Auftrag. Falls wirklich etwas zu klären ist, brauche ich einen konkreten Grund.",
+      "impact": "Ich kann vor der Tagesabgabe nicht sicher erkennen, ob ich die Zuordnung korrigieren muss. Die widersprüchliche Anzeige veranlasst zusätzliche Kontrollen; ein Verlust der gespeicherten Zuordnung ist durch die Oberfläche gerade nicht belegt.",
+      "route": "http://127.0.0.1:5173/time",
+      "steps": [
+        "Zeit nachtragen öffnen, 23.10.2026 07:00–07:30 eintragen, Pausen bestätigen und eigenen Auftrag auswählen.",
+        "Zeitraum speichern; angezeigten Auftrag im Tagesverlauf prüfen.",
+        "Eigenes Arbeitspaket und Auftrag öffnen, anschließend über Team & Dispo zurückkehren.",
+        "Tagesverlauf mit Bestätigte Auftragszuordnung vergleichen; Originalaufzeichnungen aufklappen.",
+        "Synchronisieren wählen und Ergebnis erneut lesen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_a/0004-1792760495728.png",
+        "work/ai-usability/evidence/workshop_a/0010-1792760666004.png",
+        "Browseraktion 61: Snapshot nach Synchronisieren enthält gleichzeitig Arbeit · Zuordnung offen und die bestätigte Auftragszeile"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Im Tagesverlauf denselben bestätigten Zuordnungsstand anzeigen oder einen abweichenden Klärungsbedarf mit Ursache und konkretem Handlungsschritt erklären."
+    },
+    {
+      "id": "workshop_a-F2",
+      "severity": "P2",
+      "title": "Teilrückmeldung ist am Auftrag speicherbar, am zugehörigen Arbeitspaket aber nicht auffindbar",
+      "observation": "Unter Meine Zeit konnte ich einen Bericht zu Kanten bearbeiten speichern. Die Maske bot Auftrag, Datum, Text und optionale Menge, jedoch keine Arbeitspaketauswahl. Der gespeicherte Bericht war unter Meine letzten Rückmeldungen sichtbar. Beim eigenen Arbeitspaket zeigte Verknüpfte Vorgänge nur den Hinweis, Verknüpfungen über die Übersicht zu öffnen; Verlauf meldete Noch kein sichtbarer Verlauf. Bearbeiten bot Planungsfelder und Abschlusskriterium, kein Feld für Teilfortschritt. In der Auftragskommunikation erschien der Bericht ebenfalls nicht; dort wurde eine leere Maske für interne Notizen angeboten.",
+      "expectation": "Wenn ich am Arbeitspaket die offene Vorbereitung nachsehen oder melden will, erwarte ich dort eine Teilrückmeldung oder wenigstens einen direkten Verweis auf die bereits gespeicherte Rückmeldung.",
+      "impact": "Die Information bleibt in einer anderen Arbeitsansicht. Ich musste den Paketnamen in den Berichtstext schreiben und weiß in der Paketakte nicht, was bereits geprüft oder noch offen ist. Den Start oder Abschluss der Fertigung als Ersatz zu melden wäre fachlich unpassend.",
+      "route": "http://127.0.0.1:5173/work-packages/6f5bcde9-e5f8-41ed-ac65-dcb658a6cef3",
+      "steps": [
+        "Unter Meine Zeit die Rückmeldung mit eigenem Auftrag speichern.",
+        "Eigenes Arbeitspaket erneut öffnen.",
+        "Verknüpfte Vorgänge, Bearbeiten und Verlauf prüfen.",
+        "Auftrag öffnen und Kommunikation prüfen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_a/0005-1792760524332.png",
+        "work/ai-usability/evidence/workshop_a/0006-1792760565087.png",
+        "work/ai-usability/evidence/workshop_a/0008-1792760606817.png",
+        "Browseraktionen 45–54: gespeicherte Rückmeldung und anschließend geprüfte Paket-/Auftragsansichten"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Rückmeldung optional einem Arbeitspaket zuordnen und von dort lesbar machen; einen sachlichen offenen Zwischenstand unabhängig von Beginnen/Fertig melden ermöglichen."
+    },
+    {
+      "id": "workshop_a-F3",
+      "severity": "P3",
+      "title": "Dokumentenreiter des Arbeitspakets nennt keinen belastbaren Unterlagenstand",
+      "observation": "Beim Arbeitspaket zeigte Dokumente bei zwei Besuchen Dokumentübersicht hier nicht geladen und den Link Dokumente durchsuchen. Der Link führte in die allgemeine Dokumentliste, ohne sichtbare Vorbelegung für das Arbeitspaket oder den Auftrag. In der Auftragsakte wurde dagegen klar null verknüpfte Dokumente angezeigt. Visuell nimmt zuerst der große Uploadbereich den Platz ein; der Hinweis zum fehlenden Überblick liegt darunter.",
+      "expectation": "Bei der Vorbereitung brauche ich am Arbeitspaket die vorhandenen Unterlagen oder eine klare Aussage, dass keine verknüpft sind. Bei einem Ladeproblem erwarte ich eine verständliche Wiederholmöglichkeit.",
+      "impact": "Ich musste den Dokumentbereich zusätzlich aufsuchen und kann aus dem Paket nicht unterscheiden, ob Unterlagen fehlen oder nur die Übersicht fehlt. Der leere allgemeine Testbestand begrenzt die tatsächliche Auswirkung in dieser Sitzung.",
+      "route": "http://127.0.0.1:5173/work-packages/6f5bcde9-e5f8-41ed-ac65-dcb658a6cef3",
+      "steps": [
+        "Eigenes Arbeitspaket öffnen und Dokumente wählen.",
+        "Hinweis Dokumentübersicht hier nicht geladen lesen.",
+        "Dokumente durchsuchen wählen und dort den sichtbaren Stand prüfen.",
+        "Später erneut Dokumente am Arbeitspaket öffnen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_a/0007-1792760590430.png",
+        "Browseraktionen 12–14 und 51: identischer Hinweis in der Dokumentenansicht des Arbeitspakets; allgemeine Dokumentliste mit null Einträgen"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Den verknüpften Unterlagenstand eindeutig anzeigen und eine Suche mit Auftrags-/Paketbezug anbieten; einen Ladefehler von leerem Bestand unterscheiden."
+    },
+    {
+      "id": "workshop_a-F4",
+      "severity": "P2",
+      "title": "Nach bestätigter Materialreservierung sind Auftrag und reservierte Menge in der Bestandsakte nicht sichtbar",
+      "observation": "Die Reservierung von genau 1 Stück der eigenen Rohplatte für den eigenen Auftrag wurde ausgeführt. Der Dialog schloss, die App meldete Der Arbeitsschritt wurde bestätigt, Version 2 und Status Reserviert. In der Übersicht blieb die Bestandsmenge 1 Stück sichtbar, jedoch kein zugeordneter Auftrag und keine gesonderte reservierte Menge. Verlauf zeigte unmittelbar danach Noch kein sichtbarer Verlauf. Verknüpfte Vorgänge enthielt nur den allgemeinen Hinweis, Verknüpfungen über die Angaben in der Übersicht zu öffnen; ein Auftragslink war dort nicht vorhanden.",
+      "expectation": "Nach der Reservierung möchte ich in der Bestandsakte erkennen, für welchen Auftrag und in welcher Menge die Platte gebunden ist, und direkt zum Auftrag wechseln können.",
+      "impact": "Bei späterer Werkstattkontrolle kann ich die Materialbindung aus den besuchten Bestandsansichten nicht nachvollziehen. Die vorherige Dialogauswahl und der geänderte Status sind belegt; ein Verlust oder eine falsche Speicherung der Zuordnung ist nicht belegt. Keine Reservierung wiederholt.",
+      "route": "http://127.0.0.1:5173/stock/bcc1750c-9d49-48b1-84c7-288639b55b9a",
+      "steps": [
+        "Eigene Testplatte in Lager & Naturstein öffnen und Maße/Einheit/Status lesen.",
+        "Material reservieren öffnen, eigenen Auftrag auswählen, Reservierte Menge 1 eingeben, Prüfung bestätigen und einmal ausführen.",
+        "Übersicht auf Bestandsmenge, Status und Auftragsbezug prüfen.",
+        "Verlauf sowie Verknüpfte Vorgänge öffnen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_a/0004-1792761044518.png",
+        "work/ai-usability/evidence/workshop_a/0005-1792761060961.png",
+        "work/ai-usability/evidence/workshop_a/0006-1792761074633.png",
+        "work/ai-usability/evidence/workshop_a/0007-1792761086209.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Reservierte Menge mit Einheit und dem verknüpften Auftrag in der Bestandsakte darstellen; Reservierung im Verlauf und als direkter Auftragslink auffindbar machen."
+    }
+  ],
+  "strengths": [
+    "Eigener Einsatz und eigener Auftrag waren unmittelbar auf Heute sichtbar; der Weg zum Arbeitspaket war verständlich.",
+    "Maße, Abschlusskriterium und offenes Aufmaß sind lesbar beschrieben. Der Text Keine Ausführung oder Freigabe gab mir eine klare fachliche Grenze.",
+    "Große, lesbare Aktionsflächen und eine ruhige, gut gegliederte Desktopansicht des Arbeitspakets.",
+    "Zeitnacherfassung bestätigte den Speichervorgang, zeigte 00:30:00 und bewahrte die sichtbaren Originalaufzeichnungen.",
+    "Die sachliche Rückmeldung wurde bestätigt und blieb nach Navigation als letzte Rückmeldung lesbar.",
+    "Im Reststückformular funktionierten Tab zur Einheit und Enter zum Öffnen der Auswahl. Escape löste bei geänderten Eingaben eine verständliche Warnung mit Weiter bearbeiten/Verwerfen aus.",
+    "Nach ergänztem Fixture-Bestand waren Maße, Bestandsart, Einheit Stück und Lagerplatz in den eigenen Materialdetails gut lesbar. Material reservieren war dort eine klare Hauptaktion; Ausführung zeigte Version 2 und Status Reserviert."
+  ],
+  "limits": [
+    "Simulierter Rollenlauf, keine echte menschliche Nutzerforschung; keine technische Ursachenanalyse und keine Quellen/API-/Datenbankprüfung.",
+    "Hauptlauf: Lager und allgemeine Dokumentliste zeigten null Einträge; Produkt und Lagerort im Reststückformular noch nicht auswählbar. Das Lager-Fixture-Limit wurde vor einem separaten G2-Nachtest durch synthetische Datensätze behoben, laut Testleitung bei unverändertem Anwendungscode. Im Nachtest Bestand und eigene Reservierung tatsächlich geprüft; reale Materialqualität, Schnittzugaben und Fertigungsunterlagen weiterhin nicht bewertet.",
+    "Eigener Reststückentwurf blieb ungespeichert und wurde verworfen; die Übereinstimmung zwischen manuell eingegebener Fläche und Maßen wurde nicht durch Speichern geprüft.",
+    "Beginnen, Fertig melden, Auftrag bestätigen und Tag prüfen & abgeben bewusst nicht ausgelöst, weil keine Fertigung oder Freigabe Teil dieses Vorbereitungsstands war.",
+    "Native Datumseingaben erschienen im Browser als 10/23/2026, während Apptexte 23.10.2026 zeigten; als Browser-/Lokalisierungsgrenze dokumentiert, nicht als belegter Produktfehler bewertet.",
+    "Nur Desktop 1440 × 1000 entsprechend Rollenbrief; keine Aussage zur mobilen Bedienung.",
+    "Assistent war sichtbar, wurde für die eigenen Arbeitsziele nicht verwendet. Keine Bewertung von KI-Qualität oder Anbieter-Verfügbarkeit.",
+    "Keine Geschäftsfreigaben, Nachrichten, Bewegungs-/Zuschnittbuchungen oder Änderungen an fremden Objekten. Im ausdrücklich autorisierten Nachtest genau 1 Stück der eigenen synthetischen Testplatte für den eigenen Auftrag reserviert. Beide Browserkontexte mit close beendet.",
+    "Startzeit des Hauptlaufs entspricht dem ersten gesicherten Einstiegsscreenshot; Hauptlauf ungefähr sieben Minuten mit 62 Browserbefehlen, Nachtest 13:09:03–13:11:46 UTC mit 18 weiteren Befehlen; gesamt ungefähr 80 einschließlich Inspektionen, Screenshots und Abschluss.",
+    "Nachtest: Produkt, Charge und Maserung waren bei den eigenen synthetischen Beständen nicht hinterlegt. Reservierung betraf eine ganze Platte nach Stück, keine automatische Flächenumrechnung. Reservierungsdialog wiederholte die Einheit Stück aus der Übersicht nicht. Keine tatsächliche Fertigungsfreigabe aus der geometrischen Plausibilität abgeleitet."
+  ],
+  "browserActionsApprox": 80,
+  "retests": [
+    {
+      "goalId": "G2",
+      "startedAt": "2026-10-23T13:09:03Z",
+      "finishedAt": "2026-10-23T13:11:46Z",
+      "browserActionsApprox": 18,
+      "reason": "Fehlender synthetischer Fixture-Bestand ergänzt; Anwendungscode laut Testleitung unverändert.",
+      "originalGoalState": {
+        "id": "G2",
+        "status": "partial",
+        "evidence": [
+          "work/ai-usability/evidence/workshop_a/0003-1792760415595.png",
+          "Browseraktionen 16–30: leeres Lager, eigener ungespeicherter Reststückentwurf, Auswahl Reststück/m² und Abbruch"
+        ],
+        "notes": "Lager & Naturstein gefunden, ohne Filter null Einträge. Produkt- und Lagerortauswahl melden noch keine auswählbaren Stammdaten. Eigenen Formularentwurf UX workshop_a · Reststück Fensterbank Testentwurf ausgefüllt (Reststück, 0,6 m², 500 × 1300 × 30 mm), anschließend kontrolliert verworfen. Kein Bestand gespeichert oder gebucht; kein tatsächliches Reststück zuordenbar. Unter Alle Bereiche waren Lager, Inventur und Lagerorte sichtbar, kein direkter Weg zur genannten Materialreservierung. Fehlenden Testbestand und den sichtbaren Rollenumfang nicht als Berechtigungsfehler gewertet."
+      },
+      "result": "achieved",
+      "changes": [
+        "Genau 1 Stück UX workshop_a · Naturstein-Testplatte MAT-2026-00001 für UX workshop_a · Fensterbänke Testweg reserviert.",
+        "Eigener Testrest unverändert; keine Bewegungs-/Zuschnittbuchung und keine fremden Bestandsänderungen."
+      ],
+      "observations": [
+        "Testrest 1250 × 300 × 30 mm für beide Fensterbänke zusammen zu klein.",
+        "Testplatte 1300 × 600 × 30 mm für zwei Rechtecke 1200 × 250 mm geometrisch plausibel; kein realer Zuschnitt freigegeben.",
+        "Reservierungsdialog: eigener Auftrag und Menge 1, dann bestätigter Status Reserviert und Version 2.",
+        "Auftrag/Reservierungsmenge anschließend in besuchter Bestandsakte nicht wieder auffindbar; F4."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/workshop_a/0001-1792760957352.png",
+        "work/ai-usability/evidence/workshop_a/0002-1792760975848.png",
+        "work/ai-usability/evidence/workshop_a/0003-1792760994655.png",
+        "work/ai-usability/evidence/workshop_a/0004-1792761044518.png",
+        "work/ai-usability/evidence/workshop_a/0005-1792761060961.png",
+        "work/ai-usability/evidence/workshop_a/0006-1792761074633.png",
+        "work/ai-usability/evidence/workshop_a/0007-1792761086209.png"
+      ],
+      "browserClosed": true
+    }
+  ]
+}

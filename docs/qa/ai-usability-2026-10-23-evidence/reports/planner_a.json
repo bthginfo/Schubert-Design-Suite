@@ -1,0 +1,142 @@
+{
+  "persona": "planner_a",
+  "role": "Martin, 49, deutscher Steinmetzmeister mit mäßiger CAD-Erfahrung; Grabmalplanung am Desktop",
+  "startedAt": "2026-10-23T12:44:46.812Z",
+  "finishedAt": "2026-10-23T12:54:49.917Z",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/planner_a/0002-1792759589137.png",
+        "work/ai-usability/evidence/planner_a/0013-1792759837376.png",
+        "work/ai-usability/evidence/planner_a/0016-1792759927780.png"
+      ],
+      "notes": "Eigenes Projekt UX planner_a · Grabmal Familie Linden mit gerader Stele angelegt. Breite 800, Höhe 1200 und Materialstärke 160 mm eingegeben und nach Wiederöffnung unverändert in den Eigenschaften vorgefunden. Vollständiger Originaltext Anna Linden · 1948–2026 · In Liebe blieb gespeichert. Final Noto Serif und dunkle Schriftfarbe #1f2937; Text ist in der separaten wörtlichen Prüfung groß lesbar. Der Einzeiler erscheint in der Frontansicht bei 100 % relativ klein. Gespeicherter Stand Entwurf 1, Rev. 5."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/planner_a/0004-1792759631475.png",
+        "work/ai-usability/evidence/planner_a/0005-1792759659105.png",
+        "work/ai-usability/evidence/planner_a/0006-1792759673852.png",
+        "work/ai-usability/evidence/planner_a/0016-1792759927780.png"
+      ],
+      "notes": "Schrift von Cinzel auf Noto Serif geändert; Rückgängig stellte Cinzel wieder her. Danach bewusst Noto Serif und dunkle Farbe gewählt. Herstellerdaten geöffnet und nach Granit gesucht: keine passenden Originaldateien vorhanden. In der Steinbibliothek Padang TG34 Cristallo als Katalogreferenz ausgewählt. Lieferantenlink https://rossittis.de/material/padang-tg34-cristallo und Stand 2026-10-19 sichtbar. Hinweis erläutert repräsentative Struktur und notwendige Prüfung von Plattenbild, Liefermaß und Eignung am Lieferantenmuster. Externe Referenz wegen Testgrenze nicht geöffnet; keine Produktdaten fachlich bestätigt."
+    },
+    {
+      "id": "G3",
+      "status": "blocked",
+      "evidence": [
+        "work/ai-usability/evidence/planner_a/0008-1792759705550.png",
+        "work/ai-usability/evidence/planner_a/0014-1792759887847.png",
+        "work/ai-usability/evidence/planner_a/0015-1792759898934.png"
+      ],
+      "notes": "KI für Inschrift & Details mit ausgewählter eigener Inschrift aufgerufen. Gespeicherter Planstand, Elementname und Schutz von Maßwerten/Wortlaut sichtbar; angehakte Bearbeitungsgrenzen geprüft. Textfeld und Senden bleiben deaktiviert, da OpenAI-Projekt, Modell und Kostenbudget einzurichten sind. Deshalb keine Anfrage, kein Vorschlag und keine Übernahme möglich; Antwortqualität oder tatsächlicher Schutz bei Übernahme nicht beurteilt."
+    },
+    {
+      "id": "G4",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/planner_a/0009-1792759706851.png",
+        "work/ai-usability/evidence/planner_a/0010-1792759724122.png",
+        "work/ai-usability/evidence/planner_a/0011-1792759746492.png",
+        "work/ai-usability/evidence/planner_a/0012-1792759800629.png",
+        "work/ai-usability/evidence/planner_a/0013-1792759837376.png"
+      ],
+      "notes": "Prüfstand und wörtliche Textprüfung gefunden und genutzt. Offene Nachweise und Trennung von Kundenbestätigung und technischer Prüfung waren verständlich. Planungs-PDF aus gespeicherter Rev. 5 zweimal angefordert; beide Versuche zeigten eine rohe REQUEST_FAILED-JSON-Seite. Keine PDF-Unterlage gesichert. Keine Zustimmung dokumentiert und keine Fertigungsfreigabe erteilt."
+    }
+  ],
+  "findings": [
+    {
+      "id": "planner_a-F1",
+      "severity": "P1",
+      "title": "Planungs-PDF endet zweimal auf roher JSON-Fehlerseite",
+      "observation": "Nach 4 Präsentieren → Planungs-PDF herunterladen zeigte der Browser statt einer PDF einen JSON-Text mit REQUEST_FAILED und „Der Vorgang konnte nicht abgeschlossen werden. Bitte erneut versuchen.“. Der Entwurf war zuvor synchronisiert (Rev. 5). Nach Wiederöffnung über die sichtbare Projektliste und erneutem Downloadversuch trat derselbe Fehler mit neuer correlationId auf. Auf der Fehlerseite gab es keine Appnavigation oder Rückkehrschaltfläche. Die technische Ursache ist im Black-box-Test unbekannt.",
+      "expectation": "Eine PDF mit Ansichten, Maßen und Stückliste aus dem gespeicherten Stand für das Kundengespräch erhalten.",
+      "impact": "Die PDF-Unterlage für das Kundengespräch konnte nicht gesichert werden. Die rohe Fehlerseite hilft beim Fortsetzen kaum.",
+      "route": "/api/v1/designs/569d667b-0220-4315-8dc0-c4d9571542c5/export?kind=pdf&view=front&revision_id=0d3aceb1-779e-4b36-9ffc-ce7aaa10c209",
+      "steps": [
+        "Eigenen gespeicherten Entwurf öffnen.",
+        "4 Präsentieren wählen.",
+        "Planungs-PDF herunterladen klicken.",
+        "Fehlerseite abwarten.",
+        "Projekt über die zuvor sichtbare Studioübersicht wieder öffnen und PDF erneut anfordern."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/planner_a/0010-1792759724122.png",
+        "work/ai-usability/evidence/planner_a/0011-1792759746492.png",
+        "work/ai-usability/evidence/planner_a/0012-1792759800629.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "PDF-Erstellung prüfen und Fehler im Studio mit verständlicher Meldung, Wiederholung und Rückkehrmöglichkeit anzeigen."
+    },
+    {
+      "id": "planner_a-F2",
+      "severity": "P3",
+      "title": "Beim Öffnen des Assistenten ist der Grund der Sperre zunächst abgeschnitten",
+      "observation": "Bei KI für diesen Schritt war unter dem Kontextkopf zunächst nur der untere Teil der gelben Meldung sichtbar: die Administration könne die Verbindung einrichten. „Noch nicht verfügbar“ und die Erklärung mit OpenAI-Projekt, Modell und Kostenbudget fehlten in der sichtbaren Fläche. Das blieb in einem später aufgenommenen Screenshot bestehen. Nach gezieltem Heranscrollen der Meldung wurde ihr vollständiger Inhalt sichtbar.",
+      "expectation": "Beim deaktivierten Chat den Grund der Sperre sofort vollständig lesen können.",
+      "impact": "Zusätzliches Scrollen ist nötig, um zu verstehen, warum trotz vorgefüllter Nachricht keine Eingabe oder Sendung möglich ist.",
+      "route": "/studio/d1c714f9-a55c-4089-bc44-dfafa8a7c75b",
+      "steps": [
+        "2 Inschrift & Details wählen und eigene Inschrift auswählen.",
+        "KI für diesen Schritt öffnen.",
+        "Sichtbaren gelben Hinweis lesen.",
+        "Zum Beginn der Meldung scrollen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/planner_a/0014-1792759887847.png",
+        "work/ai-usability/evidence/planner_a/0015-1792759898934.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Den Verfügbarkeitshinweis beim Öffnen vollständig unterhalb des Kontextkopfs platzieren."
+    },
+    {
+      "id": "planner_a-E1",
+      "severity": "P2",
+      "title": "KI-Gestaltung in dieser Umgebung nicht eingerichtet",
+      "observation": "Die UI meldet „Noch nicht verfügbar“ und „OpenAI-Projekt, Modell und Kostenbudget noch einzurichten.“. Nachrichtentextfeld, Spracheingabe und Senden sind deaktiviert. Ein Adminhinweis erklärt die Zuständigkeit.",
+      "expectation": "Eine Gestaltungsfrage mit geschützten Maßen und Originalwortlaut stellen und einen Vorschlag prüfen.",
+      "impact": "G3 bleibt durch fehlende Einrichtung blockiert. KI-Antwortqualität und Korrektur/Übernahme können nicht getestet werden.",
+      "route": "/studio/d1c714f9-a55c-4089-bc44-dfafa8a7c75b",
+      "steps": [
+        "KI für diesen Schritt im Inschriftschritt öffnen.",
+        "Verfügbarkeit und deaktivierte Eingabe prüfen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/planner_a/0015-1792759898934.png"
+      ],
+      "confidence": "high",
+      "category": "environment",
+      "recommendation": "Für einen Folgetest einen eingerichteten KI-Anbieter mit freigegebenem Kostenrahmen bereitstellen."
+    }
+  ],
+  "strengths": [
+    "Planungsstudio und vier fachliche Schritte waren ohne Anleitung auffindbar.",
+    "Millimeter werden im Anlegedialog deutlich erklärt; Maße bleiben als Wunschmaße bzw. noch zu prüfen gekennzeichnet.",
+    "Schriftänderung und Rückgängig funktionierten; Revision und Synchronisierungszustand waren erkennbar.",
+    "Wörtliche Textprüfung zeigt Anna Linden · 1948–2026 · In Liebe groß und vollständig; sie ist ausdrücklich als Leseschrift und keine Herstellerkontur bezeichnet.",
+    "Katalogreferenz, Lieferantenlink und Vorbehalt zum realen Muster helfen, Gestaltung von bestätigter Produktinformation zu unterscheiden.",
+    "Prüfstand erklärt offene Nachweise und trennt Kundenbestätigung von technischer Fachprüfung. Fertigungsfreigabe war gesperrt.",
+    "KI-Kontext nennt gespeicherten Stand, Auswahl sowie Schutzgrenzen; Vorschläge werden laut sichtbarer Erklärung vor Anwendung geprüft. Wirksamkeit mangels Anbieter nicht überprüft."
+  ],
+  "limits": [
+    "Simulierter Testnutzer, keine echte menschliche Nutzerforschung; keine SUS-Zahl erhoben.",
+    "Broker zwischen erstem Projektname-Eintrag und Planung beginnen vorübergehend nicht erreichbar. Parent bestätigte Harness-Neustart; der ungespeicherte Formularzustand ging dadurch verloren. Danach neu angemeldet und fortgesetzt. Kein Appdefekt daraus abgeleitet.",
+    "Ein anfänglicher Klick auf Planungsstudio traf den noch offenen Einführungdialog. Screenshot zeigte den Dialog, Escape schloss ihn. Locator-Timeout nicht als Appfehler gewertet.",
+    "Herstelleroriginalbibliothek leer; verständlicher Hinweis auf berechtigte Administration. Kein Beleg für einen defekten Import.",
+    "Lieferantenlink nur in der UI gefunden; keine externe Navigation und keine fachliche Validierung der Herstellerangaben.",
+    "KI-Anbieter nicht eingerichtet. Keine Anfrage, kein generiertes Ergebnis und keine Kosten ausgelöst.",
+    "Desktop 1440 × 1000 getestet; Mobilbedienung nicht Teil dieser Persona.",
+    "PDF-Fehlerursache nicht untersucht; nur sichtbares Verhalten und zwei Fehlversuche belegt."
+  ],
+  "browserActionsApprox": 71
+}

@@ -1,0 +1,161 @@
+{
+  "persona": "office_b",
+  "role": "UX Nina Weber (Nina, 26), seit zwei Wochen im Backoffice eines deutschen Steinmetzbetriebs",
+  "startedAt": "2026-10-23T12:45:17Z",
+  "finishedAt": "2026-10-23T12:52:58Z",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/office_b/0001-1792759601008.png",
+        "work/ai-usability/evidence/office_b/0002-1792759612520.png",
+        "work/ai-usability/evidence/office_b/0007-1792759721924.png",
+        "work/ai-usability/evidence/office_b/0008-1792759739377.png",
+        "work/ai-usability/evidence/office_b/0009-1792759751742.png"
+      ],
+      "notes": "Kunde über Kunden durchsuchen und Enter gefunden. Kundenakte zeigt Stammdaten und 0 direkt verknüpfte Dokumente. Verknüpfte Vorgänge nennt nur einen allgemeinen Verweis auf die Übersicht; auch die neu angelegte, nachweislich verknüpfte Anfrage erscheint dort nicht. Auftragssuche Linden findet 0 Einträge, obwohl Heute Aufträge der Familie zeigte. Anfrage mit übernommenem Kundenbezug angelegt; kein vollständiger Überblick über offene Vorgänge erreicht."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/office_b/0003-1792759634329.png",
+        "work/ai-usability/evidence/office_b/0004-1792759671467.png",
+        "work/ai-usability/evidence/office_b/0006-1792759705820.png",
+        "work/ai-usability/evidence/office_b/0010-1792759780926.png"
+      ],
+      "notes": "Eigene Anfrage UX office_b · Aufmaß abstimmen, INQ-2026-00005, mit Wiedervorlage 26.10.2026 erstellt. Nur Vorhaben als Pflichtfeld erforderlich. Speichern mit leerem Vorhaben ließ das Formular offen; die genaue native Validierungsmeldung wurde nicht gesichert. Escape mit offenen Eingaben zeigte Weiter bearbeiten / Ungespeicherte Eingaben verwerfen. Weiter bearbeitet und gespeichert. Kundenwunsch danach von dunklem auf hellen Stein geändert; automatische Serverbestätigung und Version 2 sichtbar."
+    },
+    {
+      "id": "G3",
+      "status": "blocked",
+      "evidence": [
+        "work/ai-usability/evidence/office_b/0005-1792759699220.png"
+      ],
+      "notes": "Entwurf mit KI prüfen und Diese Angaben werden übermittelt geöffnet. Sichtbar: Vorhaben, Beschreibung und welche Grundangaben ausgefüllt sind; interne Einzelkosten und andere Akten werden laut UI nicht übermittelt. Eingaben prüfen wegen noch einzurichtendem OpenAI-Projekt, Modell und Kostenbudget deaktiviert. Kein KI-Text erzeugt, keine Übernahme oder Nachricht. Umfang nur anhand der UI-Angabe beurteilt, tatsächliche Datenübermittlung nicht geprüft."
+    },
+    {
+      "id": "G4",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/office_b/0010-1792759780926.png",
+        "work/ai-usability/evidence/office_b/0011-1792759799724.png"
+      ],
+      "notes": "Nach Navigation über Kunde und Aufträge die Anfragen wieder geöffnet. Suche UX office_b per Enter ergab 1 Eintrag. Eigenen Vorgang geöffnet, Montgeort zu Montageort korrigiert und gespeichert. Version 3 zeigt korrekten Text, hellen Stein und Wiedervorlage. Tab, Escape sowie Enter tatsächlich benutzt; Verlauf per Enter mit gut sichtbarem Fokus geöffnet. Verlauf zeigt trotz Änderungen keine Einträge."
+    }
+  ],
+  "findings": [
+    {
+      "id": "office_b-F1",
+      "severity": "P2",
+      "title": "Kundenakte bietet unter Verknüpfte Vorgänge keine Vorgangsliste",
+      "observation": "Beim Kunden Familie Linden zeigt der Reiter ausschließlich Verknüpfungen über die Angaben öffnen und einen allgemeinen Hinweis auf die Übersicht. Nach dem Anlegen meiner Anfrage mit diesem Kundenbezug zeigt derselbe Reiter weiterhin keine Anfrage. Die Übersicht bot Stammdaten und Aktionen zum Neuanlegen, keine Liste bestehender Vorgänge.",
+      "expectation": "In der Kundenakte erwartete ich eine Liste offener Anfragen und Aufträge, damit ich die Aufmaß-Rückfrage in den vorhandenen Zusammenhang einordnen kann.",
+      "impact": "Ich musste die Kundenakte verlassen und getrennte Listen verwenden. Als neue Mitarbeiterin konnte ich nicht erkennen, welche vorhandenen Vorgänge für die Rückfrage relevant sind.",
+      "route": "/customers/f153569d-f1da-4202-bb7e-38b00b7fcfc9",
+      "steps": [
+        "Kunden & Projekte öffnen; Familie Linden suchen und per Enter anwenden.",
+        "Kunde öffnen und Verknüpfte Vorgänge wählen.",
+        "Übersicht und Dokumente prüfen; 0 direkt verknüpfte Dokumente sichtbar.",
+        "Über Übersicht > Anfrage anlegen eigene Anfrage mit übernommenem Kundenbezug erstellen.",
+        "Aus eigener Anfrage zum verlinkten Kunden zurückkehren und Verknüpfte Vorgänge erneut öffnen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/office_b/0001-1792759601008.png",
+        "work/ai-usability/evidence/office_b/0007-1792759721924.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Bestehende Vorgänge mit Titel, Art, Status und nächstem Schritt direkt in der Kundenakte anzeigen."
+    },
+    {
+      "id": "office_b-F2",
+      "severity": "P2",
+      "title": "Auftragsliste zeigt Kundenkennung; Kundennamensuche liefert keine Treffer",
+      "observation": "Heute zeigte mehrere Entwurfsaufträge mit dem Namen Familie Linden. In Aufträge steht bei denselben Titeln unter Kunde f153569d-f1da-4202-bb7e-38b00b7fcfc9. Die Suche Linden mit Enter ergab 0 Einträge. Nach Filter zurücksetzen erschienen wieder 20 Einträge mit der Kennung.",
+      "expectation": "Die Spalte Kunde sollte einen erkennbaren Kundennamen zeigen. Bei Aufträge durchsuchen erwartete ich, vorhandene Aufträge auch über Linden zu finden.",
+      "impact": "Die zweite Möglichkeit, mich über Kundenaufträge zu orientieren, scheiterte. Die lange Kennung hilft bei einer telefonischen Rückfrage nicht.",
+      "route": "/orders?q=Linden",
+      "steps": [
+        "Aus der Kundenakte den sichtbaren Link Aufträge öffnen.",
+        "Spalte Kunde ansehen.",
+        "Linden in Aufträge durchsuchen eingeben und Enter drücken.",
+        "0 Einträge / Keine passenden Einträge prüfen.",
+        "Filter zurücksetzen; Liste mit Kundenkennungen erneut ansehen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/office_b/0008-1792759739377.png",
+        "work/ai-usability/evidence/office_b/0009-1792759751742.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Den Kundennamen in der Liste anzeigen und in der Suche berücksichtigen; den Suchumfang verständlich beschreiben."
+    },
+    {
+      "id": "office_b-F3",
+      "severity": "P3",
+      "title": "Verlauf bleibt nach gespeicherter Wunschänderung leer",
+      "observation": "Meine Anfrage zeigte nach Änderung von dunklem zu hellem Stein und nach Tippfehlerkorrektur Version 3. Der per Enter geöffnete Reiter Verlauf zeigte Nachvollziehbarer Verlauf / Noch kein sichtbarer Verlauf sowie Geschäftliche Änderungen und Freigaben werden mit dem jeweiligen Stand dokumentiert.",
+      "expectation": "Beim Nachsehen wollte ich die Änderung des Kundenwunsches und meine Korrektur mit Zeitpunkt nachvollziehen können.",
+      "impact": "Ich konnte den aktuellen Inhalt prüfen, aber die frühere Aussage zum dunklen Stein nicht über den Verlauf nachvollziehen. Ob Entwurfsänderungen grundsätzlich ausgenommen sind, bleibt für mich offen.",
+      "route": "/inquiries/69e17c84-e588-4c10-a424-e235b0ca3600",
+      "steps": [
+        "Eigene Anfrage mit dunklem Stein speichern.",
+        "Beschreibung auf hellen Stein ändern; Serverbestätigung und Version 2 prüfen.",
+        "Nach Rückkehr Tippfehler korrigieren und speichern; Version 3 prüfen.",
+        "Verlauf mit Enter öffnen und anschließend nochmals ansehen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/office_b/0006-1792759705820.png",
+        "work/ai-usability/evidence/office_b/0010-1792759780926.png",
+        "work/ai-usability/evidence/office_b/0011-1792759799724.png"
+      ],
+      "confidence": "medium",
+      "category": "product",
+      "recommendation": "Änderungen am Kundenwunsch im sichtbaren Verlauf zeigen oder klar erklären, welche Entwurfsänderungen dort fehlen."
+    },
+    {
+      "id": "office_b-E1",
+      "severity": "P2",
+      "title": "KI-Rückfrage durch fehlende Einrichtung in dieser Umgebung blockiert",
+      "observation": "Im geöffneten Bereich Entwurf mit KI prüfen stand OpenAI-Projekt, Modell und Kostenbudget noch einzurichten. Eingaben prüfen war deaktiviert.",
+      "expectation": "Ich wollte aus dem aktuellen Vorhaben eine sachliche Rückfrage zu Fensterbanktiefe und Zugang zum Montageort entwerfen und vor einer Verwendung prüfen.",
+      "impact": "Ein KI-Entwurf und dessen Korrektur konnten nicht ausprobiert werden. Das ist ein Umgebungslimit; keine Aussage zur Antwortqualität.",
+      "route": "/inquiries/69e17c84-e588-4c10-a424-e235b0ca3600",
+      "steps": [
+        "Anfrage bearbeiten öffnen.",
+        "Entwurf mit KI prüfen aufklappen.",
+        "Diese Angaben werden übermittelt aufklappen.",
+        "Anbieterhinweis und deaktivierte Aktion lesen; keine Einrichtung ändern."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/office_b/0005-1792759699220.png"
+      ],
+      "confidence": "high",
+      "category": "environment"
+    }
+  ],
+  "strengths": [
+    "Kundenbezug wurde beim Anlegen aus der Kundenakte sichtbar vorausgefüllt; keine erneute Eingabe von Name, E-Mail oder Adresse nötig.",
+    "Formular nennt Pflichtfelder und erklärt explizites Speichern beim Anlegen sowie automatisches Speichern beim Bearbeiten.",
+    "Escape bei ungespeicherten neuen Eingaben zeigte eine verständliche Wahl zwischen Weiterbearbeiten und Verwerfen; meine Daten blieben beim Weiterbearbeiten erhalten.",
+    "Die automatische Speicherung meldete Vom Server bestätigt gespeichert; späteres Wiederöffnen bestätigte den hellen Stein.",
+    "Titelbasierte Suche reagierte auf Enter und fand den eigenen Vorgang eindeutig. Enter auf Verlauf zeigte einen deutlich sichtbaren Fokusrahmen.",
+    "KI-Bereich benennt vor einem möglichen Start Zweck und übermittelte Feldarten und sagt ausdrücklich, dass andere Akten nicht übermittelt werden."
+  ],
+  "limits": [
+    "Simulierter Black-box-Test einer einzelnen Rolle; keine echte menschliche Nutzerforschung und kein Code- oder Sicherheitsreview.",
+    "Browser-Broker war nach der ersten Einstiegssichtung nicht erreichbar (ECONNREFUSED 127.0.0.1:9323). Parent stellte ihn wieder her; start musste wiederholt werden. Keine Formulareingaben gingen dabei verloren. Harness-Limit, kein Appbefund.",
+    "Keine KI-Ausgabe wegen fehlender Konfiguration; tatsächliche Datenübermittlung und Qualität ungeprüft.",
+    "Datum wurde im Browserformular als 10/26/2026 bzw. mm/dd/yyyy dargestellt, in der Akte korrekt als 26.10.2026. Browser-Lokalisierung nicht separat verifiziert; daher kein bestätigter Produktbefund.",
+    "Desktop 1280 × 900 entsprechend dem Brief geprüft. Kein mobiler Nutzungstest.",
+    "Nur eigene Anfrage geändert. Keine Nachrichten, Freigaben oder sonstigen verbindlichen Geschäftsschritte ausgelöst.",
+    "Sitzung beendet, nachdem die Ziele erreicht bzw. mit konkreter Hürde markiert waren; etwa fünf Minuten aktive Sitzung mit ungefähr 62 Browserbefehlen einschließlich Sichtung und erneutem Start."
+  ],
+  "browserActionsApprox": 62
+}

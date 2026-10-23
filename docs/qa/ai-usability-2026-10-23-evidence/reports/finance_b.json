@@ -1,0 +1,195 @@
+{
+  "persona": "finance_b",
+  "role": "Felix, 28, neuer kaufmännischer Mitarbeiter / Debitoren im deutschen Steinmetzbetrieb; App-Zugang UX Felix Seidel, Finanzen",
+  "startedAt": "2026-10-23T12:59:03.904Z",
+  "finishedAt": "2026-10-23T13:09:08.402Z",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0003-1792760464471.png",
+        "work/ai-usability/evidence/finance_b/0004-1792760493882.png",
+        "work/ai-usability/evidence/finance_b/0006-1792760583446.png"
+      ],
+      "notes": "Rechnungsliste gefunden. Suche finance_b und anschließend Linden ergab jeweils 0 Treffer. Kundenakte UX Familie Linden ux-20261023-c04396 mit Testweg 12 gefunden; Bezug zum vorbereiteten Auftrag konnte in der UI nicht bestätigt werden. Offene Forderungen über Auswertung gefunden: 0,00 EUR, gefilterte und anschließend ungefilterte Liste leer. Zeitraum 01.10.2026 bis 23.10.2026 und Stichtag 23.10.2026 geprüft. Kein kundenbezogener offener Betrag prüfbar; keine Behauptung, dass ein erwarteter Beleg fehlt."
+    },
+    {
+      "id": "G2",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0005-1792760531528.png",
+        "work/ai-usability/evidence/finance_b/0004-1792760493882.png"
+      ],
+      "notes": "Zahlungen ist leer. Formular Zahlung anlegen nur geöffnet und über Abbrechen verlassen; verständliche Hinweise zu tatsächlicher Zahlung, bestätigtem Betrag, Geschäftspartner und Bankbuchungstag gelesen. Hilfe zu Rechnungen nennt Korrektur erstellen und unveränderte ausgestellte Belege. Kein passender ausgestellter Beleg gefunden, daher Zuordnungs- und Korrekturbestätigungen nicht erreichbar und nicht bewertet. Keine Zahlung, Zuordnung, Buchung, Ausstellung oder Stornierung bestätigt."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0006-1792760583446.png",
+        "work/ai-usability/evidence/finance_b/0009-1792760877617.png",
+        "work/ai-usability/evidence/finance_b/0010-1792760913860.png"
+      ],
+      "notes": "Auswertung auf 01.10.2026 bis 23.10.2026 gesetzt; 2.400,00 EUR beauftragter Nettowert, 0,00 EUR Fakturierung/Zahlungseingänge/offene Forderungen sichtbar. Quellenlink Forderungen übernahm EUR und Stichtag sichtbar. CSV-Exportdialog für Forderungen angesehen und abgebrochen. Auswertungsstand sichern speicherte ohne Namensdialog den automatisch benannten internen Stand Controlling 2026-10-01 bis 2026-10-23 und startete ein privates Exportpaket. UI meldete später fehlenden privaten Dateispeicher. Keine Datei heruntergeladen oder inhaltlich geprüft, keine externe Übergabe/kein Versand. Eigene offene Prüfaufgabe TAS-2026-00001 erstellt und vorbereiteten Auftrag über explizite Suche ausgewählt; keine bestätigte Betragsdifferenz erfunden."
+    }
+  ],
+  "findings": [
+    {
+      "id": "finance_b-F1",
+      "severity": "P2",
+      "title": "Quellenlink beim beauftragten Nettowert endet im gesperrten Auftragsbereich",
+      "observation": "Die Auswertung bietet bei 2.400,00 EUR den Link Quellenvorgänge öffnen. Nach dem Klick zeigt die Seite Dieser Bereich ist nicht freigegeben und Dieser Bereich ist nicht verfügbar.",
+      "expectation": "Als neuer Finanzmitarbeiter erwarte ich bei einem angebotenen Quellenlink eine für meinen Zugang lesbare Grundlage oder vor dem Klick eine erkennbare Einschränkung.",
+      "impact": "Den beauftragten Nettowert und den Bezug zum vorbereiteten Auftrag kann ich darüber nicht nachvollziehen. Die Berechtigungssperre selbst ist verständlich und wurde respektiert.",
+      "route": "/orders?from=2026-10-01&to=2026-10-23&metric=ordered_net&currency=EUR",
+      "steps": [
+        "Auswertungen öffnen",
+        "Zeitraum von auf 01.10.2026 setzen und Auswerten wählen",
+        "Bei Beauftragter Nettowert 2.400,00 EUR Quellenvorgänge öffnen wählen",
+        "Nach Navigation sichtbare Berechtigungsmeldung prüfen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0006-1792760583446.png",
+        "work/ai-usability/evidence/finance_b/0007-1792760701795.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Quellensprünge passend zu den Leserechten anbieten oder die Einschränkung bereits an der Kennzahl erklären."
+    },
+    {
+      "id": "finance_b-F2",
+      "severity": "P2",
+      "title": "Kundenreiter Verknüpfte Vorgänge liefert nur einen allgemeinen Hinweis",
+      "observation": "In der gefundenen Kundenakte zeigt Verknüpfte Vorgänge nur Verknüpfungen über die Angaben öffnen sowie den Verweis auf die Übersicht. Die zuvor gelesene Übersicht enthielt Stammdaten und Anfrage anlegen, aber keine konkrete Rechnung oder Auftragsverknüpfung.",
+      "expectation": "Ich erwarte unter Verknüpfte Vorgänge eine konkrete Liste oder eine klare Aussage, dass keine Vorgänge vorhanden oder für mich sichtbar sind.",
+      "impact": "Ich kann den Kunden nicht von dieser Akte aus zur offenen Forderung oder zum vorbereiteten Auftrag verfolgen und muss zu unabhängigen Suchen wechseln. Ob diese Kundenakte tatsächlich dem vorbereiteten Auftrag gehört, blieb unbestätigt.",
+      "route": "/customers/f153569d-f1da-4202-bb7e-38b00b7fcfc9",
+      "steps": [
+        "Kunden & Projekte öffnen",
+        "Kunden nach UX suchen und Anwenden wählen",
+        "UX Familie Linden ux-20261023-c04396 öffnen",
+        "Stammdaten einschließlich Testweg 12 lesen",
+        "Verknüpfte Vorgänge wählen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0003-1792760464471.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Konkrete lesbare Verknüpfungen oder einen eindeutigen Leer-/Berechtigungszustand anzeigen."
+    },
+    {
+      "id": "finance_b-F3",
+      "severity": "P2",
+      "title": "Einführung erscheint nach Quellensprung erneut und Schließen erzeugt Datensatzkonflikt",
+      "observation": "Zu Beginn hatte ich Station 7 gewählt und Hier selbst ausprobieren verwendet. Nach dem späteren Quellensprung auf den gesperrten Auftragsbereich erschien die Einführung wieder bei Schritt 1. Für später schließen zeigte danach Der Datensatz wurde inzwischen geändert. Aktuellen Stand laden und Änderungen prüfen. Ohne Speichern schließen entfernte den Dialog.",
+      "expectation": "Eine bereits verlassene Einführung soll beim fachlichen Quellenwechsel nicht erneut den Bildschirm belegen; eine Pause soll ohne fachfremden Speicherkonflikt möglich sein.",
+      "impact": "Zusätzliche Unterbrechung und Unsicherheit unmittelbar nach der Berechtigungssperre. Der angebotene Rückweg Ohne Speichern schließen funktionierte.",
+      "route": "/orders?from=2026-10-01&to=2026-10-23&metric=ordered_net&currency=EUR",
+      "steps": [
+        "Bei Einstieg Station 7 Eine Rechnung sicher vorbereiten wählen",
+        "Hier selbst ausprobieren wählen",
+        "Später über Auswertungen den Quellenlink zum beauftragten Nettowert öffnen",
+        "Erneut erschienene Einführung bei Schritt 1 über Für später schließen verlassen",
+        "Konfliktmeldung lesen und Ohne Speichern schließen wählen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0001-1792760343904.png",
+        "work/ai-usability/evidence/finance_b/0002-1792760375628.png",
+        "work/ai-usability/evidence/finance_b/0007-1792760701795.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Tourzustand bei Navigation konsistent halten und eine Pause unabhängig von unnötigen Versionskonflikten ermöglichen."
+    },
+    {
+      "id": "finance_b-F4",
+      "severity": "P2",
+      "title": "Auftrag wird in eigener Aufgabe nach Namensauswahl nur als unlesbare Kennung gezeigt",
+      "observation": "Im Aufgabenformular fand die ausdrückliche Suche UX finance_b den Auftrag UX finance_b · Badumbau Testweg. Nach Auswahl und Speichern zeigt die Aufgabenübersicht unter Auftrag ausschließlich c24233ac-6e8e-4793-9917-4a6f0ecff526, ohne öffnenden Link.",
+      "expectation": "Ich erwarte denselben Auftragsnamen wie in der Auswahl und einen verständlichen Hinweis, wenn ich seine Akte nicht öffnen darf.",
+      "impact": "Die gespeicherte Rückfrage lässt sich visuell schwer auf den richtigen Auftrag kontrollieren; ein Weiterarbeiten vom Aufgabenbezug ist nicht angeboten.",
+      "route": "/tasks/14e2fe46-3e4e-4093-8116-f61d85c7a75d",
+      "steps": [
+        "Aufgabe anlegen öffnen",
+        "Im Auftragssuchfeld UX finance_b eingeben und Suchen wählen",
+        "UX finance_b · Badumbau Testweg auswählen",
+        "Eigene Prüfaufgabe UX finance_b · Rechnungsbezug Badumbau klären speichern",
+        "Gespeicherte Aufgabe öffnen und Auftrag lesen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0009-1792760877617.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Auftragsnamen und Nummer anzeigen; einen möglichen fehlenden Zugriff gesondert erklären."
+    },
+    {
+      "id": "finance_b-F5",
+      "severity": "P3",
+      "title": "Rechnungsstatus validated bleibt englisch",
+      "observation": "Die Statusauswahl enthält Alle Status, Entwurf, validated und Ausgestellt.",
+      "expectation": "In der deutschen Rechnungsarbeit erwarte ich einen verständlichen deutschen Prüfstatus.",
+      "impact": "Als neuer Mitarbeiter muss ich die Bedeutung von validated erst aus dem Prozess erschließen. Einen passenden ausgestellten Beleg fand ich in dieser Sitzung nicht.",
+      "route": "/invoices?q=Linden",
+      "steps": [
+        "Rechnungssuche Linden anwenden",
+        "Status filtern öffnen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0004-1792760493882.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Den Prüfstatus fachlich verständlich auf Deutsch beschriften."
+    },
+    {
+      "id": "finance_b-F6",
+      "severity": "P2",
+      "title": "Exportpaket kann wegen fehlendem privaten Dateispeicher nicht bereitgestellt werden",
+      "observation": "Auswertungsstand sichern meldete zunächst Der genaue Berichtstand ist eingefroren. Das private Exportpaket wird erstellt. Bei späterer Rückkehr zeigte der gespeicherte Stand Export benötigt eine Klärung und Privater Dateispeicher ist noch nicht eingerichtet. Die übrigen Funktionen bleiben verfügbar.",
+      "expectation": "Für eine interne Kontrolle möchte ich den gesicherten Stand als Datei nutzen und Zahlen, Datum und Filter darin prüfen.",
+      "impact": "Die exportierbare Übersicht wurde gefunden und der Stand intern gesichert, aber Dateiinhalt und Übereinstimmung mit der Oberfläche blieben ungeprüft.",
+      "route": "/reports",
+      "steps": [
+        "Auswertung auf 01.10.2026 bis 23.10.2026 setzen",
+        "Auswertungsstand sichern wählen",
+        "Gesicherte Stände & Übergabe an die Kanzlei öffnen",
+        "Später nach Rückkehr den gespeicherten Stand und die Klärungsmeldung lesen"
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/finance_b/0010-1792760913860.png"
+      ],
+      "confidence": "high",
+      "category": "environment",
+      "recommendation": "Privaten Dateispeicher in der Testumgebung einrichten, anschließend den Dateiexport gesondert prüfen."
+    }
+  ],
+  "strengths": [
+    "Einführung erlaubt eine direkte Fachstation und erklärt Entwurf sowie bewusste Bestätigungen.",
+    "Zahlungsformular erläutert bestätigte Beträge, tatsächliche Bankbuchungstage und die Grenzen einer Zuordnung nur nach gleichem Betrag; Abbrechen funktioniert.",
+    "Auswertungen zeigen Zeitraum, Datenstand, EUR und unterschiedliche zeitliche Grundlagen der Kennzahlen verständlich.",
+    "Forderungsquelle übernimmt Währung und Stichtag als sichtbare Aktive Auswahl; ohne Filter wird der leere Bestand erklärt.",
+    "Deutsche Beträge wie 2.400,00 EUR und 0,00 EUR sowie Datumsangaben im Bericht sind gut lesbar.",
+    "Exportproblem nennt den konkreten fehlenden Dateispeicher und behauptet keine erfolgreiche Dateiübergabe."
+  ],
+  "limits": [
+    "Simulierte einzelne Testperson, keine echte menschliche Nutzerforschung und kein Code-/Sicherheitsaudit.",
+    "startedAt bezeichnet den ersten gesicherten Screenshot; finishedAt den Dokumentationsbeginn unmittelbar nach dem Schließen. Browserinteraktion dauerte ungefähr zehn Minuten.",
+    "Im sichtbaren Bestand gab es keine Zahlung und keinen gefundenen passenden ausgestellten Beleg. Tatsächliche Zuordnung, Korrektur und deren letzte Bestätigungen wurden nicht geprüft.",
+    "Die Zuordnung der gefundenen Kundenakte zum vorbereiteten Auftrag blieb unbestätigt; 0 Treffer sind kein Nachweis eines Produktfehlers oder einer fehlenden Rechnung.",
+    "Auftragsbereich ist für diesen Finanzzugang gesperrt. Die Sperre wurde nicht umgangen.",
+    "Native Datumsfelder zeigten in diesem Browser mm/dd/yyyy beziehungsweise 10/01/2026 und 10/23/2026, die Berichtszeile dagegen 01.10.2026 bis 23.10.2026. Browser-Locale wurde nicht ausgelesen oder verändert; Ursache der gemischten Darstellung offen.",
+    "Nur sichtbare deutsche Zahlenformate und Hilfetexte geprüft, keine Dezimaleingabe oder CSV-Inhalte validiert.",
+    "Ein Locatorfehler wegen zweier gleich benannter Suchfelder wurde mit dem zuvor beobachteten Feldselektor behoben; kein Appfehler daraus abgeleitet.",
+    "KI wurde nicht gestartet. Optionaler Abschnitt Entwurf mit KI prüfen war sichtbar; keine Aussage zu Verfügbarkeit oder Antwortqualität.",
+    "Zusätzlich zur eigenen Aufgabe wurde durch Auswertungsstand sichern ein interner Stand mit automatisch vergebenem Namen gespeichert und ein privater Exportjob angestoßen. Kein externer Versand, keine DATEV-Abgabe, keine Zahlungs-/Rechnungsbuchung.",
+    "Laptop-Ansicht 1280 × 900 geprüft; keine Aussage zur mobilen Bedienbarkeit."
+  ],
+  "browserActionsApprox": 76
+}

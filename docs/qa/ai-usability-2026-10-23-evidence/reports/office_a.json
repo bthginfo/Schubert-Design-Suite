@@ -1,0 +1,136 @@
+{
+  "persona": "office_a",
+  "role": "Sabine, 54, erfahrene Bürokraft im deutschen Steinmetzbetrieb; Kundenanruf bis Angebotsentwurf",
+  "startedAt": "2026-10-23T12:45:08.249Z",
+  "finishedAt": "2026-10-23T12:56:58Z",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0001-1792759670106.png",
+        "http://127.0.0.1:5173/inquiries/5447cec8-5e19-47fc-82fa-8f719893e1c2"
+      ],
+      "notes": "Kunde UX office_a Familie Sommer (KD-2026-00051) mit Teststraße 8, 10115 Berlin, 030 5550101 und office-a@example.invalid gespeichert. Zugehörige telefonische Anfrage INQ-2026-00006 für zwei Fensterbänke aus hellem Naturstein mit Wunschtermin 02.11.2026 gespeichert und geöffnet. Erst Anfrage begonnen, dann wegen bestehender Kundenauswahl zur Kundenerfassung gewechselt."
+    },
+    {
+      "id": "G2",
+      "status": "achieved",
+      "evidence": [
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0006-1792759830976.png",
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0011-1792759976570.png",
+        "http://127.0.0.1:5173/quotes/12dbd1cc-86b4-429c-a539-02293f1239c5"
+      ],
+      "notes": "Angebot UX office_a Fensterbänke Familie Sommer, TEST-AN/26/0191, Status Entwurf. 2,5 m² zu 280,00 EUR netto und 2 Stunden zu 65,00 EUR netto, beide 19 %. Material 700,00 EUR, Montage 130,00 EUR, Netto 830,00 EUR, USt. im offenen Formular 157,70 EUR, Brutto 987,70 EUR. Gespeicherten Stand und beide Positionen erneut geprüft. Nichts veröffentlicht, versendet oder zur Prüfung gegeben."
+    },
+    {
+      "id": "G3",
+      "status": "partial",
+      "evidence": [
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0006-1792759830976.png",
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0009-1792759927588.png",
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0010-1792759956741.png",
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0011-1792759976570.png"
+      ],
+      "notes": "Im noch ungespeicherten Angebot den Formularhelfer Entwurf mit KI prüfen und dessen Kontextauskunft geöffnet. Angezeigt: Titel, Belegwährung, 2 von 2 Positionen sowie Vollständigkeit der Grundangaben; interne Einzelkosten und andere Akten ausgeschlossen. OpenAI-Projekt, Modell und Kostenbudget nicht eingerichtet, Eingaben prüfen deaktiviert. Keine KI-Anfrage und keine generierte Beschreibung. Eigene kurze Beschreibung und nachvollziehbare Zwischenstandsnotiz manuell gespeichert. Wiederfinden über Kundenakte scheiterte; im Büro über Namenssuche und Enter erfolgreich wieder geöffnet."
+    }
+  ],
+  "findings": [
+    {
+      "id": "office_a-F1",
+      "severity": "P2",
+      "title": "Verknüpfte Vorgänge der Kundenakte zeigt weder Anfrage noch Angebot",
+      "observation": "Nach dem Speichern der eigenen, korrekt dem Kunden zugeordneten Anfrage und des Angebots führte ich vom Angebot zur Familie Sommer und öffnete Verknüpfte Vorgänge. Es erschien nur Verknüpfungen über die Angaben öffnen mit einem allgemeinen Hinweis und Zur Übersicht. Die Übersicht enthielt nur die Aktionen Anfrage anlegen, Angebot anlegen und Auftrag anlegen; kein Zugang zu den beiden bereits gespeicherten Vorgängen.",
+      "expectation": "Beim Rückruf des Kunden wollte ich dessen Anfrage und Angebotsentwurf über seine Akte wieder öffnen.",
+      "impact": "Der erwartete Zugriff über den Kunden endete in einem Umweg. Ich musste ins Büro wechseln und den Angebotsnamen in der separaten Liste suchen. Das gelang mit UX office_a und Enter.",
+      "route": "http://127.0.0.1:5173/customers/11bea9e6-e01c-46e2-855f-c4aec1f857cf",
+      "steps": [
+        "Kunde KD-2026-00051 speichern.",
+        "Aus der Kundenakte Anfrage INQ-2026-00006 anlegen.",
+        "Aus dieser Anfrage Angebot TEST-AN/26/0191 für den vorausgewählten Kunden anlegen und als Entwurf speichern.",
+        "Im Angebot den verlinkten Kunden öffnen und Verknüpfte Vorgänge wählen.",
+        "Zur Übersicht wählen; dort sind nur neue Vorgänge anzulegen.",
+        "Büro öffnen, Angebote durchsuchen mit UX office_a füllen, Enter drücken und Angebot erneut öffnen."
+      ],
+      "evidence": [
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0009-1792759927588.png",
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0001-1792759670106.png",
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0010-1792759956741.png",
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0011-1792759976570.png"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "In der Kundenakte vorhandene Anfragen und Angebote mit Nummer, Titel, Status und Öffnen-Link anzeigen oder passende gefilterte Listen anbieten."
+    },
+    {
+      "id": "office_a-F2",
+      "severity": "P3",
+      "title": "Der Direkteinstieg in eine neue Anfrage führt beim neuen Kunden zu einem Umweg",
+      "observation": "Vom Startseitenlink Eine neue Anfrage aufnehmen öffnete ich Anfrage anlegen. Kunde bot bestehende Einträge und die Erklärung Wählen Sie den Auftraggeber aus den bestehenden Kunden. Eine sichtbare Aktion zur Neuanlage eines Kunden war im Dialog nicht vorhanden. Ich brach den noch leeren Dialog ab, wechselte zu Kunden, legte die Familie Sommer an und begann die Anfrage über deren Akte neu.",
+      "expectation": "Während des ersten Kundenanrufs erwartete ich, den neuen Kunden im selben Ablauf erfassen zu können oder einen klaren Hinweis auf den erforderlichen ersten Schritt zu erhalten.",
+      "impact": "Zusätzlicher Navigationswechsel während des Telefonats. Kein beobachteter Datenverlust, weil ich den ersten Anfragedialog noch nicht ausgefüllt hatte. Der alternative Weg über die Kundenakte funktionierte.",
+      "route": "http://127.0.0.1:5173/inquiries",
+      "steps": [
+        "Auf Heute Eine neue Anfrage aufnehmen wählen.",
+        "Anfrage anlegen wählen und die Auswahl Kunde öffnen.",
+        "Keine sichtbare Neuanlage finden; Abbrechen wählen.",
+        "Kunden öffnen und Kunde anlegen verwenden.",
+        "Gespeicherten Kunden öffnen und Anfrage anlegen wählen; Kundenzuordnung wird übernommen."
+      ],
+      "evidence": [
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0001-1792759508249.png",
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0001-1792759670106.png",
+        "Broker-Aktionsprotokoll unter work/ai-usability/evidence/office_a/: Anfrage anlegen → Kunde (41 bestehende Einträge) → Abbrechen → Kunden → Kunde anlegen."
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Im Kundenfeld eine Aktion Kunde neu anlegen anbieten oder direkt am Anfrageeinstieg die Reihenfolge für neue Kunden erläutern."
+    },
+    {
+      "id": "office_a-F3",
+      "severity": "P2",
+      "title": "KI im ungespeicherten Angebotsformular wegen fehlender Einrichtung nicht nutzbar",
+      "observation": "Nach vollständiger Eingabe beider Angebotspositionen öffnete ich Entwurf mit KI prüfen. Die aktuelle Kontextauskunft zeigte Titel, Belegwährung und 2 von 2 Positionen. Daneben stand OpenAI-Projekt, Modell und Kostenbudget noch einzurichten. Eingaben prüfen war deaktiviert. Der Helfer wurde als Prüfung mit Rückfragen beschrieben; eine generierte kundenfreundliche Beschreibung konnte nicht ausprobiert werden.",
+      "expectation": "Aus den noch nicht gespeicherten Angebotsangaben einen kurzen kundenfreundlichen Text entwerfen lassen und den Vorschlag vor Übernahme prüfen.",
+      "impact": "Der KI-Teil von G3 blieb blockiert. Ich formulierte die Beschreibung selbst und speicherte einen gekennzeichneten Zwischenstand. Keine Aussage zur Ausgabequalität oder zur tatsächlichen Übermittlung möglich.",
+      "route": "http://127.0.0.1:5173/quotes?customer_id=11bea9e6-e01c-46e2-855f-c4aec1f857cf",
+      "steps": [
+        "Angebot anlegen und Titel sowie zwei Preispositionen ausfüllen; noch nicht speichern.",
+        "Entwurf mit KI prüfen öffnen.",
+        "Diese Angaben werden übermittelt öffnen.",
+        "Kontext und deaktivierten Prüfknopf mit Einrichtungsnachricht prüfen.",
+        "Eigene Beschreibung und Zwischenstandsnotiz ergänzen und manuell speichern."
+      ],
+      "evidence": [
+        "/workspace/Schubert-Design-Suite/work/ai-usability/evidence/office_a/0006-1792759830976.png"
+      ],
+      "confidence": "high",
+      "category": "environment",
+      "recommendation": "Die Testumgebung für einen gesonderten KI-Test mit Projekt, Modell und Budget bereitstellen. Die sichtbar beschriebene Leistung des Formularhelfers umfasst Prüfung und Rückfragen; eine freie Textentwurfsfunktion wurde hier nicht verifiziert."
+    }
+  ],
+  "strengths": [
+    "Deutsche Dezimalzahlen 2,5, 280,00 und 65,00 wurden im offenen Formular angenommen und korrekt berechnet. Die gespeicherten Positionen blieben unverändert.",
+    "Der Angebotsentwurf zeigte vor dem Speichern Netto 830,00 EUR, Umsatzsteuer 157,70 EUR und Brutto 987,70 EUR deutlich nebeneinander; der gespeicherte Leistungsumfang zeigte 700,00 EUR und 130,00 EUR sowie Netto und Brutto.",
+    "Aus der Kundenakte heraus wurde die Kundenzuordnung in Anfrage und Angebot vorausgefüllt und am Formularkopf sichtbar bestätigt.",
+    "Speichern und Status Entwurf waren verständlich. Die Oberfläche erläutert, dass erst Veröffentlichung den verbindlichen Angebotsstand erzeugt; im Test wurde keine solche Aktion ausgelöst.",
+    "KI-Nichtverfügbarkeit und angekündigter Datenumfang waren vor einem Start sichtbar. Der Text stellte klar, dass ich anschließend selbst speichern muss.",
+    "Escape schloss die Einführung. Die Suche nach UX office_a im Büro ließ sich mit Enter anwenden und führte zu genau einem eigenen Angebotsentwurf.",
+    "Die betrachteten Desktopansichten hatten gut lesbare Überschriften und eine klare Trennung von Status und Stammdaten; im großen Angebotsdialog blieben Titel und Speichern sichtbar."
+  ],
+  "limits": [
+    "Simulierter einzelner Black-box-Rollentest, keine echte menschliche Nutzerstudie und keine Codeprüfung.",
+    "Zu Beginn fiel der gemeinsame Broker aus und wurde vom Parent neu gestartet. Die Sitzung war anschließend leer und wurde erneut gestartet. Vorher war nichts erfasst. Dies ist eine Harness-Unterbrechung, kein Produktfehler.",
+    "Ein erster Linkversuch traf das noch offene Einführungsmodal; dessen Ausblenden per Escape gelang. Der Locator-Timeout wird nicht als Appfehler bewertet.",
+    "Das Browserwerkzeug akzeptierte 02.11.2026 bei einem nativen date-Feld nicht (Malformed value). Mit 2026-11-02 war der Termin erfasst; die gespeicherte UI zeigte 02.11.2026. Das ist eine Werkzeug-/Locale-Grenze, kein nachgewiesener Fehler der Datumseingabe für deutsche Menschen.",
+    "KI nur über den Formularhelfer untersucht; allgemeiner Assistent und tatsächliche KI-Ausgaben wegen der sichtbaren fehlenden Einrichtung nicht getestet.",
+    "Nur Desktop 1440 × 1000 entsprechend der Bürorolle untersucht; keine Aussage zur mobilen Bedienbarkeit.",
+    "Vorhandene synthetische Testeinträge wurden nur gelesen. Änderungen nur an eigenem Kunden, eigener Anfrage und eigenem Angebotsentwurf. Keine Nachrichten, Freigaben oder Integrationsänderungen.",
+    "85 Browserbefehle vor dem abschließenden close, einschließlich Inspektionen, Screenshots, Werkzeugfehlern und Sitzungswiederherstellung; circa 60 eigentliche Bedienhandlungen. Beginn entspricht dem ersten gesicherten Screenshot."
+  ],
+  "browserActionsApprox": 86
+}

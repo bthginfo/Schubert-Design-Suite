@@ -1,0 +1,51 @@
+{
+  "baseline": "fbed506d9fb63cf62f7b148942b8ac7c930f54ce",
+  "facts": [
+    {
+      "id": "TRIAGE-01",
+      "kind": "product",
+      "finding": "planner_a-F1",
+      "observed": "GET design export returned HTTP500 on the agents inscription draft twice",
+      "serverError": "invalid input syntax for type uuid: unassigned:font",
+      "codeLocation": "apps/web/src/routes/api/v1/[...endpoint]/+server.ts:75",
+      "explanation": "Font lookup casts all inscription references to uuid[] including the permitted unassigned font placeholder. This distinguishes the error from missing document-worker/provider configuration.",
+      "confidence": "high"
+    },
+    {
+      "id": "TRIAGE-02",
+      "kind": "harness",
+      "finding": "planner_b download follow-up",
+      "observed": "Room planning PDF saved successfully; broker switched to a temporary download tab which closed.",
+      "artifact": "evidence/planner_b/1792759822055-Planung.pdf",
+      "pdfPages": 6,
+      "fix": "Broker now has a closed-tab fallback; it will be loaded between cohorts."
+    },
+    {
+      "id": "TRIAGE-03",
+      "kind": "environment",
+      "observed": "After the initial broker restart two repeated authentication attempts reached a common loopback-IP rate limit. Both Employee users logged in after the window; none of their goals remains blocked by it."
+    },
+    {
+      "id": "TRIAGE-04",
+      "kind": "environment",
+      "observed": "English native date/time widgets reproduced in a minimal HTML page without application code, despite html lang=de, Playwright locale de-DE and an additional --lang=de-DE launch.",
+      "conclusion": "Not counted as a confirmed app localization defect. ISO filling in the harness does not verify manual German native date entry.",
+      "evidence": [
+        "calibration/locale.json",
+        "calibration/native-date-context-locale.png",
+        "calibration/native-date-german-launch.png"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "TRIAGE-05",
+      "kind": "harness",
+      "observed": "The new-account initial password field was correctly type=password and screenshots were masked. The accessibility snapshot once echoed a newly generated synthetic initial passphrase not known to the manifest redactor.",
+      "conclusion": "No app plaintext-field defect inferred; no value copied into reports/events/screenshots. Broker source now collects password-field values before snapshots for redaction. Patch applied after participant interactions, not a product change.",
+      "evidence": [
+        "reports/superadmin_b.md"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

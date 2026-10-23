@@ -1,0 +1,134 @@
+{
+  "persona": "hr_a",
+  "role": "Claudia, 48, erfahrene Personalverwalterin im deutschen Steinmetzbetrieb; App-Name UX Claudia Lang",
+  "startedAt": "2026-10-23T13:10:33.470Z",
+  "finishedAt": "2026-10-23T13:18:28Z",
+  "timingNote": "startedAt bezeichnet die erste Screenshot-Evidenz; der Startaufruf lag wenige Sekunden davor. Browserkontext am Ende geschlossen. Berichterstellung erfolgte anschließend.",
+  "viewport": { "width": 1440, "height": 1000 },
+  "additionalViewport": { "width": 390, "height": 844 },
+  "goals": [
+    {
+      "id": "G1",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/hr_a/0002-1792761073180.png",
+        "work/ai-usability/evidence/hr_a/0010-1792761272801.png",
+        "work/ai-usability/evidence/hr_a/0011-1792761280601.png"
+      ],
+      "notes": "Teamübersicht und eigenes Profil über Suche gefunden, Arbeitszeit- und Abwesenheitsbereich geöffnet, einen eingereichten Zeitnachweis samt Prüfdialog gefunden. Keine fremden Personaldaten geändert."
+    },
+    {
+      "id": "G2",
+      "status": "blocked",
+      "evidence": [
+        "work/ai-usability/evidence/hr_a/0005-1792761173141.png",
+        "work/ai-usability/evidence/hr_a/0009-1792761260662.png"
+      ],
+      "notes": "Eigenes Profil, Sonstiges, Von/Bis 28.10.2026 und Notiz UX hr_a eingetragen. Arbeitstage verlangt bestätigte Grundlage. Kein eigenes Arbeitsmodell gefunden; ohne geratenen Wert kein Speichern möglich. Antrag wurde bewusst verworfen und nicht dauerhaft erstellt. Kein nachgewiesener Speicherdefekt."
+    },
+    {
+      "id": "G3",
+      "status": "achieved",
+      "evidence": [
+        "work/ai-usability/evidence/hr_a/0012-1792761287922.png",
+        "work/ai-usability/evidence/hr_a/0014-1792761334036.png",
+        "work/ai-usability/evidence/hr_a/0016-1792761397513.png"
+      ],
+      "notes": "Prüfablauf ausschließlich lesend angesehen. Tatsächliche Intervalle, Zuordnung, Version, Entscheidungen, Begründung und Prüfbestätigung nachvollziehbar. Keine Entscheidung gesendet. Eigene Abgabe bei fehlenden Zeiten deaktiviert. Team-Suche und Aktiv-Status gemeinsam geprüft."
+    }
+  ],
+  "findings": [
+    {
+      "id": "hr_a-F1",
+      "severity": "P2",
+      "title": "HR-Zeitprüfung liegt unter eigener Erfassung und Leistungsrückmeldung",
+      "observation": "Die Seite heißt Meine Arbeitszeit. Im ersten Bildschirm sind eigene Erfassung, Tagesverlauf und Zeitkonto sichtbar. Zeiten sachlich prüfen steht erst unter dem umfangreichen Formular Was wurde erledigt?. Dort war ein eingereichter Tag mit Abgabe prüfen vorhanden. In dieser Liste waren keine Such- oder Datumsfilter sichtbar. Im Bereichsverzeichnis war kein eigener Einstieg Zeitprüfung erkennbar.",
+      "expectation": "Als Personalverwaltung eine gut erkennbare Übersicht eingereichter Zeiten oder einen direkten Einstieg zur Prüfung finden.",
+      "impact": "Die tägliche HR-Prüfliste ist leicht zu übersehen und erfordert den Umweg durch die eigene Arbeitszeitseite. Der eigentliche Prüfdialog ist erreichbar.",
+      "route": "http://127.0.0.1:5173/time",
+      "steps": [
+        "Team & Dispo oder Meine Zeit öffnen.",
+        "Erste Ansicht bei 1440 × 1000 ansehen.",
+        "Unter Tagesverlauf und Was wurde erledigt? scrollen.",
+        "Zeiten sachlich prüfen und Abgabe prüfen finden."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/hr_a/0010-1792761272801.png",
+        "work/ai-usability/evidence/hr_a/0011-1792761280601.png",
+        "Browseraktionen 42–45"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Sichtbaren Einstieg Zeitprüfung mit Anzahl offener Abgaben und passende Such-/Zeitraumfilter anbieten."
+    },
+    {
+      "id": "hr_a-F2",
+      "severity": "P2",
+      "title": "Vollständiger Zeitnachweis öffnet technischen JSON-Text",
+      "observation": "Der normale Prüfdialog enthält lesbare Tabellen. Vollständigen Nachweis ansehen öffnet dagegen einen langen Codeblock mit englischen Feldnamen, internen Kennungen und UTC-Zeitstempeln. Die Tabellen darüber zeigen deutsche Datums- und Zeitangaben.",
+      "expectation": "Einen fachlich lesbaren vollständigen Nachweis für die vertiefte Personalprüfung erhalten.",
+      "impact": "Der vollständige Nachweis ist ohne technische Interpretation schwer verständlich. Die zusätzlichen Zeitformate und Kennungen helfen bei der fachlichen Prüfung kaum. Kein nachgewiesener Datenschutzvorfall.",
+      "route": "http://127.0.0.1:5173/time",
+      "steps": [
+        "Zur Liste Zeiten sachlich prüfen scrollen.",
+        "Bei einem eingereichten synthetischen Tag Abgabe prüfen öffnen.",
+        "Vollständigen Nachweis ansehen aufklappen."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/hr_a/0012-1792761287922.png",
+        "work/ai-usability/evidence/hr_a/0013-1792761302347.png",
+        "Browseraktionen 45–46"
+      ],
+      "confidence": "high",
+      "category": "product",
+      "recommendation": "Vollständigen Nachweis als beschriftete Fachansicht mit einheitlichen Zeitangaben darstellen und technische Daten zusätzlich klar benennen."
+    },
+    {
+      "id": "hr_a-F3",
+      "severity": "P2",
+      "title": "Bestätigte Arbeitsgrundlage für eigenen Testantrag nicht auffindbar",
+      "observation": "Das eigene Beschäftigtenprofil zeigt Wochenstunden und bestätigten Urlaubsanspruch als Gedankenstrich. Der Abwesenheitsantrag verlangt bestätigte Arbeitstage laut Arbeitsmodell. Ohne diesen Pflichtwert blieb ein einmaliger Speicherversuch im Formular. Die Arbeitsmodell-Suche nach Claudia ergab 0 Einträge. Die Hilfe verlangt belegte betriebliche Angaben, liefert aber keinen bestätigten Wert für die Testperson.",
+      "expectation": "Den eigenen Testantrag für 28.10.2026 mit vorhandenen bestätigten Grundlagen erfassen können.",
+      "impact": "G2 blieb ohne erfundenen Arbeitstagewert blockiert. Es wurde kein Antrag gespeichert. Das ist ein Umgebungslimit beziehungsweise eine Testdatenlücke, kein nachgewiesener Speicherdefekt. Die Pflichtfeldsperre ist nachvollziehbar.",
+      "route": "http://127.0.0.1:5173/leave",
+      "steps": [
+        "Abwesenheitsantrag anlegen öffnen.",
+        "UX Claudia Lang, Sonstiges, Von/Bis 28.10.2026 und Notiz UX hr_a eintragen.",
+        "Arbeitstage ohne bestätigte Grundlage leer lassen und einmal Speichern wählen.",
+        "Offenes Formular und Pflichtfeldfokus beobachten; danach bewusst verwerfen.",
+        "Alle Bereiche, Arbeitsmodelle öffnen und nach Claudia suchen: 0 Treffer."
+      ],
+      "evidence": [
+        "work/ai-usability/evidence/hr_a/0005-1792761173141.png",
+        "work/ai-usability/evidence/hr_a/0006-1792761199893.png",
+        "work/ai-usability/evidence/hr_a/0009-1792761260662.png",
+        "work/ai-usability/evidence/hr_a/0017-1792761430750.png",
+        "Browseraktionen 20–41 und 58–60"
+      ],
+      "confidence": "medium",
+      "category": "environment",
+      "recommendation": "Für einen vollständigen Wiederholungstest bestätigte Personalgrundlagen bereitstellen. Im Formular wäre ein direkter Blick oder Link auf das zugrunde liegende Arbeitsmodell hilfreich."
+    }
+  ],
+  "strengths": [
+    "Tourstation mit Pfeiltaste und Enter wählbar; Hier selbst ausprobieren führt zur echten Arbeitsansicht. Escape schließt unveränderten Editor.",
+    "Team-Suche Claudia und Status Aktiv ergeben gemeinsam genau einen Treffer.",
+    "Personaleditor bietet verständliche Tagesfelder und erklärt bestätigte Werte ohne erfundenen Anspruch.",
+    "Prüfdialog zeigt Version, tatsächliche Intervalle und Zuordnung. Rückfrage ändert laut Hinweis keine aufgezeichneten Zeiten. Begründung und Prüfbestätigung sind klar erkennbar, Freigabe bleibt ohne diese Eingaben deaktiviert.",
+    "Ungespeicherte Eingaben werden vor Verwerfen geschützt.",
+    "Schmale Teamansicht verwendet nach dem Layoutübergang lesbare Karten."
+  ],
+  "limits": [
+    "Simulierter Black-box-Test; keine menschliche Stichprobe, kein Code-Review. Nur sichtbare UI und erlaubte Anleitungsdateien verwendet.",
+    "Keine fremden Zeiten oder Anträge geändert oder entschieden. Keine Personen angelegt, keine Arbeitstage oder Ansprüche erfunden, keine eigenen Zeiten erzeugt, kein Geschäftsvorgang abgeschlossen.",
+    "Eigener Antrag blieb ungespeichert und wurde verworfen. Einreichung und Genehmigung dieses Antrags sowie eine Dezimaleingabe wurden ohne bestätigte Arbeitsgrundlage nicht geprüft.",
+    "Native Datumsfelder zeigten im verwendeten Browser US-Datumsformat und eine englische Pflichtfeldmeldung; App-Tabellen zeigten deutsche Daten. Ursache Browser-/App-Lokalisierung nicht isoliert. Technische Eingabe nativer Datumsfelder erfolgte im erforderlichen ISO-Format.",
+    "Ein ungültiger CLI-JSON-Aufruf erreichte den Browser nicht. Mehrdeutiger Notizen-Locator wurde mit Textbox-Rolle korrigiert. Zwei Navigationsversuche scheiterten an der korrekten Verwerfen-Rückfrage und wurden nach Inspektion gelöst. Keine Produktfehler daraus abgeleitet.",
+    "Nach Wechsel zur schmalen Breite erfasste ein Screenshot einen Layoutübergang. Ein im Snapshot aufgeführter, inzwischen außerhalb liegender Sidebar-Schließen-Knopf war nicht klickbar. Folgende visuelle Prüfung zeigte geschlossene Navigation und lesbare Karten. Kein gesicherter mobiler Defekt.",
+    "Einige Navigationsantworten zeigten noch vorherige Seite mit Ladeanzeige. Folgende UI-Inspektion bestätigte Navigation. Keine Sourcen, APIs oder Datenbanken benutzt.",
+    "KI nicht aufgerufen. Nur ein eingereichter Zeitnachweis angesehen; größere Prüfmengen nicht getestet."
+  ],
+  "browserActionsApprox": 66,
+  "browserClosed": true,
+  "persistedBusinessObjects": []
+}
