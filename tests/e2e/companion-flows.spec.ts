@@ -3,6 +3,20 @@ import {test,expect,type Page} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {mkdir} from 'node:fs/promises';
 import {login} from './login.js';
+import {config} from 'dotenv';
+import {randomUUID} from 'node:crypto';
+import {withTenant,insert,one,closePools} from '@schubert/db';
+import type {ActorContext} from '@schubert/contracts';
+config({quiet:true});
+const transportActor:ActorContext={tenantId:process.env.TEST_TENANT_ID!,legalEntityId:process.env.TEST_LEGAL_ENTITY_ID!,actorId:process.env.TEST_SUPERADMIN_ID!,role:'SuperAdmin',permissions:[],permissionVersion:1,correlationId:randomUUID(),employeeId:null,actorType:'employee',identityAssurance:'individual_session'};
+let transportConnection:string|null=null;
+// These scenarios stub model responses. Make that test-only availability
+// explicit instead of depending on another file leaving a connection behind.
+test.beforeAll(async()=>{
+ if(!transportActor.tenantId)throw Error('Isolated synthetic tenant required.');
+ await withTenant(transportActor,async db=>{if(!await one(db,"SELECT id FROM integration_connections WHERE provider='openai' AND status='configured'"))transportConnection=(await insert(db,'integration_connections',{tenant_id:transportActor.tenantId,legal_entity_id:transportActor.legalEntityId,provider:'openai',name:'TEST · companion model transport stub',configuration:{},status:'configured'})).id;});
+});
+test.afterAll(async()=>{try{if(transportConnection)await withTenant(transportActor,db=>db.query('DELETE FROM integration_connections WHERE id=$1',[transportConnection]));}finally{await closePools();}});
 
 async function begin(page:Page,role='PLANNER') {await login(page,role);if(await page.locator('dialog.onboarding[open]').count())await page.getByRole('button',{name:'Für später schließen'}).click();}
 async function capture(page:Page,name:string){await mkdir('.impeccable/review',{recursive:true});await page.waitForLoadState('networkidle');await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.impeccable/review/companion-'+name+'.png',animations:'disabled'});expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width+1);}

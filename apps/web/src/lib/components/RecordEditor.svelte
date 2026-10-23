@@ -83,7 +83,7 @@
         {#if hasLines&&!isDelivery&&!frozenOrder}<DocumentTotals {lines} currency={values.currency||record?.currency||'EUR'}/>{/if}
         {#if assistantDraftModules.includes(data.module?.slug||'')}<DraftReview {data} {record} {values} {lines}/>{/if}
       </div>
-      <footer class="modal-footer">{#if autosave}<span class="field-help" style="margin-right:auto" aria-live="polite">{saveLabel||'Bestehender Entwurf · automatisch speichern'}</span>{/if}<button type="button" class="btn" disabled={busy} onclick={closeEditor}>{autosave?'Schließen':'Abbrechen'}</button>{#if autosave&&autosavePaused&&!discardRequested}<button class="btn" type="button" disabled={busy} onclick={closeEditor}>Änderungen verwerfen …</button>{/if}{#if previousInputs.length}<button class="btn" type="button" disabled={busy} onclick={undoAutosave}><Icon name="back" size={15}/>Rückgängig</button>{/if}<button class="btn primary" type="submit" disabled={busy}>{#if busy}<Icon name="refresh" size={16} class="spin"/>{:else}<Icon name="check" size={16}/>{/if}{busy?'Wird gespeichert …':'Speichern'}</button></footer>
+      <footer class="modal-footer record-editor-footer">{#if autosave}<span class="field-help" style="margin-right:auto" aria-live="polite">{saveLabel||'Bestehender Entwurf · automatisch speichern'}</span>{/if}<button type="button" class="btn" disabled={busy} onclick={closeEditor}>{autosave?'Schließen':'Abbrechen'}</button>{#if autosave&&autosavePaused&&!discardRequested}<button class="btn" type="button" disabled={busy} onclick={closeEditor}>Änderungen verwerfen …</button>{/if}{#if previousInputs.length}<button class="btn" type="button" disabled={busy} onclick={undoAutosave}><Icon name="back" size={15}/>Rückgängig</button>{/if}<button class="btn primary" type="submit" disabled={busy}>{#if busy}<Icon name="refresh" size={16} class="spin"/>{:else}<Icon name="check" size={16}/>{/if}{busy?'Wird gespeichert …':'Speichern'}</button></footer>
     </form>
   </div>
 </div>
@@ -95,4 +95,8 @@
   .line-advanced{padding:12px 14px;border-radius:10px;background:var(--wash);border:1px solid var(--line-soft,var(--line))}.line-advanced>summary{min-height:28px;font-size:12px;color:var(--muted);cursor:pointer}.line-advanced[open]>summary{margin-bottom:16px}
   [data-editor-section],[data-editor-lines],.form-section{scroll-margin-top:16px}
   @media(max-width:760px){.editor-outline{padding:7px 14px;flex-wrap:wrap;gap:0}.editor-outline nav{width:100%}.editor-outline nav button{min-height:44px}.required-progress,.required-complete{min-height:28px;font-size:12px}}
-.discard-confirmation{border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:20px;background:var(--wash)}.discard-confirmation h3{font-size:16px;margin:0 0 8px}.discard-confirmation p{font-size:14px;line-height:1.6;margin:0 0 16px}.discard-confirmation:focus{outline:2px solid var(--forest);outline-offset:3px}</style>
+.discard-confirmation{border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:20px;background:var(--wash)}.discard-confirmation h3{font-size:16px;margin:0 0 8px}.discard-confirmation p{font-size:14px;line-height:1.6;margin:0 0 16px}.discard-confirmation:focus{outline:2px solid var(--forest);outline-offset:3px}
+
+.record-editor-footer>.btn{flex-shrink:0;overflow-wrap:normal;word-break:normal;white-space:normal;min-width:90px}.record-editor-footer>.field-help{flex:1 1 180px;min-width:0}
+@media(max-width:600px){.record-editor-footer{display:flex;flex-wrap:wrap;gap:10px}.record-editor-footer>.field-help{flex-basis:100%;margin:0!important}.record-editor-footer>.btn{flex:1 1 130px;min-height:48px}.record-editor-footer>.btn.primary{flex-basis:100%}}
+</style>

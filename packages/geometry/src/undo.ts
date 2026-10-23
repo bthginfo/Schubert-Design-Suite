@@ -1,9 +1,20 @@
 import type { DesignOperation, DesignSnapshot, DesignElement } from '@schubert/contracts';
+import {inscriptionPreviewDefaults} from '@schubert/contracts';
 import { D, mm } from './precision.js';
 import { applyOperations } from './model.js';
 
 /** Local editing history stores semantic inverses; approved snapshots are never replaced. */
 export function inverseOperations(before:DesignSnapshot,operations:DesignOperation[]):DesignOperation[]|null{
+  // First drafts may contain forward references within one atomic addition batch.
+  if(operations.length&&operations.every(op=>op.type==='add_element'||op.type==='add_opening')){
+    let current=applyOperations(before,operations);const inverse:DesignOperation[]=[];
+    for(const op of [...operations].reverse())if((op.type==='add_element'||op.type==='add_opening')&&current.elements.some(e=>e.id===op.element.id)){
+      const remove:DesignOperation={type:'remove_element',elementId:op.element.id,cascade:true};
+      const next=applyOperations(current,[remove]);if(before.elements.some(e=>!next.elements.some(n=>n.id===e.id)))return null;
+      inverse.push(remove);current=next;
+    }
+    return inverse;
+  }
   let current=before;const batches:DesignOperation[][]=[];
   for(const op of operations){
     const e='elementId'in op?current.elements.find(e=>e.id===op.elementId):undefined;let inverse:DesignOperation[]|null=[];
@@ -23,7 +34,7 @@ export function inverseOperations(before:DesignSnapshot,operations:DesignOperati
       case'bind_measurement':{const id=e?(e as unknown as Record<string,unknown>)[op.field]:null;inverse=e?[{...op,measureId:typeof id==='string'?id:null}]:null;break;}
       case'set_design_target':{const m=current.measurements[op.measureId];inverse=[{...op,valueMm:m?.valueMm??null,isEstimated:m?.isEstimated??false,confirm:false}];break;}
       case'set_inscription_text':inverse=e?.kind==='inscription'?[{...op,exactText:e.exactText}]:null;break;
-      case'set_inscription_layout':if(e?.kind==='inscription'){const{id:_id,label:_label,parentId:_parent,phase:_phase,locked:_locked,sourceEvidenceVersionIds:_sources,kind:_kind,surfaceElementId:_surface,exactText:_text,...layout}=e;inverse=[{type:'set_inscription_layout',elementId:e.id,...layout}];}else inverse=null;break;
+      case'set_inscription_layout':if(e?.kind==='inscription'){const{id:_id,label:_label,parentId:_parent,phase:_phase,locked:_locked,sourceEvidenceVersionIds:_sources,kind:_kind,surfaceElementId:_surface,exactText:_text,...layout}=e;inverse=[{type:'set_inscription_layout',elementId:e.id,...layout,...('previewFontKey'in op?{previewFontKey:layout.previewFontKey??inscriptionPreviewDefaults.fontKey}:{}),...('previewColor'in op?{previewColor:layout.previewColor??inscriptionPreviewDefaults.color}:{})}];}else inverse=null;break;
       case'set_stone_spec':inverse=e?.kind==='stone_piece'?[{type:'set_stone_spec',elementId:e.id,finishedContour:e.finishedContour,thicknessMeasureId:e.thicknessMeasureId,materialSpecVersionId:e.materialSpecVersionId,stockItemId:e.stockItemId,grainDirectionDeg:e.grainDirectionDeg,edgeTreatments:e.edgeTreatments,machiningFeatureIds:e.machiningFeatureIds,purpose:e.purpose,finishSpecVersionId:e.finishSpecVersionId??null,roughWidthMeasureId:e.roughWidthMeasureId??null,roughHeightMeasureId:e.roughHeightMeasureId??null,roughThicknessMeasureId:e.roughThicknessMeasureId??null}]:null;break;
       case'set_wall':inverse=e?.kind==='wall'?[{type:'set_wall',elementId:e.id,startNodeId:e.startNodeId,endNodeId:e.endNodeId,heightMeasureId:e.heightMeasureId,coreThicknessMeasureId:e.coreThicknessMeasureId,layers:e.layers,joinStyle:e.joinStyle??'legacy_overlap'}]:null;break;
       case'set_opening':inverse=e?.kind==='opening'?[{type:'set_opening',elementId:e.id,wallId:e.wallId,openingType:e.openingType,hingeSide:e.hingeSide,openingDirection:e.openingDirection,recessDepthMeasureId:e.recessDepthMeasureId??null,recessSide:e.recessSide??'left'}]:null;break;

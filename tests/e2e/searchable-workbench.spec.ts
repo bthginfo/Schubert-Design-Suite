@@ -3,6 +3,16 @@ import AxeBuilder from '@axe-core/playwright';
 import {randomUUID} from 'node:crypto';
 import {login} from './login.js';
 import {chooseSelect,nativeSelect,visibleSelect} from './select-choice.js';
+import {config} from 'dotenv';
+import {withTenant,one,closePools} from '@schubert/db';
+import type {ActorContext} from '@schubert/contracts';
+config({quiet:true});
+const trainingActor:ActorContext={tenantId:process.env.TEST_TENANT_ID!,legalEntityId:process.env.TEST_LEGAL_ENTITY_ID!,actorId:process.env.TEST_SUPERADMIN_ID!,role:'SuperAdmin',permissions:[],permissionVersion:1,correlationId:randomUUID(),employeeId:null,actorType:'employee',identityAssurance:'individual_session'};
+let previousTraining:boolean|undefined;
+// Exercise the extra notice height explicitly in the isolated UAT tenant.
+// No sample records are created or removed; restore the original flag.
+test.beforeAll(async()=>{if(!trainingActor.tenantId)throw Error('Isolated synthetic tenant required.');await withTenant(trainingActor,async db=>{const row=await one<any>(db,'SELECT training_mode FROM legal_entities WHERE id=$1 FOR UPDATE',[trainingActor.legalEntityId]);previousTraining=row.training_mode;if(!previousTraining)await db.query('UPDATE legal_entities SET training_mode=true WHERE id=$1',[trainingActor.legalEntityId]);});});
+test.afterAll(async()=>{try{if(previousTraining===false)await withTenant(trainingActor,db=>db.query('UPDATE legal_entities SET training_mode=false WHERE id=$1',[trainingActor.legalEntityId]));}finally{await closePools();}});
 
 async function openedList(page:Page,input:Awaited<ReturnType<typeof visibleSelect>>){
  const id=(await input.getAttribute('aria-controls'))!;

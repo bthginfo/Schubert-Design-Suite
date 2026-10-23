@@ -29,6 +29,14 @@ Die KI kann erklären und einen Änderungsvorschlag vorbereiten. Prüfen Sie Vor
 
 **KI für diesen Schritt** bereitet eine passende Frage vor. Erst **Senden** startet die Anfrage. Der Begleiter nennt den aktuellen Schritt und die Auswahl. Offene Studioänderungen werden vorher gespeichert; bei einem Speicherfehler oder Versionskonflikt startet keine KI-Anfrage. Der Server prüft den aktuellen Planstand erneut. Beim Prüfen und Präsentieren kann die KI erklären, aber keine Planänderung vorbereiten. Gespräche werden je Projekt, Variante und Schritt getrennt gehalten.
 
+Über die angezeigten **Bearbeitungsgrenzen** bestimmen Sie den Umfang: **Nur Auswahl bearbeiten**, **Maßwerte beibehalten** und im Grabmalstudio **Wortlaut beibehalten**. Die Einstellungen öffnen sich im Eingabebereich; **Zur Nachricht** führt zurück zum Text. Im Gestaltungsschritt sind vorhandene Maßwerte zunächst geschützt, im Grabmalstudio auch der Wortlaut. Diese Grenzen werden serverseitig geprüft, einschließlich gemeinsamer Maße und Wandknoten, die weitere Bauteile beeinflussen können. Für eine bewusste Änderung der geschützten Angaben schalten Sie die entsprechende Grenze selbst aus.
+
+Unter **Noch zu klären** können Sie einzelne Rückfragen beantworten oder **Noch nicht bekannt** wählen. **Antworten in Nachricht übernehmen** bereitet eine bearbeitbare Nachricht vor; es startet keine weitere Anfrage. Annahmen der KI sind gesondert aufklappbar und lassen sich gezielt korrigieren. **Anfrage abbrechen** beendet das Warten und erhält Ihre Eingabe. Bereits begonnene Verarbeitung beim Anbieter kann Kosten verursachen. Der Abbruch einer Anfrage übernimmt keine KI-Änderung.
+
+Ein Änderungsvorschlag zeigt **Vorher** und **Vorschlag** im gleichen Ausschnitt sowie die betroffenen Bauteile, Maßwerte und den genauen alten und neuen Wortlaut. Erst **Geprüften Vorschlag anwenden** speichert die Änderung. **KI-Änderung rückgängig** erstellt einen neuen Planstand mit den Gegenoperationen. Nach weiterer Bearbeitung verweist die Anwendung auf **Rückgängig** im Studio oder die früheren Stände; spätere Arbeit wird nicht überschrieben. Ist eine Antwort inzwischen veraltet, wird dies angezeigt und ihre Übernahme gesperrt.
+
+Die Elementliste zeigt zuerst die fachlichen Bauteile. **Technische Hilfselemente** blendet Bezugsknoten und Bemaßungsobjekte ein; die Suche findet sie ebenfalls. Im Begleiter wechseln Sie mit **Kurzhilfe verwenden** zu weniger Erklärung. Diese persönliche Wahl bleibt auf dem Gerät erhalten.
+
 ## Herstellerunterlagen für beide Studios
 
 Der neue Bereich **Herstellerbibliothek** ist zunächst dem Superadmin zugänglich. Unter **Zugriff vergeben → Rolle prüfen** kann der Superadmin anderen persönlichen Zugängen die zusätzliche Fähigkeit **Herstellerbibliothek verwalten** erteilen und wieder entziehen. Das vergibt keine weiteren Administrationsrechte. Planer verwenden bereitgestellte Unterlagen über **Herstellerdaten** direkt in beiden Studios.
@@ -47,6 +55,8 @@ Eine bereitgestellte Originalfassung bleibt unverändert. Für einen neuen Herst
 Die Abschnittsleiste im Formular führt direkt zu Grundangaben, Positionen und weiteren Abschnitten. Eine fehlende Pflichtangabe lässt sich gezielt anspringen. Rabatte und interne Kalkulationsangaben bleiben aufklappbar. Die laufende Positionssumme berücksichtigt nur den ausgewählten Umfang; die verbindlichen Beträge werden beim Speichern serverseitig berechnet.
 
 **Entwurf mit KI prüfen** ist optional. Vor dem Start sehen Sie, welche Formularangaben und wie viele Positionen übermittelt werden. Die Prüfung erhält die aktuellen Eingaben und keine alten gespeicherten Positionen. Interne Einzelkosten werden nicht an den KI-Anbieter übermittelt. Nach einer Änderung erscheint ein Hinweis, dass sich die Eingaben seit der Prüfung verändert haben. Die KI speichert oder bestätigt den Entwurf nicht.
+
+Auch hier erscheinen Rückfragen und Annahmen getrennt. Antworten übernehmen Sie zunächst in **Ergänzung für die nächste Prüfung**. **Aktuelle Eingaben prüfen** prüft diese Ergänzung zusammen mit den dann sichtbaren Formularwerten. Eine laufende Prüfung lässt sich abbrechen; Formulareingaben und Ergänzung bleiben erhalten. Auf kleinen Displays stehen die Abschlussaktionen in eigenen, gut erreichbaren Zeilen.
 
 Einkauf und Wareneingang dokumentieren bestellte und tatsächlich erhaltene Mengen getrennt. Reservieren Sie einen vorhandenen Bestand für einen Auftrag. Entnahmen und Zuschnitt sind Bestandsbewegungen; eine Eingangsrechnung bucht den Materialverbrauch nicht ein zweites Mal.
 

@@ -5,13 +5,13 @@ export class RequestError extends Error {
   code: string; fields: Record<string,string>; correlationId?: string;
   constructor(message:string, details:Row = {}) { super(message); this.name='RequestError'; this.code=details.code || 'REQUEST_FAILED'; this.fields=details.fields || {}; this.correlationId=details.correlationId; }
 }
-export async function request(path:string, body?:unknown, method='POST'): Promise<any> {
+export async function request(path:string, body?:unknown, method='POST', signal?:AbortSignal): Promise<any> {
   const trace=feedbackRequestAction(path,body);
   if(trace)recordFeedbackStep(trace.kind,trace.action,'started');
   try {
   let response:Response;
-  try { response=await fetch(path,{method,credentials:'same-origin',headers:body instanceof FormData ? {} : {'Content-Type':'application/json'},body:body===undefined?undefined:body instanceof FormData?body:JSON.stringify(body)}); }
-  catch { throw new RequestError('Der Server ist nicht erreichbar. Ihre Eingaben bleiben erhalten. Bitte prüfen Sie die Verbindung.'); }
+  try { response=await fetch(path,{method,signal,credentials:'same-origin',headers:body instanceof FormData ? {} : {'Content-Type':'application/json'},body:body===undefined?undefined:body instanceof FormData?body:JSON.stringify(body)}); }
+  catch (cause) { if(signal?.aborted)throw new DOMException('Anfrage beendet','AbortError');throw new RequestError('Der Server ist nicht erreichbar. Ihre Eingaben bleiben erhalten. Bitte prüfen Sie die Verbindung.'); }
   const result=await response.json().catch(()=>null);
   if (!response.ok || result?.ok===false || result?.error) {
     const error=result?.error || {};

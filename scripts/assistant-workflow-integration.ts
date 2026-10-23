@@ -1,12 +1,35 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import type {ActorContext} from '@schubert/contracts';
-import {executeCommand} from '@schubert/application';
+import {executeCommand,applyAIProposal} from '@schubert/application';
+import {withTenant,insert,one} from '@schubert/db';
+import {inverseOperations} from '@schubert/geometry';
 import {assistantInputSchema,prepareAssistantContext} from '../packages/application/src/assistant-context.js';
 import {planningDraftOperations} from '../packages/ai/src/planning-draft.js';
 
 export async function assistantWorkflowIntegration(actor:(role:string)=>ActorContext,test:(name:string,run:()=>Promise<void>)=>Promise<void>){
  const owner=actor('Owner');
+ await test('AI edit boundaries survive context preparation and an empty selection fails before any model call',async()=>{
+  const plan=await executeCommand(owner,{name:'planning.project.create',idempotencyKey:randomUUID(),payload:{kind:'memorial',name:'TEST Bearbeitungsgrenzen'}}),guardrails={preserveMeasurements:true,preserveWording:true,selectionOnly:false};
+  const input=assistantInputSchema.parse({message:'Prüfe den Entwurf.',context:{path:'studio/'+plan.project.id,variantId:plan.variant.id,planning_work:{step:'design',revision_id:plan.revision.id,base_version:plan.variant.version,view:'front',guardrails}}});
+  const prepared=await prepareAssistantContext(owner,input,'http://localhost');assert.deepEqual(prepared.context.workflow.guardrails,guardrails);
+  input.context!.planning_work!.guardrails!.selectionOnly=true;await assert.rejects(()=>prepareAssistantContext(owner,input,'http://localhost'),(error:any)=>error.code==='AI_SELECTION_REQUIRED');
+ });
+ await test('Persisted AI proposal boundaries are rechecked; apply is idempotent and a stale undo preserves later work',async()=>{
+  const plan=await executeCommand(owner,{name:'planning.project.create',idempotencyKey:randomUUID(),payload:{kind:'memorial',name:'TEST Sichere KI-Übernahme'}}),operations=planningDraftOperations({snapshot:plan.revision.snapshot},{kind:'memorial_slab',label:'TEST Stein',widthMm:'800',heightMm:'1200',thicknessMm:'160'});
+  const ready=await executeCommand(owner,{name:'planning.design.change',id:plan.variant.id,expectedVersion:plan.variant.version,idempotencyKey:randomUUID(),payload:{base_revision_id:plan.revision.id,operations}}),stone=ready.revision.snapshot.elements.find((e:any)=>e.kind==='stone_piece');
+  async function saved(ops:any[],guardrails:any){return withTenant(owner,db=>insert(db,'ai_proposals',{tenant_id:owner.tenantId,legal_entity_id:owner.legalEntityId,created_by:owner.actorId,actor_id:owner.actorId,entity_type:'planning',entity_id:plan.variant.id,base_version:ready.variant.version,action_type:'draft_changes',commands:[{name:'planning.design.change',input:{base_revision_id:ready.revision.id,operations:ops}}],missing_inputs:[],validation:{guardrails,selectedElementIds:[stone.id]},expires_at:new Date(Date.now()+600000),status:'proposed'}));}
+  const protectedProposal=await saved([{type:'set_design_target',measureId:stone.thicknessMeasureId,valueMm:'180'}],{preserveMeasurements:true,preserveWording:true,selectionOnly:true});
+  await assert.rejects(()=>applyAIProposal(owner,protectedProposal.id),(error:any)=>error.code==='AI_EDIT_BOUNDARY');
+  const unchanged=await withTenant(owner,db=>one<any>(db,'SELECT head_revision_id,version FROM design_variants WHERE id=$1',[plan.variant.id]));assert.equal(unchanged.head_revision_id,ready.revision.id);assert.equal(unchanged.version,ready.variant.version);
+  const moves=[{type:'move_element',elementId:stone.id,delta:{xMm:'10',yMm:'0',zMm:'0'}}],accepted=await saved(moves,{preserveMeasurements:true,preserveWording:true,selectionOnly:true});
+  const applied=await applyAIProposal(owner,accepted.id),duplicate=await applyAIProposal(owner,accepted.id);assert.equal(applied.revision.id,duplicate.revision.id);
+  const inverse=inverseOperations(ready.revision.snapshot,moves as any)!;
+  const undone=await executeCommand(owner,{name:'planning.design.change',id:plan.variant.id,expectedVersion:applied.variant.version,idempotencyKey:randomUUID(),payload:{base_revision_id:applied.revision.id,operations:inverse}});assert.deepEqual(undone.revision.snapshot.elements,ready.revision.snapshot.elements);
+  const later=await executeCommand(owner,{name:'planning.design.change',id:plan.variant.id,expectedVersion:undone.variant.version,idempotencyKey:randomUUID(),payload:{base_revision_id:undone.revision.id,operations:[{type:'rename_element',elementId:stone.id,label:'TEST Spätere Arbeit bleibt erhalten'}]}});
+  await assert.rejects(()=>executeCommand(owner,{name:'planning.design.change',id:plan.variant.id,expectedVersion:applied.variant.version,idempotencyKey:randomUUID(),payload:{base_revision_id:applied.revision.id,operations:inverse}}),(error:any)=>error.code==='VERSION_CONFLICT'||error.code==='REVISION_CONFLICT');
+  const head=await withTenant(owner,db=>one<any>(db,'SELECT head_revision_id FROM design_variants WHERE id=$1',[plan.variant.id]));assert.equal(head.head_revision_id,later.revision.id);
+ });
  await test('AI receives a live studio revision, step and deterministic checks; stale and foreign contexts fail before any model call',async()=>{
   const created=await executeCommand(owner,{name:'planning.project.create',idempotencyKey:randomUUID(),payload:{kind:'memorial',name:'Synthetische KI-Kontextprüfung'}});
   const path='studio/'+created.project.id;

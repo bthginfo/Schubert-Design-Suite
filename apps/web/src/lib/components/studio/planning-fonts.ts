@@ -1,3 +1,4 @@
+import {inscriptionPreviewDefaults} from '@schubert/contracts';
 // Metrics and hashes are derived from the self-hosted, licensed original fonts.
 export const planningFonts = [
   {
@@ -74,4 +75,4 @@ export const planningFonts = [
   }
 ] as const;
 export type PlanningFontKey=typeof planningFonts[number]["key"];
-export const planningFont=(key?:string)=>planningFonts.find(font=>font.key===key)??planningFonts[0];
+export const planningFont=(key?:string)=>planningFonts.find(font=>font.key===(key??inscriptionPreviewDefaults.fontKey))??planningFonts[0];

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export const inscriptionPreviewDefaults={fontKey:'notoserif',color:'#c6a56d'} as const;
 
 /** Canonical revision contract. Millimetres are decimal strings, never binary floats. */
 export const idSchema = z.string().trim().min(1).max(200);

@@ -2,11 +2,18 @@ import {z} from 'zod';
 
 export const planningStepSchema=z.enum(['geometry','design','review','output']);
 export type PlanningStep=z.infer<typeof planningStepSchema>;
+export const planningGuardrailsSchema=z.strictObject({
+  preserveMeasurements:z.boolean().default(false),
+  preserveWording:z.boolean().default(false),
+  selectionOnly:z.boolean().default(false)
+});
+export type PlanningGuardrails=z.infer<typeof planningGuardrailsSchema>;
 export const planningWorkSchema=z.strictObject({
   step:planningStepSchema,
   revision_id:z.uuid(),
   base_version:z.number().int().nonnegative(),
-  view:z.enum(['front','side','top','3d'])
+  view:z.enum(['front','side','top','3d']),
+  guardrails:planningGuardrailsSchema.optional()
 });
 
 // Working copies are deliberately bounded, untrusted input. They never supply

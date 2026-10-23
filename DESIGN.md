@@ -412,6 +412,10 @@ Die Quellengrundlage bilden [app.css](apps/web/src/app.css), [appearance.ts](pac
 
 ## Do's and Don'ts
 
+Der KI-Begleiter zeigt den aktuellen Arbeitsschritt, die Auswahl und die geltenden Bearbeitungsgrenzen vor dem Senden. Einstellbare Grenzen, Unterlagen und Modellwahl liegen im aufklappbaren Eingabebereich; die Sende- und Abbruchaktionen bleiben außerhalb dieses Scrollbereichs erreichbar. Antworten werden in kurze Absätze, konkrete Rückfragen und ausdrücklich unbestätigte Annahmen gegliedert. Vorbereitete Antworten bleiben editierbar. Eine neue Antwort beginnt bei ihrer Erklärung; wer frühere Nachrichten liest, wird nicht automatisch ans Ende gezogen.
+
+Planungsvorschläge zeigen Vorher und Nachher mit identischem Ausschnitt und eine fachliche Änderungsliste. Wortlaut, Maßwert, Maßbezug und Lieferantenwahl bleiben unterscheidbar. Ungeprüfte Werte erhalten keine Vertrauenspunktzahl und keine technische Freigabe. Übernahme und Rückgängig verwenden echte versionierte Planoperationen. Veraltete Antworten nennen ihren früheren Bezug; spätere Bearbeitung wird beim direkten Rückgängig nicht überschrieben. Bezugsknoten und Bemaßungsobjekte werden in der Elementliste bei Bedarf zugänglich, ohne den fachlichen Einstieg zu dominieren. Persönlich gewählte Kurzhilfe reduziert Erklärungen, ohne Funktionen zu entfernen. Die neuen Flächen und Bedienelemente verwenden dieselben Theme-, Fokus- und Bewegungsregeln wie Studio und Büro.
+
 ### Do:
 
 - **Do** semantische Flächentokens für Navigation, Arbeitsraum, Eingaben, Text und Konturen verwenden.

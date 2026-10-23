@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "memorial",
+    "planningProjectId": "94f8660f-2e9d-4742-8293-fae9be68fa07",
+    "variantId": "3a7e8327-cdf4-475b-9fb4-6b49109792c1",
+    "revisionId": "77d82155-4a08-4b25-8d24-bfca23ff0dd4",
+    "modelHash": "3bb0ae943357184dd9d263efc50306c57c622f09d1671e7a86d419a5a081a03a",
+    "pdfSha256": "f209f666cdab7f770d4c93725a3a97ddf4e3fb033b92fb4d680cc7a6cca7454b",
+    "pdfBytes": 21966,
+    "pages": 5,
+    "pageErrors": [],
+    "source": "Current local acceptance run; real authenticated PDF exporter"
+  },
+  {
+    "kind": "room_plan",
+    "planningProjectId": "e7f8bf6a-ba2a-4b37-ad76-a11c801449a3",
+    "variantId": "b7429bd6-6e40-447e-999d-78009992bd8b",
+    "revisionId": "1fbe72c0-8d2c-4359-a0e4-93d592d0e5be",
+    "modelHash": "f71c43db0b02008910472f0cbe880f06ff3c68cd56346174b6e0deed518e8e97",
+    "pdfSha256": "54221901de01ef9f3df2254b0c1f029d9e5c4bfbbaee8794a2d308682285d15e",
+    "pdfBytes": 23236,
+    "pages": 5,
+    "pageErrors": [],
+    "source": "Current local acceptance run; real authenticated PDF exporter"
+  }
+]

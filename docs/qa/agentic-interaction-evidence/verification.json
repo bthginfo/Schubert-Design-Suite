@@ -1,0 +1,15 @@
+{
+  "unitTests": 358,
+  "unitFiles": 58,
+  "postgresIntegrationChecks": 47,
+  "browserTests": 53,
+  "browserDuration": "9.4m",
+  "svelteErrors": 0,
+  "svelteWarnings": 0,
+  "productionBuildExitCode": 0,
+  "modelTransport": "stubbed in browser AI scenarios",
+  "actualProposalApplyAndUndo": true,
+  "actualPlanningPdfExports": true,
+  "productionSchemaMigrationRequired": false,
+  "testDataCleanupPerformed": false
+}

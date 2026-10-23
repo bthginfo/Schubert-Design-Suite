@@ -1,4 +1,5 @@
 import type{DesignSnapshot,InscriptionElement}from'@schubert/contracts';
+import {inscriptionPreviewDefaults} from '@schubert/contracts';
 import{measureValue,applyMatrix,surfaceMatrix,projectPoint,sampleRing,type DesignView}from'@schubert/geometry';
 import{planningFont}from'./planning-fonts.ts';
 
@@ -14,7 +15,7 @@ export function letteringLayout(snapshot:DesignSnapshot,element:InscriptionEleme
  const fontSize=Math.max(.01,height)/font.capRatio,lines=element.exactText.split(/\r?\n/),advance=Math.max(height,fontSize*(font.capRatio+font.descender))+Math.max(0,gap);
  const widths=lines.map(line=>widthAtFontSize?.(line,fontSize)??Array.from(line).length*fontSize*.56),naturalWidth=Math.max(1,...widths),scale=maxWidth>0?Math.min(1,maxWidth/naturalWidth):1,width=naturalWidth*scale;
  const left=element.alignment==='center'?-width/2:element.alignment==='right'?-width:0,top=(lines.length-1)*advance+fontSize*font.ascender,bottom=fontSize*font.descender;
- return{font,fontSize,scale,width,left,top,bottom,height:top+bottom,rows:lines.map((text,index)=>({text,baseline:(lines.length-1-index)*advance})),anchor:element.alignment==='center'?'middle':element.alignment==='right'?'end':'start',heightEstimated:measureValue(snapshot,element.requestedHeightMeasureId)===null,color:element.previewColor??'#c6a56d'};
+ return{font,fontSize,scale,width,left,top,bottom,height:top+bottom,rows:lines.map((text,index)=>({text,baseline:(lines.length-1-index)*advance})),anchor:element.alignment==='center'?'middle':element.alignment==='right'?'end':'start',heightEstimated:measureValue(snapshot,element.requestedHeightMeasureId)===null,color:element.previewColor??inscriptionPreviewDefaults.color};
 }
 export function letteringProjection(snapshot:DesignSnapshot,element:InscriptionElement,view:DesignView){
  const m=surfaceMatrix(snapshot,element.surfaceElementId),angle=Number(element.rotationDeg)*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle);
