@@ -107,7 +107,7 @@ test('Locked planning properties disable searchable choices through the actual p
  const created=await page.request.post('/api/v1/commands',{headers:{origin:new URL(page.url()).origin},data:{name:'planning.project.create',payload:{kind:'memorial',name:'TEST · Gesperrte Suchauswahl '+randomUUID().slice(0,8)},idempotencyKey:randomUUID()}});
  expect(created.ok()).toBe(true);const {result}=await created.json();await page.goto('/studio/'+result.project.id+'?variant='+result.variant.id);
  await page.getByRole('button',{name:'Ersten Stein anlegen',exact:true}).click();const dialog=page.getByRole('dialog');
- for(const [name,value]of [['Breite / X-Länge (mm)','800'],['Höhe / Länge (mm)','1200'],['Stärke (mm)','160']])await dialog.getByLabel(name,{exact:true}).fill(value);
+ for(const [name,value]of [['Breite (mm)','800'],['Höhe (mm)','1200'],['Materialstärke (mm)','160']])await dialog.getByLabel(name,{exact:true}).fill(value);
  await dialog.getByRole('button',{name:'In den Plan übernehmen',exact:true}).click();await expect(dialog).toBeHidden();
  const phase=page.getByRole('combobox',{name:'Planungsphase',exact:true}),native=await nativeSelect(page,phase),value=await native.inputValue();
  await page.getByRole('button',{name:'Sperren',exact:true}).click();await expect(phase).toBeDisabled();expect(await native.evaluate(select=>select.matches(':disabled')&&!select.hasAttribute('disabled'))).toBe(true);

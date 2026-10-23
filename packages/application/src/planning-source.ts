@@ -4,7 +4,7 @@ import {requireRule,assertPermission} from '@schubert/domain';
 import {callWorker,contentHash,privateBytes} from '@schubert/adapters';
 import type {ActorContext} from '@schubert/contracts';
 import {register,getRecord,hash} from './core.js';
-import {assertDocumentAccess} from './document-access.js';
+import {assertDocumentAccess,assertManufacturerUse} from './document-access.js';
 import {buildDocumentSource} from './render-request.js';
 
 async function preparePreview(r:any){
@@ -13,6 +13,7 @@ async function preparePreview(r:any){
   const p=z.object({document_version_id:z.uuid().optional(),document_id:z.uuid().optional(),page_index:z.number().int().min(0).max(999).default(0),ai_preview:z.boolean().default(false)}).refine(p=>p.document_version_id||p.document_id).parse(r.payload);const currentDocument=p.document_id?await getRecord(r.db,'documents',p.document_id):null;
   const version=await getRecord(r.db,'document_versions',p.document_version_id??currentDocument.current_version_id),doc=await getRecord(r.db,'documents',version.document_id);
   await assertDocumentAccess(r.db,r.ctx,doc);
+  if(r.command.name==='planning.source.preview'||p.ai_preview)await assertManufacturerUse(r.db,doc,version.id,p.ai_preview?'ai':'planning');
   requireRule(doc.status==='available'&&version.status==='available','DOCUMENT_QUARANTINE','Die Originaldatei muss zuerst die Dateiprüfung abschließen.',409);
   requireRule(['application/pdf','image/png','image/jpeg','image/webp','image/tiff'].includes(doc.mime_type),'PLAN_SOURCE_TYPE','Eine PDF-Unterlage oder ein geprüftes Foto auswählen.');
   await r.db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[r.ctx.tenantId+':source-preview:'+version.id+':'+p.page_index]);

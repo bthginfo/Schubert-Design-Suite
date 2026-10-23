@@ -2,11 +2,11 @@ import {z} from 'zod';
 import {withTenant,one,update} from '@schubert/db';
 import {assertVersion,requireRule,dec} from '@schubert/domain';
 import {integrationConfiguration,privateBytes,contentHash,callWorker} from '@schubert/adapters';
-import {compactContext,imageQualitySchema,imageSizeSchema,imageIntentSchema,visualizationInstructions} from '@schubert/ai';
+import {planningVisualizationContext,imageQualitySchema,imageSizeSchema,imageIntentSchema,visualizationInstructions} from '@schubert/ai';
 import {createPlanningPdf} from '@schubert/documents';
 import type {ActorContext} from '@schubert/contracts';
 import {register,getRecord,hash,assertOrderScope} from './core.js';
-import {assertDocumentAccess,personnelDocumentTypes} from './document-access.js';
+import {assertDocumentAccess,assertManufacturerUse,personnelDocumentTypes} from './document-access.js';
 
 export const visualizationInputSchema=z.object({
  revision_id:z.uuid(),prompt:z.string().trim().min(8).max(2000),
@@ -32,6 +32,7 @@ async function imageBasis(db:any,ctx:ActorContext,p:z.infer<typeof visualization
  for(const [index,id] of p.reference_document_ids.entries()){
   const doc=await getRecord(db,'documents',id);await assertDocumentAccess(db,ctx,doc);requireRule(doc.status==='available'&&!personnelDocumentTypes.includes(doc.entity_type),'IMAGE_REFERENCE_SCOPE','Die ausgewählte Bildquelle ist nicht verfügbar.');
   const version=await getRecord(db,'document_versions',doc.current_version_id),preview=await one<any>(db,"SELECT result FROM job_runs WHERE id=$2 AND job_type IN('document.preview','planning.source.preview') AND payload->>'documentVersionId'=$1 AND status='completed'",[version.id,p.reference_preview_job_ids[index]]);
+  await assertManufacturerUse(db,doc,version.id,'ai');
   requireRule(version.status==='available'&&preview?.result?.sourceHash===version.content_hash&&preview.result.width>0&&preview.result.width<=1440&&preview.result.height>0&&preview.result.height<=1440,'IMAGE_REFERENCE_PREPARE','Die ausgewählte Bildseite zuerst vorbereiten und prüfen.');
   references.push({documentId:doc.id,documentVersionId:version.id,sourceHash:version.content_hash,...preview.result});
  }
@@ -72,7 +73,7 @@ export async function runAIVisualization(ctx:ActorContext,job:any,deps:{guardLea
   const source=await withTenant(ctx,async db=>{const version=await getRecord(db,'document_versions',ref.document_version_id),doc=await getRecord(db,'documents',version.document_id);await assertDocumentAccess(db,ctx,doc);requireRule(doc.status==='available'&&version.status==='available'&&version.content_hash===ref.previewHash,'IMAGE_SOURCE_CHANGED','Eine gebundene Bildvorlage ist nicht mehr verfügbar.');return{version,blob:await getRecord(db,'blob_objects',version.blob_object_id)};});
   const bytes=await privateBytes(source.blob.storage_key,2500000,ctx);requireRule(contentHash(bytes)===ref.previewHash,'IMAGE_SOURCE_HASH','Bildvorlage wurde verändert.');references.push({bytes,name:'reference.png'});
  }
- const context=compactContext({snapshot:basis.revision.snapshot,entityType:'planning',designKind:basis.project.kind}),prompt=visualizationInstructions(basis.project.kind,p.intent??'plan',p.prompt)+'\nGespeicherte Planungsdaten als Orientierung: '+Buffer.from(JSON.stringify(context)).subarray(0,14000).toString('utf8');
+ const context=planningVisualizationContext({snapshot:basis.revision.snapshot,entityType:'planning',designKind:basis.project.kind}),prompt=visualizationInstructions(basis.project.kind,p.intent??'plan',p.prompt)+'\nGespeicherte Planungsdaten als Orientierung (ausgelassene Elemente nicht erfinden): '+context;
  const {generateVisualization}=await import('@schubert/ai');await deps.guardLease(ctx,job);const output=await generateVisualization(ctx,prompt,references,false,{connectionVersionId:p.connectionVersionId,pricing:p.pricing,requestId:job.id});requireRule(output.bytes.length>24&&output.bytes.length<=2800000,'IMAGE_OUTPUT','Das Anbieterbild überschreitet die sichere Verarbeitungsgröße. Kein automatischer neuer Bildauftrag.');
  await deps.guardLease(ctx,job);const labelled=await callWorker('/image/label',{bytes:output.bytes.toString('base64'),label:'KI-Visualisierung · Konzept · keine technische Zeichnung',revision:p.revision_id});requireRule(labelled.contentHash&&labelled.pngBase64,'IMAGE_LABEL','Die Konzeptkennzeichnung konnte nicht bestätigt werden.');const bytes=Buffer.from(labelled.pngBase64,'base64');requireRule(contentHash(bytes)===labelled.contentHash,'IMAGE_LABEL_HASH','Bildkennzeichnung stimmt nicht mit dem gesicherten Ergebnis überein.');
  const doc=await deps.generatedDocument(ctx,bytes,'KI_Konzept_'+p.revision_id+'.png','image/png','design_revision',p.revision_id,'internal',job);await withTenant(ctx,db=>update(db,'ai_runs',output.runId,{result:{documentId:doc.id,documentVersionId:doc.current_version_id,revisionId:p.revision_id,contentHash:doc.content_hash,accuracy:'generative_visualization'}}));

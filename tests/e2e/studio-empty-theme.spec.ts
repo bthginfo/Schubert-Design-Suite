@@ -12,7 +12,7 @@ test('Empty memorial and room canvases remain readable and usable in light and d
   expect(response.ok()).toBe(true);projects.push({kind,...(await response.json()).result});
  }
  for(const mode of ['light','dark']){
-  await page.goto('/account');await page.getByRole('radio',{name:mode==='light'?/^Hell /:/^Dunkel /}).check();await page.getByRole('radio',{name:mode==='light'?'Waldgrün':'Mintgrün',exact:true}).check();
+  await page.goto('/account');await page.waitForLoadState('networkidle');await page.getByRole('radio',{name:mode==='light'?/^Hell /:/^Dunkel /}).check();await page.getByRole('radio',{name:mode==='light'?'Waldgrün':'Mintgrün',exact:true}).check();
   const save=page.getByRole('button',{name:'Darstellung speichern',exact:true});if(await save.isEnabled()){await save.click();await expect(page.locator('.appearance-settings').getByRole('status')).toContainText('gespeichert');}
   for(const project of projects){
    await page.goto('/studio/'+project.project.id+'?variant='+project.variant.id);const card=page.locator('.canvas-empty-content');await expect(card).toBeVisible();
@@ -24,5 +24,5 @@ test('Empty memorial and room canvases remain readable and usable in light and d
    await card.getByRole('button',{name:project.kind==='memorial'?'Ersten Stein anlegen':'Raum anlegen',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');
   }
  }
- await page.goto('/account');await page.getByRole('button',{name:'Schubert-Standard auswählen'}).click();await page.getByRole('button',{name:'Darstellung speichern',exact:true}).click();await expect(page.locator('.appearance-settings').getByRole('status')).toContainText('gespeichert');
+ await page.goto('/account');await page.waitForLoadState('networkidle');await page.getByRole('button',{name:'Schubert-Standard auswählen'}).click();await page.getByRole('button',{name:'Darstellung speichern',exact:true}).click();await expect(page.locator('.appearance-settings').getByRole('status')).toContainText('gespeichert');
 });

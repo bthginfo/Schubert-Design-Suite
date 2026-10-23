@@ -19,9 +19,34 @@ Melden Sie sich mit Ihrem persönlichen Zugang an. Die Startseite zeigt Aufgaben
 
 Im Raum- oder Grabmalstudio beginnen Sie mit einer Variante. Geben Sie Einheiten und Herkunft von Maßen an. Ein Wunschmaß ersetzt kein bestätigtes Aufmaß. Wählen Sie ein Element im Plan oder in der Objektliste; die Eigenschaften enthalten die passenden Zahlenfelder. Rückgängig und Wiederholen speichern nachvollziehbare neue Stände.
 
+Vier Schritte führen durch beide Studios: **Stein & Maße** beziehungsweise **Raum & Aufmaß**, danach **Inschrift & Details** beziehungsweise **Bauteile & Material**, anschließend **Prüfen** und **Präsentieren**. Sie können jederzeit zwischen den Schritten wechseln. Die Aktion neben dem Hinweis passt zum aktuellen Schritt. Bei einem leeren Plan bleibt die Zeichenfläche frei; nach dem ersten Bauteil erscheinen die passenden Eigenschaften.
+
+Beim rechteckigen Raum sind **lichte Innenmaße** voreingestellt. Geben Sie dazu die tatsächliche Wandstärke ohne Belag ein. Alternativ können Sie ausdrücklich **Wandachsmaße** wählen. Die Zeichnung kennzeichnet Maße zwischen den Wandmitten mit „Achse“. Raumflächen und Bodenschichten in der Stückliste beziehen sich ebenfalls auf Wandachsen; eine konkrete Belagsmenge planen Sie als eigene Belagsfläche mit den bestätigten Innenmaßen. Am Stein stehen Außenmaße und Materialstärke im Vordergrund. Position, Drehung und Rohmaße öffnen Sie nur bei Bedarf.
+
 Benennen Sie wichtige Revisionen. Varianten vergleichen unabhängige Entwürfe. Vorschau, Stückliste und technische Unterlagen beziehen sich auf eine konkrete Revision. Für Herstellerprodukte werden genaue Produktstände verwendet. Reine Bildreferenzen besitzen keine zugesicherte Herstellergenauigkeit. Fehlende Konturen, Bohrdaten, Rechte oder Qualifikationen bleiben bei einer Fertigungsfreigabe sichtbar.
 
 Die KI kann erklären und einen Änderungsvorschlag vorbereiten. Prüfen Sie Vorschau, Zielobjekt und Planstand vor der Übernahme. Für ein KI-Konzeptbild wählen Sie eigene freigegebene Referenzen, bestätigen Nutzungsgrundlage und Kostenobergrenze und starten bewusst. Ein Konzeptbild ist sichtbar gekennzeichnet. Bestehende Inschriften benötigen den gesonderten geschützten Compositing-Ablauf.
+
+**KI für diesen Schritt** bereitet eine passende Frage vor. Erst **Senden** startet die Anfrage. Der Begleiter nennt den aktuellen Schritt und die Auswahl. Offene Studioänderungen werden vorher gespeichert; bei einem Speicherfehler oder Versionskonflikt startet keine KI-Anfrage. Der Server prüft den aktuellen Planstand erneut. Beim Prüfen und Präsentieren kann die KI erklären, aber keine Planänderung vorbereiten. Gespräche werden je Projekt, Variante und Schritt getrennt gehalten.
+
+## Herstellerunterlagen für beide Studios
+
+Der neue Bereich **Herstellerbibliothek** ist zunächst dem Superadmin zugänglich. Unter **Zugriff vergeben → Rolle prüfen** kann der Superadmin anderen persönlichen Zugängen die zusätzliche Fähigkeit **Herstellerbibliothek verwalten** erteilen und wieder entziehen. Das vergibt keine weiteren Administrationsrechte. Planer verwenden bereitgestellte Unterlagen über **Herstellerdaten** direkt in beiden Studios.
+
+1. **Herstellerunterlage hinzufügen** öffnen, die Originaldatei auswählen und Bezeichnung sowie Hersteller eintragen. Artikel oder Modell, Quellenlink und Hinweise sind optional.
+2. Grabmalstudio, Raum & Naturstein oder beide zuordnen und den Dateizweck wählen. Bei SVG und DXF die tatsächliche Originaleinheit angeben. Ein Entwurf lässt sich auch zunächst ohne Datei speichern und später fortsetzen.
+3. Die Dateiprüfung abwarten und den Status bei Bedarf aktualisieren. Ungeprüfte Originale bleiben privat in Quarantäne.
+4. Planungsverwendung und Übermittlung an KI getrennt auswählen, die konkrete Nutzungsgrundlage dokumentieren und bewusst bereitstellen.
+
+PDFs und Fotos öffnen Sie aus der Bibliothek als Planvorlage zur weiteren Kalibrierung. Für eine SVG-/DXF-Kontur wählen Sie zuerst ein bearbeitbares Steinbauteil oder eine Belagsfläche; die Quelle und Originaleinheit werden übernommen, die Einheit muss beim Import nochmals ausdrücklich geprüft werden. KI-Referenzen werden bewusst ausgewählt und vor dem Senden als konkrete Bildseite vorbereitet. Das Auswählen einer Datei startet keinen KI-Aufruf.
+
+Eine bereitgestellte Originalfassung bleibt unverändert. Für einen neuen Herstellerstand fügen Sie eine neue Unterlage hinzu. **Ausblenden** entfernt eine Unterlage aus der neuen Auswahl; bisherige Planungen behalten ihre Quellenbezüge. 3D-Originaldateien können abgelegt und geöffnet werden. Die technische Produktbibliothek bleibt für geprüfte Modelle mit Einheiten, Achsen und Produktzuordnung zuständig.
+
+## Formulare im Büro
+
+Die Abschnittsleiste im Formular führt direkt zu Grundangaben, Positionen und weiteren Abschnitten. Eine fehlende Pflichtangabe lässt sich gezielt anspringen. Rabatte und interne Kalkulationsangaben bleiben aufklappbar. Die laufende Positionssumme berücksichtigt nur den ausgewählten Umfang; die verbindlichen Beträge werden beim Speichern serverseitig berechnet.
+
+**Entwurf mit KI prüfen** ist optional. Vor dem Start sehen Sie, welche Formularangaben und wie viele Positionen übermittelt werden. Die Prüfung erhält die aktuellen Eingaben und keine alten gespeicherten Positionen. Interne Einzelkosten werden nicht an den KI-Anbieter übermittelt. Nach einer Änderung erscheint ein Hinweis, dass sich die Eingaben seit der Prüfung verändert haben. Die KI speichert oder bestätigt den Entwurf nicht.
 
 Einkauf und Wareneingang dokumentieren bestellte und tatsächlich erhaltene Mengen getrennt. Reservieren Sie einen vorhandenen Bestand für einen Auftrag. Entnahmen und Zuschnitt sind Bestandsbewegungen; eine Eingangsrechnung bucht den Materialverbrauch nicht ein zweites Mal.
 

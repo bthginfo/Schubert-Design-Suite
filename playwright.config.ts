@@ -6,5 +6,5 @@ if(!['localhost','127.0.0.1'].includes(new URL(baseURL).hostname))throw new Erro
 export default defineConfig({
   testDir:'./tests/e2e',workers:1,timeout:90000,expect:{timeout:15000},
   reporter:[['list'],['html',{open:'never'}]],
-  use:{baseURL,actionTimeout:15000,navigationTimeout:45000,channel:process.env.UAT_BROWSER_CHANNEL||'msedge',viewport:{width:1440,height:1000},locale:'de-DE',timezoneId:'Europe/Berlin',screenshot:'only-on-failure',trace:'retain-on-failure'},
+  use:{baseURL,actionTimeout:15000,navigationTimeout:45000,...(process.env.UAT_BROWSER_EXECUTABLE?{launchOptions:{executablePath:process.env.UAT_BROWSER_EXECUTABLE}}:{channel:process.env.UAT_BROWSER_CHANNEL||'msedge'}),viewport:{width:1440,height:1000},locale:'de-DE',timezoneId:'Europe/Berlin',screenshot:'only-on-failure',trace:'retain-on-failure'},
 });

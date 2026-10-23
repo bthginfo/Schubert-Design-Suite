@@ -1,4 +1,6 @@
 import {describe,it,expect}from'vitest';import{routeModel,compactContext,estimatedTextCost}from'./model-routing.js';
+import {planningVisualizationContext} from './model-routing.js';
+import {planningOperationAllowed} from '@schubert/contracts';
 describe('Cost-aware task routing',()=>{
  it('uses Luna for ordinary and structured design tasks without automatic escalation',()=>{expect(routeModel({},'standard',{entityType:'planning'}).model).toBe('gpt-6-luna');expect(routeModel({},'standard',{entityType:'customers'}).model).toBe('gpt-6-luna');});
  it('uses Sol only for the explicit design review and keeps independent prices',()=>{const routed=routeModel({},'design_review',{entityType:'planning'});expect(routed.model).toBe('gpt-6.1-sol');expect(routed.inputCostPerMillion).toBe('2');expect(()=>routeModel({},'design_review',{entityType:'customers'})).toThrow();});
@@ -7,3 +9,29 @@ describe('Cost-aware task routing',()=>{
 
 it('uses a conservative affordable pre-call token bound',()=>{const p=routeModel({},'standard',{entityType:'planning'});const estimate=estimatedTextCost(p,{message:'Prüfe den Plan.'});expect(estimate.inputTokenCeiling).toBeGreaterThan(8192);expect(estimate.cost).toBeLessThan(Number(p.maxRequestCost));});
 it('preserves canonical finished contours, nodes, thickness and referenced measures',()=>{const c=compactContext({snapshot:{elements:[{id:'stone',kind:'stone_piece',finishedContour:{outer:[],holes:[]},thicknessMeasureId:'thickness'},{id:'node',kind:'node',point:{xMm:'2',yMm:'3',zMm:'0'}}],measurements:{thickness:{valueMm:'30',reviewStatus:'confirmed'},irrelevant:{valueMm:'999'}}}});expect(c.snapshot.measurements.thickness.valueMm).toBe('30');expect(c.snapshot.measurements.irrelevant).toBeUndefined();expect(c.snapshot.elements[0].finishedContour).toBeDefined();expect(c.snapshot.elements[1].point.xMm).toBe('2');});
+
+it('keeps the selected inscription, its distant host and driving dimensions in a large plan',()=>{
+ const unrelated=Array.from({length:80},(_,index)=>({id:'other:'+index,kind:'technical_note',text:'Other'}));
+ const context=compactContext({selectedElementIds:['text'],snapshot:{elements:[...unrelated,{id:'stone',kind:'stone_piece',thicknessMeasureId:'thickness'},{id:'width',kind:'dimension',measureId:'width-value',refs:[{elementId:'stone'}]},{id:'text',kind:'inscription',surfaceElementId:'stone',exactText:'Müller\n1948 – 2025'}],measurements:{thickness:{valueMm:'160'},'width-value':{valueMm:'800',sourceMeasureIds:['survey']},survey:{valueMm:'800',semantic:'as_built'}}}});
+ expect(context.snapshot.elements.slice(0,3).map((element:any)=>element.id)).toEqual(['text','stone','width']);
+ expect(context.snapshot.measurements['width-value'].valueMm).toBe('800');expect(context.snapshot.measurements.survey.semantic).toBe('as_built');expect(context.snapshot.omittedElementCount).toBe(43);
+});
+
+it('gives each studio step specific instructions and rejects edits in review and output',()=>{
+ const review=routeModel({},'standard',{entityType:'planning',designKind:'memorial',workflow:{step:'review',label:'Prüfen'}});
+ expect(review.instructions).toContain('Nur prüfen');
+ expect(planningOperationAllowed('review','set_design_target')).toBe(false);
+ expect(planningOperationAllowed('output','move_element')).toBe(false);
+ expect(planningOperationAllowed('geometry','set_inscription_text')).toBe(false);
+ expect(planningOperationAllowed('design','set_inscription_text')).toBe(true);
+ const edit=routeModel({},'standard',{entityType:'quotes',workflow:{purpose:'Nur den aktuellen Formularentwurf prüfen.'}});
+ expect(edit.instructions).toContain('Nur den aktuellen Formularentwurf prüfen.');
+});
+
+it('bounds image context at complete JSON elements and preserves Unicode names',()=>{
+ const snapshot={elements:Array.from({length:40},(_,index)=>({id:'note:'+index,kind:'technical_note',text:'Müller · Äußere Fläche '.repeat(35)}))};
+ const encoded=planningVisualizationContext({snapshot,entityType:'planning'},4000),context=JSON.parse(encoded);
+ expect(new TextEncoder().encode(encoded).length).toBeLessThanOrEqual(4000);
+ expect(context.snapshot.elements[0].text).toContain('Müller · Äußere Fläche');
+ expect(context.snapshot.omittedElementCount).toBeGreaterThan(0);
+});

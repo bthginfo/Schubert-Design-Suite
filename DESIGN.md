@@ -100,6 +100,7 @@ rounded:
   segment: "7px"
   compact-control: "8px"
   control: "9px"
+  button: "11px"
   choice: "10px"
   disclosure: "11px"
   compact-panel: "12px"
@@ -124,7 +125,7 @@ components:
     backgroundColor: "{colors.forest}"
     textColor: "{colors.on-accent}"
     typography: "{typography.button}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.button}"
     padding: "10px 15px"
   button-primary-hover:
     backgroundColor: "{colors.forest-dark}"
@@ -133,19 +134,19 @@ components:
     backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
     typography: "{typography.button}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.button}"
     padding: "10px 15px"
   button-ghost:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
     typography: "{typography.button}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.button}"
     padding: "10px 15px"
   button-danger:
     backgroundColor: "{colors.danger-wash}"
     textColor: "{colors.danger}"
     typography: "{typography.button}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.button}"
     padding: "10px 15px"
   input-field:
     backgroundColor: "{colors.input-surface}"
@@ -382,6 +383,16 @@ Das gemeinsame Auswahlelement nutzt native Radiogruppen, sichtbare Farbnamen, Fo
 Die Vorschau ändert sich sofort; die übrige Anwendung folgt nach **Darstellung speichern** oder **Einführung abschließen**. **Schubert-Standard auswählen** setzt Waldgrün und Hell zur anschließenden Speicherung. Ladezustände verhindern doppelte Bedienung; Erfolg und Fehler werden verständlich zurückgemeldet.
 
 ### Planungsstudio und Auswertungen
+
+Beide Studios beginnen mit einer vierteiligen Schrittleiste. Schrittzahl und Text bleiben gemeinsam sichtbar; der aktuelle Schritt besitzt eine Akzentfläche und `aria-current="step"`. Der darunterliegende Hinweis und die primäre Aktion passen zur Aufgabe. **KI für diesen Schritt** füllt zunächst eine Frage aus und nennt im Begleiter den tatsächlichen Schritt und die Auswahl. Auf kleinen Bildschirmen behält die kompakte KI-Aktion ihren vollständigen zugänglichen Namen. Der Schrittwechsel bleibt frei möglich und ist keine fachliche Freigabe.
+
+Ein leerer Plan zeigt den ersten sinnvollen Einstieg ohne leere Seitenbereiche. Formauswahl, Position, Drehung und Fertigungsdetails werden nach Bedarf geöffnet. Maße nennen Nutzung, Bezug und Einheit: lichte Raummaße gegenüber Wandachsmaßen, Außenmaße und Materialstärke am Stein. Eingetragene Planmaße bleiben von unbekannten und fachlich bestätigten Maßen unterscheidbar. Die Raumstückliste benennt ihren Achsbezug ausdrücklich.
+
+Formulare im Büro besitzen eine schmale Abschnittsleiste mit direkten Sprungzielen. Pflichtangaben werden verständlich gezählt; Fehler erhalten ein konkretes Ziel. Eine dezimale Positionssumme erklärt ausgewählte Optionen. Die optionale KI-Prüfung liegt im Formular, legt den übermittelten Umfang offen und kennzeichnet ihre Antwort nach weiteren Eingaben als überholt. Es gibt keinen automatischen Aufruf beim Öffnen oder Tippen.
+
+Die Herstellerbibliothek erklärt Original, Studiozuordnung und Verwendung in drei kurzen Schritten. Der zweistufige Dialog speichert zuerst den fortsetzbaren Entwurf und prüft dann Datei und Nutzungsgrundlage. In den Studios entscheidet die Dateieignung über **Als Planvorlage öffnen**, **Kontur übernehmen** oder **Als KI-Referenz auswählen**. Nicht erfüllte Voraussetzungen erhalten einen konkreten nächsten Schritt. Die Auswahl startet keine kostenpflichtige Verarbeitung.
+
+Kurze Einblendungen und dezente Hover-/Fokusübergänge unterstützen die Orientierung. `prefers-reduced-motion` deaktiviert diese Bewegungen. Bedienelemente bleiben während Speichervorgängen eindeutig gesperrt; Fehler erscheinen am betroffenen Ablauf.
 
 Der Editor gibt der Zeichenfläche den verbleibenden Arbeitsraum. **Auswahl**, **Verschieben**, **Hand** und **Hinzufügen** bilden die Bearbeitungsreihe; Front, Seite, Drauf beziehungsweise Grundriss und 3D bilden die eigene Ansichtsgruppe. **Einpassen** und die Zoomsteuerung bleiben erreichbar. Die Bedienelemente **Elemente** und **Eigenschaften** stehen mit Rückgängig/Wiederholen direkt an der Zeichenfläche; Auswahlstatus und Maßeinheit erklären den aktuellen Bezug.
 
