@@ -162,7 +162,7 @@
             )
           : null;
         chatArea.scrollTo({
-          top: reply
+          top: !available&&!messages.length?0:reply
             ? chatArea.scrollTop +
               reply.getBoundingClientRect().top -
               chatArea.getBoundingClientRect().top -

@@ -73,7 +73,8 @@ export function validateDesign(input: DesignSnapshot, options: { forRelease?: bo
     if (!id) return;
     const measure = measurements[id];
     if (!measure) return;
-    const measureName=({width:'Breite',height:'Höhen- / Längenmaß',depth:'Tiefe',thickness:'Stärke',length:'Länge',offset:'Abstand',radius:'Radius'} as Record<string,string>)[id.split(':').at(-1)??'']||'Dieses Maß';
+    const key=id.split(':').at(-1)??'',host=element.kind==='stone_piece'?element:element.kind==='dimension'?elements.get(element.refs[0]?.elementId):null;
+    const measureName=host?.kind==='stone_piece'&&host.purpose!=='memorial'&&key==='width'?'Länge':host?.kind==='stone_piece'&&host.purpose!=='memorial'&&key==='height'?(host.purpose==='wall'?'Höhe':'Tiefe'):({width:'Breite',height:'Höhe',depth:'Tiefe',thickness:'Stärke',length:'Länge',offset:'Abstand',radius:'Radius'} as Record<string,string>)[key]||'Dieses Maß';
     if (measure.valueMm === null) issue(`„${element.label}“: ${measureName} ist noch unbekannt.`);
     else if (!allowNegative&&(allowZero ? new D(measure.valueMm).lt(0) : new D(measure.valueMm).lte(0))) blocking.push(`„${element.label}“: ${measureName} muss ${allowZero ? 'mindestens null' : 'positiv'} sein.`);
     if (measure.isEstimated) issue(`„${element.label}“: ${measureName} ist geschätzt.`);

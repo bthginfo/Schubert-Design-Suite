@@ -897,3 +897,22 @@ select[data-searchable-control][hidden] { display: none !important; }
 .app-shell .field input:hover:not(:disabled):not(:focus), .app-shell .field textarea:hover:not(:disabled):not(:focus) { border-color: color-mix(in srgb,var(--muted) 45%,var(--line)); }
 .app-shell .field input:focus, .app-shell .field textarea:focus { border-color: var(--forest); box-shadow: 0 0 0 3px color-mix(in srgb,var(--forest) 10%,transparent); }
 @media(prefers-reduced-motion:reduce){.modal-backdrop .modal,.assistant-drawer{animation:none}.app-shell .btn:not(:disabled):active{transform:none}}
+
+/* Keep the assistant reachable without covering mobile forms or primary actions. */
+@media(max-width:760px){
+ .assistant-trigger{position:static;min-height:48px;width:calc(100% - 34px);justify-content:center;margin:12px 17px calc(82px + env(safe-area-inset-bottom));box-shadow:none}
+ .assistant-host:has(.assistant-trigger){position:static}
+ .page-content{padding-bottom:28px}
+ .timer-actions{display:flex;flex-wrap:wrap;gap:8px}
+ .timer-actions .btn{white-space:nowrap;overflow-wrap:normal;word-break:normal;flex:1 1 120px}
+ .modal .notice.error{scroll-margin-top:16px}
+}
+
+@media(max-width:760px){
+ .time-segment{gap:10px;align-items:flex-start;flex-wrap:wrap}
+ .time-segment .segment-info{min-width:0;flex:1 1 170px;overflow-wrap:break-word}
+ .time-segment .segment-info strong{font-size:13px;line-height:1.5}
+ .time-segment .segment-info p{font-size:12px;line-height:1.65}
+ .time-segment .segment-duration{margin-left:41px;white-space:nowrap}
+ .time-grid .table-scroll{max-width:100%;min-width:0}
+}

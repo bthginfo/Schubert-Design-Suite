@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-23",
+  "baseCommit": "8676ec89d914caec70da7c3082ad1c9815de3cd5",
+  "typecheck": {
+    "errors": 0,
+    "warnings": 0,
+    "testAdjustmentsTypechecked": true
+  },
+  "unit": {
+    "files": 64,
+    "passed": 395
+  },
+  "postgresqlIntegration": {
+    "passed": 59
+  },
+  "browser": {
+    "uniqueChecksPassed": 53,
+    "fullRun": {
+      "passed": 51,
+      "failed": 2,
+      "failureCause": "Outdated expectations for additional interior dimensions and the mobile assistant in page flow"
+    },
+    "targetedRun": {
+      "passed": 2,
+      "failed": 0
+    },
+    "applicationCodeChangedBetweenRuns": false,
+    "aiTransport": "Explicitly controlled responses; no real provider quality claim"
+  },
+  "build": "passed",
+  "requirements": {
+    "definitionsVerified": true,
+    "sections": 154,
+    "scenarios": 69,
+    "externalAcceptanceInferred": false
+  },
+  "authorizedReadSmoke": {
+    "calls": 70,
+    "failures": 0
+  },
+  "credentialScan": "passed",
+  "quarantineDownload": {
+    "status": 409,
+    "code": "DOCUMENT_QUARANTINE",
+    "fileDelivered": false
+  },
+  "existingTestData": "preserved",
+  "localLimitations": [
+    "Real AI provider quality not tested",
+    "Actual malware scan service unavailable locally"
+  ]
+}

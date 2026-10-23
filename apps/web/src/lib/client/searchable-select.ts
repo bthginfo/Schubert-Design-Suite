@@ -23,7 +23,9 @@ export function visibleFieldControl(node:HTMLElement|null|undefined):HTMLElement
  * form ownership, constraints, Svelte's typed option __value and every business callback.
  * The action parameter is the same reactive expression as the native value binding.
  */
+export type RemoteChoice={value:unknown;search:(query:string)=>void;busy?:boolean;error?:string};
 export function searchableSelect(native:HTMLSelectElement,_valueHint:unknown){
+ let remote=typeof _valueHint==='object'&&_valueHint!==null&&'search'in _valueHint?_valueHint as RemoteChoice:null;
  if(native.multiple||typeof HTMLElement.prototype.showPopover!=='function')return {};
  const originalId=native.id,originalHidden=native.hidden,form=native.form;
  const identity=`schubert-choice-${++sequence}`;
@@ -108,7 +110,7 @@ export function searchableSelect(native:HTMLSelectElement,_valueHint:unknown){
   mirror();
   options=Array.from(native.options).map((option,index)=>({index,label:option.label,group:option.parentElement instanceof HTMLOptGroupElement?option.parentElement.label:'',disabled:option.disabled||option.parentElement instanceof HTMLOptGroupElement&&option.parentElement.disabled}));
   const selection=String(native.selectedIndex)+'\u0000'+selectedLabel();
-  if(selection!==lastSelection){lastSelection=selection;if(opened){query='';input.value=selectedLabel();}}
+  if(selection!==lastSelection){lastSelection=selection;if(opened&&!query)input.value=selectedLabel();}
   if(!opened)input.value=selectedLabel();
   if(input.disabled||ancestors.some(ancestor=>ancestor instanceof HTMLDialogElement&&!ancestor.open))close();
   if(opened)render();
@@ -130,9 +132,10 @@ export function searchableSelect(native:HTMLSelectElement,_valueHint:unknown){
   if(!filtered.length){
    // This disabled informational option satisfies the listbox's owned-role contract.
    // It has no native index/value and can never be selected or committed.
-   const empty=document.createElement('div');empty.className='searchable-select-empty';empty.setAttribute('role','option');empty.setAttribute('aria-disabled','true');empty.setAttribute('aria-selected','false');empty.textContent='Kein Eintrag gefunden. Versuchen Sie einen anderen Suchbegriff.';list.append(empty);
+   const empty=document.createElement('div');empty.className='searchable-select-empty';empty.setAttribute('role','option');empty.setAttribute('aria-disabled','true');empty.setAttribute('aria-selected','false');empty.textContent=remote?.busy?'Der freigegebene Bestand wird durchsucht …':remote?.error?'Suche fehlgeschlagen. Bitte erneut tippen.':'Kein passender Eintrag gefunden. Versuchen Sie einen anderen Suchbegriff.';list.append(empty);
   }
-  status.textContent=`${filtered.length} ${filtered.length===1?'Eintrag':'Einträge'}${query?' gefunden':''} · Auswählen oder weitersuchen`;
+  input.setAttribute('aria-busy',String(!!remote?.busy));
+  status.textContent=remote?.busy?'Bestand wird durchsucht …':remote?.error||`${filtered.length} ${filtered.length===1?'Eintrag':'Einträge'}${query?' gefunden':''} · Auswählen oder weitersuchen`;
   if(active>=0)input.setAttribute('aria-activedescendant',`${identity}-option-${active}`);else input.removeAttribute('aria-activedescendant');
   position();
  }
@@ -153,7 +156,7 @@ export function searchableSelect(native:HTMLSelectElement,_valueHint:unknown){
   if(destroyed||failed||input.disabled||opened)return;
   refresh();if(input.disabled)return;
   openChoice?.close();openChoice=controller;opened=true;query='';active=options.find(option=>option.index===native.selectedIndex&&!option.disabled)?.index??nextChoice(options,-1,'ArrowDown');
-  input.setAttribute('aria-expanded','true');wrapper.dataset.open='true';input.value=selectedLabel();render();
+  input.setAttribute('aria-expanded','true');wrapper.dataset.open='true';input.value=selectedLabel();render();remote?.search('');
   try{popup.showPopover();position();}catch{opened=false;openChoice=null;fallback();return;}
   const resize=new ResizeObserver(schedulePosition);resize.observe(wrapper);
   window.addEventListener('scroll',schedulePosition,true);window.addEventListener('resize',schedulePosition);document.addEventListener('pointerdown',outside,true);document.addEventListener('fullscreenchange',close);
@@ -186,12 +189,12 @@ export function searchableSelect(native:HTMLSelectElement,_valueHint:unknown){
    event.preventDefault();if(!opened)open();else active=nextChoice(filtered,active,event.key as 'ArrowDown'|'ArrowUp'|'Home'|'End');
    render();document.getElementById(`${identity}-option-${active}`)?.scrollIntoView({block:'nearest'});return;
   }
-  if(event.key==='Enter'){event.preventDefault();if(opened){if(active>=0)commit(active);}else open();return;}
+  if(event.key==='Enter'){event.preventDefault();if(opened){if(active>=0&&!remote?.busy)commit(active);}else open();return;}
   if(event.key==='Escape'&&opened){event.preventDefault();close();input.select();}
  }
  function invalid(event:Event){if(!initialized)return;event.preventDefault();validationShown=true;mirror();for(let section=native.closest('details');section;section=section.parentElement?.closest('details')??null)section.open=true;input.focus();}
  function reset(){validationShown=false;close();schedule();}
- function onInput(event:Event){event.stopPropagation();const typed=input.value;if(!opened)open();input.value=typed;query=typed;active=-1;render();}
+ function onInput(event:Event){event.stopPropagation();const typed=input.value;if(!opened)open();input.value=typed;query=typed;active=-1;remote?.search(typed);render();}
  function onFocus(event:FocusEvent){if(!native.matches(':disabled'))native.dispatchEvent(new FocusEvent('focus',{relatedTarget:event.relatedTarget}));if(!opened)input.select();}
  function onBlur(event:FocusEvent){
   native.dispatchEvent(new FocusEvent('blur',{relatedTarget:event.relatedTarget}));
@@ -229,7 +232,7 @@ export function searchableSelect(native:HTMLSelectElement,_valueHint:unknown){
   schedule();
  }catch{fallback();}
  return {
-  update(_nextValueHint:unknown){if(initialized)schedule();},
+  update(_nextValueHint:unknown){remote=typeof _nextValueHint==='object'&&_nextValueHint!==null&&'search'in _nextValueHint?_nextValueHint as RemoteChoice:null;if(initialized)schedule();},
   destroy(){destroyed=true;close();cancelAnimationFrame(refreshFrame);cancelAnimationFrame(positionFrame);observer.disconnect();for(const[label,handler]of labels)label.removeEventListener('click',handler);labels.clear();native.removeEventListener('invalid',invalid);native.removeEventListener('change',onNativeChange);native.removeEventListener('input',onNativeChange);form?.removeEventListener('reset',reset);window.removeEventListener('resize',schedule);native.hidden=originalHidden;native.removeAttribute('data-searchable-control');if(!originalId)native.removeAttribute('id');wrapper.remove();}
  };
 }

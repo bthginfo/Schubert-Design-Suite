@@ -1,19 +1,33 @@
 <script lang="ts">
   import {searchableSelect} from '#lib/client/searchable-select.ts';
-  import {onMount} from 'svelte';
+  import {onMount,onDestroy,untrack} from 'svelte';
   import {request} from '#lib/client/api.ts';
-  import Icon from './Icon.svelte';
   type Choice={id:string;name:string};
   let {id,value=$bindable(),reference,initial=[],required=false,invalid=false,describedBy,parentId,emptyText,asOf,kind,onchange}:{id:string;value?:string;reference:string;initial?:Choice[];required?:boolean;invalid?:boolean;describedBy?:string;parentId?:string;emptyText?:string;asOf?:string;kind?:string;onchange?:(value:string,choice?:Choice)=>void}=$props();
-  let query=$state('');let found:Choice[]|null=$state(null);let known:Choice[]=$state([]);let busy=$state(false);let error=$state('');let expanded=$state(false);
-  const options=$derived.by(()=>{const rows=found??(kind?[]:initial);const selected=value?[...rows,...known,...initial].find(item=>item.id===value):null;return [...(selected&&!rows.some(item=>item.id===value)?[selected]:[]),...rows,...(value&&!selected?[{id:value,name:'Gespeicherte Auswahl · Name wird geprüft'}]:[])];});
-  const empty=$derived(!options.length);
-  const createNames:Record<string,string>={customers:'Kunden',suppliers:'Lieferanten',orders:'Aufträge',team:'Team',products:'Produkte',documents:'Dokumente',sites:'Objekte',graves:'Grabstätten',cemeteries:'Friedhöfe',resources:'Betriebsmittel'};
-  async function search(){if(busy)return;busy=true;error='';try{const params=new URLSearchParams({q:query,...(value?{include_id:value}:{}),...(parentId?{parent_id:parentId}:{}),...(asOf?{as_of:asOf}:{}),...(kind?{kind}:{})});const result=await request(`/api/v1/lookups/${encodeURIComponent(reference)}?${params}`,undefined,'GET');const matches=Array.isArray(result)?result:result?.items||result?.records||[];known=[...new Map([...known,...initial,...matches].map(item=>[item.id,item])).values()].slice(-300);found=matches;}catch(cause){error=cause instanceof Error?cause.message:'Die Auswahl konnte nicht gesucht werden. Ihre bisherige Auswahl bleibt erhalten.';}finally{busy=false;}}
-  onMount(()=>{if(!initial.length&&!value)expanded=true;if(parentId||asOf||kind||value&&!initial.some(item=>item.id===value))search();});
+  let found:Choice[]|null=$state(null),known:Choice[]=$state([]),busy=$state(false),error=$state('');
+  let timer:ReturnType<typeof setTimeout>|undefined,generation=0;
+  const options=$derived.by(()=>{
+    const rows=found??(kind?[]:initial),selected=value?[...rows,...known,...initial].find(item=>item.id===value):null;
+    return [...(selected&&!rows.some(item=>item.id===value)?[selected]:[]),...rows,...(value&&!selected?[{id:value,name:'Gespeicherte Auswahl · Bezeichnung wird geladen'}]:[])];
+  });
+  function search(query:string){
+    clearTimeout(timer);const current=++generation;busy=true;error='';
+    timer=setTimeout(async()=>{
+      try{
+        const params=new URLSearchParams({q:query,...(value?{include_id:value}:{}),...(parentId?{parent_id:parentId}:{}),...(asOf?{as_of:asOf}:{}),...(kind?{kind}:{})});
+        const result=await request(`/api/v1/lookups/${encodeURIComponent(reference)}?${params}`,undefined,'GET');
+        if(current!==generation)return;
+        const matches:Choice[]=Array.isArray(result)?result:result?.items||result?.records||[];
+        known=[...new Map([...known,...initial,...matches].map(item=>[item.id,item])).values()].slice(-300);found=matches;
+      }catch(cause){if(current===generation)error=cause instanceof Error?cause.message:'Suche fehlgeschlagen. Bitte erneut versuchen.';}
+      finally{if(current===generation)busy=false;}
+    },200);
+  }
+  let mounted=false;let scope='';
+  onMount(()=>{mounted=true;scope=[reference,parentId,asOf,kind].join('|');search('');});
+  $effect(()=>{const next=[reference,parentId,asOf,kind].join('|');if(mounted&&next!==scope){scope=next;found=null;untrack(()=>search(''));}});
+  onDestroy(()=>{clearTimeout(timer);generation++;});
 </script>
-<select use:searchableSelect={value} {id} bind:value {required} onchange={(event)=>{const selectedId=event.currentTarget.value;onchange?.(selectedId,options.find(item=>item.id===selectedId));}} aria-invalid={invalid} aria-describedby={describedBy}><option value="">Bitte auswählen</option>{#each options as item}<option value={item.id}>{item.name}</option>{/each}</select>
-<details class="reference-search" bind:open={expanded}><summary>{empty?'Eintrag im berechtigten Bestand suchen':'Weitere Einträge suchen'}<Icon name="search" size={13}/></summary><div class="reference-search-body"><label for={`${id}-search`}>Name oder Belegnummer</label><div class="reference-search-controls"><input id={`${id}-search`} type="search" bind:value={query} maxlength="150" placeholder="Zum Beispiel Name oder Auftragsnummer" onkeydown={(event)=>{if(event.key==='Enter'){event.preventDefault();search();}}}/><button type="button" class="btn small" disabled={busy} onclick={search}><Icon name={busy?'refresh':'search'} size={14} class={busy?'spin':''}/>{busy?'Sucht …':'Suchen'}</button></div><p class="field-help" aria-live="polite">{found?`${found.length} berechtigte Einträge in der Auswahl oben. Wählen Sie den passenden Eintrag.`:'Die Suche durchsucht den freigegebenen Bestand. Sie startet erst mit „Suchen“.'} {found?.length===30?'Grenzen Sie den Suchtext bei Bedarf weiter ein.':''}</p></div></details>
-{#if error}<p class="field-error" role="alert">{error}</p>{/if}
-{#if empty}<p class="field-help">{emptyText||'Aktuell ist kein Eintrag auswählbar. Suchen Sie im freigegebenen Bestand oder lassen Sie die Zuordnung prüfen.'}{#if createNames[reference]} <a class="text-link" href={`/${reference}`} target="_blank" rel="noreferrer">{createNames[reference]} in neuem Tab öffnen</a>{/if}</p>{/if}
-<style>.reference-search{margin-top:7px}.reference-search>summary{display:inline-flex;gap:7px;align-items:center;list-style:none;color:var(--forest);font-size:11px;cursor:pointer;min-height:26px}.reference-search>summary::-webkit-details-marker{display:none}.reference-search-body{margin-top:10px;padding:14px;background:var(--wash);border:1px solid var(--line);border-radius:5px}.reference-search-body>label{font-size:11px;display:block;margin-bottom:7px;color:var(--muted)}.reference-search-controls{display:flex;gap:8px;align-items:stretch}.reference-search-controls input{min-width:0!important;flex:1}.reference-search-body>.field-help{margin-top:9px;display:block}@media(max-width:760px){.reference-search>summary{font-size:12px;min-height:40px}.reference-search-body>label{font-size:12px}.reference-search-controls{flex-wrap:wrap}.reference-search-controls input{flex-basis:100%}.reference-search-controls button{min-height:44px}.reference-search-body{padding:13px}}</style>
+<select use:searchableSelect={{value,search,busy,error}} {id} bind:value {required} onchange={(event)=>{const selectedId=event.currentTarget.value;onchange?.(selectedId,options.find(item=>item.id===selectedId));}} aria-invalid={invalid} aria-describedby={[describedBy,`${id}-search-help`].filter(Boolean).join(' ')}><option value="">Bitte auswählen</option>{#each options as item}<option value={item.id}>{item.name}</option>{/each}</select>
+<p id={`${id}-search-help`} class="field-help">{emptyText&&found?.length===0?emptyText:'Name oder Belegnummer eingeben · durchsucht den gesamten freigegebenen Bestand.'}</p>
+{#if error}<p class="field-error" role="alert">{error}<button type="button" class="text-link" onclick={()=>search('')}>Erneut laden</button></p>{/if}

@@ -1,0 +1,137 @@
+
+Running 53 tests using 1 worker
+
+(node:93569) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/e2e/agentic-interactions.spec.ts:199:1 › AI: structured clarification, explicit boundaries, cancellation and fresh follow-up stay under user control (15.4s)
+  ✓   2 tests/e2e/agentic-interactions.spec.ts:331:1 › Steinmetz: exact text diff, real proposal application, inline undo and normal Studio undo preserve revisions (19.9s)
+  ✓   3 tests/e2e/agentic-interactions.spec.ts:494:1 › AI: a response based on an earlier plan is labeled stale and cannot be applied (9.1s)
+  ✓   4 tests/e2e/agentic-interactions.spec.ts:554:1 › Room studio: first AI draft is reviewable and reversible, technical helpers stay available on demand (14.8s)
+  ✓   5 tests/e2e/agentic-interactions.spec.ts:620:1 › Backoffice: structured draft feedback, safe cancellation and mobile footer remain usable (8.3s)
+  ✓   6 tests/e2e/agentic-interactions.spec.ts:723:1 › Design consistency: real dark preference, compact help, reduced motion and short mobile screens (19.3s)
+  ✓   7 tests/e2e/appearance.spec.ts:13:1 › Each user can preview palettes, save appearance, follow the device (13.4s)
+  ✓   8 tests/e2e/appearance.spec.ts:37:1 › Dark theme covers business forms, feedback and the studio without recoloring the plan (24.0s)
+  ✓   9 tests/e2e/companion-flows.spec.ts:24:1 › Companion: free page help, explicit chat, bounded history, context navigation and mobile focus (9.2s)
+  ✓  10 tests/e2e/companion-flows.spec.ts:36:1 › Studio image workflow, photo rights, cost-only quote and wall visibility leave saved geometry intact (8.7s)
+  ✓  11 tests/e2e/companion-flows.spec.ts:44:1 › Monthly dispatch and compact finance navigation work on desktop and mobile (10.9s)
+  ✓  12 tests/e2e/companion-flows.spec.ts:49:1 › Final visual evidence: searchable studio, sourced catalog and readable charts in both themes (26.8s)
+  ✓  13 tests/e2e/contextual-workflow.spec.ts:35:1 › Steinmetz: four clear steps, exact inscription, saved geometry and a usable mobile canvas (12.9s)
+  ✓  14 tests/e2e/contextual-workflow.spec.ts:52:1 › Steinmetz: room dimensions use inner wall faces, persist exact geometry and offer manufacturer selection (9.6s)
+  ✓  15 tests/e2e/contextual-workflow.spec.ts:62:1 › AI contract (stubbed model): saves before sending, binds revision and step, separates conversations and stops after a failed save (10.4s)
+  ✓  16 tests/e2e/contextual-workflow.spec.ts:76:1 › Backoffice: section shortcuts, exact decimal totals, selected options, scoped AI review and actual saved quote (7.9s)
+  ✓  17 tests/e2e/contextual-workflow.spec.ts:91:1 › SuperAdmin: separate manufacturer area, resumable source drafts, explicit rights gates and delegated permission control (9.9s)
+  ✓  18 tests/e2e/contextual-workflow.spec.ts:100:1 › Manufacturer selection: both studios retain exact source versions; contours require unit confirmation and AI never starts on selection (13.6s)
+  ✓  19 tests/e2e/feedback.spec.ts:15:1 › Feedback captures useful actions without field values; retries once, triages and exports (17.0s)
+  ✓  20 tests/e2e/feedback.spec.ts:47:1 › Only SuperAdmin reviews feedback; off disables stale clients and on restores the button (11.2s)
+  ✓  21 tests/e2e/guidance-usage.spec.ts:24:1 › Usage dashboard, historical month and permission boundary (5.8s)
+  ✓  22 tests/e2e/guidance-usage.spec.ts:31:1 › Page-specific help, searchable FAQs and restartable personal onboarding (8.7s)
+  ✓  23 tests/e2e/guidance-usage.spec.ts:37:1 › Numbering preview, persisted settings and actual quote allocation (9.1s)
+  ✓  24 tests/e2e/guidance-usage.spec.ts:47:1 › Employees have help but cannot view administrative usage or numbering (3.7s)
+  ✓  25 tests/e2e/onboarding-tour.spec.ts:8:1 › Guided tour visits actual pages, highlights targets, resumes and preserves choices on failure (36.7s)
+  ✓  26 tests/e2e/onboarding-tour.spec.ts:16:1 › Mobile tour respects role, keyboard focus and an unavailable save (10.6s)
+  ✓  27 tests/e2e/searchable-workbench.spec.ts:35:1 › Searchable choices filter German labels locally, cancel safely and commit once by keyboard (7.6s)
+  ✓  28 tests/e2e/searchable-workbench.spec.ts:55:1 › Searchable dropdowns stay inside a small dialog viewport and retain labels and focus (6.5s)
+  ✓  29 tests/e2e/searchable-workbench.spec.ts:73:1 › Planning workbench fills native and fallback fullscreen, keeps dropdowns usable and restores scroll (5.3s)
+  ✓  30 tests/e2e/searchable-workbench.spec.ts:96:1 › Compact planning keeps the canvas first and opens element and property drawers deliberately (4.9s)
+  ✓  31 tests/e2e/searchable-workbench.spec.ts:115:1 › Locked planning properties disable searchable choices through the actual parent fieldset (7.1s)
+  ✓  32 tests/e2e/searchable-workbench.spec.ts:129:1 › Short fullscreen keeps the 3D model separate from its open camera controls and companion (5.3s)
+  ✓  33 tests/e2e/studio-empty-theme.spec.ts:7:1 › Empty memorial and room canvases remain readable and usable in light and dark mode (19.2s)
+  ✓  34 tests/e2e/studio-interaction.spec.ts:4:1 › Studio offers editable forms, direct lettering, grid controls and fullscreen with persisted placement (19.6s)
+  ✘  35 tests/e2e/studio-quality.spec.ts:9:1 › Representative memorial and room: persisted dimensions, drawings, camera and PDF (52.8s)
+(node:96452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  36 tests/e2e/suite-usability.spec.ts:10:1 › Collapsible navigation persists per user, keeps keyboard labels and leaves mobile independent without requests (11.9s)
+  ✘  37 tests/e2e/suite-usability.spec.ts:24:1 › Assistant FAB restores focus, clears modal controls and follows the fullscreen studio without paid calls (6.7s)
+(node:96638) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  38 tests/e2e/suite-usability.spec.ts:32:1 › Order to Studio keeps its scope through search and creates an actually linked draft (6.3s)
+  ✓  39 tests/e2e/suite-usability.spec.ts:39:1 › Contextual office drafts retain references, open once and do not write on arrival (10.7s)
+  ✓  40 tests/e2e/suite-usability.spec.ts:47:1 › Monthly dispatch opens an editable suggested period for the chosen day without saving (6.6s)
+  ✓  41 tests/e2e/suite-usability.spec.ts:52:1 › Studio blocks navigation after an unconfirmed edit and keeps failed saves and local backup honest (5.3s)
+  ✓  42 tests/e2e/suite-usability.spec.ts:61:1 › Lettering prerequisites retain typed text, cancel cleanly and require a deliberate surface when several stones fit (12.9s)
+  ✓  43 tests/e2e/uat.spec.ts:22:1 › Customer: required fields, invalid email, Unicode, country and persisted record (9.6s)
+  ✓  44 tests/e2e/uat.spec.ts:38:1 › Inquiry: invalid draft can be resumed or discarded without losing the saved version (11.5s)
+  ✓  45 tests/e2e/uat.spec.ts:53:1 › Unsaved new forms protect browser back navigation and can be deliberately discarded (5.1s)
+  ✓  46 tests/e2e/uat.spec.ts:63:1 › Reference pickers exclude erased customers and keep all workflow filters available (4.4s)
+  ✓  47 tests/e2e/uat.spec.ts:70:1 › Quote: comma amounts and unselected options survive save and reopening (8.3s)
+  ✓  48 tests/e2e/uat.spec.ts:85:1 › Desktop and mobile regressions: no viewport overflow and no automated WCAG violations (25.6s)
+  ✓  49 tests/e2e/uat.spec.ts:95:1 › Form UX: optional accordions, keyboard operation, inline error and narrow layout (13.2s)
+  ✓  50 tests/e2e/uat.spec.ts:118:1 › Employee access: finance pages and direct finance commands stay blocked (4.9s)
+  ✓  51 tests/e2e/uat.spec.ts:124:1 › Employee mobile: offline work, pause and finish sync once connection returns (16.4s)
+  ✓  52 tests/e2e/uat.spec.ts:152:36 › Studio Raum: saved geometry, views, readable controls, real PDF and BOM (15.8s)
+  ✓  53 tests/e2e/uat.spec.ts:152:36 › Studio Stele: saved geometry, views, readable controls, real PDF and BOM (12.9s)
+
+
+  1) tests/e2e/studio-quality.spec.ts:9:1 › Representative memorial and room: persisted dimensions, drawings, camera and PDF
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.dimension-annotation')
+    Expected: 4
+    Received: 6
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.dimension-annotation') with timeout 15000ms
+      - waiting for locator('.dimension-annotation')
+        32 × locator resolved to 6 elements
+           - unexpected value "6"
+
+
+      67 |     }
+      68 |     await page.getByRole('button',{name:kind==='memorial'?'Front':'Grundriss',exact:true}).click();
+    > 69 |     await expect(page.locator('.dimension-annotation')).toHaveCount(kind==='memorial'?2:4);
+         |                                                         ^
+      70 |     await setDisplayOption(page,'Maße',false);await expect(page.locator('.dimension-annotation')).toHaveCount(0);await setDisplayOption(page,'Maße',true);
+      71 |     const revision=await page.locator('.revision-chip').innerText();
+      72 |     const box=()=>svg.getAttribute('viewBox').then(v=>v!.split(' ').map(Number));const before=await box();
+        at /workspace/Schubert-Design-Suite/tests/e2e/studio-quality.spec.ts:69:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/studio-quality-Representat-ac503-ons-drawings-camera-and-PDF/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/studio-quality-Representat-ac503-ons-drawings-camera-and-PDF/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/studio-quality-Representat-ac503-ons-drawings-camera-and-PDF/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/studio-quality-Representat-ac503-ons-drawings-camera-and-PDF/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests/e2e/suite-usability.spec.ts:24:1 › Assistant FAB restores focus, clears modal controls and follows the fullscreen studio without paid calls
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 744
+    Received:    5229.8125
+
+      26 |  await open(page,'/customers');const fab=page.getByRole('button',{name:'Assistent',exact:true});await expect(fab).toHaveCount(1);await fab.click();const companion=page.getByRole('dialog',{name:'Schubert Begleiter',exact:true});await expect(companion.getByText('Sofort verfügbar · ohne KI-Verbrauch')).toBeVisible();await companion.getByRole('button',{name:'Assistent schließen',exact:true}).click();await expect(fab).toBeFocused();
+      27 |  await page.getByRole('button',{name:'Kunde anlegen',exact:true}).click();await expect(page.locator('.modal')).toBeVisible();await expect(fab).toBeHidden();await page.getByRole('button',{name:'Abbrechen',exact:true}).click();await expect(fab).toBeVisible();
+    > 28 |  await page.setViewportSize({width:375,height:812});const f=await fab.boundingBox(),n=await page.locator('.mobile-nav').boundingBox();expect(f!.y+f!.height).toBeLessThanOrEqual(n!.y-4);await fab.click();await expect(companion).toHaveAttribute('aria-modal','true');await page.keyboard.press('Escape');await expect(fab).toBeFocused();
+         |                                                                                                                                                              ^
+      29 |  await page.setViewportSize({width:1440,height:1000});await room(page);await page.getByRole('button',{name:'Vollbild',exact:true}).click();await expect(page.locator('.studio-root')).toHaveClass(/is-fullscreen/);await expect(fab).toBeVisible();expect(await fab.evaluate(el=>!!el.closest('.studio-root'))).toBe(true);await fab.click();await expect(companion).toBeVisible();const audit=await new AxeBuilder({page}).include('#assistant-drawer').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact||''))).toEqual([]);await companion.getByRole('button',{name:'Assistent schließen',exact:true}).click();await expect(fab).toBeFocused();await page.getByRole('button',{name:'Vollbild beenden',exact:true}).click();expect(await fab.evaluate(el=>!!el.closest('.studio-root'))).toBe(false);expect(paidCalls).toBe(0);
+      30 | });
+      31 |
+        at /workspace/Schubert-Design-Suite/tests/e2e/suite-usability.spec.ts:28:158
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/suite-usability-Assistant--d40bf-n-studio-without-paid-calls/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/suite-usability-Assistant--d40bf-n-studio-without-paid-calls/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/suite-usability-Assistant--d40bf-n-studio-without-paid-calls/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/suite-usability-Assistant--d40bf-n-studio-without-paid-calls/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests/e2e/studio-quality.spec.ts:9:1 › Representative memorial and room: persisted dimensions, drawings, camera and PDF
+    tests/e2e/suite-usability.spec.ts:24:1 › Assistant FAB restores focus, clears modal controls and follows the fullscreen studio without paid calls
+  51 passed (11.3m)

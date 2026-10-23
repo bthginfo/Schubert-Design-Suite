@@ -1,0 +1,7 @@
+{
+  "case": "Authenticated uploader cannot download their own quarantined original",
+  "status": 409,
+  "code": "DOCUMENT_QUARANTINE",
+  "contentType": "application/json",
+  "fileDelivered": false
+}

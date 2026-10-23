@@ -2,11 +2,12 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf
 import fontkit from '@pdf-lib/fontkit';
 import {planningFontBase64}from'./planning-fonts.js';
 import type { DesignSnapshot } from '@schubert/contracts';
-import { calculateBOM, projectDesign, projectDimensions, layoutDimension, measureValue, validateDesign,contourParts, type DesignView, type ViewShape } from '@schubert/geometry';
+import { calculateBOM, projectDesign, projectDimensions,dimensionTextAnchor, layoutDimension, measureValue, validateDesign,contourParts, type DesignView, type ViewShape } from '@schubert/geometry';
 
 export type PlanningPdfMeta = {
   title: string; revision: string; status: string; audience?: 'internal' | 'customer' | 'supplier';
   contentHash?: string; projectReference?: string; orderReference?: string; createdBy?: string; checkedBy?: string;
+  materials?: Record<string,{name:string;revision?:number;sourceUrl?:string;checkedOn?:string;sourceCatalog?:string}>;
   generatedAt?: string; fontLabels?: Record<string,string>;
   fontReferences?: Record<string,{sourceUrl?:string; selectionRef?:string; materialArticleRef?:string}>;
   referenceImages?: Array<{fontVersionId:string;bytes:Uint8Array;mime:'image/png'|'image/jpeg';rightsVerified:boolean}>;
@@ -74,8 +75,8 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
       if(Math.hypot(end.x-a.x,end.y-a.y)<45)continue;
       for(const [start,finish] of [[p(Number(dimension.a.xMm),Number(dimension.a.yMm)),a],[a,end],[end,p(Number(dimension.b.xMm),Number(dimension.b.yMm))]])page.drawLine({start,end:finish,thickness:.4,color:muted});
       for(const q of [a,end])page.drawLine({start:{x:q.x-2,y:q.y-2},end:{x:q.x+2,y:q.y+2},thickness:.7,color:green});
-      const text=Number(dimension.valueMm).toLocaleString('de-DE',{maximumFractionDigits:2})+(dimension.label.endsWith('Wandachse')?' · Achse':'');
-      const labelWidth=width(text,8);page.drawRectangle({x:at.x-labelWidth/2-2,y:at.y+2,width:labelWidth+4,height:11,color:rgb(1,1,1)});draw(page,text,at.x-labelWidth/2,at.y+4,8,green);
+      const text=Number(dimension.valueMm).toLocaleString('de-DE',{maximumFractionDigits:2})+(dimension.label.endsWith('Wandachse')?' · Achse':dimension.label.endsWith('Lichtes Innenmaß')?' · innen':'');
+      const labelWidth=width(text,8),anchor=dimensionTextAnchor(dimension),textX=anchor==='start'?at.x+4:anchor==='end'?at.x-labelWidth-4:at.x-labelWidth/2;page.drawRectangle({x:textX-2,y:at.y+2,width:labelWidth+4,height:11,color:rgb(1,1,1)});draw(page,text,textX,at.y+4,8,green);
     }
     projected.texts.forEach((entry,index)=>{const x=origin.x+(Number(entry.point.xMm)-b.minX)*PT_PER_MM/scale,y=origin.y+(Number(entry.point.yMm)-b.minY)*PT_PER_MM/scale;page.drawCircle({x,y,size:6,borderColor:green,borderWidth:.6,color:rgb(1,1,1)});draw(page,String(index+1),x-2,y-3,8,green);});
     const x0=origin.x,x1=x0+drawWidth,y0=origin.y,y1=y0+drawHeight,offset=45;
@@ -89,7 +90,7 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
     page.drawLine({start:{x:barX,y:barY},end:{x:barX+40,y:barY},thickness:2,color:ink});
     for(const x of [barX,barX+40])page.drawLine({start:{x,y:barY-4},end:{x,y:barY+4},thickness:1,color:ink});
     draw(page,`${barMm.toLocaleString('de-DE',{maximumFractionDigits:2})} mm · Maßstab 1:${scale}`,barX,barY-18,9);
-    label(page,'Maße in mm; „Achse“ bezeichnet die Wandachse, kein lichtes Raummaß. Planmaße sind kein bestätigtes Aufmaß. Schrift wird hier nicht durch ähnliche Zeichensätze ersetzt. Wörtlicher Text und Herstellerreferenz stehen im Inschriftenplan. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.',310,110,10,800);
+    label(page,snapshot.kind==='memorial'?'Maße in mm. Planmaße sind kein bestätigtes Aufmaß. Schrift wird nicht durch ähnliche Zeichensätze ersetzt. Wortlaut und Herstellerreferenz stehen im Inschriftenplan. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.':'Maße in mm. „Achse“ bezeichnet die Wandachse; „innen“ das modellierte lichte Innenmaß. Planmaße sind kein bestätigtes Aufmaß. Wandaufbau und Einbaumaße vor Ort prüfen. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.',310,110,10,800);
     label(page,`Höhenbezug: ${snapshot.frames.map(f=>f.datumLabel).join(' · ')}`,45,70,9,A3[0]-90,muted);
   }
   let page=newPage('Stück- und Bearbeitungsliste'),y=A4[1]-125;
@@ -99,7 +100,8 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
   tableHead();
   for(const item of bom.lines){
     const axisArea=snapshot.elements.some(element=>element.id===item.elementId&&element.kind==='room');
-    const detail=[item.category,...(axisArea?['Flächenbezug: Wandachsen, kein lichtes Innenmaß']:[]),...(item.materialSpecVersionId?[`Materialstand: ${item.materialSpecVersionId.startsWith('unassigned:')?'noch nicht zugeordnet':item.materialSpecVersionId}`]:[]),...(item.thicknessMm!==null?[`Stärke ${decimalLabel(item.thicknessMm)} mm`]:[]),...(item.netAreaM2!==null?[`${axisArea?'Achsfläche':'Netto'} ${decimalLabel(item.netAreaM2)} m²`]:[]),...(item.volumeM3!==null?[`Volumen ${decimalLabel(item.volumeM3)} m³`]:[]),...(item.edgeLengthM!==null?[`${axisArea?'Umfang zwischen Wandachsen':'Bearbeitete Kante'} ${decimalLabel(item.edgeLengthM)} m`]:[]),...(['Bearbeitung','Anschlusspunkt','Freiraumkontrolle','Gef\u00e4llevorgabe'].includes(item.category)?item.notes:item.notes.filter(note=>/^(Rohma\u00df:|Oberfl\u00e4chenstand:|Untergrund:|Ausf\u00fchrungsregel:|Bewegungsfugen:|Technische Quellen:)/.test(note)))].join(' · ');
+    const material=item.materialSpecVersionId?meta.materials?.[item.materialSpecVersionId]:undefined;
+    const detail=[item.category,...(axisArea?['Flächenbezug: Wandachsen, kein lichtes Innenmaß']:[]),...(item.materialSpecVersionId?[`Materialstand: ${material?`${material.name}${material.revision?' · Version '+material.revision:''}`:'noch nicht zugeordnet / Bezeichnung nicht verfügbar'}`]:[]),...(material?.sourceCatalog?[`Katalog: ${material.sourceCatalog}`]:[]),...(material?.sourceUrl?[`Herstellerquelle: ${material.sourceUrl}`]:[]),...(material?.checkedOn?[`Quellenprüfung: ${material.checkedOn}`]:[]),...(item.thicknessMm!==null?[`Stärke ${decimalLabel(item.thicknessMm)} mm`]:[]),...(item.netAreaM2!==null?[`${axisArea?'Achsfläche':'Netto'} ${decimalLabel(item.netAreaM2)} m²`]:[]),...(item.volumeM3!==null?[`Volumen ${decimalLabel(item.volumeM3)} m³`]:[]),...(item.edgeLengthM!==null?[`${axisArea?'Umfang zwischen Wandachsen':'Bearbeitete Kante'} ${decimalLabel(item.edgeLengthM)} m`]:[]),...(['Bearbeitung','Anschlusspunkt','Freiraumkontrolle','Gef\u00e4llevorgabe'].includes(item.category)?item.notes:item.notes.filter(note=>/^(Rohma\u00df:|Oberfl\u00e4chenstand:|Untergrund:|Ausf\u00fchrungsregel:|Bewegungsfugen:|Technische Quellen:)/.test(note)))].join(' · ');
     const rows=wrap(detail,9,325),labels=wrap(item.label,11,325),height=16+labels.length*15+rows.length*13;
     if(y-height<75){page=newPage('Stück- und Bearbeitungsliste · Fortsetzung');y=A4[1]-125;tableHead();}
     labels.forEach((row,i)=>draw(page,row,44,y-i*15,11));draw(page,decimalLabel(item.quantity),389,y,10);draw(page,item.unit,460,y,10);
@@ -118,7 +120,7 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
     }
     y-=20;
     const ref=meta.fontReferences?.[inscription.fontVariantVersionId];
-    const specifications=[`Herstellerschrift: ${meta.fontLabels?.[inscription.fontVariantVersionId]??inscription.fontVariantVersionId}`,
+    const specifications=[`Herstellerschrift: ${meta.fontLabels?.[inscription.fontVariantVersionId]??'noch nicht zugeordnet – nur Entwurf'}`,
       `Lieferform: ${{individual_letters:'Einzelbuchstaben',wording:'Schriftzug',engraved:'graviert',other:'andere'}[inscription.supplyForm]}`,
       `Gewünschte Zeichenhöhe: ${measureValue(snapshot,inscription.requestedHeightMeasureId)??'offen'} mm`,
       `Kleinbuchstabenhöhe: ${measureValue(snapshot,inscription.requestedLowercaseHeightMeasureId)??'nicht festgelegt'} mm`,
@@ -151,7 +153,7 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
   page=newPage('Prüfstand und offene Angaben');y=A4[1]-130;
   const notices=[...checks.blocking,...checks.warnings];
   if(!notices.length)notices.push('Geometrieprüfung bestanden. Fachliche Freigaben, Genehmigung und passendes Fertigungspaket werden separat nachgewiesen.');
-  notices.push('Geometrieprüfung ersetzt keine Prüfung von Standsicherheit, Verankerung, Abdichtung, Materialeignung, Lasten oder Friedhofsvorgaben.');
+  notices.push(snapshot.kind==='memorial'?'Geometrieprüfung ersetzt keine Prüfung von Standsicherheit, Verankerung, Materialeignung, Lasten oder Friedhofsvorgaben.':'Geometrieprüfung ersetzt keine Prüfung von Untergrund, Abdichtung, Materialeignung, Lasten oder Einbausituation.');
   if((meta.audience??'internal')!=='internal')notices.push('Diese Fassung enthält keine internen Preise, Kalkulationen oder Personalangaben.');
   for(const notice of [...new Set(notices)]){const rows=wrap(notice,10,A4[0]-89);if(y-rows.length*15<78){page=newPage('Prüfstand · Fortsetzung');y=A4[1]-125;}draw(page,'•',37,y,11,green);y-=label(page,notice,52,y,10,A4[0]-89)+12;}
   const unsupported=[...new Set(snapshot.elements.filter(e=>e.kind==='inscription').flatMap(e=>e.kind==='inscription'?Array.from(e.exactText).filter(c=>c!=='\n'&&!sets.some(s=>s.has(c.codePointAt(0)!))):[]))];

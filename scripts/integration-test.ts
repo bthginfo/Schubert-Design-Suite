@@ -1,3 +1,4 @@
+import {usabilityFixesIntegration} from './usability-fixes-integration.js';
 import {appearanceIntegration} from './appearance-integration.js';
 import {assistantWorkflowIntegration} from './assistant-workflow-integration.js';
 import {aiSkillsIntegration} from './ai-skills-integration.js';
@@ -107,6 +108,7 @@ await test('Personal onboarding is persisted, optimistic and cannot target anoth
 await feedbackIntegration(actor,test);
 await appearanceIntegration(actor,test);
 await uxFlowIntegration(actor,test);
+await usabilityFixesIntegration(actor,test);
 await flowContextIntegration(actor,test);
 await assistantWorkflowIntegration(actor,test);
 await manufacturerAssetsIntegration(actor,test);

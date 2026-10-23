@@ -20,6 +20,7 @@
  const step=$derived(steps[index]);
  const onRoute=$derived(!step.href||page.url.pathname+page.url.search===step.href);
  const shade=$derived(`M0 0H${viewport.width}V${viewport.height}H0Z`+(rect?`M${rect.x} ${rect.y}v${rect.height}h${rect.width}v-${rect.height}Z`:''));
+ $effect(()=>{const latest=data.summary.onboarding;if(latest&&(!saved||latest.version>saved.version))saved=latest;});
  let schedule=()=>{};let lastTarget:Element|null=null;
  async function locate(){retryRoute=false;if(step.href&&page.url.pathname+page.url.search!==step.href)await goto(step.href,{reset:false});await tick();lastTarget=null;schedule();heading?.focus({preventScroll:true});}
  async function move(next:number){if(busy)return;busy=true;error='';try{saved=await command('account.onboarding.update',undefined,{status:'in_progress',step:next,guideVersion:TOUR_VERSION},saved?.version);index=next;try{await locate();}catch{retryRoute=true;throw Error('Die nächste Seite konnte nicht geöffnet werden. Ihr Tourfortschritt ist gespeichert. Bitte versuchen Sie es erneut.');}}catch(cause){error=cause instanceof Error?cause.message:'Der nächste Schritt konnte nicht gespeichert werden. Bitte erneut versuchen.';}finally{busy=false;await focusError();}}

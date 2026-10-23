@@ -55,7 +55,7 @@ export async function dispatchNotifications(ctx:ActorContext,limit=100){return w
     }
    }
    if(rule){
-    const employeeId=record?.employee_id??(event.aggregate_type==='memberships'?record?.employee_id:null),userId=record?.user_id??(rule.category==='security'?event.actor_id:null),orderId=record?.order_id??(table==='orders'?record.id:null);
+    const employeeId=record?.employee_id??(event.aggregate_type==='memberships'?record?.employee_id:null),userId=record?.user_id??(rule.category==='security'?event.actor_id:null),orderId=record?.order_id??(table==='orders'?record.id:null)??(table==='quotes'?(await one<any>(db,"SELECT order_id FROM quote_acceptances WHERE quote_id=$1 AND status='accepted' ORDER BY created_at DESC LIMIT 1",[record.id]))?.order_id:null);
     const assigned=orderId?await rows<any>(db,"SELECT employee_id FROM dispatch_assignments WHERE order_id=$1 AND status NOT IN('cancelled','deleted')",[orderId]):[];
     const recipients=members.filter(member=>{
      const own=rule!.own&&(member.user_id===userId||!!employeeId&&member.employee_id===employeeId),allowed=(rule!.permission&&has(member,rule!.permission))||rule!.roles?.includes(member.role);
@@ -70,7 +70,7 @@ export async function dispatchNotifications(ctx:ActorContext,limit=100){return w
      if(notification)await insert(db,'notification_deliveries',{...baseData(ctx),event_id:event.id,policy_version:POLICY,user_id:recipient.user_id,channel:'in_app',action:'notify',notification_id:notification.id,status:'delivered'});
      if(emailPref?.enabled===true){const eligibleAt=quietUntil(emailPref,emailPref.digest?digestTime(new Date()):new Date());await db.query("INSERT INTO notification_deliveries(tenant_id,legal_entity_id,event_id,policy_version,user_id,channel,action,notification_id,payload,eligible_at,status)VALUES($1,$2,$3,$4,$5,'email','notify',$6,$7,$8,'pending')ON CONFLICT DO NOTHING",[ctx.tenantId,ctx.legalEntityId,event.id,POLICY,recipient.user_id,notification?.id??null,JSON.stringify({title:rule.title,category:rule.category,link}),eligibleAt]);}
     }
-    if(rule.task&&recipients.length)await insert(db,'tasks',{...baseData(ctx),title:rule.title,description:'Mitteilung und tatsächlichen Originalstand öffnen: '+link,action_link:link,source_event_id:event.id,order_id:orderId??null,assigned_to:recipients.find(m=>m.employee_id)?.employee_id??null,priority:'normal',status:'open'});
+    if(rule.task&&recipients.length)await insert(db,'tasks',{...baseData(ctx),title:rule.title,description:[record?.number,record?.title??record?.name,"Originalstand prüfen und nächsten Schritt festhalten."].filter(Boolean).join(' · '),action_link:link,source_event_id:event.id,order_id:orderId??null,assigned_to:recipients.find(m=>m.employee_id)?.employee_id??null,priority:'normal',status:'open'});
    }
    processed.push({...baseData(ctx),consumer_name:POLICY,event_id:event.id,status:'processed'});
   }

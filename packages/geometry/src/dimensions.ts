@@ -4,6 +4,7 @@ import {applyMatrix,surfaceMatrix,worldPoint} from './transforms.js';
 import {measureValue} from './model.js';
 import {projectPoint,type DesignView} from './views.js';
 import {mm} from './precision.js';
+import {rectangularRoomClearPoints} from './room-dimensions.js';
 
 export type ProjectedDimension={elementId:string;label:string;valueMm:string;basis:'target'|'reference';a:Point2;b:Point2;outward:{x:number;y:number};offsetMm:number};
 /** Only show true-length projections; a foreshortened segment must not imply a false scale. */
@@ -18,6 +19,13 @@ export function projectDimensions(snapshot:DesignSnapshot,view:DesignView):Proje
   }
   for(const e of snapshot.elements){
     if(e.phase==='demolition')continue;
+    if(e.kind==='room'&&view==='top'){
+      const points=rectangularRoomClearPoints(snapshot,e.id);
+      if(points)for(let i=0;i<2;i++){
+        const a=points[i],b=points[i+1],dx=Number(b.xMm)-Number(a.xMm),dy=Number(b.yMm)-Number(a.yMm),length=Math.hypot(dx,dy);
+        add(e.id,`${e.label} · Lichtes Innenmaß`,mm(length),'reference',a,b,{xMm:mm(Number(a.xMm)-dy/length),yMm:mm(Number(a.yMm)+dx/length),zMm:a.zMm},150);
+      }
+    }
     if(e.kind==='wall'&&view==='top'){
       const a=worldPoint(snapshot,e.startNodeId),b=worldPoint(snapshot,e.endNodeId);
       const value=mm(Math.hypot(Number(b.xMm)-Number(a.xMm),Number(b.yMm)-Number(a.yMm),Number(b.zMm)-Number(a.zMm)));
@@ -41,4 +49,10 @@ export function projectDimensions(snapshot:DesignSnapshot,view:DesignView):Proje
 export function layoutDimension(d:ProjectedDimension,minimumOffsetMm:number){
   const offset=Math.max(Math.abs(d.offsetMm),minimumOffsetMm)*(d.offsetMm<0?-1:1),dx=d.outward.x*offset,dy=d.outward.y*offset;
   return {a:{x:Number(d.a.xMm)+dx,y:Number(d.a.yMm)+dy},b:{x:Number(d.b.xMm)+dx,y:Number(d.b.yMm)+dy},label:{x:(Number(d.a.xMm)+Number(d.b.xMm))/2+dx,y:(Number(d.a.yMm)+Number(d.b.yMm))/2+dy}};
+}
+
+/** Vertical dimension text faces away from its line, so inward clear labels and
+ * outward axis labels cannot grow towards one another. Used on screen and PDF. */
+export function dimensionTextAnchor(d:ProjectedDimension):'start'|'middle'|'end'{
+ return Math.abs(Number(d.b.yMm)-Number(d.a.yMm))>Math.abs(Number(d.b.xMm)-Number(d.a.xMm))?(d.outward.x<0?'end':'start'):'middle';
 }

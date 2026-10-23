@@ -1,9 +1,288 @@
 <script lang="ts">
-  import {searchableSelect} from '#lib/client/searchable-select.ts';
-  import {refreshAll} from '$app/navigation';import {command,request,display,permitted} from '#lib/client/api.ts';import type {AppData,Row} from '#lib/client/types.ts';import Icon from './Icon.svelte';import Status from './Status.svelte';
-  let {data}:{data:AppData}=$props();let name=$state('');let email=$state('');let password=$state('');let role=$state('Office');let ownPassword=$state('');let busy=$state(false);let error=$state('');let notice=$state('');let editing:Row|null=$state(null);let selectedRole=$state('');let reason=$state('');let confirmed=$state(false);let memberActive=$state(true);let permissions:string[]=$state([]);
-  const members=$derived(data.related?.memberships||data.settings?.memberships||[]);const roles=$derived([...(permitted(data,'admin.integrations')?[{key:'SuperAdmin',name:'Superadmin'}]:[]),{key:'Owner',name:'Geschäftsführung'},{key:'Office',name:'Büro'},{key:'Finance',name:'Finanzen'},{key:'Planner',name:'Planung'},{key:'Dispatcher',name:'Disposition'},{key:'Workshop',name:'Werkstatt'},{key:'Employee',name:'Mitarbeiter'},{key:'HR',name:'Personal'},{key:'TaxAdvisor',name:'Steuerberatung'},{key:'TechAdmin',name:'Technik'}]);
-  async function create(event:SubmitEvent){event.preventDefault();busy=true;error='';notice='';try{await request('/api/v1/reauth',{password:ownPassword});await command('administration.user.create',undefined,{name,email,password,role});name='';email='';password='';ownPassword='';notice='Der persönliche Zugang wurde angelegt. Übermitteln Sie die initialen Zugangsdaten auf dem betrieblich vorgesehenen Weg.';await refreshAll().catch(()=>{});}catch(e){error=e instanceof Error?e.message:'Der Zugang konnte nicht angelegt werden.';}finally{busy=false;}}
-  async function update(event:SubmitEvent){event.preventDefault();if(!editing||!confirmed)return;busy=true;error='';notice='';try{await request('/api/v1/reauth',{password:ownPassword});await command('administration.membership.update',editing.id,{role:selectedRole,active:memberActive,permissions,reason},editing.version);editing=null;reason='';confirmed=false;ownPassword='';notice='Die Rollenänderung wurde bestätigt und protokolliert.';await refreshAll().catch(()=>{});}catch(e){error=e instanceof Error?e.message:'Die Rollenänderung konnte nicht übernommen werden.';}finally{busy=false;}}
+ import {focusTrap} from '#lib/client/focus-trap.ts';
+ import {tick} from 'svelte';
+  import { searchableSelect } from "#lib/client/searchable-select.ts";
+  import { refreshAll } from "$app/navigation";
+  import { command, request, display, permitted } from "#lib/client/api.ts";
+  import type { AppData, Row } from "#lib/client/types.ts";
+  import Icon from "./Icon.svelte";
+  import Status from "./Status.svelte";
+  let { data }: { data: AppData } = $props();
+  let name = $state("");
+  let email = $state("");
+  let password = $state("");
+  let role = $state("Office");
+  let ownPassword = $state("");
+  let busy = $state(false);
+  let error = $state("");
+  let notice = $state("");
+  let editing: Row | null = $state(null);
+  let selectedRole = $state("");
+  let reason = $state("");
+  let confirmed = $state(false);
+  let memberActive = $state(true);
+  let permissions: string[] = $state([]);
+  let memberQuery=$state(''),createdUser:Row|null=$state(null);
+  $effect(()=>{if(error)void tick().then(()=>{const alert=document.querySelector<HTMLElement>('[role="dialog"] .notice.error')??document.querySelector<HTMLElement>('.notice.error');alert?.setAttribute('tabindex','-1');alert?.focus();alert?.scrollIntoView({block:'nearest'});});});
+  const members = $derived(
+    data.related?.memberships || data.settings?.memberships || [],
+  );
+  const roles = $derived([
+    ...(permitted(data, "admin.integrations")
+      ? [{ key: "SuperAdmin", name: "Superadmin" }]
+      : []),
+    { key: "Owner", name: "Geschäftsführung" },
+    { key: "Office", name: "Büro" },
+    { key: "Finance", name: "Finanzen" },
+    { key: "Planner", name: "Planung" },
+    { key: "Dispatcher", name: "Disposition" },
+    { key: "Workshop", name: "Werkstatt" },
+    { key: "Employee", name: "Mitarbeiter" },
+    { key: "HR", name: "Personal" },
+    { key: "TaxAdvisor", name: "Steuerberatung" },
+    { key: "TechAdmin", name: "Technik" },
+  ]);
+  async function create(event: SubmitEvent) {
+    event.preventDefault();
+    busy = true;
+    error = "";
+    notice = "";
+    try {
+      await request("/api/v1/reauth", { password: ownPassword });
+      createdUser=await command("administration.user.create", undefined, {
+        name,
+        email,
+        password,
+        role,
+      });
+      name = "";
+      email = "";
+      password = "";
+      ownPassword = "";
+      notice =
+        "Der persönliche Zugang wurde angelegt. Übermitteln Sie die initialen Zugangsdaten auf dem betrieblich vorgesehenen Weg.";
+      await refreshAll().catch(() => {});
+    } catch (e) {
+      error =
+        e instanceof Error
+          ? e.message
+          : "Der Zugang konnte nicht angelegt werden.";
+    } finally {
+      busy = false;
+    }
+  }
+  async function update(event: SubmitEvent) {
+    event.preventDefault();
+    if (!editing || !confirmed) return;
+    busy = true;
+    error = "";
+    notice = "";
+    try {
+      await request("/api/v1/reauth", { password: ownPassword });
+      await command(
+        "administration.membership.update",
+        editing.id,
+        { role: selectedRole, active: memberActive, permissions, reason },
+        editing.version,
+      );
+      editing = null;
+      reason = "";
+      confirmed = false;
+      ownPassword = "";
+      notice = "Die Rollenänderung wurde bestätigt und protokolliert.";
+      await refreshAll().catch(() => {});
+    } catch (e) {
+      error =
+        e instanceof Error
+          ? e.message
+          : "Die Rollenänderung konnte nicht übernommen werden.";
+    } finally {
+      busy = false;
+    }
+  }
 </script>
-<div class="settings-grid"><section class="panel"><header class="panel-header"><div><h2>Persönliche Zugänge</h2><p>Rollen gewähren klar begrenzte Fähigkeiten.</p></div><Icon name="users" size={18}/></header><div class="panel-body">{#if error}<div class="notice error" role="alert">{error}</div>{/if}{#if notice}<div class="notice info" role="status">{notice}</div>{/if}{#each members as member}<div class="integration-row"><div><h3>{member.name||member.user_name||member.email||'Persönlicher Zugang'}{member.user_id===data.user?.id?' · Ihr Zugang':''}</h3><p>{member.email||member.user_email||''} · {roles.find(r=>r.key===member.role)?.name||member.role}</p><Status value={member.active===false?'blocked':'active'}/></div><button class="btn small" disabled={member.user_id===data.user?.id} onclick={()=>{editing=member;selectedRole=member.role;memberActive=member.active!==false;permissions=[...(member.permissions||[])];confirmed=false;error='';}}>Rolle prüfen</button></div>{/each}{#if !members.length}<p class="small">Noch keine verwaltbaren Mitgliedschaften geladen.</p>{/if}{#if editing}<form class="form-section" onsubmit={update}><h3>Rollenänderung für {editing.name||editing.email||'diesen Zugang'}</h3><div class="action-preview"><p class="small">Aktuell {editing.role} · Version {editing.version}</p></div><div class="field mb"><label for="member-role">Neue Rolle *</label><select use:searchableSelect={selectedRole} id="member-role" bind:value={selectedRole}>{#each roles as item}<option value={item.key}>{item.name}</option>{/each}</select></div><label class="check-field mb"><input type="checkbox" bind:checked={memberActive}/><span>Zugang aktiv. Bei Deaktivierung werden bestehende Sitzungen widerrufen.</span></label><fieldset class="form-section mb" style="border-left:0;border-right:0;border-bottom:0;padding-left:0;padding-right:0"><legend class="field-label">Zusätzliche ausdrücklich erteilte Fähigkeiten</legend>{#each [...(data.context?.role==='SuperAdmin'?[{key:'manufacturer_assets',label:'Herstellerbibliothek verwalten · Dateien, Nutzungszwecke und Studiozuordnung'}]:[]),{key:'billing.invoice.issue',label:'Rechnungen ausstellen'},{key:'finance.bank.manage',label:'Bankverbindungen verwalten'},{key:'planning.release',label:'Technische Freigabe · dokumentierte Qualifikation erforderlich'},{key:'time.approve',label:'Fremde Zeiten und Anträge genehmigen'},{key:'portal.publish',label:'Kundeninhalte ausdrücklich veröffentlichen'}] as permission}<label class="check-field mt"><input type="checkbox" bind:group={permissions} value={permission.key}/>{permission.label}</label>{/each}</fieldset><div class="field mb"><label for="role-reason">Grund der Änderung *</label><textarea id="role-reason" bind:value={reason} required minlength="5"></textarea></div><div class="field"><label for="role-password">Eigenes Passwort bestätigen *</label><input id="role-password" type="password" bind:value={ownPassword} autocomplete="current-password" required/></div><label class="check-field mt"><input type="checkbox" bind:checked={confirmed} required/><span>Ich habe den Umfang der neuen Rolle und den betroffenen Zugang geprüft.</span></label><div class="inline-actions mt"><button type="button" class="btn" onclick={()=>editing=null}>Abbrechen</button><button class="btn primary" disabled={busy||!confirmed}>Rollenänderung bestätigen</button></div></form>{/if}</div></section><section class="panel"><header class="panel-header"><h2>Zugang gezielt anlegen</h2></header><form class="panel-body" onsubmit={create}><div class="field mb"><label for="new-user-name">Vollständiger Name *</label><input id="new-user-name" bind:value={name} required autocomplete="off"/></div><div class="field mb"><label for="new-user-email">Geschäftliche E-Mail *</label><input id="new-user-email" type="email" bind:value={email} required autocomplete="off"/></div><div class="field mb"><label for="new-user-role">Rolle *</label><select use:searchableSelect={role} id="new-user-role" bind:value={role}>{#each roles as item}<option value={item.key}>{item.name}</option>{/each}</select></div><div class="field mb"><label for="new-user-password">Initiale Passphrase *</label><input id="new-user-password" type="password" bind:value={password} autocomplete="new-password" minlength="15" maxlength="128" required/><span class="field-help">Mindestens 15 Zeichen. Den persönlichen Zugang nicht mit einem Portalzugang verwechseln.</span></div><div class="field"><label for="new-user-own-password">Eigenes Passwort bestätigen *</label><input id="new-user-own-password" type="password" bind:value={ownPassword} autocomplete="current-password" required/></div><button class="btn primary full mt" disabled={busy}>{busy?'Wird angelegt …':'Persönlichen Zugang anlegen'}</button><p class="field-help mt">Kostenraten, Personalakte und technische Freigaben benötigen gesonderte Fähigkeiten. Eine Rolle ersetzt keine fachliche Qualifikation.</p></form></section></div>
+
+<div class="settings-grid">
+  <section class="panel">
+    <header class="panel-header">
+      <div>
+        <h2>Persönliche Zugänge</h2>
+        <p>Rollen gewähren klar begrenzte Fähigkeiten.</p>
+      </div>
+      <Icon name="users" size={18} />
+    </header>
+    <div class="panel-body">
+      {#if error}<div class="notice error" role="alert">
+          {error}
+        </div>{/if}{#if notice}<div class="notice info" role="status">
+          {notice}
+        </div>{/if}{#if createdUser&&permitted(data,'hr')}<a class="btn mb" href={`/team?create=1&user_id=${encodeURIComponent(createdUser.user_id)}`}>Beschäftigtenprofil für {createdUser.name} verknüpfen</a>{/if}
+      <div class="field mb"><label for="member-search">Zugänge durchsuchen</label><input id="member-search" type="search" bind:value={memberQuery} placeholder="Name, E-Mail oder Rolle"/></div>
+      {#each members.filter(member=>[member.name,member.email,member.role].join(' ').toLocaleLowerCase('de-DE').includes(memberQuery.trim().toLocaleLowerCase('de-DE'))) as member}<div class="integration-row">
+          <div>
+            <h3>
+              {member.name ||
+                member.user_name ||
+                member.email ||
+                "Persönlicher Zugang"}{member.user_id === data.user?.id
+                ? " · Ihr Zugang"
+                : ""}
+            </h3>
+            <p>
+              {member.email || member.user_email || ""} · {roles.find(
+                (r) => r.key === member.role,
+              )?.name || member.role}
+            </p>
+            <Status value={member.active === false ? "blocked" : "active"} />
+          </div>
+          <button
+            class="btn small"
+            disabled={member.user_id === data.user?.id}
+            onclick={() => {
+              editing = member;
+              selectedRole = member.role;
+              memberActive = member.active !== false;
+              permissions = [...(member.permissions || [])];
+              confirmed = false;
+              error = "";
+            }}>Rolle prüfen</button
+          >
+        </div>{/each}{#if !members.length}<p class="small">
+          Noch keine verwaltbaren Mitgliedschaften geladen.
+        </p>{/if}{#if editing}<div class="modal-backdrop" role="presentation"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="member-edit-title" use:focusTrap tabindex="-1" onkeydown={e=>{if(e.key==='Escape'&&!busy)editing=null;}}><header class="modal-header"><h2 id="member-edit-title">Rolle & Fähigkeiten prüfen</h2><button class="icon-button" aria-label="Schließen" disabled={busy} onclick={()=>editing=null}><Icon name="close"/></button></header><form class="modal-body" onsubmit={update}>{#if error}<div class="notice error" role="alert">{error}</div>{/if}
+          <h3>
+            Rollenänderung für {editing.name ||
+              editing.email ||
+              "diesen Zugang"}
+          </h3>
+          <div class="action-preview">
+            <p class="small">
+              Aktuell {editing.role} · Version {editing.version}
+            </p>
+          </div>
+          <div class="field mb">
+            <label for="member-role">Neue Rolle *</label><select
+              use:searchableSelect={selectedRole}
+              id="member-role"
+              bind:value={selectedRole}
+              >{#each roles as item}<option value={item.key}>{item.name}</option
+                >{/each}</select
+            >
+          </div>
+          <label class="check-field mb"
+            ><input type="checkbox" bind:checked={memberActive} /><span
+              >Zugang aktiv. Bei Deaktivierung werden bestehende Sitzungen
+              widerrufen.</span
+            ></label
+          >
+          <fieldset
+            class="form-section mb"
+            style="border-left:0;border-right:0;border-bottom:0;padding-left:0;padding-right:0"
+          >
+            <legend class="field-label"
+              >Zusätzliche ausdrücklich erteilte Fähigkeiten</legend
+            >{#each [...(data.context?.role === "SuperAdmin" ? [{ key: "manufacturer_assets", label: "Herstellerbibliothek verwalten · Dateien, Nutzungszwecke und Studiozuordnung" }] : []), { key: "billing.invoice.issue", label: "Rechnungen ausstellen" }, { key: "finance.bank.manage", label: "Bankverbindungen verwalten" }, { key: "planning.release", label: "Technische Freigabe · dokumentierte Qualifikation erforderlich" }, { key: "time.approve", label: "Fremde Zeiten und Anträge genehmigen" }, { key: "portal.publish", label: "Kundeninhalte ausdrücklich veröffentlichen" }] as permission}<label
+                class="check-field mt"
+                ><input
+                  type="checkbox"
+                  bind:group={permissions}
+                  value={permission.key}
+                />{permission.label}</label
+              >{/each}
+          </fieldset>
+          <div class="field mb">
+            <label for="role-reason">Grund der Änderung *</label><textarea
+              id="role-reason"
+              bind:value={reason}
+              required
+              minlength="5"></textarea>
+          </div>
+          <div class="field">
+            <label for="role-password">Eigenes Passwort bestätigen *</label
+            ><input
+              id="role-password"
+              type="password"
+              bind:value={ownPassword}
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <label class="check-field mt"
+            ><input type="checkbox" bind:checked={confirmed} required /><span
+              >Ich habe den Umfang der neuen Rolle und den betroffenen Zugang
+              geprüft.</span
+            ></label
+          >
+          <div class="inline-actions mt">
+            <button type="button" class="btn" onclick={() => (editing = null)}
+              >Abbrechen</button
+            ><button class="btn primary" disabled={busy || !confirmed}
+              >Rollenänderung bestätigen</button
+            >
+          </div>
+        </form></div></div>{/if}
+    </div>
+  </section>
+  <section class="panel">
+    <header class="panel-header"><h2>Zugang gezielt anlegen</h2></header>
+    <form class="panel-body" onsubmit={create}>
+      <div class="field mb">
+        <label for="new-user-name">Vollständiger Name *</label><input
+          id="new-user-name"
+          bind:value={name}
+          required
+          autocomplete="off"
+        />
+      </div>
+      <div class="field mb">
+        <label for="new-user-email">Geschäftliche E-Mail *</label><input
+          id="new-user-email"
+          type="email"
+          bind:value={email}
+          required
+          autocomplete="off"
+        />
+      </div>
+      <div class="field mb">
+        <label for="new-user-role">Rolle *</label><select
+          use:searchableSelect={role}
+          id="new-user-role"
+          bind:value={role}
+          >{#each roles as item}<option value={item.key}>{item.name}</option
+            >{/each}</select
+        >
+      </div>
+      <div class="field mb">
+        <label for="new-user-password">Initiale Passphrase *</label><input
+          id="new-user-password"
+          type="password"
+          bind:value={password}
+          autocomplete="new-password"
+          minlength="15"
+          maxlength="128"
+          required
+        /><span class="field-help"
+          >Mindestens 15 Zeichen. Den persönlichen Zugang nicht mit einem
+          Portalzugang verwechseln.</span
+        >
+      </div>
+      <div class="field">
+        <label for="new-user-own-password">Eigenes Passwort bestätigen *</label
+        ><input
+          id="new-user-own-password"
+          type="password"
+          bind:value={ownPassword}
+          autocomplete="current-password"
+          required
+        />
+      </div>
+      <button class="btn primary full mt" disabled={busy}
+        >{busy ? "Wird angelegt …" : "Persönlichen Zugang anlegen"}</button
+      >
+      <p class="field-help mt">
+        Kostenraten, Personalakte und technische Freigaben benötigen gesonderte
+        Fähigkeiten. Eine Rolle ersetzt keine fachliche Qualifikation.
+      </p>
+    </form>
+  </section>
+</div>

@@ -1,70 +1,830 @@
 <script lang="ts">
-  import {searchableSelect} from '#lib/client/searchable-select.ts';
-  import {page} from '$app/state';
-  import {goto,refreshAll} from '$app/navigation';
-  import type {AppData,Row} from '#lib/client/types.ts';
-  import {command,display,permitted} from '#lib/client/api.ts';
-  import {metricDrilldown,reportList,reportMetrics,reportMetricValue,reportMoney,reportNumber,reportQuantity} from '#lib/client/reports.ts';
-  import Icon from './Icon.svelte';
-  import ReportTrend from './reporting/ReportTrend.svelte';
-  import ReportCosts from './reporting/ReportCosts.svelte';
-  import ReportFinance from './reporting/ReportFinance.svelte';
-  import ReportCapacity from './reporting/ReportCapacity.svelte';
-  import ReportQuality from './reporting/ReportQuality.svelte';
-  let {data}:{data:AppData}=$props();
-  let from=$state('');let to=$state('');let business=$state('');let tab=$state('overview');let busy=$state(false);let error=$state('');let notice=$state('');let saved:Row|null=$state(null);let filterError=$state('');
-  const summary=$derived(data.summary||{});const context=$derived(summary.reportContext||{});const metrics=$derived(summary.metrics||{});
-  const appliedFrom=$derived(page.url.searchParams.get('from')||context.from||'');const appliedTo=$derived(page.url.searchParams.get('to')||context.to||'');const appliedBusiness=$derived(page.url.searchParams.get('business_unit')||'');
-  $effect(()=>{from=appliedFrom;to=appliedTo;business=appliedBusiness;});
-  const definitions=$derived(reportList(data.related?.metric_definitions||summary.definitions));
-  const quality=$derived(reportList(data.related?.data_quality_issues||summary.dataQuality));
-  const series=$derived(reportList(data.related?.report_series||summary.series));
-  const orderCosts=$derived(reportList(data.related?.order_costs||summary.order_costs));
-  const aging=$derived(reportList(data.related?.aging_buckets||summary.aging_buckets));
-  const liquidity=$derived(reportList(data.related?.liquidity_forecast||data.related?.liquidity||summary.liquidity_forecast));
-  const capacity=$derived(reportList(data.related?.capacity||summary.capacity));
-  const materials=$derived(reportList(data.related?.material_forecast||summary.material_forecast));
-  const risks=$derived(reportList(data.related?.at_risk_orders||summary.at_risk_orders));
-  const recommendations=$derived(reportList(data.related?.recommendations||summary.recommendations));
-  const unallocated=$derived(reportList(data.related?.unallocated_payments));const timeCompleteness=$derived(reportList(data.related?.time_completeness));
-  const snapshots=$derived(reportList(data.related?.report_snapshots));
-  const financial=$derived(context.financial===true||(context.financial!==false&&(permitted(data,'finance')||permitted(data,'finance.read'))));const canWrite=$derived(financial&&permitted(data,'finance'));
-  const canExport=$derived(permitted(data,'reports')||permitted(data,'reports.read'));
-  const currency=$derived(context.currency||summary.currency);
-  const dataAsOf=$derived(context.dataAsOf||summary.dataAsOf||summary.asOf);
-  const primaryMetrics=$derived(reportMetrics.filter(item=>['ordered_net','invoiced_net','received_payments','receivables_open','direct_actual_costs'].includes(item.key)));
-  const secondaryMetrics=reportMetrics.filter(item=>['quote_win_rate','planned_utilization','time_completeness'].includes(item.key));
-  const financialTabs=[{id:'overview',label:'Entwicklung'},{id:'costs',label:'Auftragskosten'},{id:'finance',label:'Fälligkeit & Liquidität'},{id:'capacity',label:'Kapazität & Material'},{id:'quality',label:'Daten & Grundlagen'}];
-  const tabs=$derived(financial?financialTabs:financialTabs.filter(item=>['capacity','quality'].includes(item.id)));const activeTab=$derived(tabs.some(item=>item.id===tab)?tab:'capacity');
-  const filtersApplied=$derived(new URLSearchParams({...(appliedFrom?{from:appliedFrom}:{}),...(appliedTo?{to:appliedTo}:{}),...(appliedBusiness?{business_unit:appliedBusiness}:{})}));
-  function filter(event:SubmitEvent){event.preventDefault();filterError='';if(from&&to&&from>to){filterError='Das Ende des Zeitraums muss am oder nach seinem Beginn liegen.';return;}const params=new URLSearchParams();if(from)params.set('from',from);if(to)params.set('to',to);if(business)params.set('business_unit',business);saved=null;notice='';goto('/reports'+(params.size?'?'+params:''));}
-  function metricHref(item:typeof reportMetrics[number]){
-    if(item.key==='direct_actual_costs')return '#auftragskosten';
-    const definition=definitions.find(row=>(row.key||row.metric_key)===item.key);
-    const href=metricDrilldown(definition?.href||item.href,item.key==='receivables_open'?'':appliedFrom,item.key==='receivables_open'?'':appliedTo,appliedBusiness,['ordered_net','invoiced_net','performance_value','received_payments'].includes(item.key)?item.key:'');
-    const url=new URL(href,'https://report.invalid');
-    if(item.unit==='currency'&&/^[A-Z]{3}$/.test(currency||''))url.searchParams.set('currency',currency!);
-    if(item.key==='receivables_open'){url.searchParams.set('status','open');if(appliedTo)url.searchParams.set('as_of',appliedTo);}
-    return url.pathname+url.search;
+ import ReportSources from './ReportSources.svelte';
+ import {sourceHref} from '#lib/client/source-links.ts';
+  import { searchableSelect } from "#lib/client/searchable-select.ts";
+  import { page } from "$app/state";
+  import { goto, refreshAll } from "$app/navigation";
+  import type { AppData, Row } from "#lib/client/types.ts";
+  import { command, display, permitted } from "#lib/client/api.ts";
+  import {
+    metricDrilldown,
+    reportList,
+    reportMetrics,
+    reportMetricValue,
+    reportMoney,
+    reportNumber,
+    reportQuantity,
+  } from "#lib/client/reports.ts";
+  import Icon from "./Icon.svelte";
+  import ReportTrend from "./reporting/ReportTrend.svelte";
+  import ReportCosts from "./reporting/ReportCosts.svelte";
+  import ReportFinance from "./reporting/ReportFinance.svelte";
+  import ReportCapacity from "./reporting/ReportCapacity.svelte";
+  import ReportQuality from "./reporting/ReportQuality.svelte";
+  let { data }: { data: AppData } = $props();
+  let from = $state("");
+  let to = $state("");
+  let business = $state("");
+  let tab = $state("overview");
+  let busy = $state(false);
+  let error = $state("");
+  let notice = $state("");
+  let saved: Row | null = $state(null);
+  let filterError = $state("");
+  const summary = $derived(data.summary || {});
+  const context = $derived(summary.reportContext || {});
+  const metrics = $derived(summary.metrics || {});
+  const appliedFrom = $derived(
+    page.url.searchParams.get("from") || context.from || "",
+  );
+  const appliedTo = $derived(
+    page.url.searchParams.get("to") || context.to || "",
+  );
+  const appliedBusiness = $derived(
+    page.url.searchParams.get("business_unit") || "",
+  );
+  $effect(() => {
+    from = appliedFrom;
+    to = appliedTo;
+    business = appliedBusiness;
+  });
+  const definitions = $derived(
+    reportList(data.related?.metric_definitions || summary.definitions),
+  );
+  const quality = $derived(
+    reportList(data.related?.data_quality_issues || summary.dataQuality),
+  );
+  const series = $derived(
+    reportList(data.related?.report_series || summary.series),
+  );
+  const orderCosts = $derived(
+    reportList(data.related?.order_costs || summary.order_costs),
+  );
+  const aging = $derived(
+    reportList(data.related?.aging_buckets || summary.aging_buckets),
+  );
+  const liquidity = $derived(
+    reportList(
+      data.related?.liquidity_forecast ||
+        data.related?.liquidity ||
+        summary.liquidity_forecast,
+    ),
+  );
+  const capacity = $derived(
+    reportList(data.related?.capacity || summary.capacity),
+  );
+  const materials = $derived(
+    reportList(data.related?.material_forecast || summary.material_forecast),
+  );
+  const risks = $derived(
+    reportList(data.related?.at_risk_orders || summary.at_risk_orders),
+  );
+  const recommendations = $derived(
+    reportList(data.related?.recommendations || summary.recommendations),
+  );
+  const unallocated = $derived(reportList(data.related?.unallocated_payments));
+  const timeCompleteness = $derived(
+    reportList(data.related?.time_completeness),
+  );
+  const snapshots = $derived(reportList(data.related?.report_snapshots));
+  const financial = $derived(
+    context.financial === true ||
+      (context.financial !== false &&
+        (permitted(data, "finance") || permitted(data, "finance.read"))),
+  );
+  const canWrite = $derived(financial && permitted(data, "finance"));
+  const canExport = $derived(
+    permitted(data, "reports") || permitted(data, "reports.read"),
+  );
+  const currency = $derived(context.currency || summary.currency);
+  const dataAsOf = $derived(
+    context.dataAsOf || summary.dataAsOf || summary.asOf,
+  );
+  const primaryMetrics = $derived(
+    reportMetrics.filter((item) =>
+      [
+        "ordered_net",
+        "invoiced_net",
+        "received_payments",
+        "receivables_open",
+        "direct_actual_costs",
+      ].includes(item.key),
+    ),
+  );
+  const secondaryMetrics = reportMetrics.filter((item) =>
+    ["quote_win_rate", "planned_utilization", "time_completeness"].includes(
+      item.key,
+    ),
+  );
+  const financialTabs = [
+    { id: "overview", label: "Entwicklung" },
+    { id: "sources", label: "Quellennachweis" },
+    { id: "costs", label: "Auftragskosten" },
+    { id: "finance", label: "Fälligkeit & Liquidität" },
+    { id: "capacity", label: "Kapazität & Material" },
+    { id: "quality", label: "Daten & Grundlagen" },
+  ];
+  const tabs = $derived(
+    financial
+      ? financialTabs
+      : financialTabs.filter((item) =>
+          ["capacity", "quality"].includes(item.id),
+        ),
+  );
+  $effect(()=>{const target=page.url.searchParams.get('tab');if(target&&tabs.some(item=>item.id===target))tab=target;});
+  const activeTab = $derived(
+    tabs.some((item) => item.id === tab) ? tab : "capacity",
+  );
+  const filtersApplied = $derived(
+    new URLSearchParams({
+      ...(appliedFrom ? { from: appliedFrom } : {}),
+      ...(appliedTo ? { to: appliedTo } : {}),
+      ...(appliedBusiness ? { business_unit: appliedBusiness } : {}),
+    }),
+  );
+  function filter(event: SubmitEvent) {
+    event.preventDefault();
+    filterError = "";
+    if (from && to && from > to) {
+      filterError =
+        "Das Ende des Zeitraums muss am oder nach seinem Beginn liegen.";
+      return;
+    }
+    const params = new URLSearchParams();
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    if (business) params.set("business_unit", business);
+    saved = null;
+    notice = "";
+    goto("/reports" + (params.size ? "?" + params : ""));
   }
-  function availability(item:typeof reportMetrics[number]){const value=summary.metric_availability?.[item.key];return typeof value==='string'?value:value?.message||'Noch keine vollständige Berechnungsgrundlage';}
-  function snapshotUrl(row:Row){return row.downloadUrl||row.download_url||(row.document_id?`/api/v1/documents/${row.document_id}/download`:null);}
-  async function saveSnapshot(){if(busy)return;error='';notice='';if(!appliedFrom||!appliedTo){error='Wählen Sie zuerst einen vollständigen Zeitraum und übernehmen Sie ihn mit „Auswerten“.';return;}busy=true;try{const result=await command('reports.snapshot.create',undefined,{from:appliedFrom,to:appliedTo,...(appliedBusiness?{business_unit:appliedBusiness}:{})});saved=result;notice=result.message||'Der genaue Auswertungsstand wurde eingefroren. Das private Exportdokument wird mit denselben Filtern und Kennzahlversionen erstellt.';await refreshAll().catch(()=>{});}catch(cause){error=cause instanceof Error?cause.message:'Der Stand konnte nicht gespeichert werden.';}finally{busy=false;}}
-  async function refreshExports(){if(busy)return;busy=true;error='';try{await refreshAll();notice='Der Status der gespeicherten Auswertungen wurde aktualisiert.';}catch(cause){error=cause instanceof Error?cause.message:'Der Exportstatus konnte nicht geladen werden.';}finally{busy=false;}}
+  function metricHref(item: (typeof reportMetrics)[number]) {
+    if (item.key === "direct_actual_costs") return "#auftragskosten";
+    const definition = definitions.find(
+      (row) => (row.key || row.metric_key) === item.key,
+    );
+    const href = metricDrilldown(
+      definition?.href || item.href,
+      item.key === "receivables_open" ? "" : appliedFrom,
+      item.key === "receivables_open" ? "" : appliedTo,
+      appliedBusiness,
+      [
+        "ordered_net",
+        "invoiced_net",
+        "performance_value",
+        "received_payments",
+      ].includes(item.key)
+        ? item.key
+        : "",
+    );
+    const url = new URL(href, "https://report.invalid");
+    if (item.unit === "currency" && /^[A-Z]{3}$/.test(currency || ""))
+      url.searchParams.set("currency", currency!);
+    if (item.key === "receivables_open") {
+      url.searchParams.set("status", "open");
+      if (appliedTo) url.searchParams.set("as_of", appliedTo);
+    }
+    return sourceHref(data,url.pathname + url.search);
+  }
+  function availability(item: (typeof reportMetrics)[number]) {
+    const value = summary.metric_availability?.[item.key];
+    return typeof value === "string"
+      ? value
+      : value?.message || "Noch keine vollständige Berechnungsgrundlage";
+  }
+  function snapshotUrl(row: Row) {
+    return (
+      row.downloadUrl ||
+      row.download_url ||
+      (row.document_id ? `/api/v1/documents/${row.document_id}/download` : null)
+    );
+  }
+  async function saveSnapshot() {
+    if (busy) return;
+    error = "";
+    notice = "";
+    if (!appliedFrom || !appliedTo) {
+      error =
+        "Wählen Sie zuerst einen vollständigen Zeitraum und übernehmen Sie ihn mit „Auswerten“.";
+      return;
+    }
+    busy = true;
+    try {
+      const result = await command("reports.snapshot.create", undefined, {
+        from: appliedFrom,
+        to: appliedTo,
+        ...(appliedBusiness ? { business_unit: appliedBusiness } : {}),
+      });
+      saved = result;
+      notice =
+        result.message ||
+        "Der genaue Auswertungsstand wurde eingefroren. Das private Exportdokument wird mit denselben Filtern und Kennzahlversionen erstellt.";
+      await refreshAll().catch(() => {});
+    } catch (cause) {
+      error =
+        cause instanceof Error
+          ? cause.message
+          : "Der Stand konnte nicht gespeichert werden.";
+    } finally {
+      busy = false;
+    }
+  }
+  async function refreshExports() {
+    if (busy) return;
+    busy = true;
+    error = "";
+    try {
+      await refreshAll();
+      notice = "Der Status der gespeicherten Auswertungen wurde aktualisiert.";
+    } catch (cause) {
+      error =
+        cause instanceof Error
+          ? cause.message
+          : "Der Exportstatus konnte nicht geladen werden.";
+    } finally {
+      busy = false;
+    }
+  }
 </script>
-<div class="page-heading"><div><h1>Wissen, wo der Betrieb steht.</h1><p>Bestätigte Werte, verständliche Zusammenhänge und ein direkter Weg zu den Ursprungsbelegen.</p></div>{#if canExport}<button class="btn" onclick={saveSnapshot} disabled={busy}><Icon name={busy?'refresh':'download'} size={16} class={busy?'spin':''}/>{busy?'Stand wird gesichert …':'Auswertungsstand sichern'}</button>{/if}</div>
-<form class="toolbar report-filters" onsubmit={filter}><div class="field"><label for="report-from">Zeitraum von</label><input id="report-from" type="date" bind:value={from} max={to||undefined}/></div><div class="field"><label for="report-to">Bis einschließlich</label><input id="report-to" type="date" bind:value={to} min={from||undefined}/></div><div class="field"><label for="report-unit">Geschäftsbereich</label><select use:searchableSelect={business} id="report-unit" bind:value={business}><option value="">Alle berechtigten Bereiche</option><option value="bath">Bad & Spa</option><option value="stone">Naturstein & Fliese</option><option value="memorial">Grabdenkmale</option><option value="service">Service & Pflege</option></select></div><button class="btn primary" type="submit"><Icon name="filter" size={16}/>Auswerten</button></form>
+
+<div class="page-heading">
+  <div>
+    <h1>Wissen, wo der Betrieb steht.</h1>
+    <p>
+      Bestätigte Werte, verständliche Zusammenhänge und ein direkter Weg zu den
+      Ursprungsbelegen.
+    </p>
+  </div>
+  {#if canExport}<button class="btn" onclick={saveSnapshot} disabled={busy}
+      ><Icon
+        name={busy ? "refresh" : "download"}
+        size={16}
+        class={busy ? "spin" : ""}
+      />{busy ? "Stand wird gesichert …" : "Auswertungsstand sichern"}</button
+    >{/if}
+</div>
+<form class="toolbar report-filters" onsubmit={filter}>
+  <div class="field">
+    <label for="report-from">Zeitraum von</label><input
+      id="report-from"
+      type="date"
+      bind:value={from}
+      max={to || undefined}
+    />
+  </div>
+  <div class="field">
+    <label for="report-to">Bis einschließlich</label><input
+      id="report-to"
+      type="date"
+      bind:value={to}
+      min={from || undefined}
+    />
+  </div>
+  <div class="field">
+    <label for="report-unit">Geschäftsbereich</label><select
+      use:searchableSelect={business}
+      id="report-unit"
+      bind:value={business}
+      ><option value="">Alle berechtigten Bereiche</option><option value="bath"
+        >Bad & Spa</option
+      ><option value="stone">Naturstein & Fliese</option><option
+        value="memorial">Grabdenkmale</option
+      ><option value="service">Service & Pflege</option></select
+    >
+  </div>
+  <button class="btn primary" type="submit"
+    ><Icon name="filter" size={16} />Auswerten</button
+  >
+</form>
 {#if filterError}<p class="field-error mb" role="alert">{filterError}</p>{/if}
-<div class="report-context"><p><strong>{context.legalEntityName||data.settings?.company_name||'Ihr berechtigter Betrieb'}</strong><span>{appliedFrom&&appliedTo?`${display(appliedFrom,'date')} bis ${display(appliedTo,'date')}`:'Zeitraum noch nicht bestätigt'}</span><span>{appliedBusiness?({bath:'Bad & Spa',stone:'Naturstein & Fliese',memorial:'Grabdenkmale',service:'Service & Pflege'} as Record<string,string>)[appliedBusiness]||appliedBusiness:'Alle berechtigten Geschäftsbereiche'}</span></p><p>Datenstand {dataAsOf?display(dataAsOf,'updated_at'):'noch nicht bestätigt'}{financial?(currency?' · Berichtswährung '+currency:' · Währungen werden getrennt ausgewiesen'):' · Operative Sicht'}</p></div>
-<p class="field-help mb">{#if financial}Beauftragungen, Rechnungen und Zahlungseingänge beziehen sich auf den gewählten Zeitraum. Auftragskosten reichen bis zum Berichtsstichtag. Offene Posten zeigen den heutigen Bearbeitungsstand und werden nach der Fälligkeit am Berichtsstichtag eingeordnet.{:else}Kapazität und Material verwenden die ausgewiesenen bestätigten Grundlagen. Fehlende Kalender, Arbeitsmodelle und Bedarfe werden ausdrücklich benannt.{/if}</p>
-{#if error}<div class="notice error" role="alert"><Icon name="alert"/><div>{error}</div></div>{/if}{#if notice}<div class="notice info" role="status"><Icon name="check"/><div>{notice}{#if saved&&snapshotUrl(saved)}<a class="text-link mt" href={snapshotUrl(saved)} data-sveltekit-reload download>Gesicherten Stand herunterladen<Icon name="download" size={14}/></a>{/if}</div></div>{/if}
-{#if financial}<div class="metric-strip report-metrics">{#each primaryMetrics as item}{@const value=reportMetricValue(metrics,item.key,item.legacy)}<a class="metric" href={metricHref(item)} onclick={(event)=>{if(item.key==='direct_actual_costs'){event.preventDefault();tab='costs';}}}><div class="metric-label">{item.label}</div><div class:missing-value={reportNumber(value)===null} class="metric-value">{reportNumber(value)===null?'—':reportMoney(value,metrics[item.key]?.currency||currency)}</div><div class="metric-caption">{reportNumber(value)===null?availability(item):'Quellenvorgänge öffnen'}</div></a>{/each}</div>{/if}
-<nav class="tabs report-tabs" aria-label="Auswertungsansichten">{#each tabs as item}<button class="tab" class:active={activeTab===item.id} aria-current={activeTab===item.id?'page':undefined} onclick={()=>tab=item.id}>{item.label}{#if item.id==='quality'&&quality.length}<span class="count">{quality.length}</span>{/if}</button>{/each}</nav>
-{#if activeTab==='overview'&&financial}<ReportTrend rows={series} from={appliedFrom} to={appliedTo} business={appliedBusiness} {currency} {definitions}/><section class="panel mt"><header class="panel-header"><div><h2>Abschluss & operative Vollständigkeit</h2><p>Diese Kennzahlen verwenden ihre jeweils ausgewiesene Grundlage.</p></div></header><div class="report-secondary">{#each secondaryMetrics as item}{@const value=reportMetricValue(metrics,item.key,item.legacy)}<a href={metricHref(item)}><span class="metric-label">{item.label}</span><strong>{reportNumber(value)===null?'Noch nicht bestätigt':reportQuantity(value,'%')}</strong><p>{item.key==='quote_win_rate'?'Gewonnene und verlorene Anfragen der im Zeitraum angelegten Kohorte.':item.key==='planned_utilization'?'Geplante Einsatzstunden im ausgewiesenen Kapazitätsfenster.':'Gemeldete oder vollständig begründete Arbeitstage bis heute im Kapazitätsfenster.'}</p></a>{/each}</div></section><section class="panel mt"><header class="panel-header"><div><h2>Was als Nächstes sinnvoll ist</h2><p>Von der Beobachtung zur nachvollziehbaren Prüfung.</p></div></header><div class="report-next"><button onclick={()=>tab='quality'}><Icon name="alert" size={18}/><span><strong>Datenlücken klären</strong><small>{quality.length?`${quality.length} gemeldete Hinweise prüfen`:'Berechnungsgrundlagen und Vollständigkeit ansehen'}</small></span><Icon name="chevron" size={17}/></button><button onclick={()=>tab='costs'}><Icon name="briefcase" size={18}/><span><strong>Restaufwand prüfen</strong><small>Istkosten und bestätigte Schätzung je Auftrag vergleichen</small></span><Icon name="chevron" size={17}/></button><button onclick={()=>tab='finance'}><Icon name="calendar" size={18}/><span><strong>Fälligkeiten einordnen</strong><small>Offene Belege und belegte Liquiditätsgrundlagen ansehen</small></span><Icon name="chevron" size={17}/></button></div></section>
-{:else if activeTab==='costs'&&financial}<ReportCosts rows={orderCosts} {currency} {canWrite}/>
-{:else if activeTab==='finance'&&financial}<ReportFinance {aging} {liquidity} {unallocated} {currency} {canWrite}/>
-{:else if activeTab==='capacity'}<ReportCapacity {capacity} {materials} {risks} period={summary.capacity_period} canDispatch={permitted(data,'dispatch')||permitted(data,'dispatch.read')}/>
-{:else}<ReportQuality timeRows={timeCompleteness} conflicts={summary.time_conflicts} corrections={summary.time_corrections} period={summary.capacity_period} issues={quality} {definitions} {recommendations} {canWrite} from={appliedFrom} to={appliedTo} business={appliedBusiness}/>{/if}
-<details class="report-exports mt"><summary>{financial?'Gesicherte Stände & Übergabe an die Kanzlei':'Gesicherte Auswertungen'}</summary><section class="panel mt"><div class="panel-body"><p class="small">Gesicherte Auswertungen behalten ihre damaligen Filter, Datenstände und Definitionsversionen. {#if financial}Eine DATEV-Übergabe wird gesondert mit Originalbelegen und Importbestätigung vorbereitet.{:else}Der Export enthält ausschließlich die berechtigte operative Sicht.{/if}</p><div class="inline-actions mt"><button class="btn" onclick={refreshExports} disabled={busy}><Icon name="refresh" size={15}/>Exportstatus aktualisieren</button>{#if canExport}<button class="btn" onclick={saveSnapshot} disabled={busy}><Icon name="download" size={15}/>Diesen Auswertungsstand sichern</button>{/if}{#if financial&&(permitted(data,'finance')||permitted(data,'finance.read'))}<a class="btn" href={`/datev${filtersApplied.size?'?'+filtersApplied:''}`}>DATEV-Übergaben öffnen<Icon name="arrow" size={15}/></a>{/if}</div>{#each snapshots as snapshot}<div class="snapshot-row"><div><strong>{snapshot.name||'Gesicherte Auswertung'}</strong><p>{display(snapshot.from||snapshot.filters?.from||snapshot.starts_on,'date')} bis {display(snapshot.to||snapshot.filters?.to||snapshot.ends_on,'date')} · gespeichert {display(snapshot.created_at,'created_at')}</p></div>{#if snapshotUrl(snapshot)}<a class="btn small" href={snapshotUrl(snapshot)} data-sveltekit-reload download><Icon name="download" size={15}/>Stand herunterladen</a>{:else if ['failed','unavailable','outcome_unknown'].includes(snapshot.export_status)}<div class="snapshot-error"><strong>Export benötigt eine Klärung</strong><p class="field-help">{snapshot.export_error||'Die Verarbeitung konnte nicht bestätigt werden. Der eingefrorene Berichtstand bleibt erhalten.'}</p>{#if permitted(data,'jobs')||permitted(data,'admin')}<a class="text-link mt" href="/jobs">Verarbeitung prüfen<Icon name="arrow" size={14}/></a>{/if}</div>{:else}<span class="field-help">{snapshot.export_status==='retry'?'Erneuter Exportversuch vorgemerkt':'Privates Dokument wird verarbeitet'}</span>{/if}</div>{/each}{#if !snapshots.length}<p class="field-help mt">Noch keine gespeicherten Stände im berechtigten Bestand vorhanden.</p>{/if}</div></section></details>
-<p class="data-stamp"><Icon name="refresh" size={11}/>Alle Ansichten verwenden den oben ausgewiesenen Zeitraum und Ihre Zugriffsrechte. Fehlende Grundlagen bleiben offen.</p>
-<style>.report-secondary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.report-secondary>a{padding:25px 24px;min-width:0}.report-secondary>a+a{border-left:1px solid var(--line)}.report-secondary strong{display:block;margin:12px 0;font-size:24px;font-weight:500;letter-spacing:-.6px;overflow-wrap:anywhere}.report-secondary p{font-size:12px;line-height:1.7;color:var(--muted)}.report-secondary a:hover{background:var(--wash)}@media(max-width:760px){.report-secondary{grid-template-columns:1fr}.report-secondary>a+a{border-left:0;border-top:1px solid var(--line)}.report-secondary p{font-size:13px}}.report-filters{align-items:end;gap:15px}.report-filters>.field{min-width:160px;flex:0 1 190px}.report-filters>.field:nth-child(3){flex-basis:250px}.report-context{display:flex;justify-content:space-between;gap:18px;padding:0 0 25px;margin-top:6px;font-size:11px;color:var(--muted)}.report-context p:first-child{display:flex;gap:6px 16px;flex-wrap:wrap}.report-context strong{color:var(--ink);font-weight:500}.report-context>p:last-child{flex:none}.report-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.report-metrics .metric{min-width:0;padding:21px 18px}.report-metrics .metric-value{font-size:26px;overflow-wrap:anywhere;line-height:1.3}.report-metrics .metric-caption{line-height:1.55}.report-tabs{gap:25px}.report-tabs .tab{display:flex;align-items:center;gap:5px}.report-next{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.report-next>button{display:flex;align-items:center;gap:16px;text-align:left;padding:25px 24px}.report-next>button+button{border-left:1px solid var(--line)}.report-next>button>span{flex:1;display:grid;gap:7px;min-width:0}.report-next strong{font-size:13px;font-weight:550}.report-next small{font-size:11px;color:var(--muted);line-height:1.6}.report-next>button:hover{background:var(--wash)}.report-exports>summary{color:var(--forest);font-size:12px;cursor:pointer;min-height:35px;padding-top:10px}.snapshot-row{display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding-top:20px;margin-top:20px}.snapshot-row strong{font-size:13px;font-weight:550}.snapshot-row p{font-size:11px;margin-top:5px}@media(max-width:1200px){.page-heading{flex-direction:column;gap:18px}.page-heading>.btn{align-self:flex-start}.report-context{flex-direction:column;gap:7px}.report-metrics .metric-value{font-size:22px}.report-next{grid-template-columns:1fr}.report-next>button+button{border-left:0;border-top:1px solid var(--line)}}@media(max-width:1000px){.report-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.report-metrics .metric:nth-child(4){border-left:0;border-top:1px solid var(--line)}.report-metrics .metric:nth-child(5){border-top:1px solid var(--line)}}@media(max-width:760px){.report-filters>.field,.report-filters>.field:nth-child(3){flex:1 1 140px;min-width:0}.report-filters>.field:nth-child(3){flex-basis:100%}.report-filters>.btn{width:100%}.report-context{font-size:12px;line-height:1.7;padding-bottom:21px}.report-context p:first-child{display:grid;gap:2px}.report-context>p:last-child{font-size:11px}.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.report-metrics .metric{padding:20px 17px}.report-metrics .metric:nth-child(3){border-left:0}.report-metrics .metric:nth-child(4){border-left:1px solid var(--line)}.report-metrics .metric:nth-child(5){border-left:0;grid-column:1/-1}.report-metrics .metric-value{font-size:24px}.report-next>button{min-height:90px;padding:23px 20px}.report-next strong{font-size:14px}.report-next small{font-size:12px}.report-tabs{gap:22px}.report-exports>summary{font-size:13px;min-height:48px;line-height:1.6}.snapshot-row{align-items:flex-start;flex-direction:column;gap:14px}.snapshot-row p{font-size:12px}}</style>
+<div class="report-context">
+  <p>
+    <strong
+      >{context.legalEntityName ||
+        data.settings?.company_name ||
+        "Ihr berechtigter Betrieb"}</strong
+    ><span
+      >{appliedFrom && appliedTo
+        ? `${display(appliedFrom, "date")} bis ${display(appliedTo, "date")}`
+        : "Zeitraum noch nicht bestätigt"}</span
+    ><span
+      >{appliedBusiness
+        ? (
+            {
+              bath: "Bad & Spa",
+              stone: "Naturstein & Fliese",
+              memorial: "Grabdenkmale",
+              service: "Service & Pflege",
+            } as Record<string, string>
+          )[appliedBusiness] || appliedBusiness
+        : "Alle berechtigten Geschäftsbereiche"}</span
+    >
+  </p>
+  <p>
+    Datenstand {dataAsOf
+      ? display(dataAsOf, "updated_at")
+      : "noch nicht bestätigt"}{financial
+      ? currency
+        ? " · Berichtswährung " + currency
+        : " · Währungen werden getrennt ausgewiesen"
+      : " · Operative Sicht"}
+  </p>
+</div>
+<p class="field-help mb">
+  {#if financial}Beauftragungen, Rechnungen und Zahlungseingänge beziehen sich
+    auf den gewählten Zeitraum. Auftragskosten reichen bis zum Berichtsstichtag.
+    Offene Posten zeigen den heutigen Bearbeitungsstand und werden nach der
+    Fälligkeit am Berichtsstichtag eingeordnet.{:else}Kapazität und Material
+    verwenden die ausgewiesenen bestätigten Grundlagen. Fehlende Kalender,
+    Arbeitsmodelle und Bedarfe werden ausdrücklich benannt.{/if}
+</p>
+{#if error}<div class="notice error" role="alert">
+    <Icon name="alert" />
+    <div>{error}</div>
+  </div>{/if}{#if notice}<div class="notice info" role="status">
+    <Icon name="check" />
+    <div>
+      {notice}{#if saved && snapshotUrl(saved)}<a
+          class="text-link mt"
+          href={snapshotUrl(saved)}
+          data-sveltekit-reload
+          download
+          >Gesicherten Stand herunterladen<Icon name="download" size={14} /></a
+        >{/if}
+    </div>
+  </div>{/if}
+{#if financial}<div class="metric-strip report-metrics">
+    {#each primaryMetrics as item}{@const value = reportMetricValue(
+        metrics,
+        item.key,
+        item.legacy,
+      )}<a
+        class="metric"
+        href={metricHref(item)}
+        onclick={(event) => {
+          if (item.key === "direct_actual_costs") {
+            event.preventDefault();
+            tab = "costs";
+          }
+        }}
+        ><div class="metric-label">{item.label}</div>
+        <div
+          class:missing-value={reportNumber(value) === null}
+          class="metric-value"
+        >
+          {reportNumber(value) === null
+            ? "—"
+            : reportMoney(value, metrics[item.key]?.currency || currency)}
+        </div>
+        <div class="metric-caption">
+          {reportNumber(value) === null
+            ? availability(item)
+            : "Quellenvorgänge öffnen"}
+        </div></a
+      >{/each}
+  </div>{/if}
+<nav class="tabs report-tabs" aria-label="Auswertungsansichten">
+  {#each tabs as item}<button
+      class="tab"
+      class:active={activeTab === item.id}
+      aria-current={activeTab === item.id ? "page" : undefined}
+      onclick={() => (tab = item.id)}
+      >{item.label}{#if item.id === "quality" && quality.length}<span
+          class="count">{quality.length}</span
+        >{/if}</button
+    >{/each}
+</nav>
+{#if activeTab==='sources'}<ReportSources {data}/>{/if}
+{#if activeTab === "overview" && financial}<ReportTrend {data}
+    rows={series}
+    from={appliedFrom}
+    to={appliedTo}
+    business={appliedBusiness}
+    {currency}
+    {definitions}
+  />
+  <section class="panel mt">
+    <header class="panel-header">
+      <div>
+        <h2>Abschluss & operative Vollständigkeit</h2>
+        <p>Diese Kennzahlen verwenden ihre jeweils ausgewiesene Grundlage.</p>
+      </div>
+    </header>
+    <div class="report-secondary">
+      {#each secondaryMetrics as item}{@const value = reportMetricValue(
+          metrics,
+          item.key,
+          item.legacy,
+        )}<a href={metricHref(item)}
+          ><span class="metric-label">{item.label}</span><strong
+            >{reportNumber(value) === null
+              ? "Noch nicht bestätigt"
+              : reportQuantity(value, "%")}</strong
+          >
+          <p>
+            {item.key === "quote_win_rate"
+              ? "Gewonnene und verlorene Anfragen der im Zeitraum angelegten Kohorte."
+              : item.key === "planned_utilization"
+                ? "Geplante Einsatzstunden im ausgewiesenen Kapazitätsfenster."
+                : "Gemeldete oder vollständig begründete Arbeitstage bis heute im Kapazitätsfenster."}
+          </p></a
+        >{/each}
+    </div>
+  </section>
+  <section class="panel mt">
+    <header class="panel-header">
+      <div>
+        <h2>Was als Nächstes sinnvoll ist</h2>
+        <p>Von der Beobachtung zur nachvollziehbaren Prüfung.</p>
+      </div>
+    </header>
+    <div class="report-next">
+      <button onclick={() => (tab = "quality")}
+        ><Icon name="alert" size={18} /><span
+          ><strong>Datenlücken klären</strong><small
+            >{quality.length
+              ? `${quality.length} gemeldete Hinweise prüfen`
+              : "Berechnungsgrundlagen und Vollständigkeit ansehen"}</small
+          ></span
+        ><Icon name="chevron" size={17} /></button
+      ><button onclick={() => (tab = "costs")}
+        ><Icon name="briefcase" size={18} /><span
+          ><strong>Restaufwand prüfen</strong><small
+            >Istkosten und bestätigte Schätzung je Auftrag vergleichen</small
+          ></span
+        ><Icon name="chevron" size={17} /></button
+      ><button onclick={() => (tab = "finance")}
+        ><Icon name="calendar" size={18} /><span
+          ><strong>Fälligkeiten einordnen</strong><small
+            >Offene Belege und belegte Liquiditätsgrundlagen ansehen</small
+          ></span
+        ><Icon name="chevron" size={17} /></button
+      >
+    </div>
+  </section>
+{:else if activeTab === "costs" && financial}<ReportCosts {data}
+    rows={orderCosts}
+    {currency}
+    {canWrite}
+  />
+{:else if activeTab === "finance" && financial}<ReportFinance {data}
+    {aging}
+    {liquidity}
+    {unallocated}
+    {currency}
+    {canWrite}
+  />
+{:else if activeTab === "capacity"}<ReportCapacity {data}
+    {capacity}
+    {materials}
+    {risks}
+    period={summary.capacity_period}
+    canDispatch={permitted(data, "dispatch") ||
+      permitted(data, "dispatch.read")}
+  />
+{:else if activeTab==='quality'}<ReportQuality {data}
+    timeRows={timeCompleteness}
+    conflicts={summary.time_conflicts}
+    corrections={summary.time_corrections}
+    period={summary.capacity_period}
+    issues={quality}
+    {definitions}
+    {recommendations}
+    {canWrite}
+    from={appliedFrom}
+    to={appliedTo}
+    business={appliedBusiness}
+  />{/if}
+<details class="report-exports mt">
+  <summary
+    >{financial
+      ? "Gesicherte Stände & Übergabe an die Kanzlei"
+      : "Gesicherte Auswertungen"}</summary
+  >
+  <section class="panel mt">
+    <div class="panel-body">
+      <p class="small">
+        Gesicherte Auswertungen behalten ihre damaligen Filter, Datenstände und
+        Definitionsversionen. {#if financial}Eine DATEV-Übergabe wird gesondert
+          mit Originalbelegen und Importbestätigung vorbereitet.{:else}Der
+          Export enthält ausschließlich die berechtigte operative Sicht.{/if}
+      </p>
+      <div class="inline-actions mt">
+        <button class="btn" onclick={refreshExports} disabled={busy}
+          ><Icon name="refresh" size={15} />Exportstatus aktualisieren</button
+        >{#if canExport}<button
+            class="btn"
+            onclick={saveSnapshot}
+            disabled={busy}
+            ><Icon name="download" size={15} />Diesen Auswertungsstand sichern</button
+          >{/if}{#if financial && (permitted(data, "finance") || permitted(data, "finance.read"))}<a
+            class="btn"
+            href={`/datev${filtersApplied.size ? "?" + filtersApplied : ""}`}
+            >DATEV-Übergaben öffnen<Icon name="arrow" size={15} /></a
+          >{/if}
+      </div>
+      {#each snapshots as snapshot}<div class="snapshot-row">
+          <div>
+            <strong>{snapshot.name || "Gesicherte Auswertung"}</strong>
+            <p>
+              {display(
+                snapshot.from || snapshot.filters?.from || snapshot.starts_on,
+                "date",
+              )} bis {display(
+                snapshot.to || snapshot.filters?.to || snapshot.ends_on,
+                "date",
+              )} · gespeichert {display(snapshot.created_at, "created_at")}
+            </p>
+          </div>
+          {#if snapshotUrl(snapshot)}<a
+              class="btn small"
+              href={snapshotUrl(snapshot)}
+              data-sveltekit-reload
+              download><Icon name="download" size={15} />Stand herunterladen</a
+            >{:else if ["failed", "unavailable", "outcome_unknown"].includes(snapshot.export_status)}<div
+              class="snapshot-error"
+            >
+              <strong>Export benötigt eine Klärung</strong>
+              <p class="field-help">
+                {snapshot.export_error ||
+                  "Die Verarbeitung konnte nicht bestätigt werden. Der eingefrorene Berichtstand bleibt erhalten."}
+              </p>
+              {#if permitted(data, "jobs") || permitted(data, "admin")}<a
+                  class="text-link mt"
+                  href="/jobs"
+                  >Verarbeitung prüfen<Icon name="arrow" size={14} /></a
+                >{/if}
+            </div>{:else}<span class="field-help"
+              >{snapshot.export_status === "retry"
+                ? "Erneuter Exportversuch vorgemerkt"
+                : "Privates Dokument wird verarbeitet"}</span
+            >{/if}
+        </div>{/each}{#if !snapshots.length}<p class="field-help mt">
+          Noch keine gespeicherten Stände im berechtigten Bestand vorhanden.
+        </p>{/if}
+    </div>
+  </section>
+</details>
+<p class="data-stamp">
+  <Icon name="refresh" size={11} />Alle Ansichten verwenden den oben
+  ausgewiesenen Zeitraum und Ihre Zugriffsrechte. Fehlende Grundlagen bleiben
+  offen.
+</p>
+
+<style>
+  .report-secondary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .report-secondary > a {
+    padding: 25px 24px;
+    min-width: 0;
+  }
+  .report-secondary > a + a {
+    border-left: 1px solid var(--line);
+  }
+  .report-secondary strong {
+    display: block;
+    margin: 12px 0;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.6px;
+    overflow-wrap: anywhere;
+  }
+  .report-secondary p {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .report-secondary a:hover {
+    background: var(--wash);
+  }
+  @media (max-width: 760px) {
+    .report-secondary {
+      grid-template-columns: 1fr;
+    }
+    .report-secondary > a + a {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+    .report-secondary p {
+      font-size: 13px;
+    }
+  }
+  .report-filters {
+    align-items: end;
+    gap: 15px;
+  }
+  .report-filters > .field {
+    min-width: 160px;
+    flex: 0 1 190px;
+  }
+  .report-filters > .field:nth-child(3) {
+    flex-basis: 250px;
+  }
+  .report-context {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 0 0 25px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .report-context p:first-child {
+    display: flex;
+    gap: 6px 16px;
+    flex-wrap: wrap;
+  }
+  .report-context strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .report-context > p:last-child {
+    flex: none;
+  }
+  .report-metrics {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .report-metrics .metric {
+    min-width: 0;
+    padding: 21px 18px;
+  }
+  .report-metrics .metric-value {
+    font-size: 26px;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+  }
+  .report-metrics .metric-caption {
+    line-height: 1.55;
+  }
+  .report-tabs {
+    gap: 25px;
+  }
+  .report-tabs .tab {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .report-next {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .report-next > button {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-align: left;
+    padding: 25px 24px;
+  }
+  .report-next > button + button {
+    border-left: 1px solid var(--line);
+  }
+  .report-next > button > span {
+    flex: 1;
+    display: grid;
+    gap: 7px;
+    min-width: 0;
+  }
+  .report-next strong {
+    font-size: 13px;
+    font-weight: 550;
+  }
+  .report-next small {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .report-next > button:hover {
+    background: var(--wash);
+  }
+  .report-exports > summary {
+    color: var(--forest);
+    font-size: 12px;
+    cursor: pointer;
+    min-height: 35px;
+    padding-top: 10px;
+  }
+  .snapshot-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+    margin-top: 20px;
+  }
+  .snapshot-row strong {
+    font-size: 13px;
+    font-weight: 550;
+  }
+  .snapshot-row p {
+    font-size: 11px;
+    margin-top: 5px;
+  }
+  @media (max-width: 1200px) {
+    .page-heading {
+      flex-direction: column;
+      gap: 18px;
+    }
+    .page-heading > .btn {
+      align-self: flex-start;
+    }
+    .report-context {
+      flex-direction: column;
+      gap: 7px;
+    }
+    .report-metrics .metric-value {
+      font-size: 22px;
+    }
+    .report-next {
+      grid-template-columns: 1fr;
+    }
+    .report-next > button + button {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 1000px) {
+    .report-metrics {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .report-metrics .metric:nth-child(4) {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+    .report-metrics .metric:nth-child(5) {
+      border-top: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 760px) {
+    .report-filters > .field,
+    .report-filters > .field:nth-child(3) {
+      flex: 1 1 140px;
+      min-width: 0;
+    }
+    .report-filters > .field:nth-child(3) {
+      flex-basis: 100%;
+    }
+    .report-filters > .btn {
+      width: 100%;
+    }
+    .report-context {
+      font-size: 12px;
+      line-height: 1.7;
+      padding-bottom: 21px;
+    }
+    .report-context p:first-child {
+      display: grid;
+      gap: 2px;
+    }
+    .report-context > p:last-child {
+      font-size: 11px;
+    }
+    .report-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .report-metrics .metric {
+      padding: 20px 17px;
+    }
+    .report-metrics .metric:nth-child(3) {
+      border-left: 0;
+    }
+    .report-metrics .metric:nth-child(4) {
+      border-left: 1px solid var(--line);
+    }
+    .report-metrics .metric:nth-child(5) {
+      border-left: 0;
+      grid-column: 1/-1;
+    }
+    .report-metrics .metric-value {
+      font-size: 24px;
+    }
+    .report-next > button {
+      min-height: 90px;
+      padding: 23px 20px;
+    }
+    .report-next strong {
+      font-size: 14px;
+    }
+    .report-next small {
+      font-size: 12px;
+    }
+    .report-tabs {
+      gap: 22px;
+    }
+    .report-exports > summary {
+      font-size: 13px;
+      min-height: 48px;
+      line-height: 1.6;
+    }
+    .snapshot-row {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .snapshot-row p {
+      font-size: 12px;
+    }
+  }
+</style>
