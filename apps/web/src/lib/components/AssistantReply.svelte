@@ -1,14 +1,17 @@
 <script lang="ts">
+  import type { AssistantSkillUsage } from "@schubert/contracts";
   let {
     text,
     assumptions = [],
     missingInputs = [],
+    skillsUsed = [],
     disabled = false,
     onfollowup,
   }: {
     text: string;
     assumptions?: string[];
     missingInputs?: string[];
+    skillsUsed?: AssistantSkillUsage[];
     disabled?: boolean;
     onfollowup: (text: string) => void;
   } = $props();
@@ -86,6 +89,20 @@
           </li>{/each}
       </ul>
     </details>{/if}
+  {#if skillsUsed.length}<details class="reply-skills">
+      <summary>Verwendete Fachhilfe</summary>
+      <ul>
+        {#each skillsUsed as skill (skill.id)}<li>
+            <span>{skill.label}</span><small
+              >Deutschland · Version {skill.version}</small
+            >
+          </li>{/each}
+      </ul>
+      <p class="reply-hint">
+        Die KI hat diese Arbeitshilfe für Ihre Anfrage ausgewählt. Grundlage
+        bleiben der übermittelte Stand und Ihre ausgewählten Unterlagen.
+      </p>
+    </details>{/if}
 </div>
 
 <style>
@@ -152,6 +169,26 @@
     margin-top: 14px;
     font-size: 12px;
     line-height: 1.7;
+  }
+  .reply-skills {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .reply-skills summary {
+    min-height: 44px;
+    display: list-item;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  .reply-skills ul {
+    padding-left: 18px;
+    margin: 0 0 8px;
+  }
+  .reply-skills small {
+    display: block;
+    font-size: 11px;
   }
   .reply-assumptions summary {
     min-height: 40px;

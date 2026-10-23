@@ -2,6 +2,7 @@
   import {
     assistantDraftFieldKeys,
     type AssistantEditor,
+    type AssistantSkillUsage,
   } from "@schubert/contracts";
   import type { AppData, Row } from "#lib/client/types.ts";
   import { request } from "#lib/client/api.ts";
@@ -26,6 +27,7 @@
     notice = $state("");
   let controller: AbortController | null = null,
     run = 0;
+  let skillsUsed: AssistantSkillUsage[] = $state([]);
   const uid = $props.id();
   const integration = $derived(
     data.integrations?.ai ?? data.integrations?.openai,
@@ -53,18 +55,16 @@
                 : values[field.key],
             ]),
         ),
-        lines: lines
-          .slice(0, 20)
-          .map((line) => ({
-            description: String(line.description ?? "").slice(0, 1500),
-            quantity: String(line.quantity ?? ""),
-            unit: String(line.unit ?? ""),
-            unit_price: String(line.unit_price ?? ""),
-            tax_rate: String(line.tax_rate ?? ""),
-            line_type: line.line_type ?? "item",
-            optional: !!line.optional,
-            selected: !!line.selected,
-          })),
+        lines: lines.slice(0, 20).map((line) => ({
+          description: String(line.description ?? "").slice(0, 1500),
+          quantity: String(line.quantity ?? ""),
+          unit: String(line.unit ?? ""),
+          unit_price: String(line.unit_price ?? ""),
+          tax_rate: String(line.tax_rate ?? ""),
+          line_type: line.line_type ?? "item",
+          optional: !!line.optional,
+          selected: !!line.selected,
+        })),
         total_line_count: lines.length,
       }) as AssistantEditor,
   );
@@ -108,6 +108,7 @@
       answer = result.text;
       assumptions = result.assumptions ?? [];
       missingInputs = result.missingInputs ?? [];
+      skillsUsed = result.skillsUsed ?? [];
       reviewed = input;
       followup = "";
     } catch (problem) {
@@ -186,6 +187,7 @@
               text={answer}
               {assumptions}
               {missingInputs}
+              {skillsUsed}
               disabled={busy}
               onfollowup={prepareFollowup}
             />{/key}

@@ -496,6 +496,7 @@
           assumptions: result.assumptions ?? result.proposal?.assumptions ?? [],
           missingInputs:
             result.missingInputs ?? result.proposal?.missing_inputs ?? [],
+          skillsUsed: result.skillsUsed ?? [],
           work: work ? { ...work } : null,
           boundaries,
         },
@@ -949,6 +950,7 @@
                   text={message.text}
                   assumptions={message.assumptions ?? []}
                   missingInputs={message.missingInputs ?? []}
+                  skillsUsed={message.skillsUsed ?? []}
                   disabled={busy}
                   onfollowup={appendPrompt}
                 />{#if message.work}<p class="reply-origin">
