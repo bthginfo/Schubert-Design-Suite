@@ -7,15 +7,15 @@ import {rows,one,withTenant} from '@schubert/db';
 import {assertPermission,assertVersion,requireRule,dec,money} from '@schubert/domain';
 import {storePrivate,inspectFile,privateBytes,IntegrationUnavailable,deletePrivate,contentHash} from '@schubert/adapters';
 import type {ActorContext} from '@schubert/contracts';
-import {register,getRecord,executeCommand,hash,nextNumber,type Runtime} from './core.js';
+import {register,getRecord,executeCommand,hash,nextNumber,type Runtime,type Handler} from './core.js';
 const uploadFields=z.object({name:z.string().min(1).max(250),original_name:z.string().min(1).max(250),mime_type:z.string(),size_bytes:z.number().int().positive().max(40*1024*1024),content_hash:z.string().regex(/^[a-f0-9]{64}$/),storage_key:z.string().min(1),entity_type:z.string().nullable(),entity_id:z.uuid().nullable(),intent_id:z.uuid().optional()});
 function uploadSignature(ctx:ActorContext,value:unknown){requireRule(process.env.BETTER_AUTH_SECRET,'UPLOAD_CONFIGURATION','Sicherer Dateieingang ist nicht eingerichtet.',503);return createHmac('sha256',process.env.BETTER_AUTH_SECRET).update(ctx.tenantId+':'+ctx.legalEntityId+':'+ctx.actorId+':'+hash(value)).digest('hex');}
-async function registerStoredUpload(ctx:ActorContext,fields:z.infer<typeof uploadFields>){return executeCommand(ctx,{name:'documents.upload.register',idempotencyKey:'upload-'+(fields.intent_id??fields.storage_key),payload:{...fields,registration_signature:uploadSignature(ctx,fields)}});}
+async function registerStoredUpload(ctx:ActorContext,fields:z.infer<typeof uploadFields>){return executeCommand(ctx,{name:fields.entity_type==='manufacturer-assets'?'manufacturer.asset.upload.register':'documents.upload.register',idempotencyKey:'upload-'+(fields.intent_id??fields.storage_key),payload:{...fields,registration_signature:uploadSignature(ctx,fields)}});}
 export async function ingestUpload(ctx:ActorContext,bytes:Uint8Array,name:string,declared:string,entityType?:string,entityId?:string){
- assertPermission(ctx.permissions,'documents.upload');const type=normalizeDocumentType(entityType);await withTenant(ctx,db=>assertDocumentTarget(db,ctx,type,entityId??null));requireRule(name.length>0&&name.length<=250&&!/[\r\n\0]/.test(name),'FILE_NAME','Dateinamen prüfen.');const mime=await inspectFile(bytes,declared,name);const stored=await storePrivate(ctx,bytes,mime);let used=false;
+ const type=normalizeDocumentType(entityType);assertPermission(ctx.permissions,type==='manufacturer-assets'?'manufacturer_assets':'documents.upload');await withTenant(ctx,db=>assertDocumentTarget(db,ctx,type,entityId??null));requireRule(name.length>0&&name.length<=250&&!/[\r\n\0]/.test(name),'FILE_NAME','Dateinamen prüfen.');const mime=await inspectFile(bytes,declared,name);const stored=await storePrivate(ctx,bytes,mime);let used=false;
  try{const doc=await registerStoredUpload(ctx,{name,original_name:name,mime_type:mime,size_bytes:bytes.length,content_hash:stored.hash,storage_key:stored.key,entity_type:type,entity_id:entityId??null});used=!doc.upload_reused;return doc;}finally{if(!used)await deletePrivate(stored.key,ctx).catch(()=>{});}
 }
-register('documents.upload.register','documents.upload',async r=>{
+const registerUpload:Handler=async r=>{
  const p=uploadFields.parse(r.payload),signature=z.string().regex(/^[a-f0-9]{64}$/).parse(r.payload.registration_signature);
  requireRule(timingSafeEqual(Buffer.from(signature,'hex'),Buffer.from(uploadSignature(r.ctx,p),'hex')),'UPLOAD_REGISTRATION','Dateiregistrierung benötigt einen frisch geprüften serverseitigen Upload.',403);
  await assertDocumentTarget(r.db,r.ctx,p.entity_type,p.entity_id);requireRule(p.storage_key.startsWith(r.ctx.tenantId+'/'),'STORAGE_SCOPE','Ablageobjekt gehört zu einem anderen Mandanten.');
@@ -26,12 +26,16 @@ register('documents.upload.register','documents.upload',async r=>{
  const {storage_key,intent_id,...fields}=p,document=await r.insert('documents',{...fields,status:'quarantine',visibility:'internal'}),version=await r.insert('document_versions',{document_id:document.id,blob_object_id:blob.id,content_hash:p.content_hash,revision:1,status:'quarantine'});
  await r.db.query('UPDATE documents SET current_version_id=$1 WHERE id=$2',[version.id,document.id]);if(intent)await r.update('upload_intents',intent.id,{document_id:document.id,status:'completed'},intent.version);
  await r.insert('job_runs',{name:'Originaldatei prüfen',job_type:'document.ingest',payload:{documentId:document.id,documentVersionId:version.id},status:'pending'});return{...document,current_version_id:version.id};
-});
-register('documents.upload.intent','documents.upload',async r=>{
+};
+register('documents.upload.register','documents.upload',registerUpload);
+register('manufacturer.asset.upload.register','manufacturer_assets',async r=>{requireRule(r.payload.entity_type==='manufacturer-assets','UPLOAD_SCOPE','Dieser Dateieingang ist auf Herstellerunterlagen beschränkt.',403);return registerUpload(r);});
+const createUploadIntent:Handler=async r=>{
  const p=z.object({name:z.string().min(1).max(250),mime_type:z.string().min(1).max(150),size_bytes:z.number().int().positive().max(40*1024*1024),content_hash:z.string().regex(/^[a-f0-9]{64}$/),entity_type:z.string().optional(),entity_id:z.uuid().optional()}).parse(r.payload),type=normalizeDocumentType(p.entity_type);
  requireRule(!/[\r\n\0]/.test(p.name),'FILE_NAME','Dateinamen prüfen.');await assertDocumentTarget(r.db,r.ctx,type,p.entity_id??null);
  const pathname=r.ctx.tenantId+'/uploads/'+randomUUID();await reserveBlobIn(r.db,r.ctx,{key:pathname,size:p.size_bytes,advanced:1});return r.insert('upload_intents',{actor_id:r.ctx.actorId,pathname,original_name:p.name,mime_type:p.mime_type,size_bytes:p.size_bytes,content_hash:p.content_hash,entity_type:type,entity_id:p.entity_id??null,expires_at:new Date(Date.now()+15*60000),status:'pending'});
-});
+};
+register('documents.upload.intent','documents.upload',createUploadIntent);
+register('manufacturer.asset.upload.intent','manufacturer_assets',async r=>{requireRule(r.payload.entity_type==='manufacturer-assets','UPLOAD_SCOPE','Dieser Dateieingang ist auf Herstellerunterlagen beschränkt.',403);return createUploadIntent(r);});
 export async function uploadIntentTicket(ctx:ActorContext,intent:any){requireRule(process.env.BLOB_READ_WRITE_TOKEN,'UPLOAD_STORAGE','Privater Dateispeicher fehlt.',503);const clientToken=await generateClientTokenFromReadWriteToken({token:process.env.BLOB_READ_WRITE_TOKEN,pathname:intent.pathname,maximumSizeInBytes:Number(intent.size_bytes),allowedContentTypes:[intent.mime_type],validUntil:new Date(intent.expires_at).getTime(),addRandomSuffix:false,allowOverwrite:false});return{id:intent.id,pathname:intent.pathname,clientToken,expiresAt:intent.expires_at};}
 export async function completeUpload(ctx:ActorContext,id:string){
  const intent=await withTenant(ctx,async db=>{const row=await getRecord(db,'upload_intents',id);requireRule(row.actor_id===ctx.actorId,'NOT_FOUND','Dateieingang ist nicht verfügbar.',404);await assertDocumentTarget(db,ctx,row.entity_type,row.entity_id);return row;});

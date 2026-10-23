@@ -4,6 +4,8 @@
   import {fieldHelp} from '#lib/client/field-help.ts';
   import {permitted} from '#lib/client/api.ts';
   import Icon from './Icon.svelte';
+  import {studioAssistantContext} from '#lib/client/studio-assistant.ts';
+  import type {PlanningStep} from '@schubert/contracts';
   let {data,available,onchat,onaction}:{data:AppData;available:boolean;onchat:(prompt:string)=>void;onaction:(action:string)=>void}=$props();
   const slug=$derived(data.path?.split('/')[0]??'');
   const studio=$derived(data.view==='studio');
@@ -12,7 +14,7 @@
   const guide=$derived(guides.find(g=>g.id===(studio?kind:mapping[slug]??'orientation')&&(!g.permission||permitted(data,g.permission)))??guides.find(g=>g.id==='orientation')!);
   const title=$derived(data.module?.label??(studio?'Planungsstudio':slug==='dispatch'?'Einsatzplanung':slug==='settings'?'Einstellungen':slug==='account'?'Meine Einstellungen':'Heute'));
   const fields=$derived((data.module?.fields??[]).filter(field=>field.required&&fieldHelp(field)).slice(0,5));
-  const suggestions=$derived(studio?(kind==='room'?[
+  const genericSuggestions=$derived(studio?(kind==='room'?[
     {label:'Aus Skizze oder Maßen starten',prompt:'Ich möchte aus einer Skizze oder meinen Maßen einen bearbeitbaren Grundriss erstellen. Frage mich nach den lichten Innenmaßen, Raumhöhe, Wandstärke und den vorhandenen Unterlagen. Bereite erst nach Klärung einen Entwurf zur Vorschau vor.'},
     {label:'Raumaufteilung besprechen',prompt:'Hilf mir, diesen Raum weiterzuplanen. Prüfe die vorhandenen Maße, Öffnungen und Bewegungsflächen und frage gezielt nach fehlenden Angaben.'},
     {label:'Ausgewähltes Objekt ändern',prompt:'Ich möchte die ausgewählte Komponente ändern. Frage mich nach der gewünschten Position oder Größe und bereite anschließend einen prüfbaren Änderungsvorschlag vor.'},
@@ -23,6 +25,14 @@
     {label:'Grabmal weiterentwickeln',prompt:'Besprich mit mir die Gestaltung dieses Grabmals. Berücksichtige Stein, Einfassung, Material und Bestand. Frage zuerst nach den konkreten Änderungswünschen.'},
     {label:'Planstand prüfen',prompt:'Prüfe den gespeicherten Grabmalentwurf und nenne die drei wichtigsten noch offenen Angaben für die nächste Planung.'}
   ]):[{label:'Nächsten Schritt besprechen',prompt:'Was ist auf dieser Seite der sinnvolle nächste Schritt? Beziehe dich auf den aktuellen Vorgang und frage nach fehlenden Angaben.'},{label:'Vorgang zusammenfassen',prompt:'Fasse den aktuellen Vorgang kurz zusammen. Unterscheide bestätigte Angaben und offene Punkte.'}]);
+  const stageSuggestions:Record<PlanningStep,{label:string;prompt:string}[]>={
+    geometry:[{label:'Maße und Grundlagen klären',prompt:'Welche Angaben fehlen im aktuellen Planungsschritt? Frage gezielt nach dem Maßbezug und den benötigten Maßen.'},{label:'Aus Skizze oder Maßen starten',prompt:'Ich möchte einen ersten Entwurf aus meinen Maßen oder einer Skizze erstellen. Frage zuerst nach den fehlenden Angaben und erfinde keine Maße.'}],
+    design:[{label:'Auswahl gezielt weitergestalten',prompt:'Hilf mir, die ausgewählte Komponente weiterzugestalten. Frage zuerst nach der konkreten Änderung. Vorhandene Namen, Daten und Maße genau erhalten.'},{label:'Material und Ausführung besprechen',prompt:'Besprich Material und Ausführung der ausgewählten Bauteile. Trenne vorhandene belegte Angaben von offenen Gestaltungswünschen.'}],
+    review:[{label:'Offene Prüfpunkte erklären',prompt:'Erkläre die offenen Punkte der übergebenen Prüfliste mit Bauteilbezug. Nenne die nächsten drei Schritte. Verändere den Plan nicht.'},{label:'Kundenfragen vorbereiten',prompt:'Welche offenen Angaben muss ich mit dem Kunden klären? Formuliere kurze konkrete Rückfragen. Keine Planänderung oder Freigabe.'}],
+    output:[{label:'Kundengespräch vorbereiten',prompt:'Bereite eine kurze Erläuterung dieses Planstands für das Kundengespräch vor. Benenne offene Angaben ausdrücklich.'},{label:'Passende Ausgabe wählen',prompt:'Hilf mir, zwischen Planungs-PDF, Stückliste und Kundenvisualisierung zu wählen. Verändere den Plan nicht und starte keinen Bildauftrag.'}]
+  };
+  const step=$derived($studioAssistantContext?.projectId===data.detail?.id?$studioAssistantContext?.step:undefined);
+  const suggestions=$derived(step?stageSuggestions[step]:genericSuggestions);
 </script>
 <div class="companion-home">
   <section class="companion-intro"><h3>Wie kann ich helfen?</h3><p>Sie sind gerade in <strong>{title}</strong>. Hier finden Sie passende Hilfen und können Ihr Vorhaben im Chat besprechen.</p></section>

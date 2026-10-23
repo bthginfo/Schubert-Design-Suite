@@ -885,3 +885,15 @@ select[data-searchable-control][hidden] { display: none !important; }
  .searchable-select-option { min-height: 48px; padding-top: 12px; padding-bottom: 12px; font-size: 14px; }
  .searchable-select-status, .searchable-select-error { font-size: 12px; }
 }
+
+/* Shared interaction finish: steady surfaces, short movements, visible focus. */
+@keyframes schubert-panel-enter { from { opacity: 0; transform: translateY(8px) scale(.992); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes schubert-drawer-enter { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+.modal-backdrop .modal { animation: schubert-panel-enter .24s cubic-bezier(.2,.8,.2,1); }
+.assistant-drawer { animation: schubert-drawer-enter .24s cubic-bezier(.2,.8,.2,1); }
+.app-shell .btn { border-radius: 11px; }
+.app-shell .btn.primary:not(:disabled) { box-shadow: 0 2px 5px color-mix(in srgb,var(--forest) 16%,transparent); }
+.app-shell .btn:not(:disabled):active { transform: translateY(1px); }
+.app-shell .field input:hover:not(:disabled):not(:focus), .app-shell .field textarea:hover:not(:disabled):not(:focus) { border-color: color-mix(in srgb,var(--muted) 45%,var(--line)); }
+.app-shell .field input:focus, .app-shell .field textarea:focus { border-color: var(--forest); box-shadow: 0 0 0 3px color-mix(in srgb,var(--forest) 10%,transparent); }
+@media(prefers-reduced-motion:reduce){.modal-backdrop .modal,.assistant-drawer{animation:none}.app-shell .btn:not(:disabled):active{transform:none}}

@@ -29,11 +29,11 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
     page.on('response',observeSaved);
     const dialog=page.getByRole('dialog');
     await page.getByRole('button',{name:kind==='memorial'?'Ersten Stein anlegen':'Raum anlegen',exact:true}).click();
-    await dialog.getByLabel('Bezeichnung',{exact:true}).fill(kind==='memorial'?'Stele · 800 × 1200 × 160 mm':'Bad · 4200 × 3200 mm Wandachsen');
-    await dialog.getByLabel('Breite / X-Länge (mm)',{exact:true}).fill(kind==='memorial'?'800':'4200');
-    await dialog.getByLabel('Höhe / Länge (mm)',{exact:true}).fill(kind==='memorial'?'1200':'2600');
-    if(kind==='memorial')await dialog.getByLabel('Stärke (mm)',{exact:true}).fill('160');
-    else {await dialog.getByLabel('Tiefe / Y-Länge (mm)',{exact:true}).fill('3200');await dialog.getByLabel('Wandkern (mm)',{exact:true}).fill('200');}
+    await dialog.getByLabel('Bezeichnung',{exact:true}).fill(kind==='memorial'?'Stele · 800 × 1200 × 160 mm':'Bad · 4200 × 3200 mm Innenmaße');
+    await dialog.getByLabel(kind==='memorial'?'Breite (mm)':'Lichte Raumbreite (mm)',{exact:true}).fill(kind==='memorial'?'800':'4200');
+    await dialog.getByLabel(kind==='memorial'?'Höhe (mm)':'Raumhöhe (mm)',{exact:true}).fill(kind==='memorial'?'1200':'2600');
+    if(kind==='memorial')await dialog.getByLabel('Materialstärke (mm)',{exact:true}).fill('160');
+    else {await dialog.getByLabel('Lichte Raumtiefe (mm)',{exact:true}).fill('3200');await dialog.getByLabel('Wandstärke ohne Belag (mm)',{exact:true}).fill('200');}
     await dialog.getByRole('button',{name:'In den Plan übernehmen',exact:true}).click();await expect(dialog).toBeHidden();
     if(kind==='memorial'){
       await page.getByRole('button',{name:'Kontur & Bögen bearbeiten',exact:true}).click();
@@ -48,7 +48,7 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
       await page.getByRole('button',{name:'Tür / Fenster',exact:true}).click();
       await dialog.getByLabel('Bezeichnung',{exact:true}).fill('Tür · 900 × 2100 mm');
       await chooseSelect(page,dialog.getByRole('combobox',{name:'Bezugswand',exact:true}),{index:1});
-      await dialog.getByLabel('Breite / X-Länge (mm)',{exact:true}).fill('900');await dialog.getByLabel('Höhe / Länge (mm)',{exact:true}).fill('2100');
+      await dialog.getByLabel('Öffnungsbreite (mm)',{exact:true}).fill('900');await dialog.getByLabel('Öffnungshöhe (mm)',{exact:true}).fill('2100');
       await dialog.getByLabel('Abstand längs der Wand (mm)',{exact:true}).fill('600');await dialog.getByLabel('Brüstungshöhe (mm)',{exact:true}).fill('0');
       await dialog.getByRole('button',{name:'In den Plan übernehmen',exact:true}).click();await expect(dialog).toBeHidden();
     }

@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
 import {designOperationSchema,type DesignOperation,type Measure} from '@schubert/contracts';
-import {targetMeasure,rectangleContour,mm,D} from '@schubert/geometry';
+import {targetMeasure,rectangleContour,rectangularRoomAxisPoints} from '@schubert/geometry';
 import {requireRule} from '@schubert/domain';
 
 const dimension=z.string().regex(/^\d+(\.\d{1,2})?$/).refine(value=>Number(value)>0&&Number(value)<=100000);
@@ -29,9 +29,9 @@ export function planningDraftOperations(context:any,input:unknown):DesignOperati
  const operations:any[]=[];
  if(draft.kind==='rectangular_room'){
   requireRule(Number(draft.wallThicknessMm)<=1000&&Number(draft.heightMm)<=10000,'AI_DRAFT_SIZE','Raumhöhe oder Wandstärke prüfen.');
-  const t=new D(draft.wallThicknessMm),x0=t.div(-2),y0=x0,x1=new D(draft.clearWidthMm).plus(t.div(2)),y1=new D(draft.clearDepthMm).plus(t.div(2));
+  const points=rectangularRoomAxisPoints(draft.clearWidthMm,draft.clearDepthMm,draft.wallThicknessMm,{xMm:'0',yMm:'0',zMm:'0'},'clear');
   const height=measure('height',draft.heightMm),core=measure('core',draft.wallThicknessMm),level=measure('level','0');
-  [[x0,y0],[x1,y0],[x1,y1],[x0,y1]].forEach(([x,y],index)=>operations.push({type:'add_element',element:{...base,id:id+':node:'+index,label:draft.label+' · Bezug '+(index+1),kind:'node',point:{xMm:mm(x),yMm:mm(y),zMm:'0'}}}));
+  points.forEach((point,index)=>operations.push({type:'add_element',element:{...base,id:id+':node:'+index,label:draft.label+' · Bezug '+(index+1),kind:'node',point}}));
   for(let i=0;i<4;i++)operations.push({type:'add_element',element:{...base,id:id+':wall:'+i,label:draft.label+' · Wand '+(i+1),kind:'wall',startNodeId:id+':node:'+i,endNodeId:id+':node:'+((i+1)%4),heightMeasureId:height,coreThicknessMeasureId:core,layers:[],joinStyle:'miter'},measurements});
   operations.push({type:'add_element',element:{...base,kind:'room',roomId:'unassigned:room:'+id,floorId:'unassigned:floor:'+id,boundary:Array.from({length:4},(_,i)=>({wallId:id+':wall:'+i,side:'left'})),floorLayers:[],finishedFloorLevelMeasureId:level},measurements});
  }else{

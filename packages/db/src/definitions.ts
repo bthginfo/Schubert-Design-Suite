@@ -4,6 +4,7 @@ export const tables:Record<string,TableDefinition>={};
 const typeFor=(type:string)=>type==='checkbox'?'boolean':type==='date'?'date':type==='datetime-local'?'timestamptz':type==='money'||type==='number'?'numeric(20,6)':type==='reference'?'uuid':'text';
 for(const m of modules){tables[m.table]??={};for(const f of m.fields)if(!['name','title','notes','number','status'].includes(f.key))tables[m.table][f.key]??=typeFor(f.type);}
 function add(name:string,fields:TableDefinition){tables[name]={...tables[name],...fields};}
+add('manufacturer_assets',{document_version_id:'uuid',source_unit:'text',use_planning:'boolean',use_ai:'boolean',rights_statement:'text',published_by:'text',published_at:'timestamptz',source_hash:'text'});
 add('feedback_reports',{actor_id:'text',submitter_name:'text',submitter_role:'text',category:'text',message:'text',expected:'text',page_path:'text',page_label:'text',context:'jsonb',server_release:'text',priority:'text',admin_notes:'text',resolution_ref:'text'});
 add('legal_entities',{feedback_enabled:'boolean NOT NULL DEFAULT false',feedback_version:'integer NOT NULL DEFAULT 1'});
 add('archive_objects',{object_key:'text',content_hash:'text',size_bytes:'bigint',provider:'text',storage_version_id:'text',retain_until:'timestamptz',proof:'jsonb',document_version_id:'uuid'});

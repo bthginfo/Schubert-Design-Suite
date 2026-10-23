@@ -14,10 +14,16 @@ export async function assertDocumentTarget(db:DbClient,ctx:ActorContext,type:str
  requireRule(table,'DOCUMENT_TARGET','Diesen Dokumentbezug über einen bekannten Fachbereich auswählen.');
  const record=await getRecord(db,table,id);
  if(module)assertPermission(ctx.permissions,module.permission);else assertPermission(ctx.permissions,'planning');
+ if(type==='manufacturer-assets')requireRule(record.status==='draft'&&!record.published_at,'ASSET_FROZEN','Für einen neuen Herstellerstand eine neue Unterlage anlegen. Die bereitgestellte Fassung bleibt erhalten.');
  if(type==='orders')await assertOrderScope(db,ctx,record.id);else if(record.order_id)await assertOrderScope(db,ctx,record.order_id);
 }
-export async function assertDocumentAccess(db:DbClient,ctx:ActorContext,doc:any){
+export async function assertDocumentAccess(db:DbClient,ctx:ActorContext,doc:any,versionId?:string){
  const type=normalizeDocumentType(doc.entity_type);
+ if(type==='manufacturer-assets'){
+  if(ctx.permissions.includes('manufacturer_assets'))return;
+  const source=await one(db,'SELECT 1 FROM manufacturer_assets a JOIN document_versions v ON v.id=a.document_version_id WHERE a.id=$1 AND v.document_id=$2 AND a.published_at IS NOT NULL AND($3::uuid IS NULL OR v.id=$3)',[doc.entity_id,doc.id,versionId??null]);
+  requireRule(ctx.permissions.some(p=>['planning','planning.read'].includes(p))&&source,'NOT_FOUND','Diese Herstellerunterlage ist nicht freigegeben.',404);return;
+ }
  if(personnelDocumentTypes.includes(doc.entity_type)||type&&personnelDocumentTypes.includes(type))assertPermission(ctx.permissions,'hr');else assertPermission(ctx.permissions,'documents');
  if(financialDocumentTypes.includes(type??''))requireRule(ctx.permissions.some(p=>['billing','finance','finance.read'].includes(p)),'NOT_FOUND','Unterlage ist nicht verfügbar.',404);
  if(['Employee','Workshop','Dispatcher'].includes(ctx.role)){const allowed=await one(db,`SELECT 1 FROM documents d WHERE d.id=$1 AND ${documentReadPredicate(ctx,'d')}`,[doc.id]);requireRule(allowed,'NOT_FOUND','Unterlage ist nicht verfügbar.',404);}
@@ -25,9 +31,11 @@ export async function assertDocumentAccess(db:DbClient,ctx:ActorContext,doc:any)
 /** A SQL predicate shared by file lists and full-text snippets, before any content leaves the server. */
 export function documentReadPredicate(ctx:ActorContext,alias='documents'){
  const hr=ctx.permissions.includes('hr'),finance=ctx.permissions.some(p=>['billing','finance','finance.read'].includes(p));
- const terms=[hr?'TRUE':`COALESCE(${alias}.entity_type,'') <> ALL(ARRAY[${personnelDocumentTypes.map(t=>"'"+t+"'").join(',')}])`];
+ const manager=ctx.permissions.includes('manufacturer_assets'),planner=ctx.permissions.some(p=>['planning','planning.read'].includes(p));
+ const libraryPredicate=`(COALESCE(${alias}.entity_type,'')<>'manufacturer-assets' OR EXISTS(SELECT 1 FROM manufacturer_assets ma WHERE ma.id=${alias}.entity_id AND ${manager?'TRUE':planner?`ma.published_at IS NOT NULL AND EXISTS(SELECT 1 FROM document_versions mav WHERE mav.id=ma.document_version_id AND mav.document_id=${alias}.id)`:'FALSE'}))`;
+ const terms=[libraryPredicate,hr?'TRUE':`COALESCE(${alias}.entity_type,'') <> ALL(ARRAY[${personnelDocumentTypes.map(t=>"'"+t+"'").join(',')}])`];
  if(!finance)terms.push(`COALESCE(${alias}.entity_type,'') <> ALL(ARRAY[${financialDocumentTypes.map(t=>"'"+t+"'").join(',')}])`);
- if(['Employee','Workshop','Dispatcher'].includes(ctx.role))terms.push(`(${alias}.created_by=current_setting('app.actor_id',true) OR EXISTS(SELECT 1 FROM dispatch_assignments da WHERE da.employee_id=(SELECT employee_id FROM memberships WHERE user_id=current_setting('app.actor_id',true) AND active LIMIT 1) AND da.status NOT IN('cancelled','deleted') AND ((COALESCE(${alias}.entity_type,'') IN('order','orders','sales.order') AND da.order_id=${alias}.entity_id) OR EXISTS(SELECT 1 FROM document_links dl WHERE dl.document_id=${alias}.id AND dl.entity_type IN('order','orders') AND dl.entity_id=da.order_id))))`);
+ if(['Employee','Workshop','Dispatcher'].includes(ctx.role))terms.push(`(COALESCE(${alias}.entity_type,'')='manufacturer-assets' OR ${alias}.created_by=current_setting('app.actor_id',true) OR EXISTS(SELECT 1 FROM dispatch_assignments da WHERE da.employee_id=(SELECT employee_id FROM memberships WHERE user_id=current_setting('app.actor_id',true) AND active LIMIT 1) AND da.status NOT IN('cancelled','deleted') AND ((COALESCE(${alias}.entity_type,'') IN('order','orders','sales.order') AND da.order_id=${alias}.entity_id) OR EXISTS(SELECT 1 FROM document_links dl WHERE dl.document_id=${alias}.id AND dl.entity_type IN('order','orders') AND dl.entity_id=da.order_id))))`);
  return terms.join(' AND ');
 }
 export async function assertCustomerDocument(db:DbClient,doc:any,customerId:string){
@@ -42,4 +50,11 @@ export async function assertCustomerDocument(db:DbClient,doc:any,customerId:stri
   OR ($1 IN('design_revision','design_revisions') AND EXISTS(SELECT 1 FROM design_revisions r JOIN design_variants v ON v.id=r.variant_id JOIN planning_projects p ON p.id=v.planning_project_id JOIN orders o ON o.id=p.order_id WHERE r.id=$2 AND o.customer_id=$3))
   OR EXISTS(SELECT 1 FROM document_links WHERE document_id=$4 AND entity_type IN('customer','customers') AND entity_id=$3)`,[normalizeDocumentType(doc.entity_type)??'',doc.entity_id??null,customerId,doc.id]);
  requireRule(owner,'DOCUMENT_CUSTOMER_SCOPE','Die Kundenfassung gehört nicht zu diesem Kunden.',404);
+}
+
+/** A file's permitted audience does not grant permission to send it to an AI. */
+export async function assertManufacturerUse(db:DbClient,doc:any,versionId:string,use:'ai'|'planning'){
+ if(normalizeDocumentType(doc.entity_type)!=='manufacturer-assets')return;
+ const asset=await getRecord(db,'manufacturer_assets',doc.entity_id);
+ requireRule(asset.published_at&&asset.document_version_id===versionId&&(use==='ai'?asset.use_ai:asset.use_planning),'MANUFACTURER_USAGE',use==='ai'?'Diese Herstellerdatei ist nicht für die Übermittlung an KI freigegeben.':'Diese Herstellerdatei ist nicht für die Verwendung als Planvorlage freigegeben.',403);
 }

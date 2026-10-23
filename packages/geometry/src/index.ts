@@ -19,3 +19,4 @@ export * from './snapping.js';
 export * from './selection.js';
 export * from './dimensions.js';
 export * from './presets.js';
+export * from './room-dimensions.js';

@@ -11,7 +11,7 @@ export async function login(page:Page,role='OWNER',credentials?:{email:string;pa
  const cachePath='work/uat-sessions/'+createHash('sha256').update(email+password+(process.env.UAT_BASE_URL||'local')).digest('hex')+'.json';
  let cookies=sessions.get(email);if(!cookies)try{const saved=JSON.parse(await readFile(cachePath,'utf8'));if(Date.now()-saved.at<3600000)cookies=saved.cookies;}catch{}
  if(cookies){await page.context().addCookies(cookies);await page.goto('/');if(!new URL(page.url()).pathname.startsWith('/login')){await finishLogin(page);return;}sessions.delete(email);}
- await page.goto('/login');await page.getByLabel('E-Mail',{exact:false}).fill(email);await page.locator('#login-password').fill(password);
+ await page.goto('/login');await page.waitForLoadState('networkidle');await page.getByLabel('E-Mail',{exact:false}).fill(email);await page.locator('#login-password').fill(password);
  const responsePromise=page.waitForResponse(r=>r.url().endsWith('/api/auth/sign-in/email')&&r.request().method()==='POST');
  await page.getByRole('button',{name:'Sicher anmelden',exact:true}).click();const response=await responsePromise;
  expect(response.status(),'Real login must pass without disabling its rate limit').toBe(200);await expect(page).not.toHaveURL(/\/login/);

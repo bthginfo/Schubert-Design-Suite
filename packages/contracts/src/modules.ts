@@ -54,6 +54,7 @@ mod('audit','audit_events','Nachweisprotokoll','Nachweis','system.audit','audit'
 mod('jobs','job_runs','Verarbeitung','Job','system.job','system',[],[{name:'system.job.retry',label:'Erneut ausführen',statuses:['failed','unavailable'],confirmation:true}],{readOnly:true,columns:['name','status','attempts','last_error','updated_at']}),
 mod('notifications','notifications','Mitteilungen','Mitteilung','communication.notification','tasks',[],[{name:'communication.notification.read',label:'Als gelesen markieren'}],{readOnly:true,columns:['title','status','created_at']})
 ];
+modules.push(mod('manufacturer-assets','manufacturer_assets','Herstellerbibliothek','Herstellerunterlage','manufacturer.asset','manufacturer_assets',[name,f('manufacturer_name','Hersteller','text',true),f('article_reference','Artikel / Modell'),sel('studio_scope','Planungsstudio',['both','memorial','room_plan']),sel('kind','Verwendung',['plan','reference','datasheet','model']),f('source_url','Originalquelle'),note],[],{readOnly:true,columns:['name','manufacturer_name','kind','studio_scope','status']}));
 modules.push(...billingProfileModules,salesPriceModule,...additionalModules,...hrModules,...financeModules);
 export const moduleBySlug=(slug:string)=>modules.find(m=>m.slug===slug);
 export const publicModule=(m:ModuleDefinition,permissions:string[])=>({...m,fields:m.fields.filter(x=>!x.internal||permissions.includes('finance')),actions:m.actions.filter(x=>!x.permission||permissions.includes(x.permission))});

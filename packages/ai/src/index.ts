@@ -1,7 +1,7 @@
 import {planningDraftOperations,planningDraftInstructions,planningDraftFormat,planningDraftSchema,bindPlanningDraft} from './planning-draft.js';
 import {imageParameters} from './image-profile.js';
 export {imageQualitySchema,imageSizeSchema,imageIntentSchema,visualizationInstructions} from './image-profile.js';
-import {designOperationSchema} from '@schubert/contracts';
+import {designOperationSchema,planningStepSchema,planningOperationAllowed} from '@schubert/contracts';
 import OpenAI,{toFile} from 'openai';
 import {z} from 'zod';
 import {withTenant,one,insert,update} from '@schubert/db';
@@ -68,7 +68,7 @@ export async function assistant(ctx:ActorContext,message:string,inputContext:Rec
   if(cmd.name==='planning.design.change'){
    requireRule(parsed.targetId===context.variantId&&parsed.baseVersion===context.baseVersion&&payload.base_revision_id===context.revisionId,'AI_STALE_TARGET','Vorschlag ist nicht an die ausgewählte Planrevision gebunden.');
    const generatedDraft=structuredDraft||payload.draft!==undefined;if(payload.draft!==undefined){requireRule(payload.operations===undefined,'AI_DRAFT_FORMAT','Eine Entwurfsvorlage oder einzelne Änderungen auswählen.');payload.operations=planningDraftOperations(context,payload.draft);delete payload.draft;cmd.inputJson=JSON.stringify(payload);}
-   requireRule(Array.isArray(payload.operations)&&payload.operations.length>0&&payload.operations.length<=20&&payload.operations.every((op:any)=>generatedDraft&&op.type==='add_element'||['move_element','set_element_position','rotate_element','set_design_target','set_inscription_text','set_inscription_layout'].includes(op.type)),'AI_OPERATION','Diese Planaktion benötigt eine gesonderte fachliche Bearbeitung.');payload.operations.forEach((op:any)=>designOperationSchema.parse(op));
+   requireRule(Array.isArray(payload.operations)&&payload.operations.length>0&&payload.operations.length<=20&&payload.operations.every((op:any)=>generatedDraft&&op.type==='add_element'||['move_element','set_element_position','rotate_element','set_design_target','set_inscription_text','set_inscription_layout'].includes(op.type)),'AI_OPERATION','Diese Planaktion benötigt eine gesonderte fachliche Bearbeitung.');payload.operations.forEach((op:any)=>{designOperationSchema.parse(op);const step=planningStepSchema.safeParse(context.workflow?.step);requireRule(!step.success||planningOperationAllowed(step.data,op.type),'AI_WORKFLOW_SCOPE','Dieser Vorschlag passt nicht zum aktuellen Arbeitsschritt. Wechseln Sie zum passenden Planungsschritt.');});
   }
  }
  }catch(error){await withTenant(ctx,db=>update(db,'ai_runs',reservation.runId,{status:'invalid_response',result:{validationError:error instanceof DomainError?error.code:'AI_PROPOSAL_FORMAT',...(error instanceof z.ZodError?{invalidFields:error.issues.map(issue=>issue.path.join('.')).slice(0,20)}:{})}}));if(error instanceof z.ZodError)throw new DomainError('AI_PROPOSAL_FORMAT','Der KI-Entwurf enthält unvollständige oder ungültige Planungswerte. Es wurde nichts geändert und kein weiterer Modellaufruf gestartet.',422);throw error;}
@@ -100,4 +100,4 @@ export async function generateVisualization(ctx:ActorContext,prompt:string,refer
 
 export async function probeOpenAI(ctx:ActorContext){const config=await integrationConfiguration(ctx,'openai'),profile=routeModel(config,'standard',{entityType:'probe'}),api=client(config.apiKey);const model=await api.models.retrieve(profile.model);requireRule(model.id===profile.model,'AI_MODEL_UNAVAILABLE','Das konfigurierte günstige Standardmodell ist in diesem API-Projekt nicht verfügbar.');const result=await assistant(ctx,'Dies ist ein synthetischer Verbindungstest ohne Kundendaten. Antworte kurz auf Deutsch, dass die Verbindung funktioniert. Schlage keine Befehle vor.',{entityType:'probe'});return{available:true,model:result.model,promptVersion:result.promptVersion,cached:result.cached,actualCost:result.actualCost,connectionVersionId:config.connectionVersionId??null};}
 
-export {compactContext} from './model-routing.js';
+export {compactContext,planningVisualizationContext} from './model-routing.js';

@@ -1,0 +1,24 @@
+[
+  {
+    "kind": "memorial",
+    "planningProjectId": "6978bd23-ac18-4346-bc3b-d47188db5599",
+    "variantId": "097517c7-0646-4d6d-908b-b6a05d5755ba",
+    "revisionId": "d05cad9f-b742-4ef1-81ef-e41e76f9dbf5",
+    "modelHash": "4e97dc54a5289b6291003c941bfecb02442438c8d1d0df61c7f01f7b3f53ffdb",
+    "pdfSha256": "3db7f186c782a128abd788e621aee6c927d9775a553ca82688b2c0439084c401",
+    "pdfBytes": 21989,
+    "source": "Local synthetic acceptance tenant; real authenticated PDF exporter",
+    "pageErrors": []
+  },
+  {
+    "kind": "room_plan",
+    "planningProjectId": "d025514f-31cd-42b4-97a2-b10335e0df7e",
+    "variantId": "e40078c4-9e2a-464b-af75-83ce53b6f6a1",
+    "revisionId": "3c4b6343-87a2-4a4f-8b1e-1490fa79c111",
+    "modelHash": "34318eb50d39a800b6b461ad07c477962233c6a07e6cecf610247d9686d9464f",
+    "pdfSha256": "830812f034fe45a5978f393c00ef3320b6d398a6ae101d0de6e381b6f35fe424",
+    "pdfBytes": 23252,
+    "source": "Local synthetic acceptance tenant; real authenticated PDF exporter",
+    "pageErrors": []
+  }
+]
