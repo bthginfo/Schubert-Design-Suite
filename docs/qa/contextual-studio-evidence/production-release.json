@@ -1,0 +1,105 @@
+{
+  "checkedAt": "2026-10-23T08:56:14.116Z",
+  "url": "https://schubert-design-suite.vercel.app",
+  "featureCommit": "3ea6dcc7d2b57c0fe6f49884130d6a877be6b1b9",
+  "mainMerge": "3b95a82c01e20f148d31aa8879bed5e9141f8f74",
+  "deployment": {
+    "id": "dpl_9z4firyQafUwZeNkA4JHoDmb6Vbj",
+    "url": "schubert-design-suite-86niibpt4-juliusvingelheim-2692s-projects.vercel.app",
+    "readyState": "READY",
+    "target": "production",
+    "sha": "3b95a82c01e20f148d31aa8879bed5e9141f8f74",
+    "branch": "main",
+    "alias": [
+      "schubert-design-suite.vercel.app",
+      "schubert-design-suite-juliusvingelheim-2692s-projects.vercel.app",
+      "schubert-design-suite-git-main-juliusvingelheim-2692s-projects.vercel.app"
+    ],
+    "aliasAssigned": 1792745446330
+  },
+  "database": {
+    "complete": true,
+    "checkedAt": "2026-10-23T08:45:41.189Z",
+    "commit": "3ea6dcc7d2b57c0fe6f49884130d6a877be6b1b9",
+    "verifiedMigrations": 43,
+    "last": "0043_manufacturer_assets.sql",
+    "checksum": "5613a2615b31a8333b3354e54575342afb5bf47faf51845fa551462648479ed6",
+    "applied": [
+      "0043_manufacturer_assets.sql"
+    ],
+    "rlsEnforced": true,
+    "applicationRoleRestricted": true,
+    "testDataPreserved": true,
+    "businessCountsUnchanged": true
+  },
+  "maintenanceCleanup": {
+    "checkedAt": "2026-10-23T08:49:28.283Z",
+    "maintenanceDatabaseVariables": 0,
+    "applicationEnvironmentIdsPreserved": true
+  },
+  "testDataPreserved": true,
+  "automatedAcceptance": {
+    "unit": 340,
+    "postgres": 45,
+    "browser": 47,
+    "featureCiRun": "https://github.com/bthginfo/Schubert-Design-Suite/actions/runs/39921392131"
+  },
+  "liveBrowser": {
+    "checkedAt": "2026-10-23T08:52:49.360Z",
+    "phase": "after-release",
+    "url": "https://schubert-design-suite.vercel.app/login",
+    "status": 200,
+    "title": "Anmelden · SCHUBERT",
+    "routes": [
+      {
+        "path": "/login",
+        "status": 200,
+        "location": null
+      },
+      {
+        "path": "/manufacturer-assets",
+        "status": 303,
+        "location": "/login"
+      },
+      {
+        "path": "/api/v1/planning/manufacturer-assets",
+        "status": 401,
+        "location": null
+      }
+    ],
+    "errors": [],
+    "failed": [],
+    "results": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "violations": [],
+        "horizontalOverflow": false
+      },
+      {
+        "viewport": {
+          "width": 375,
+          "height": 812
+        },
+        "violations": [],
+        "horizontalOverflow": false
+      }
+    ],
+    "readOnly": true
+  },
+  "observability": {
+    "window": "1h",
+    "deploymentId": "dpl_9z4firyQafUwZeNkA4JHoDmb6Vbj",
+    "unexpectedRuntimeErrors": 0,
+    "expectedAuthenticationDenials": 1,
+    "serverErrors": 0,
+    "runtimeQueryComplete": true,
+    "requestQueryComplete": true
+  },
+  "limits": [
+    "Die Live-Browserprüfung umfasst die öffentliche Anmeldung und Zugriffssperren. Angemeldete Studio- und Büroabläufe wurden lokal vollständig geprüft.",
+    "Neue kostenpflichtige KI-Antworten und der vollständige Datei-/Scanlauf wurden für diese Änderung nicht live abgenommen."
+  ]
+}

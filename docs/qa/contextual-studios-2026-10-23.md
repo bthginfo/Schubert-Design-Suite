@@ -56,4 +56,14 @@ Die technische Zeichenfläche behält ihr helles Papier auch im dunklen Theme. R
 - Büro: [ausgewählte Positionssumme am Desktop](contextual-studio-evidence/office-totals-desktop.png), [auf dem Mobilgerät](contextual-studio-evidence/office-totals-mobile.png).
 - Echte Exporte: [Grabmal-PDF](contextual-studio-evidence/memorial.pdf), [Raum-PDF](contextual-studio-evidence/room_plan.pdf), [Revisions- und Hashnachweis](contextual-studio-evidence/pdf-evidence.json).
 
-Vor dem produktiven Einsatz des neuen Bereichs muss Migration 0043 auf dem Zielsystem angewendet werden. Diese Arbeit enthält keine Produktionsmigration und keine produktive Veröffentlichung.
+## Produktionsveröffentlichung
+
+Am 23.10.2026 wurde Migration `0043_manufacturer_assets.sql` auf dem bestehenden Produktionssystem angewendet. Alle 43 Migrationsprüfsummen stimmen mit dem geprüften Quellstand überein. Mandantenschutz und erzwungene RLS der neuen Tabelle, die eingeschränkte Anwendungsrolle und der lesende Sicherungszugriff wurden bestätigt. Der temporäre Wartungszugang wurde anschließend getrennt; die ursprünglichen Umgebungsvariablen der Hauptanwendung behielten ihre IDs.
+
+Die vorhandenen Testdaten bleiben auf ausdrücklichen Nutzerwunsch erhalten. Testdatenmanifest und Bestandszahlen von Planungen, Varianten, Angeboten, Rechnungen und Unterlagen waren vor und nach der Migration identisch.
+
+[PR #1](https://github.com/bthginfo/Schubert-Design-Suite/pull/1) wurde als `3b95a82c01e20f148d31aa8879bed5e9141f8f74` nach `main` gemergt. Vercel veröffentlichte diesen Stand als produktives Deployment `dpl_9z4firyQafUwZeNkA4JHoDmb6Vbj`; die [Produktivadresse](https://schubert-design-suite.vercel.app) wurde diesem Deployment zugeordnet. Der [CI-Lauf des geprüften Funktionsstands](https://github.com/bthginfo/Schubert-Design-Suite/actions/runs/39921392131) ist erfolgreich.
+
+Die Live-Anmeldeseite wurde bei 1440 und 375 Pixeln im Browser geprüft: keine JavaScript-Fehler, fehlgeschlagenen Ressourcen, horizontalen Überläufe oder automatisierten WCAG-A/AA-Funde. Der Herstellerbereich leitet ohne Anmeldung zur Anmeldung weiter, seine API antwortet mit 401. Die Laufzeitprüfung des neuen Deployments fand ausschließlich diese bewusst ausgelöste `AUTH_REQUIRED`-Ablehnung; keine unerwarteten Laufzeitfehler und keine HTTP-5xx-Antworten.
+
+Die angemeldeten Studio- und Büroabläufe wurden im lokalen vollständigen Browserlauf geprüft. Die öffentliche Live-Prüfung ersetzt keine angemeldete Produktionsabnahme und keinen neuen kostenpflichtigen KI-/Datei-Scanlauf. Der [Veröffentlichungsnachweis](contextual-studio-evidence/production-release.json) enthält Commit, Deployment, Schema-, Datenbestands- und Live-Prüfnachweise ohne Zugangsdaten.
