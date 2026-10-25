@@ -40,7 +40,7 @@ export const guides = [
     action: "Tagesübersicht öffnen",
     steps: [
       "Links wählen Sie einen Arbeitsbereich. Auf dem Handy erreichen Sie die Navigation über „Mehr“.",
-      "Innerhalb eines Bereichs führt die obere Navigation zu den zugehörigen Listen. Eine Zeile öffnet die Akte.",
+      "Büro und Einkauf beginnen mit den häufigen Aufgaben. Eine Kundenzeile öffnet die Kundenübersicht mit Kacheln für alle zugehörigen Vorgänge.",
       "Pflichtfelder tragen ein Sternchen. Hinweise unter den Eingaben erklären Format und Bedeutung. Erst „Speichern“ übernimmt einen Entwurf.",
     ],
   },
@@ -54,8 +54,8 @@ export const guides = [
     action: "Kunden öffnen",
     steps: [
       "„Kunde anlegen“ wählen. Name, Anschrift und vorhandene Kontaktdaten eintragen. Fehlende optionale Angaben können Sie später ergänzen.",
-      "Unter „Anfragen“ den Kunden auswählen, das Vorhaben beschreiben und den nächsten Schritt festhalten.",
-      "In der Akte finden Sie verknüpfte Vorgänge. Prüfen Sie vor dem Anlegen, ob der Kunde bereits existiert.",
+      "In der Kundenübersicht „Anfrage anlegen“ wählen. Der Kunde wird übernommen; Sie beschreiben nur noch das Vorhaben und den nächsten Schritt.",
+      "Die Kacheln zeigen Aufträge, Anfragen, Angebote, Planungen, Unterlagen und Rechnungen. „Daten, Kommunikation & Verlauf“ öffnet die vollständige Akte. Prüfen Sie vor dem Anlegen, ob der Kunde bereits existiert.",
     ],
   },
   {
@@ -96,7 +96,7 @@ export const guides = [
     action: "Planungsstudio öffnen",
     steps: [
       "Planung öffnen oder neu anlegen und „Grabmal“ wählen. Grabstätte und bestätigte Maße zuordnen.",
-      "Steinkörper, Sockel und Inschrift auswählen. Maße in Millimetern eingeben; den genauen Inschrifttext Zeichen für Zeichen prüfen.",
+      "Steinkörper, Sockel und Inschrift auswählen. Oben mm, cm oder m wählen und Maße in dieser Einheit eingeben. „Bauteile“ öffnet die Liste, „Eigenschaften“ die Angaben zur Auswahl. Den genauen Inschrifttext Zeichen für Zeichen prüfen.",
       "Zwischen 2D und 3D wechseln. Vor Planexport und Freigabe die Prüfliste abarbeiten. Eine KI-Visualisierung ersetzt keine technische Zeichnung.",
     ],
   },

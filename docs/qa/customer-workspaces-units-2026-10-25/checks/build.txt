@@ -1,0 +1,156 @@
+$ node scripts/build-ai-skills.mjs --check && pnpm --filter @schubert/web build && node scripts/build-worker.mjs
+Four reviewed DE skills verified.
+$ node ../../scripts/prepare-planning-assets.mjs && vite build
+Planning fonts and representative CC0 textures verified.
+vite v8.3.4 building ssr environment for production...
+transforming...
+✓ 566 modules transformed.
+rendering chunks...
+computing gzip size...
+.svelte-kit/output/server/.vite/manifest.json                                             11.22 kB │ gzip:   1.39 kB
+.svelte-kit/output/server/_app/immutable/assets/inter-latin-400-normal.C38fXH4l.woff2     23.66 kB
+.svelte-kit/output/server/_app/immutable/assets/inter-latin-500-normal.Cerq10X2.woff2     24.27 kB
+.svelte-kit/output/server/_app/immutable/assets/inter-latin-700-normal.Yt3aPRUw.woff2     24.35 kB
+.svelte-kit/output/server/_app/immutable/assets/inter-latin-600-normal.LgqL8muc.woff2     24.45 kB
+.svelte-kit/output/server/_app/immutable/assets/inter-latin-400-normal.CyCys3Eg.woff      30.69 kB
+.svelte-kit/output/server/_app/immutable/assets/inter-latin-600-normal.CiBQ2DWP.woff      31.26 kB
+.svelte-kit/output/server/_app/immutable/assets/inter-latin-500-normal.BL9OpVg8.woff      31.28 kB
+.svelte-kit/output/server/_app/immutable/assets/inter-latin-700-normal.BLAVimhd.woff      31.32 kB
+.svelte-kit/output/server/_app/immutable/assets/AssistantSources.kl48Fsgp.css              5.17 kB │ gzip:   1.22 kB
+.svelte-kit/output/server/_app/immutable/assets/ManufacturerAssets.40b_4vvv.css            6.63 kB │ gzip:   1.35 kB
+.svelte-kit/output/server/_app/immutable/assets/_layout.BW4w5ymY.css                      62.13 kB │ gzip:  12.53 kB
+.svelte-kit/output/server/_app/immutable/assets/_page.BtYMsXiY.css                       120.30 kB │ gzip:  18.48 kB
+.svelte-kit/output/server/_app/immutable/assets/Studio.DFj57jZB.css                      132.34 kB │ gzip:  18.38 kB
+.svelte-kit/output/server/entries/pages/_layout.svelte.js                                  0.28 kB │ gzip:   0.21 kB │ map:     0.30 kB
+.svelte-kit/output/server/env.js                                                           0.31 kB │ gzip:   0.19 kB │ map:     0.57 kB
+.svelte-kit/output/server/chunks/rolldown-runtime.js                                       0.36 kB │ gzip:   0.25 kB
+.svelte-kit/output/server/chunks/server.js                                                 0.49 kB │ gzip:   0.29 kB │ map:     0.73 kB
+.svelte-kit/output/server/chunks/manufacturer-reference.js                                 0.58 kB │ gzip:   0.35 kB │ map:     0.84 kB
+.svelte-kit/output/server/chunks/functions.js                                              0.78 kB │ gzip:   0.46 kB │ map:     1.10 kB
+.svelte-kit/output/server/chunks/navigation.js                                             0.88 kB │ gzip:   0.42 kB │ map:     1.38 kB
+.svelte-kit/output/server/entries/pages/_error.svelte.js                                   1.42 kB │ gzip:   0.70 kB │ map:     1.38 kB
+.svelte-kit/output/server/entries/pages/_...path_/_page.server.ts.js                       1.60 kB │ gzip:   0.80 kB │ map:     2.35 kB
+.svelte-kit/output/server/index.js                                                         2.44 kB │ gzip:   1.01 kB │ map:     3.47 kB
+.svelte-kit/output/server/chunks/Icon.js                                                   4.68 kB │ gzip:   2.10 kB │ map:     7.80 kB
+.svelte-kit/output/server/entries/hooks.server.js                                          6.45 kB │ gzip:   2.59 kB │ map:     9.97 kB
+.svelte-kit/output/server/chunks/ManufacturerAssets.js                                     9.30 kB │ gzip:   2.74 kB │ map:    25.48 kB
+.svelte-kit/output/server/chunks/searchable-select.js                                     19.18 kB │ gzip:   7.47 kB │ map:    47.86 kB
+.svelte-kit/output/server/chunks/uneval.js                                                19.43 kB │ gzip:   5.37 kB │ map:    40.88 kB
+.svelte-kit/output/server/chunks/AssistantSources.js                                      22.31 kB │ gzip:   6.72 kB │ map:    39.41 kB
+.svelte-kit/output/server/chunks/server-errors.js                                         24.29 kB │ gzip:   4.61 kB │ map:    35.02 kB
+.svelte-kit/output/server/chunks/src5.js                                                  25.74 kB │ gzip:   8.77 kB │ map:    40.01 kB
+.svelte-kit/output/server/entries/endpoints/api/v1/_...endpoint_/_server.ts.js            35.69 kB │ gzip:   9.96 kB │ map:    52.32 kB
+.svelte-kit/output/server/chunks/src4.js                                                  48.36 kB │ gzip:  10.01 kB │ map:    70.24 kB
+.svelte-kit/output/server/chunks/server2.js                                               51.95 kB │ gzip:  14.15 kB │ map:   164.60 kB
+.svelte-kit/output/server/remote-entry.js                                                 55.46 kB │ gzip:  11.94 kB │ map:    90.80 kB
+.svelte-kit/output/server/chunks/internal.js                                             112.17 kB │ gzip:  29.75 kB │ map:   241.29 kB
+.svelte-kit/output/server/chunks/src.js                                                  114.73 kB │ gzip:  31.03 kB │ map:   173.07 kB
+.svelte-kit/output/server/chunks/instance.js                                             129.02 kB │ gzip:  33.95 kB │ map:   255.88 kB
+.svelte-kit/output/server/chunks/src2.js                                                 222.01 kB │ gzip:  56.48 kB │ map:   393.90 kB
+.svelte-kit/output/server/chunks/Studio.js                                               355.12 kB │ gzip:  74.36 kB │ map:   573.31 kB
+.svelte-kit/output/server/entries/pages/_...path_/_page.svelte.js                        724.20 kB │ gzip: 162.32 kB │ map: 1,158.74 kB
+.svelte-kit/output/server/chunks/src3.js                                               1,380.81 kB │ gzip: 435.75 kB │ map: 1,918.07 kB
+
+[INEFFECTIVE_DYNAMIC_IMPORT] ../../packages/ai/src/index.ts is dynamically imported by ../../packages/application/src/ai-visualizations.ts, ../../packages/application/src/jobs.ts but also statically imported by src/routes/api/v1/[...endpoint]/+server.ts, ../../packages/application/src/ai-visualizations.ts, dynamic import will not move module into another chunk.
+
+[INEFFECTIVE_DYNAMIC_IMPORT] ../../packages/application/src/line-prices.ts is dynamically imported by ../../packages/application/src/core.ts but also statically imported by ../../packages/application/src/sales-prices.ts, dynamic import will not move module into another chunk.
+
+✓ built in 3.59s
+[PLUGIN_TIMINGS] JavaScript callbacks ran for 3.3s of this 3.6s build (92%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin vite-plugin-svelte:compile transform (68%, 2.4s, 129 calls)
+Additional callback time came from the callbacks below and from callbacks under 1s.
+1 callback is listed without a time. Its calls overlapped, so the time inside one call includes work from other calls. To find its cost, profile the build with `node --cpu-prof`:
+  - plugin vite:css transform (102 calls)
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+
+Analysing routes
+(node:19240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Building app
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 742 modules transformed.
+rendering chunks...
+computing gzip size...
+.svelte-kit/output/client/_app/version.json                                              0.02 kB │ gzip:   0.04 kB
+.svelte-kit/output/client/.vite/manifest.json                                           11.66 kB │ gzip:   1.45 kB
+.svelte-kit/output/client/_app/immutable/assets/inter-latin-400-normal.C38fXH4l.woff2   23.66 kB
+.svelte-kit/output/client/_app/immutable/assets/inter-latin-500-normal.Cerq10X2.woff2   24.27 kB
+.svelte-kit/output/client/_app/immutable/assets/inter-latin-700-normal.Yt3aPRUw.woff2   24.35 kB
+.svelte-kit/output/client/_app/immutable/assets/inter-latin-600-normal.LgqL8muc.woff2   24.45 kB
+.svelte-kit/output/client/_app/immutable/assets/inter-latin-400-normal.CyCys3Eg.woff    30.69 kB
+.svelte-kit/output/client/_app/immutable/assets/inter-latin-600-normal.CiBQ2DWP.woff    31.26 kB
+.svelte-kit/output/client/_app/immutable/assets/inter-latin-500-normal.BL9OpVg8.woff    31.28 kB
+.svelte-kit/output/client/_app/immutable/assets/inter-latin-700-normal.BLAVimhd.woff    31.32 kB
+.svelte-kit/output/client/_app/immutable/assets/ThreePreview.BYPnqkfg.css                2.83 kB │ gzip:   0.74 kB
+.svelte-kit/output/client/_app/immutable/assets/assistant.kl48Fsgp.css                   5.17 kB │ gzip:   1.22 kB
+.svelte-kit/output/client/_app/immutable/assets/ManufacturerAssets.40b_4vvv.css          6.63 kB │ gzip:   1.35 kB
+.svelte-kit/output/client/_app/immutable/assets/0.BW4w5ymY.css                          62.13 kB │ gzip:  12.53 kB
+.svelte-kit/output/client/_app/immutable/assets/2.BqdQ9XF0.css                         124.01 kB │ gzip:  18.96 kB
+.svelte-kit/output/client/_app/immutable/assets/Studio.DFj57jZB.css                    132.34 kB │ gzip:  18.38 kB
+.svelte-kit/output/client/_app/immutable/chunks/BjGp_4vg.js                              0.05 kB │ gzip:   0.06 kB
+.svelte-kit/output/client/_app/immutable/entry/payload.DSmR2FwN.js                       0.06 kB │ gzip:   0.07 kB
+.svelte-kit/output/client/_app/immutable/nodes/0.G45fYSyE.js                             0.14 kB │ gzip:   0.14 kB
+.svelte-kit/output/client/_app/immutable/entry/start.Clu6LXX5.js                         0.54 kB │ gzip:   0.32 kB
+.svelte-kit/output/client/_app/immutable/chunks/BWaJ3C7D.js                              0.91 kB │ gzip:   0.51 kB
+.svelte-kit/output/client/_app/immutable/chunks/BDmY_4Js.js                              0.92 kB │ gzip:   0.47 kB
+.svelte-kit/output/client/_app/immutable/nodes/1.BLhZ7woT.js                             1.29 kB │ gzip:   0.77 kB
+.svelte-kit/output/client/_app/immutable/chunks/Bjy-W4x2.js                              1.36 kB │ gzip:   0.65 kB
+.svelte-kit/output/client/_app/immutable/entry/app.BnNWnwIV.js                           1.38 kB │ gzip:   0.67 kB
+.svelte-kit/output/client/_app/immutable/chunks/CRzLMJPS.js                              1.53 kB │ gzip:   0.80 kB
+.svelte-kit/output/client/_app/immutable/chunks/_091IF7c.js                              3.00 kB │ gzip:   1.56 kB
+.svelte-kit/output/client/_app/immutable/chunks/Ddkgw6RW.js                              4.62 kB │ gzip:   2.05 kB
+.svelte-kit/output/client/_app/immutable/chunks/DAfbvsd6.js                             18.69 kB │ gzip:   7.50 kB
+.svelte-kit/output/client/_app/immutable/chunks/CWaLHQvt.js                             20.59 kB │ gzip:   7.36 kB
+.svelte-kit/output/client/_app/immutable/chunks/DIVbqUrl.js                             28.52 kB │ gzip:  11.43 kB
+.svelte-kit/output/client/_app/immutable/chunks/C7T2pOpH.js                             44.41 kB │ gzip:  16.30 kB
+.svelte-kit/output/client/_app/immutable/chunks/L6rdUSSv.js                             56.21 kB │ gzip:  21.37 kB
+.svelte-kit/output/client/_app/immutable/chunks/BT9Y2RkC.js                            101.30 kB │ gzip:  28.35 kB
+.svelte-kit/output/client/_app/immutable/chunks/DDwpr02s.js                            165.75 kB │ gzip:  53.87 kB
+.svelte-kit/output/client/_app/immutable/chunks/Ca1IkN6F.js                            168.26 kB │ gzip:  49.41 kB
+.svelte-kit/output/client/_app/immutable/chunks/Dagr6fK0.js                            357.37 kB │ gzip: 108.19 kB
+.svelte-kit/output/client/_app/immutable/nodes/2.Ds5_B_PS.js                           805.54 kB │ gzip: 246.69 kB
+.svelte-kit/output/client/_app/immutable/chunks/HQCtoGCC.js                            840.43 kB │ gzip: 217.52 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.24s
+(node:19240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Building service worker
+vite v8.3.4 building serviceWorker environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+.svelte-kit/output/client/.vite/service-worker-manifest.json  0.15 kB │ gzip: 0.10 kB
+.svelte-kit/output/client/service-worker.js                   4.10 kB │ gzip: 1.38 kB
+
+✓ built in 44ms
+
+Run npm run preview to preview your production build locally.
+
+> Using @sveltejs/adapter-vercel
+Copying assets...
+Generating serverless function...
+Warning: The following modules failed to locate dependencies that may (or may not) be required for your app to work:
+  ../../node_modules/.pnpm/@vercel+queue@0.8.0/node_modules/@vercel/queue/dist/index.mjs
+    - @opentelemetry/api
+  ../../node_modules/.pnpm/@vercel+functions@3.10.1_@aws-sdk+credential-provider-web-identity@3.972.80/node_modules/@vercel/functions/websocket/index.js
+    - ws
+  ../../node_modules/.pnpm/pg@8.23.1/node_modules/pg/lib/native/client.js
+    - pg-native
+  ../../node_modules/.pnpm/@better-auth+core@1.7.10_@better-auth+utils@0.5.0_@better-fetch+fetch@1.3.2_better-call_224edc5ffd7528388e80ea9fb390ec1e/node_modules/@better-auth/core/dist/instrumentation/api.mjs
+    - @opentelemetry/api
+  ../../node_modules/.pnpm/pg-cloudflare@1.4.1/node_modules/pg-cloudflare/dist/index.js
+    - cloudflare:sockets
+  ../../node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/node.js
+    - supports-color
+  ../../node_modules/.pnpm/@vercel+queue@0.8.0/node_modules/@vercel/queue/dist/index.js
+    - @opentelemetry/api
+Writing routes...
+✔ done

@@ -1,0 +1,7 @@
+$ node scripts/build-ai-skills.mjs --check && pnpm --filter @schubert/web check && tsc --noEmit
+Four reviewed DE skills verified.
+$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+Loading svelte-check in workspace: /workspace/Schubert-Design-Suite/apps/web
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings

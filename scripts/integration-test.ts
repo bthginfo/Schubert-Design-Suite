@@ -1,3 +1,4 @@
+import {customerWorkspaceIntegration} from './customer-workspace-integration.js';
 import {usabilityFixesIntegration} from './usability-fixes-integration.js';
 import {appearanceIntegration} from './appearance-integration.js';
 import {assistantWorkflowIntegration} from './assistant-workflow-integration.js';
@@ -109,6 +110,7 @@ await feedbackIntegration(actor,test);
 await appearanceIntegration(actor,test);
 await uxFlowIntegration(actor,test);
 await usabilityFixesIntegration(actor,test);
+await customerWorkspaceIntegration(actor,test);
 await flowContextIntegration(actor,test);
 await assistantWorkflowIntegration(actor,test);
 await manufacturerAssetsIntegration(actor,test);

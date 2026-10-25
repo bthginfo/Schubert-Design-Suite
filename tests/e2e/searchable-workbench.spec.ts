@@ -1,3 +1,4 @@
+import {studioPanel,studioAdd,studioMetadata} from './select-choice.js';
 import {test,expect,type Page} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {randomUUID} from 'node:crypto';
@@ -74,14 +75,14 @@ test('Planning workbench fills native and fallback fullscreen, keeps dropdowns u
  test.setTimeout(240000);await login(page,'PLANNER');await room(page);const root=page.locator('.studio-root');
  const revision=await page.locator('.revision-chip').innerText(),overflow=await page.evaluate(()=>document.body.style.overflow);
  await page.getByRole('button',{name:'Vollbild',exact:true}).click();await expect(root).toHaveAttribute('data-fullscreen-mode','native');await viewportWorkbench(page);
- const before=await page.locator('.canvas-panel').boundingBox();
+ await studioPanel(page,'elements');await studioPanel(page,'properties');const before=await page.locator('.canvas-panel').boundingBox();
  await page.getByRole('button',{name:'Elementliste ein- oder ausblenden',exact:true}).click();
  await page.getByRole('button',{name:'Eigenschaften ein- oder ausblenden',exact:true}).click();
  const expanded=await page.locator('.canvas-panel').boundingBox();expect(expanded!.width).toBeGreaterThan(before!.width+250);
  await page.getByRole('button',{name:'Elementliste ein- oder ausblenden',exact:true}).click();
- await page.locator('.element-tree button').filter({has:page.locator('small').filter({hasText:/^Wand$/})}).first().click();
+ await studioPanel(page,'elements');await page.locator('.element-tree button').filter({has:page.locator('small').filter({hasText:/^Wand$/})}).first().click();
  await page.getByRole('button',{name:'Eigenschaften ein- oder ausblenden',exact:true}).click();
- const phase=page.getByRole('combobox',{name:'Planungsphase',exact:true}),native=await nativeSelect(page,phase),original=await native.inputValue();
+ await studioMetadata(page);const phase=page.getByRole('combobox',{name:'Planungsphase',exact:true}),native=await nativeSelect(page,phase),original=await native.inputValue();
  await phase.click();const list=await openedList(page,phase);expect(await list.evaluate(node=>!!document.fullscreenElement?.contains(node))).toBe(true);
  await phase.fill('kein-passender-begriff');await expect(list.locator('[role="option"][data-index]')).toHaveCount(0);await expect(native).toHaveValue(original);
  await page.getByRole('button',{name:'Vollbild beenden',exact:true}).click();await expect(root).toHaveAttribute('data-fullscreen-mode','none');await expect(list).toBeHidden();
@@ -103,10 +104,10 @@ test('Compact planning keeps the canvas first and opens element and property dra
  const drawer=page.getByRole('dialog',{name:'Elemente',exact:true});await expect(drawer).toBeVisible();
  await drawer.getByRole('button',{name:'Elementliste schließen',exact:true}).click();await expect(drawer).toBeHidden();await expect(elements).toBeFocused();await elements.click();
  await drawer.locator('.element-tree button').filter({has:page.locator('small').filter({hasText:/^Wand$/})}).first().click();
- await expect(drawer).toBeHidden();expect(await page.evaluate(()=>!!document.activeElement?.closest('.canvas-panel'))).toBe(true);
+ await expect(drawer).toBeHidden();await expect.poll(()=>page.evaluate(()=>!!document.activeElement?.closest('.canvas-panel'))).toBe(true);
  await expect(page.locator('.workbench-drawer[open]')).toHaveCount(0);await expect(canvas).toBeInViewport();
  const properties=page.getByRole('button',{name:'Eigenschaften ein- oder ausblenden',exact:true});await properties.click();
- const inspector=page.locator('dialog#studio-properties-panel');await expect(inspector).toBeVisible();await expect(inspector.getByRole('combobox',{name:'Planungsphase',exact:true})).toBeVisible();
+ const inspector=page.locator('dialog#studio-properties-panel');await expect(inspector).toBeVisible();await studioMetadata(page);await expect(inspector.getByRole('combobox',{name:'Planungsphase',exact:true})).toBeVisible();
  await page.keyboard.press('Escape');await expect(inspector).toBeHidden();await expect(properties).toBeFocused();await expect(canvas).toBeInViewport();
  await page.getByRole('button',{name:'Vollbild',exact:true}).click();await viewportWorkbench(page);
  await page.getByRole('button',{name:'Vollbild beenden',exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
@@ -119,7 +120,7 @@ test('Locked planning properties disable searchable choices through the actual p
  await page.getByRole('button',{name:'Ersten Stein anlegen',exact:true}).click();const dialog=page.getByRole('dialog');
  for(const [name,value]of [['Breite (mm)','800'],['Höhe (mm)','1200'],['Materialstärke (mm)','160']])await dialog.getByLabel(name,{exact:true}).fill(value);
  await dialog.getByRole('button',{name:'In den Plan übernehmen',exact:true}).click();await expect(dialog).toBeHidden();
- const phase=page.getByRole('combobox',{name:'Planungsphase',exact:true}),native=await nativeSelect(page,phase),value=await native.inputValue();
+ await studioMetadata(page);const phase=page.getByRole('combobox',{name:'Planungsphase',exact:true}),native=await nativeSelect(page,phase),value=await native.inputValue();
  await page.getByRole('button',{name:'Sperren',exact:true}).click();await expect(phase).toBeDisabled();expect(await native.evaluate(select=>select.matches(':disabled')&&!select.hasAttribute('disabled'))).toBe(true);
  await expect(native).toHaveValue(value);await page.getByRole('button',{name:'Entsperren',exact:true}).click();await expect(phase).toBeEnabled();
  await phase.click();const list=await openedList(page,phase);await expect(list.getByRole('option')).not.toHaveCount(0);await phase.press('Escape');await expect(native).toHaveValue(value);

@@ -10,7 +10,7 @@
   const slug=$derived(data.path?.split('/')[0]??'');
   const studio=$derived(data.view==='studio');
   const kind=$derived(data.detail?.kind==='room_plan'?'room':'memorial');
-  const mapping:Record<string,string>={customers:'customer',inquiries:'customer',orders:'orders',quotes:'sales','change-orders':'sales',invoices:'finance',payments:'finance',suppliers:'purchasing','purchase-orders':'purchasing',stock:'inventory',inventory:'inventory',team:'team',time:'time',documents:'documents',reports:'reports',settings:'ai',account:'orientation'};
+  const mapping:Record<string,string>={office:'sales',purchasing:'purchasing',customers:'customer',inquiries:'customer',orders:'orders',quotes:'sales','change-orders':'sales',invoices:'finance',payments:'finance',suppliers:'purchasing','purchase-orders':'purchasing',stock:'inventory',inventory:'inventory',team:'team',time:'time',documents:'documents',reports:'reports',settings:'ai',account:'orientation'};
   const guide=$derived(guides.find(g=>g.id===(studio?kind:mapping[slug]??'orientation')&&(!g.permission||permitted(data,g.permission)))??guides.find(g=>g.id==='orientation')!);
   const title=$derived(data.module?.label??(studio?'Planungsstudio':slug==='dispatch'?'Einsatzplanung':slug==='settings'?'Einstellungen':slug==='account'?'Meine Einstellungen':'Heute'));
   const fields=$derived((data.module?.fields??[]).filter(field=>field.required&&fieldHelp(field)).slice(0,5));

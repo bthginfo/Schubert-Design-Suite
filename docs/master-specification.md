@@ -157,6 +157,10 @@ Mobil für Mitarbeiter: vier Hauptziele **Heute · Zeit · Aufträge · Mehr**. 
 
 ### 3.3 Kunden- und Auftragsakte
 
+Die Kundenakte beginnt mit einer übersichtlichen Arbeitsfläche: berechtigte Kacheln für Aufträge, Anfragen, Angebote, Planungen, Unterlagen und Rechnungen, darunter aktuelle Vorgänge und Kontakt. Kacheln zeigen echte Gesamtzahlen und eine begrenzte Vorschau; die vollständige Liste bleibt auf diesen Kunden gefiltert. Folgeformulare übernehmen den Kunden. Kommunikation, Stammdaten und Verlauf bleiben über die vollständige Akte erreichbar. Planungen werden nur über tatsächliche Auftrags-, Objekt- oder Grabstättenbezüge zugeordnet.
+
+Büro und Einkauf & Lager beginnen mit den häufigen Aufgaben. Seltenere Fachbereiche liegen in einem zusätzlichen geschlossenen Bereich. Eine geöffnete Akte benötigt keine weitere globale Modulnavigation über ihrem Inhalt. Berechtigungen werden durch diese Orientierung nicht erweitert.
+
 Kundenübersicht: Kontaktdaten, offene Aufgaben, Anfragen, Objekte, Aufträge, Dokumente, Kommunikation und Portalzugänge. Untergeordnete Entitäten sind verlinkt statt als Ordnerkopien dupliziert.
 
 Auftragsübersicht: Titel, Kunde/Objekt, verantwortliche Person, nächster Schritt, Termin, finanzieller Status nach Berechtigung. Tabs: **Übersicht · Planung · Leistungen · Termine & Team · Einkauf & Material · Dokumente · Kommunikation · Abrechnung · Verlauf**.
@@ -865,6 +869,10 @@ Der gemeinsame TypeScript-Kern enthält Einheiten, Koordinatentransformationen, 
 Der 2D-Editor verwendet SVG mit einer HTML-Oberfläche für Werkzeuge, Elementliste und Inspektor. Three.js und Threlte bilden die genaue 3D-Vorschau ab; Modelle werden primär als GLB/glTF importiert. Lade die 3D-Abhängigkeiten erst auf Anforderung, rendere statische Szenen bei Änderungen und gib Geometrien/Texturen nach Nutzung frei. Eine Physikengine ist für normale statische Planprüfung nicht erforderlich. [Q-UX-04], [Q-UX-05]
 
 ### 11.2 Einheiten, Bezugssysteme und Aufmaß
+
+Die Planungsoberfläche erlaubt mm, cm und m für Anzeige und Eingabe. Einheitenwechsel verändern keine gespeicherte Geometrie und erzeugen keine neue Revision. Eingaben mit explizitem Einheitensuffix werden eindeutig in kanonische mm umgerechnet; Pixelkoordinaten, Winkel, Stückzahlen und unveränderte Quellenwerte bleiben getrennt. Der Assistent erhält die Anzeigeeinheit zusätzlich zur kanonischen Geometrieeinheit. Technische PDF-Ausgaben kennzeichnen ihre tatsächliche Einheit ausdrücklich.
+
+Der Zeichenbereich nutzt den verfügbaren Fensterraum. Bauteilliste und Eigenschaften werden gezielt geöffnet; seltene Metadaten und Lageparameter sind nachgeordnet. Auf kleinen Displays müssen alle Werkzeuge ohne abgeschnittene Bedienelemente erreichbar bleiben. Ungültige Maße dürfen weder still durch den letzten gültigen Wert ersetzt noch unbemerkt als Kontext für eine KI-Änderung verwendet werden.
 
 Verwende wie in Kapitel 5 **Millimeter mit einer zentralen Rechenpräzision von 0,01 mm**. Persistiere Dezimal-/Festkommawerte; APIs serialisieren sie als Dezimalstrings. Der Kernel kann intern in ganzzahlige Hundertstelmillimeter umrechnen, muss dabei Überlaufgrenzen und Rundungsregeln prüfen. Geometrische Gleitkommaoperationen benötigen eine definierte, getestete Quantisierung. Die Speicherpräzision ist keine zugesicherte Mess- oder Fertigungstoleranz.
 

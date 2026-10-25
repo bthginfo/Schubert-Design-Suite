@@ -1,0 +1,2 @@
+$ tsx scripts/requirements.ts
+{"coverageDefinitionsVerified":true,"specificationSections":154,"acceptanceScenarios":69,"externalAcceptanceIsNotInferred":true}

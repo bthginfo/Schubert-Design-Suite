@@ -41,7 +41,7 @@
     void tick().then(() => {
       if (document.querySelector('dialog[open]')) return;
       const current = document.activeElement;
-      if (current instanceof HTMLElement && current !== document.body && current !== document.documentElement && current.isConnected) return;
+      if (current instanceof Element && current !== document.body && current !== document.documentElement && current.isConnected) return;
       const target = wasOverlay && opener?.isConnected && opener.getClientRects().length ? opener : document.getElementById(returnFocusId);
       target?.focus({ preventScroll: true });
     });

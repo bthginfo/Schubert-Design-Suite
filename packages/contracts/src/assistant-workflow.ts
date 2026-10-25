@@ -14,6 +14,7 @@ export const planningWorkSchema=z.strictObject({
   revision_id:z.uuid(),
   base_version:z.number().int().nonnegative(),
   view:z.enum(['front','side','top','3d']),
+  display_unit:z.enum(['mm','cm','m']).optional(),
   guardrails:planningGuardrailsSchema.optional()
 });
 

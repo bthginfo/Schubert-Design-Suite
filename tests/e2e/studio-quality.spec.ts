@@ -1,3 +1,4 @@
+import {studioPanel,studioAdd,studioMetadata} from './select-choice.js';
 import {chooseSelect,nativeSelect,studioAction,setDisplayOption} from './select-choice.js';
 import {login} from './login.js';
 import {test,expect,type Page} from '@playwright/test';
@@ -38,14 +39,14 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
     if(kind==='memorial'){
       await page.getByRole('button',{name:'Kontur & Bögen bearbeiten',exact:true}).click();
       const edges=page.locator('.contour-editor .edge');
-      await edges.nth(1).getByLabel('Endpunkt Y',{exact:true}).fill('800');await edges.nth(1).getByLabel('Endpunkt Y',{exact:true}).press('Tab');
-      await edges.nth(2).getByLabel('Endpunkt Y',{exact:true}).fill('800');await edges.nth(2).getByLabel('Endpunkt Y',{exact:true}).press('Tab');
+      await edges.nth(1).getByLabel('Endpunkt Y mm',{exact:true}).fill('800');await edges.nth(1).getByLabel('Endpunkt Y mm',{exact:true}).press('Tab');
+      await edges.nth(2).getByLabel('Endpunkt Y mm',{exact:true}).fill('800');await edges.nth(2).getByLabel('Endpunkt Y mm',{exact:true}).press('Tab');
       await chooseSelect(page,edges.nth(2).getByRole('combobox',{name:'Kantentyp',exact:true}),'circular_arc');
-      await edges.nth(2).getByLabel('Mittelpunkt X',{exact:true}).fill('400');await edges.nth(2).getByLabel('Mittelpunkt X',{exact:true}).press('Tab');
+      await edges.nth(2).getByLabel('Mittelpunkt X mm',{exact:true}).fill('400');await edges.nth(2).getByLabel('Mittelpunkt X mm',{exact:true}).press('Tab');
       await page.getByRole('button',{name:'Kontur übernehmen',exact:true}).click();await expect(page.locator('.contour-editor')).toBeHidden();
     }
     if(kind==='room_plan'){
-      await page.getByRole('button',{name:'Tür / Fenster',exact:true}).click();
+      await studioAdd(page,'Tür / Fenster');
       await dialog.getByLabel('Bezeichnung',{exact:true}).fill('Tür · 900 × 2100 mm');
       await chooseSelect(page,dialog.getByRole('combobox',{name:'Bezugswand',exact:true}),{index:1});
       await dialog.getByLabel('Öffnungsbreite (mm)',{exact:true}).fill('900');await dialog.getByLabel('Öffnungshöhe (mm)',{exact:true}).fill('2100');
@@ -80,7 +81,7 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
     await page.getByRole('button',{name:'Einpassen',exact:true}).click();
     await page.locator('.studio-workspace').screenshot({path:'work/final-studios/'+kind+'-2d.png'});
     // Selection then camera keyboard interaction must never modify the saved plan.
-    await page.locator('.element-tree button').filter({has:page.locator('small').filter({hasText:kind==='memorial'?/^Naturstein$/:/^Wand$/})}).first().click();
+    await studioPanel(page,'elements');await page.locator('.element-tree button').filter({has:page.locator('small').filter({hasText:kind==='memorial'?/^Naturstein$/:/^Wand$/})}).first().click();
     await page.getByRole('button',{name:'3D',exact:true}).click();const canvas=page.locator('.three-stage canvas');await expect(canvas).toBeVisible();
     await page.locator('.camera-disclosure summary').click();const turn=page.getByRole('button',{name:'Kamera nach links drehen',exact:true});await turn.focus();await page.keyboard.press('ArrowLeft');await turn.click();
     await page.getByRole('button',{name:'Vorn',exact:true}).click();await page.getByRole('button',{name:'Einpassen',exact:true}).click();await page.locator('.camera-disclosure summary').click();

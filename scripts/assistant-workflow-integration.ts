@@ -11,8 +11,8 @@ export async function assistantWorkflowIntegration(actor:(role:string)=>ActorCon
  const owner=actor('Owner');
  await test('AI edit boundaries survive context preparation and an empty selection fails before any model call',async()=>{
   const plan=await executeCommand(owner,{name:'planning.project.create',idempotencyKey:randomUUID(),payload:{kind:'memorial',name:'TEST Bearbeitungsgrenzen'}}),guardrails={preserveMeasurements:true,preserveWording:true,selectionOnly:false};
-  const input=assistantInputSchema.parse({message:'Prüfe den Entwurf.',context:{path:'studio/'+plan.project.id,variantId:plan.variant.id,planning_work:{step:'design',revision_id:plan.revision.id,base_version:plan.variant.version,view:'front',guardrails}}});
-  const prepared=await prepareAssistantContext(owner,input,'http://localhost');assert.deepEqual(prepared.context.workflow.guardrails,guardrails);
+  const input=assistantInputSchema.parse({message:'Prüfe den Entwurf.',context:{path:'studio/'+plan.project.id,variantId:plan.variant.id,planning_work:{step:'design',revision_id:plan.revision.id,base_version:plan.variant.version,view:'front',display_unit:'cm',guardrails}}});
+  const prepared=await prepareAssistantContext(owner,input,'http://localhost');assert.deepEqual(prepared.context.workflow.guardrails,guardrails);assert.equal(prepared.context.workflow.displayUnit,'cm');assert.equal(prepared.context.workflow.geometryUnit,'mm');
   input.context!.planning_work!.guardrails!.selectionOnly=true;await assert.rejects(()=>prepareAssistantContext(owner,input,'http://localhost'),(error:any)=>error.code==='AI_SELECTION_REQUIRED');
  });
  await test('Persisted AI proposal boundaries are rechecked; apply is idempotent and a stale undo preserves later work',async()=>{

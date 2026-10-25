@@ -1,0 +1,66 @@
+$ tsx scripts/integration-test.ts
+PASS Application database role cannot bypass RLS or own schema
+PASS Catalog with only document references loads through real PostgreSQL
+PASS Cross-tenant and cross-entity records remain inaccessible
+PASS Optimistic concurrency rejects stale changes without mutation
+PASS Exact decimal prices and unselected options produce correct totals
+PASS Published quote acceptance and order creation commit atomically once
+PASS Published versions and audit ledger are immutable
+PASS Employees cannot alter commercial orders or read unassigned order details
+PASS Invoice issue stays blocked before real approval and archive evidence
+PASS Sequential time commands retain actual 12.5 hours and one active timer
+PASS Long actual work submits with review warnings and cannot self-approve
+PASS Approval creates cost/time ledger once and missing rates remain unknown
+PASS Manual entries require an actual pause time instead of guessing a pause
+PASS Account view and reviewer queue obey assigned permissions
+PASS A01 business change, receipt and outbox roll back atomically before retry
+PASS H08 multiple events in one aggregate version receive deterministic distinct sequences
+PASS AI monthly usage aggregates tokens, task kinds and costs without crossing month or entity boundaries
+PASS AI dashboard usage is restricted to integration administrators
+PASS Concurrent number allocation is unique, rollback-safe and blocks an existing number
+PASS Numbering settings reject a backwards start and retain issued strings
+PASS Personal onboarding is persisted, optimistic and cannot target another user
+PASS Feedback is explicitly enabled only by a current SuperAdmin
+PASS Feedback submission is idempotent, attributed and strips unsafe diagnostic actions
+PASS Feedback review, export and SQL reads enforce actor, entity and SuperAdmin boundaries
+PASS Feedback backup rows restore with their original identity and recomputed reference
+PASS Feedback pagination retains microsecond precision without skipping adjacent reports
+PASS Disabling feedback blocks stale browser submissions while retaining review access
+PASS Personal appearance is idempotent, versioned, validated and isolated by actor and tenant
+PASS Completing onboarding saves appearance atomically and rolls back both on conflict
+PASS An explicitly aborted PostgreSQL command retries atomically without duplicate business, audit or outbox rows
+PASS Real stone reference import is complete, tenant scoped and does not forge technical approvals
+PASS Expanded onboarding persists later version-3 stations and remains backward compatible
+PASS Photo-edit and chat previews retain document binding with separate image resolutions
+PASS Studio search reaches older projects and keyset pagination returns each tied timestamp once
+PASS Month calendar includes more than 25 assignments, overlaps, exclusive boundaries and employee filter
+PASS Companion room and memorial drafts persist as editable, unreviewed revisions with real version checks
+PASS Public manufacturer catalog imports once, retains provenance, plans a real size and blocks technical release
+PASS Manual explanations survive submission and correction without rewriting the original submitted snapshot
+PASS A preliminary employee profile links a real individual membership without inventing a work schedule
+PASS Customers expose authorized linked records and object-scoped history while lists resolve references beyond the first choices
+PASS Financial report evidence stays read-only, scoped and separate from source workspace permission
+PASS Task source links only target existing authorized records, including stale notification references
+PASS Repeated onboarding pause is idempotent and omitted guide versions preserve the saved version
+PASS Customer tiles count all records, bound their preview and preserve customer/entity/permission scope
+PASS Customer planning requires real matching references and filters both projects and searchable assignment options
+PASS Customer document counts and lists include its order originals without disclosing unrelated or personnel files
+PASS Task hubs expose only permitted modules and do not turn office navigation into a finance grant
+PASS Customer and office assistant context follows the visible area and retains its permission boundary
+PASS Studio order scope is applied before keyset pagination, includes older orders and stays within two read queries
+PASS Context lookup includes selected older references without admitting unavailable IDs or replacing a saved relationship
+PASS AI edit boundaries survive context preparation and an empty selection fails before any model call
+PASS Persisted AI proposal boundaries are rechecked; apply is idempotent and a stale undo preserves later work
+PASS AI receives a live studio revision, step and deterministic checks; stale and foreign contexts fail before any model call
+PASS Form review excludes internal costs and secret fields and cannot produce business writes
+PASS Manufacturer library defaults to SuperAdmin; ordinary planning and office rights cannot manage sources or grant access
+PASS Explicit delegation grants only the manufacturer area and can be revoked by SuperAdmin
+PASS Private manufacturer originals stay quarantined until the scan passes; attachment and use remain source bound
+PASS Studio scope, immutable originals and tenant boundaries survive hiding a manufacturer source
+PASS Skill load uses the real OpenAI SDK, unchanged authorized draft and summed PostgreSQL billing
+PASS A direct answer can skip the available skill and releases unused two-call budget
+PASS Unavailable studio skill fails before a second call and the completed selection remains billed
+PASS A rejected follow-up charges the completed call instead of releasing its whole reservation as free
+PASS An unknown follow-up keeps its reservation and blocks a duplicate paid request
+PASS Missing usage remains reserved even after invalid output and blocks a duplicate paid request
+64 PostgreSQL integration checks passed.

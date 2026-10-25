@@ -35,3 +35,13 @@ it('bounds image context at complete JSON elements and preserves Unicode names',
  expect(context.snapshot.elements[0].text).toContain('Müller · Äußere Fläche');
  expect(context.snapshot.omittedElementCount).toBeGreaterThan(0);
 });
+
+it('keeps display units explicit while every proposed geometry value remains millimetres',()=>{
+ const context={entityType:'planning',designKind:'room_plan',workflow:{step:'geometry',label:'Raum & Aufmaß',displayUnit:'m',geometryUnit:'mm'}};
+ const routed=routeModel({},'standard',context);
+ expect(routed.instructions).toContain('Die Oberfläche zeigt Maße in m.');
+ expect(routed.instructions).toContain('Command-Werte bleiben Dezimalstrings in mm');
+ expect(routed.instructions).toContain('bei uneindeutigen Maßangaben rückfragen');
+ const compact=compactContext({...context,snapshot:{elements:[],measurements:{}}});
+ expect(compact.workflow.displayUnit).toBe('m');expect(compact.snapshot.units).toBe('mm');
+});

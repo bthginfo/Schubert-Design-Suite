@@ -62,3 +62,18 @@ export async function studioAction(page:Page,name:string){
  if(!await action.isVisible())await page.getByRole('button',{name:'Projektaktionen',exact:true}).click();
  await expect(action).toBeVisible();await action.click();
 }
+
+/** The canvas starts clear; open a panel only when the scenario needs it. */
+export async function studioPanel(page:Page,side:'elements'|'properties'){
+ const panel=page.locator('#studio-'+(side==='elements'?'elements':'properties')+'-panel');
+ if(!await panel.isVisible())await page.locator('#studio-'+(side==='elements'?'elements':'properties')+'-toggle').click();
+ await expect(panel).toBeVisible();return panel;
+}
+export async function studioAdd(page:Page,name:string){
+ await page.getByRole('button',{name:'Element hinzufügen',exact:true}).click();
+ await page.locator('#studio-add-menu').getByRole('button',{name,exact:true}).click();
+}
+export async function studioMetadata(page:Page){
+ await studioPanel(page,'properties');const details=page.locator('.element-metadata');
+ if(await details.getAttribute('open')===null)await details.locator('summary').click();
+}

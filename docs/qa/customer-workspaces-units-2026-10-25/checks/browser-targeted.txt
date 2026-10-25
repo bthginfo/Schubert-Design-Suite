@@ -1,0 +1,16 @@
+
+Running 9 tests using 1 worker
+
+(node:17239) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/searchable-workbench.spec.ts:97:1 › Compact planning keeps the canvas first and opens element and property drawers deliberately (7.4s)
+  ✓  2 tests/e2e/searchable-workbench.spec.ts:130:1 › Short fullscreen keeps the 3D model separate from its open camera controls and companion (6.8s)
+  ✓  3 tests/e2e/workspace-redesign.spec.ts:16:1 › Backoffice: customer tiles keep orders, inquiry, full lists and new records in the same customer context (9.1s)
+  ✓  4 tests/e2e/workspace-redesign.spec.ts:40:53 › Studio memorial: large canvas, cm/m input, unchanged canonical dimensions when switching and reopening (13.5s)
+  ✓  5 tests/e2e/workspace-redesign.spec.ts:40:53 › Studio room_plan: large canvas, cm/m input, unchanged canonical dimensions when switching and reopening (11.7s)
+  ✓  6 tests/e2e/workspace-redesign.spec.ts:66:1 › Büro and Einkauf open concise task hubs rather than a long module strip (4.8s)
+  ✓  7 tests/e2e/workspace-redesign.spec.ts:73:1 › Studio: invalid lengths stay visible, cannot be submitted or silently converted, and explicit suffixes commit canonical values (8.1s)
+  ✓  8 tests/e2e/workspace-redesign.spec.ts:89:1 › Dark blue manufacturer filters and customer tiles remain readable, named and within the mobile viewport (11.1s)
+  ✓  9 tests/e2e/workspace-redesign.spec.ts:99:1 › Customer planning: explain a missing assignment, then create and rediscover the actual linked project through its tile (6.8s)
+
+  9 passed (1.4m)

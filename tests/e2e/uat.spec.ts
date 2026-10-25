@@ -32,7 +32,7 @@ test('Customer: required fields, invalid email, Unicode, country and persisted r
   await page.getByRole('link',{name:unique+' Müller & Söhne',exact:true}).first().click();
   await expect(page.getByRole('heading',{name:unique+' Müller & Söhne',exact:true})).toBeVisible();
   await page.reload();await page.waitForLoadState('networkidle');await expect(page.getByRole('heading',{name:unique+' Müller & Söhne',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Bearbeiten',exact:true}).click();await expect(page.locator('#field-country')).toHaveValue('DE');
+  await page.getByRole('button',{name:'Kundendaten',exact:true}).click();await expect(page.locator('#field-country')).toHaveValue('DE');
 });
 
 test('Inquiry: invalid draft can be resumed or discarded without losing the saved version',async({page})=>{

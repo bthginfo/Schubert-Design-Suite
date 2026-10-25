@@ -916,3 +916,12 @@ select[data-searchable-control][hidden] { display: none !important; }
  .time-segment .segment-duration{margin-left:41px;white-space:nowrap}
  .time-grid .table-scroll{max-width:100%;min-width:0}
 }
+
+/* A planning project uses the available window instead of the report-page margins. */
+.app-shell:has(.studio-root.workbench) .page-content{max-width:none;padding:8px 12px 0}
+.app-shell:has(.studio-root.workbench) .topbar{min-height:48px;padding-top:0;padding-bottom:0}
+.app-shell:has(.studio-root.workbench) .training-notice{margin-bottom:8px;padding-bottom:6px}
+.length-unit-label{font-size:11px;font-weight:400;color:var(--muted);margin-left:5px}
+@media(max-width:760px){.app-shell:has(.studio-root.workbench) .page-content{padding:5px 7px 0}.app-shell:has(.studio-root.workbench) .topbar{min-height:56px}}
+
+@media(min-width:761px){.app-shell:has(.studio-root.workbench) .assistant-trigger{right:28px;bottom:13px;min-height:30px;padding:6px 11px;border-radius:9px;font-size:12px;gap:7px;box-shadow:none}.studio-root.workbench .workbench-status{padding-right:145px}}

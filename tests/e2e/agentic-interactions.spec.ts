@@ -1,3 +1,4 @@
+import {studioPanel,studioAdd,studioMetadata} from './select-choice.js';
 import { test, expect, type Page, type Route } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { config } from "dotenv";
@@ -596,7 +597,7 @@ test("Room studio: first AI draft is reviewable and reversible, technical helper
   await panel
     .getByRole("button", { name: "Assistent schließen", exact: true })
     .click();
-  await expect(page.locator(".element-tree .subtle")).toHaveCount(0);
+  await studioPanel(page,"elements");await expect(page.locator(".element-tree .subtle")).toHaveCount(0);
   await page.getByLabel(/Technische Hilfselemente/).check();
   await expect(page.locator(".element-tree .subtle")).toHaveCount(4);
   await page.getByLabel(/Technische Hilfselemente/).uncheck();

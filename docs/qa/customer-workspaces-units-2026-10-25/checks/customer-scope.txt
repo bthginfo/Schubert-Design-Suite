@@ -1,0 +1,5 @@
+PASS Customer tiles count all records, bound their preview and preserve customer/entity/permission scope
+PASS Customer planning requires real matching references and filters both projects and searchable assignment options
+PASS Customer document counts and lists include its order originals without disclosing unrelated or personnel files
+PASS Task hubs expose only permitted modules and do not turn office navigation into a finance grant
+PASS Customer and office assistant context follows the visible area and retains its permission boundary

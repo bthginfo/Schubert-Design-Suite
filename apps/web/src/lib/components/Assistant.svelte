@@ -468,6 +468,7 @@
                     revision_id: work.revisionId,
                     base_version: work.baseVersion,
                     view: work.view,
+                    display_unit: work.displayUnit,
                     guardrails: boundaries,
                   },
                   selected_element_ids: work.selectedElementIds,

@@ -24,7 +24,7 @@
 <div class="planning-flow">
   <nav class="planning-steps" aria-label={memorial?'Arbeitsschritte im Grabmalstudio':'Arbeitsschritte im Raumstudio'}>
     {#each steps as item,index}
-      <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} onclick={()=>onstep(item)}>
+      <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={hints[item]} onclick={()=>onstep(item)}>
         <span class="step-number">{index+1}</span><span>{planningStepLabel(snapshot.kind,item)}</span>
         {#if index<3}<Icon name="chevron" size={13}/>{/if}
       </button>
@@ -65,4 +65,9 @@
   @media(max-width:1100px){.step-task{flex-wrap:wrap}.step-task p{flex:1;min-width:180px}.planning-steps{gap:3px}.planning-steps button{gap:5px;padding:6px}.planning-steps button :global(svg){display:none}}
   @media(max-width:600px){.planning-flow{padding:0 8px}.planning-steps{padding:6px 0;gap:2px}.planning-steps button{flex-direction:column;justify-content:flex-start;gap:4px;padding:5px 3px;font-size:10px;text-align:center;border-radius:9px;min-height:61px}.step-number{width:22px;height:22px;border-radius:7px}.planning-steps button>span:nth-child(2){flex:none}.step-task{gap:3px;padding:0 2px 5px}.step-task p{display:none}.step-actions{width:100%;gap:6px;justify-content:space-between}.step-actions button{min-height:44px;font-size:11px}.flow-action{flex:1}.flow-ai{min-width:44px}.flow-ai span{display:none}}
   @media(prefers-reduced-motion:reduce){.planning-steps button,.step-actions button{transition:none}}
+
+/* One row carries steps and the action for the current task. */
+.planning-flow{display:flex;align-items:center;gap:12px;padding:7px 12px;border-bottom:1px solid var(--line)}.planning-steps{flex:1;min-width:0;margin:0;padding:0;border:0;gap:5px}.planning-steps button{min-height:38px;padding:6px 10px;font-size:12px}.planning-steps button>span:nth-child(2){flex:1}.step-task{padding:0;flex:none}.step-task>p{display:none}.step-actions button{min-height:36px;font-size:11px;padding:7px 9px}.step-number{width:23px;height:23px;font-size:11px}.flow-action{white-space:nowrap}
+@media(max-width:1150px){.planning-flow{gap:7px}.planning-steps button{padding:6px;font-size:11px}.step-actions .flow-ai span{display:none}.planning-steps button :global(svg){display:none}}
+@media(max-width:760px){.planning-flow{display:block;padding:5px 8px}.planning-steps{gap:3px;margin-bottom:4px}.planning-steps button{min-height:46px;font-size:10px;padding:4px 3px;gap:3px}.step-number{width:20px;height:20px}.step-task{padding:0}.step-actions{width:100%;justify-content:space-between;gap:6px}.step-actions button{min-height:40px;font-size:11px}.flow-action{flex:1}.flow-ai{min-width:44px}.step-actions .flow-ai span{display:inline}}
 </style>

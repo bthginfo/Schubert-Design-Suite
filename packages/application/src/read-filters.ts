@@ -1,8 +1,15 @@
+import {customerDocumentScope} from './customer-scope.js';
 import type {ModuleDefinition} from '@schubert/contracts';
 import {requireRule} from '@schubert/domain';
 export function filteredWhere(m:ModuleDefinition,url:URL,params:any[]){
  let sql='';const add=(value:unknown,clause:(n:number)=>string)=>{params.push(value);sql+=' AND '+clause(params.length);};
  const open=['receivables','payables'].includes(m.slug),q=url.searchParams.get('q')?.trim().slice(0,200);if(q)add('%'+q+'%',n=>open?`(COALESCE(name,'') ILIKE $${n} OR COALESCE(title,'') ILIKE $${n} OR COALESCE(number,'') ILIKE $${n} OR EXISTS(SELECT 1 FROM ${m.slug==='receivables'?'invoices':'supplier_invoices'} i JOIN parties p ON p.id=${m.table}.party_id WHERE i.id=${m.table}.invoice_id AND(i.number ILIKE $${n} OR i.title ILIKE $${n} OR p.name ILIKE $${n})))`:`(COALESCE(${m.table}.name,'') ILIKE $${n} OR COALESCE(${m.table}.title,'') ILIKE $${n} OR COALESCE(${m.table}.number,'') ILIKE $${n}${m.fields.filter(f=>['customer_id','supplier_id','order_id','employee_id','assigned_to'].includes(f.key)).map(f=>` OR EXISTS(SELECT 1 FROM ${['customer_id','supplier_id'].includes(f.key)?'parties':['employee_id','assigned_to'].includes(f.key)?'employees':'orders'} ref WHERE ref.id=${m.table}.${f.key} AND(ref.name ILIKE $${n} OR ref.title ILIKE $${n} OR ref.number ILIKE $${n}))`).join('')})`);
+ for(const key of ['customer_id','supplier_id']){
+  const value=url.searchParams.get(key);if(!value)continue;
+  requireRule(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value),'FILTER_PARTY','Einen gültigen Kunden oder Lieferanten auswählen.');
+  if(m.slug==='documents'&&key==='customer_id')add(value,n=>customerDocumentScope('documents','$'+n,'$1'));
+  else {requireRule(m.fields.some(field=>field.key===key),'FILTER_PARTY','Dieser Bereich kann nicht nach diesem Bezug gefiltert werden.');add(value,n=>`${m.table}.${key}=$${n}`);}
+ }
  const status=url.searchParams.get('status');if(status){if(open&&status==='open')sql+=' AND open_amount<>0';else add(status,n=>`status=$${n}`);}
  const orderId=url.searchParams.get('order_id')||url.searchParams.get('order');if(orderId){requireRule(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(orderId),'FILTER_ORDER','Einen gültigen konkreten Auftrag auswählen.');if(m.slug==='orders')add(orderId,n=>`id=$${n}`);else if(m.fields.some(field=>field.key==='order_id'))add(orderId,n=>`order_id=$${n}`);else if(open)add(orderId,n=>`EXISTS(SELECT 1 FROM ${m.slug==='receivables'?'invoices':'supplier_invoices'} i WHERE i.id=${m.table}.invoice_id AND i.order_id=$${n})`);}
  const metric=url.searchParams.get('metric');

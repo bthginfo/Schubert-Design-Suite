@@ -1,0 +1,13 @@
+$ vitest run
+
+ RUN  v5.0.5 /workspace/Schubert-Design-Suite
+
+
+ Test Files  65 passed (65)
+      Tests  401 passed (401)
+   Start at  15:37:38
+   Duration  15.55s (import 70%, tests 22%, transform 7%, worker 1%)
+
+     Import  215 modules were evaluated 505 times · 21.47s total, 70% of tracked time
+             ~2.11s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
