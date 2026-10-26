@@ -4,7 +4,7 @@ import type {PlanningStep,DesignOperation} from '@schubert/contracts';
 
 export type StudioAssistantContext={
   projectId:string;variantId:string;revisionId:string;baseVersion:number;
-  displayUnit:'mm'|'cm'|'m';kind:'memorial'|'room_plan';step:PlanningStep;view:'front'|'side'|'top'|'3d';
+  presetId?:string|null;displayUnit:'mm'|'cm'|'m';kind:'memorial'|'room_plan';step:PlanningStep;view:'front'|'side'|'top'|'3d';
   selectedElementIds:string[];selectedLabels:string[];dirty:boolean;historic:boolean;
 };
 export const studioAssistantContext=writable<StudioAssistantContext|null>(null);

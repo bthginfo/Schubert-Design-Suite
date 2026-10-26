@@ -1,22 +1,23 @@
 <script lang="ts">
-  import {planningStepLabel,type PlanningStep,type DesignSnapshot} from '@schubert/contracts';
+  import {planningProgress,planningStepLabel,type PlanningStep,type DesignSnapshot} from '@schubert/contracts';
   import Icon from '../Icon.svelte';
-  let {snapshot,step,onstep,onadd,oninspect,onai,readonly=false}: {
-    snapshot:DesignSnapshot;step:PlanningStep;onstep:(step:PlanningStep)=>void;
+  let {snapshot,step,onstep,onadd,oninspect,onai,readonly=false,presetId=null}: {
+    snapshot:DesignSnapshot;step:PlanningStep;presetId?:string|null;onstep:(step:PlanningStep)=>void;
     onadd:(kind:string)=>void;oninspect:(tab:string)=>void;onai:(prompt:string)=>void;readonly?:boolean;
   }=$props();
   const steps:PlanningStep[]=['geometry','design','review','output'];
   const memorial=$derived(snapshot.kind==='memorial');
-  const hasBase=$derived(snapshot.elements.some(e=>memorial?e.kind==='stone_piece':e.kind==='room'||e.kind==='wall'));
-  const hasInscription=$derived(snapshot.elements.some(e=>e.kind==='inscription'));
+  const progress=$derived(planningProgress(snapshot,presetId));
+  const hasBase=$derived(progress.hasBase),hasInscription=$derived(progress.hasInscription);
+  function nextDesign(){onstep('design');if(!readonly&&memorial&&!hasInscription)onadd('inscription');else if(!readonly&&!memorial&&!progress.hasDesign)onadd('stone_piece');}
   const hints=$derived({
-    geometry:memorial?'Form, Außenmaße und Material des Steins festlegen.':'Innenmaße und Öffnungen erfassen. Die Zeichnung kennzeichnet Maße zwischen Wandachsen mit „Achse“.',
+    geometry:progress.preset.id==='memorial_existing'?'Bekannte Bestandsmaße und Unterlagen erfassen. Neue Beschriftung getrennt vom Bestand planen.':!memorial&&progress.preset.firstElement==='stone_piece'?'Länge, Tiefe, Materialstärke und Einbaubezüge des Bauteils erfassen.':memorial?'Form, Außenmaße und Material des Steins festlegen.':'Innenmaße und Öffnungen erfassen. Die Zeichnung kennzeichnet Maße zwischen Wandachsen mit „Achse“.',
     design:memorial?'Wörtlichen Text gestalten. Einfassung und Zubehör ergänzen.':'Natursteinbauteile, Oberflächen, Kanten und Ausschnitte planen.',
     review:memorial?'Maße, Inschrift und offene Nachweise am aktuellen Stand prüfen.':'Maße, Anschlüsse und offene Nachweise am aktuellen Stand prüfen.',
     output:'Planungs-PDF, Stückliste oder eine Kundenvisualisierung vorbereiten.'
   });
   function ask(){
-    const prompts={geometry:memorial?'Hilf mir bei Steinform und Maßen. Welche Angaben fehlen im aktuellen Plan für diesen Schritt?':'Hilf mir bei Raumgeometrie und Aufmaß. Prüfe den Maßbezug und frage gezielt nach fehlenden Innenmaßen, Wandstärken und Öffnungen.',design:memorial?'Hilf mir bei der ausgewählten Inschrift oder Gestaltung. Behalte vorhandene Namen, Daten und Zeilenumbrüche exakt bei. Frage zuerst nach meiner gewünschten Änderung.':'Hilf mir bei den ausgewählten Bauteilen und Materialien. Welche Angaben zu Nutzung, Materialstärke, Kanten oder Ausschnitten sind noch offen?',review:'Erkläre die offenen Punkte der aktuellen Prüfliste, nach Dringlichkeit und mit Bauteilbezug. Nenne den jeweils nächsten sinnvollen Schritt. Verändere den Plan nicht.',output:'Hilf mir, diesen Plan für das Kundengespräch vorzubereiten. Welche Inhalte und offenen Fragen sollte die Präsentation enthalten? Verändere den Plan nicht.'};
+    const prompts={geometry:progress.preset.id==='memorial_existing'?'Hilf mir, den vorhandenen Stein mit belegten Bestandsmaßen und Unterlagen zu erfassen. Bestehende Schrift unverändert lassen; neue Beschriftung getrennt planen. Welche Angabe fehlt jetzt?':!memorial&&progress.preset.firstElement==='stone_piece'?'Hilf mir bei '+progress.preset.label+'. Kläre Länge, Tiefe, Materialstärke und Einbaubezüge am Bauteil. Kein vollständiges Raumaufmaß voraussetzen. Welche Angabe fehlt jetzt?':memorial?'Hilf mir bei Steinform und Maßen. Welche Angaben fehlen im aktuellen Plan für diesen Schritt?':'Hilf mir bei Raumgeometrie und Aufmaß. Prüfe den Maßbezug und frage gezielt nach fehlenden Innenmaßen, Wandstärken und Öffnungen.',design:memorial?'Hilf mir bei der ausgewählten Inschrift oder Gestaltung. Behalte vorhandene Namen, Daten und Zeilenumbrüche exakt bei. Frage zuerst nach meiner gewünschten Änderung.':'Hilf mir bei den ausgewählten Bauteilen und Materialien. Welche Angaben zu Nutzung, Materialstärke, Kanten oder Ausschnitten sind noch offen?',review:'Erkläre die offenen Punkte der aktuellen Prüfliste, nach Dringlichkeit und mit Bauteilbezug. Nenne den jeweils nächsten sinnvollen Schritt. Verändere den Plan nicht.',output:'Hilf mir, diesen Plan für das Kundengespräch vorzubereiten. Welche Inhalte und offenen Fragen sollte die Präsentation enthalten? Verändere den Plan nicht.'};
     onai(prompts[step]);
   }
 </script>
@@ -25,7 +26,7 @@
   <nav class="planning-steps" aria-label={memorial?'Arbeitsschritte im Grabmalstudio':'Arbeitsschritte im Raumstudio'}>
     {#each steps as item,index}
       <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={hints[item]} onclick={()=>onstep(item)}>
-        <span class="step-number">{index+1}</span>{' '}<span class="step-long">{planningStepLabel(snapshot.kind,item)}</span><span class="step-short">{{geometry:'Maße',design:memorial?'Text':'Material',review:'Prüfen',output:'Zeigen'}[item]}</span>
+        <span class="step-number">{index+1}</span>{' '}<span class="step-long">{planningStepLabel(snapshot.kind,item,presetId)}</span><span class="step-short">{{geometry:'Maße',design:memorial?'Text':'Material',review:'Prüfen',output:'Zeigen'}[item]}</span>
         {#if index<3}<Icon name="chevron" size={13}/>{/if}
       </button>
     {/each}
@@ -34,9 +35,9 @@
     <p>{hints[step]}</p>
     <div class="step-actions">
       {#if step==='geometry'}
-        <button type="button" class="flow-action" disabled={readonly} onclick={()=>onadd(memorial?'stone_piece':hasBase?'opening':'room')}><Icon name="plus" size={15}/>{memorial?(hasBase?'Weiteren Stein ergänzen':'Stein anlegen'):hasBase?'Öffnung anlegen':'Raumgeometrie anlegen'}</button>
+        {#if hasBase}<button type="button" class="flow-action" onclick={nextDesign}><Icon name="arrow" size={15}/>{memorial?'Inschrift gestalten':'Bauteile gestalten'}</button>{:else}<button type="button" class="flow-action" disabled={readonly} onclick={()=>onadd(progress.preset.firstElement)}><Icon name="plus" size={15}/>Grundmaße erfassen</button>{/if}
       {:else if step==='design'}
-        <button type="button" class="flow-action" disabled={readonly} onclick={()=>onadd(memorial?(hasBase?'inscription':'stone_piece'):'stone_piece')}><Icon name="plus" size={15}/>{memorial?(hasBase?(hasInscription?'Weitere Inschrift':'Beschriftung anlegen'):'Zuerst Stein anlegen'):'Steinbauteil ergänzen'}</button>
+        {#if progress.hasDesign}<button type="button" class="flow-action" onclick={()=>onstep('review')}><Icon name="check" size={15}/>Entwurf prüfen</button>{:else}<button type="button" class="flow-action" disabled={readonly} onclick={()=>onadd(hasBase?(memorial?'inscription':'stone_piece'):progress.preset.firstElement)}><Icon name="plus" size={15}/>{!hasBase?'Zuerst Grundmaße erfassen':memorial?'Beschriftung anlegen':'Steinbauteil ergänzen'}</button>{/if}
       {:else if step==='review'}
         <button type="button" class="flow-action" onclick={()=>oninspect('checks')}><Icon name="check" size={15}/>Prüfliste öffnen</button>
       {:else}

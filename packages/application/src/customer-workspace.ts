@@ -1,3 +1,4 @@
+import {customerNextActions} from './customer-actions.js';
 import {customerPlanningScope,customerDocumentScope} from './customer-scope.js';
 import type {ActorContext, CustomerWorkspace, CustomerWorkspaceSection} from '@schubert/contracts';
 import {rows, ident, type DbClient} from '@schubert/db';
@@ -34,5 +35,5 @@ export async function customerWorkspace(db: DbClient, ctx: ActorContext, custome
     sections.push({key:spec.key,label:spec.label,icon:spec.icon,slug:spec.key,total:Number(result[0]?.total_count??0),active:Number(result[0]?.active_count??0),
       items:result.map(({total_count,active_count,...item})=>item),href:`/${spec.key}?${params}`});
   }
-  return {sections};
+  return {sections,nextActions:await customerNextActions(db,ctx,customerId)};
 }

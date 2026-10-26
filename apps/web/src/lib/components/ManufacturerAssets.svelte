@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ManufacturerDeliveryPanel from './ManufacturerDeliveryPanel.svelte';
   import {tick} from 'svelte';
   import {goto,invalidateAll} from '$app/navigation';
   import {page} from '$app/state';
@@ -74,6 +75,7 @@
   </div><footer class="modal-footer"><button type="button" class="btn" disabled={busy} onclick={close}>Für später schließen</button><button class="btn primary" type="submit" disabled={busy||!fileReady||!confirmed||(!usePlanning&&!useAI)}>{busy?'Wird bereitgestellt …':'In den Studios bereitstellen'}</button></footer></form>{/if}
 </div></div>{/if}
 
+{#if data.context?.permissions?.some(p=>['catalog','*'].includes(p))}<ManufacturerDeliveryPanel/>{/if}
 <style>
   .library-intro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:24px}.library-intro>div{display:flex;gap:11px;align-items:flex-start;padding:4px}.library-intro>div>span{display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:9px;background:var(--accent-wash);color:var(--forest);font-size:12px;font-weight:600}.library-intro p{font-size:12px;line-height:1.7}.library-intro strong{display:block;color:var(--ink);font-size:13px;margin-bottom:3px}
   .manufacturer-library .toolbar{gap:10px;border-bottom:1px solid var(--line)}.manufacturer-library :global(.searchable-select){max-width:230px}.manufacturer-row{display:flex;align-items:center;gap:16px;padding:23px 24px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}.resource-symbol{display:grid;place-items:center;flex:none;width:46px;height:50px;border-radius:13px;background:var(--wash);color:var(--forest)}.resource-copy{flex:1;min-width:220px}.resource-copy h2{font-size:15px;font-weight:600;margin:0 0 4px}.resource-copy p{font-size:12px;line-height:1.6}.resource-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.resource-tags span{padding:3px 7px;font-size:10px;line-height:1.6;border-radius:6px;background:var(--wash);color:var(--muted)}.resource-tags .ready{background:var(--success-wash);color:var(--success)}.resource-copy .resource-use{margin-top:8px;font-size:11px}.resource-actions{display:flex;gap:7px;flex-wrap:wrap}.archive-confirm{flex-basis:100%;padding:15px;background:var(--wash);border-radius:10px;font-size:13px}.archive-confirm p{margin-bottom:10px}.archive-confirm .btn{margin-right:8px}

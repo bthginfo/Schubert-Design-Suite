@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2026-10-26T10:14:51.858216+00:00",
+  "scope": "Local synthetic role accounts, actual persisted plans and PDFs, controlled AI responses, synthetic scan metadata; no human test or live OEM feed claimed.",
+  "files": [
+    {
+      "file": "customer-next-desktop.png",
+      "bytes": 233272,
+      "sha256": "2583d6a8e4e389a8cf988239990d7f654701766f2fabe463bce71ad09bb2c702"
+    },
+    {
+      "file": "customer-next-mobile.png",
+      "bytes": 103694,
+      "sha256": "2250454f060ff7dbd2bb1a14b2bea477ff325ab852717683b9ff4eae19621e5c"
+    },
+    {
+      "file": "inscription-addition-desktop.png",
+      "bytes": 160814,
+      "sha256": "6eed991a3de1e9f21ae9fae277d7b6bb7d78c87bd3f17f91c98a1855090390ff"
+    },
+    {
+      "file": "manufacturer-preview-desktop.png",
+      "bytes": 119637,
+      "sha256": "c145380728a9a822072a2b9600435ac03ee13015a5def8da936fce5a3285ab13"
+    },
+    {
+      "file": "manufacturer-rights-mobile.png",
+      "bytes": 56376,
+      "sha256": "13fe81a9f96dde51bfd07d41caeab1fe4947fde6a308d258257d2f8637c50060"
+    },
+    {
+      "file": "memorial-next-3d.png",
+      "bytes": 145629,
+      "sha256": "f97c0cfa0b42f737b428a0d9571bccd0c918cb6ea3c8e3505999a388bbbf52b1"
+    },
+    {
+      "file": "memorial.pdf",
+      "bytes": 21763,
+      "sha256": "65a3ba48016ea2fd26ccb8e804fa96ee8f8c593a6d6b5d36599f868bb6c78e75"
+    },
+    {
+      "file": "room_plan.pdf",
+      "bytes": 23111,
+      "sha256": "0d4a92d78704011e701ecf0f8dd48fa3d3508620556d367dcb90a7a485585e71"
+    },
+    {
+      "file": "sill-desktop.png",
+      "bytes": 156961,
+      "sha256": "4e4c30f92c0af378c2b09f1d97ab2234e5b66ffb450fc398adb5245466ae05a7"
+    },
+    {
+      "file": "sill-mobile.png",
+      "bytes": 51916,
+      "sha256": "2b4ebd20e6355e8596cc9f4609389962fae1dc131fc83af4c8ed42b4c3233215"
+    },
+    {
+      "file": "typed-ai-mobile.png",
+      "bytes": 61112,
+      "sha256": "1363d5ec07f7733d6d3e6c7c98e4c5ac2237d2a8db201c309b4acd396d833fa5"
+    }
+  ]
+}

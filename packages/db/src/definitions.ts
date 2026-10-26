@@ -4,6 +4,7 @@ export const tables:Record<string,TableDefinition>={};
 const typeFor=(type:string)=>type==='checkbox'?'boolean':type==='date'?'date':type==='datetime-local'?'timestamptz':type==='money'||type==='number'?'numeric(20,6)':type==='reference'?'uuid':'text';
 for(const m of modules){tables[m.table]??={};for(const f of m.fields)if(!['name','title','notes','number','status'].includes(f.key))tables[m.table][f.key]??=typeFor(f.type);}
 function add(name:string,fields:TableDefinition){tables[name]={...tables[name],...fields};}
+add('manufacturer_deliveries',{manufacturer:'text',market:'text',source_document_version_id:'uuid',source_hash:'text',source_url:'text',payload:'jsonb',report:'jsonb',applied_at:'timestamptz'});
 add('manufacturer_assets',{document_version_id:'uuid',source_unit:'text',use_planning:'boolean',use_ai:'boolean',rights_statement:'text',published_by:'text',published_at:'timestamptz',source_hash:'text'});
 add('feedback_reports',{actor_id:'text',submitter_name:'text',submitter_role:'text',category:'text',message:'text',expected:'text',page_path:'text',page_label:'text',context:'jsonb',server_release:'text',priority:'text',admin_notes:'text',resolution_ref:'text'});
 add('legal_entities',{feedback_enabled:'boolean NOT NULL DEFAULT false',feedback_version:'integer NOT NULL DEFAULT 1'});
@@ -71,7 +72,7 @@ add('cemetery_rule_versions',{cemetery_id:'uuid NOT NULL',document_id:'uuid NOT 
 add('memorial_people',{grave_plot_id:'uuid NOT NULL',exact_name:'text NOT NULL',birth_display:'text',death_display:'text',date_accuracy:'text',confirmed:'boolean DEFAULT false'});
 add('grave_permissions',{grave_plot_id:'uuid NOT NULL',revision_id:'uuid',document_id:'uuid',approved_at:'timestamptz',authority:'text',conditions:'text'});
 add('measurements',{planning_project_id:'uuid NOT NULL',value_mm:'numeric(20,2)',semantic:'text NOT NULL',review_status:'text NOT NULL',is_estimated:'boolean DEFAULT true',method:'text',measured_by:'text',measured_at:'timestamptz',evidence_document_id:'uuid'});
-add('planning_projects',{kind:'text NOT NULL',order_id:'uuid',site_id:'uuid',grave_plot_id:'uuid'});
+add('planning_projects',{kind:'text NOT NULL',order_id:'uuid',site_id:'uuid',grave_plot_id:'uuid',workflow_preset:'text'});
 add('design_variants',{planning_project_id:'uuid NOT NULL',head_revision_id:'uuid'});
 add('design_revisions',{variant_id:'uuid NOT NULL',parent_revision_id:'uuid',snapshot:'jsonb NOT NULL',content_hash:'text NOT NULL',schema_version:'integer NOT NULL DEFAULT 1',revision_number:'integer NOT NULL'});
 add('design_commands',{variant_id:'uuid NOT NULL',base_revision_id:'uuid NOT NULL',revision_id:'uuid NOT NULL',operations:'jsonb NOT NULL',undo_of_command_id:'uuid'});

@@ -498,6 +498,7 @@
           missingInputs:
             result.missingInputs ?? result.proposal?.missing_inputs ?? [],
           skillsUsed: result.skillsUsed ?? [],
+          clarifications: result.clarifications ?? [],
           work: work ? { ...work } : null,
           boundaries,
         },
@@ -848,7 +849,7 @@
       {#if studioWork}<div class="assistant-context">
           <div>
             <Icon name="link" size={15} /><strong
-              >{planningStepLabel(studioWork.kind, studioWork.step)}</strong
+              >{planningStepLabel(studioWork.kind, studioWork.step, studioWork.presetId)}</strong
             >
           </div>
           <p>
@@ -951,6 +952,9 @@
                   text={message.text}
                   assumptions={message.assumptions ?? []}
                   missingInputs={message.missingInputs ?? []}
+                  clarifications={message.clarifications ?? []}
+                  displayUnit={message.work?.displayUnit??'mm'}
+                  allowMaterials={data.context?.permissions?.some(p=>['planning','planning.read','*'].includes(p))??false}
                   skillsUsed={message.skillsUsed ?? []}
                   disabled={busy}
                   onfollowup={appendPrompt}
@@ -958,6 +962,7 @@
                     Grundlage: {planningStepLabel(
                       message.work.kind,
                       message.work.step,
+                      message.work.presetId,
                     )} · {message.work.selectedLabels?.join(", ") ||
                       "gesamter Plan"}
                   </p>{/if}{#if proposalStale(message)}<p

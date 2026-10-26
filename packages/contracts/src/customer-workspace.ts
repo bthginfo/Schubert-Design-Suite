@@ -6,4 +6,5 @@ export type CustomerWorkspaceSection = {
   key: string; label: string; icon: string; slug: string;
   total: number; active: number; items: CustomerWorkspaceItem[]; href: string;
 };
-export type CustomerWorkspace = {sections: CustomerWorkspaceSection[]};
+export type CustomerNextAction={id:string;kind:'task'|'work'|'quote'|'payment';title:string;detail:string;dueDate:string|null;owner:string|null;href:string;action:string;overdue:boolean};
+export type CustomerWorkspace = {sections: CustomerWorkspaceSection[];nextActions?:CustomerNextAction[]};

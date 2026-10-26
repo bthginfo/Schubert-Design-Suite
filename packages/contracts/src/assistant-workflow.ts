@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {planningPresets} from './planning-workflow.js';
 
 export const planningStepSchema=z.enum(['geometry','design','review','output']);
 export type PlanningStep=z.infer<typeof planningStepSchema>;
@@ -36,12 +37,20 @@ export type AssistantEditor=z.infer<typeof assistantEditorSchema>;
 export const assistantDraftFieldKeys=['name','title','party_type','description','notes','terms','valid_until','due_date','service_date','requested_date','currency','email','phone','street','postal_code','city','country','business_unit'];
 export const assistantDraftModules=['customers','suppliers','inquiries','quotes','orders','invoices','purchase-orders','supplier-invoices','change-orders','tasks'];
 
-export function planningStepLabel(kind:string,step:PlanningStep){
+export function planningStepLabel(kind:string,step:PlanningStep,presetId?:unknown){
+  const preset=planningPresets.find(p=>p.id===presetId&&p.kind===kind);
+  if(step==='geometry'&&preset?.id==='memorial_existing')return 'Bestand & Maße';
+  if(step==='geometry'&&kind==='room_plan'&&preset?.firstElement==='stone_piece')return 'Bauteil & Maße';
   return ({geometry:kind==='memorial'?'Stein & Maße':'Raum & Aufmaß',design:kind==='memorial'?'Inschrift & Details':'Bauteile & Material',review:'Prüfen',output:'Präsentieren'})[step];
 }
 
-export function planningStepInstructions(kind:string,step:PlanningStep){
-  const brief=kind==='memorial'
+export function planningStepInstructions(kind:string,step:PlanningStep,presetId?:unknown){
+  const preset=planningPresets.find(p=>p.id===presetId&&p.kind===kind);
+  const brief=preset?.id==='memorial_existing'
+    ?'Nur belegte Bestandsmaße, Steinform und Bestandsunterlagen klären. Vorhandene Inschriften unverändert als Bestand führen; einen neuen Wortlaut getrennt als geplante Ergänzung behandeln.'
+    :kind==='room_plan'&&preset?.firstElement==='stone_piece'
+    ?'Nur Länge, Tiefe, Materialstärke und Einbaubezüge für '+preset.label+' klären. Keinen vollständigen Raum oder ein Raumaufmaß voraussetzen. Fehlende Kanten-, Anschluss- oder Ausschnittangaben gezielt erfragen; keine Maße erfinden.'
+    :kind==='memorial'
     ?'Nur Steinform, Außenmaße, Materialstärke und belegte Friedhofsvorgaben klären. Keine Inschrift erfinden.'
     :'Nur Raumgeometrie, lichte Innenmaße, Wandstärke, Höhen und Öffnungen klären. Achs-, Außen- und Innenmaße unterscheiden.';
   return ({

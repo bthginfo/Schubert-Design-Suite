@@ -15,7 +15,7 @@
   const enabled=$derived(!!data.summary?.feedback?.enabled&&!!data.user);
   $effect(()=>{configureFeedback(data.user?.id??'',enabled);const path=page.url.pathname+page.url.search;if(enabled)recordFeedbackStep('navigation','Seite öffnen','opened');void path;});
   onMount(()=>{
-    const launch=()=>void show();window.addEventListener('schubert:feedback:open',launch);
+    const launch=(event:Event)=>{const detail=(event as CustomEvent).detail;void show().then(()=>{if(open&&detail?.category==='usability'&&typeof detail.message==='string'&&!message.trim()){category='usability';message=detail.message.slice(0,10000);draftKey=crypto.randomUUID();}});};window.addEventListener('schubert:feedback:open',launch);
     const shortcut=(e:KeyboardEvent)=>{if(enabled&&e.altKey&&e.shiftKey&&e.code==='KeyF'){e.preventDefault();void show();}};
     document.addEventListener('click',recordFeedbackClick,true);document.addEventListener('keydown',shortcut);
     return()=>{configureFeedback('',false);window.removeEventListener('schubert:feedback:open',launch);document.removeEventListener('click',recordFeedbackClick,true);document.removeEventListener('keydown',shortcut);};

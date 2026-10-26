@@ -1,10 +1,13 @@
 <script lang="ts">
+  import ClarificationField from './ClarificationField.svelte';
+  import {clarificationControls} from '@schubert/contracts';
   import type { AssistantSkillUsage } from "@schubert/contracts";
   let {
     text,
     assumptions = [],
     missingInputs = [],
     skillsUsed = [],
+    clarifications=[],displayUnit='mm',allowMaterials=false,
     disabled = false,
     onfollowup,
   }: {
@@ -12,6 +15,7 @@
     assumptions?: string[];
     missingInputs?: string[];
     skillsUsed?: AssistantSkillUsage[];
+    clarifications?:unknown;displayUnit?:string;allowMaterials?:boolean;
     disabled?: boolean;
     onfollowup: (text: string) => void;
   } = $props();
@@ -19,7 +23,12 @@
   let answers: Record<number, string> = $state({});
   const paragraphs = $derived(text.split(/\n\s*\n/).filter(Boolean));
   const questions = $derived([...new Set(missingInputs)].slice(0, 20));
-  const hasAnswers = $derived(
+  let questionLimit=$state(3);
+  const visibleQuestions=$derived(questions.slice(0,questionLimit));
+  const fields=$derived(clarificationControls(questions,clarifications));
+  let invalid:Record<number,boolean>=$state({});
+  const unknown='Noch nicht bekannt. Bitte als offen behandeln.';
+  const hasAnswers = $derived(!Object.values(invalid).some(Boolean)&&
     Object.values(answers).some((value) => value.trim()),
   );
   function prepare() {
@@ -45,24 +54,24 @@
         Beantworten Sie, was Sie schon wissen. Vor dem Senden können Sie die
         Nachricht bearbeiten.
       </p>
-      {#each questions as question, index}<div class="clarification">
-          <label for={uid + "-question-" + index}>{question}</label><textarea
+      {#each visibleQuestions as question, index}<div class="clarification">
+<label for={uid + "-question-" + index}>{question}</label>{#if answers[index]===unknown&&fields[index]?.kind!=='text'}<input id={uid+'-question-'+index} value={unknown} disabled/><button type="button" class="text-link" {disabled} onclick={()=>{answers[index]='';invalid[index]=false;}}>Angabe bearbeiten</button>{:else if fields[index]?.kind!=='text'&&(fields[index]?.kind!=='material'||allowMaterials)}<ClarificationField field={fields[index]} id={uid+'-question-'+index} {displayUnit} {disabled} onchange={value=>answers[index]=value} oninvalid={value=>invalid[index]=value}/>{:else}<textarea
             id={uid + "-question-" + index}
             rows="2"
             maxlength="1500"
             bind:value={answers[index]}
             {disabled}
             placeholder="Ihre Angabe – Maße bitte mit Einheit"
-          ></textarea><button
+          ></textarea>{/if}<button
             type="button"
             class="text-link"
             {disabled}
             onclick={() =>
               (answers[index] =
-                "Noch nicht bekannt. Bitte als offen behandeln.")}
+                unknown,invalid[index]=false)}
             >Noch nicht bekannt</button
           >
-        </div>{/each}<button
+        </div>{/each}{#if questions.length>questionLimit}<button type="button" class="text-link" {disabled} onclick={()=>questionLimit+=3}>Weitere Rückfragen anzeigen ({questions.length-questionLimit})</button>{/if}<button
         type="button"
         class="btn small"
         disabled={disabled || !hasAnswers}

@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
-import {isPublicProductReference,designOperationSchema,designSnapshotSchema,type DesignSnapshot,type DesignOperation,type ActorContext} from '@schubert/contracts';
+import {planningPresetSchema,planningPreset,isPublicProductReference,designOperationSchema,designSnapshotSchema,type DesignSnapshot,type DesignOperation,type ActorContext} from '@schubert/contracts';
 import {createDesign,applyOperations,validateDesign,validateCatalogBindings,hasAssetUsage,calculateBOM,externalReferenceIds,rectangleContour,contourBounds,targetMeasure,D,mm} from '@schubert/geometry';
 import {assertPermission,assertVersion,requireRule,DomainError} from '@schubert/domain';
 import {one,rows,type DbClient} from '@schubert/db';
@@ -9,7 +9,7 @@ import{assertLegalScope,catalogEvidence}from'./catalog.js';
 import{assertDocumentAccess,assertManufacturerUse,personnelDocumentTypes}from'./document-access.js';
 import{RENDER_SCENE_VERSION}from'./render-request.js';
 import{elementContour,verifyImportedContours}from'./vector-imports.js';
-register('planning.project.create','planning',async r=>{const p=z.object({name:z.string().min(1),kind:z.enum(['memorial','room_plan']),customer_id:z.uuid().optional(),order_id:z.uuid().nullable().optional(),site_id:z.uuid().nullable().optional(),grave_plot_id:z.uuid().nullable().optional()}).parse(r.payload);
+register('planning.project.create','planning',async r=>{const p=z.object({name:z.string().min(1),kind:z.enum(['memorial','room_plan']),customer_id:z.uuid().optional(),order_id:z.uuid().nullable().optional(),site_id:z.uuid().nullable().optional(),grave_plot_id:z.uuid().nullable().optional(),workflow_preset:planningPresetSchema.optional()}).parse(r.payload);requireRule(!p.workflow_preset||planningPreset(p.workflow_preset,p.kind).id===p.workflow_preset,'PLANNING_PRESET','Dieses Vorhaben passt nicht zum gewählten Studio.');
 const references=[];if(p.order_id)references.push(await getRecord(r.db,'orders',p.order_id));if(p.site_id)references.push(await getRecord(r.db,'sites',p.site_id));if(p.grave_plot_id)references.push(await getRecord(r.db,'grave_plots',p.grave_plot_id));
 if(p.customer_id){const customer=await getRecord(r.db,'parties',p.customer_id);requireRule(customer.is_customer&&references.length>0&&references.every(record=>record.customer_id===p.customer_id),'PROJECT_CUSTOMER_SCOPE','Zur Planung einen Auftrag, ein Objekt oder eine Grabstätte dieses Kunden auswählen.');}
 const {customer_id,...projectFields}=p;const project=await r.insert('planning_projects',{...projectFields,status:'draft'});const variantId=randomUUID(),revisionId=randomUUID();const snapshot=createDesign(p.kind,{planningProjectId:project.id,variantId,revisionId});const variant=await r.insert('design_variants',{id:variantId,planning_project_id:project.id,name:'Entwurf 1',status:'draft'});const revision=await r.insert('design_revisions',{id:revisionId,variant_id:variant.id,snapshot,content_hash:hash(snapshot),schema_version:snapshot.schemaVersion,revision_number:1,status:'draft'});await r.db.query('UPDATE design_variants SET head_revision_id=$1 WHERE id=$2',[revision.id,variant.id]);variant.head_revision_id=revision.id;return {project,variant,revision};});
