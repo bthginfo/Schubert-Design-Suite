@@ -17,12 +17,12 @@ it('keeps the selected inscription, its distant host and driving dimensions in a
  expect(context.snapshot.measurements['width-value'].valueMm).toBe('800');expect(context.snapshot.measurements.survey.semantic).toBe('as_built');expect(context.snapshot.omittedElementCount).toBe(43);
 });
 
-it('gives each studio step specific instructions and rejects edits in review and output',()=>{
+it('keeps each studio step focused while allowing explicit edits across steps',()=>{
  const review=routeModel({},'standard',{entityType:'planning',designKind:'memorial',workflow:{step:'review',label:'Prüfen'}});
  expect(review.instructions).toContain('Nur prüfen');
- expect(planningOperationAllowed('review','set_design_target')).toBe(false);
- expect(planningOperationAllowed('output','move_element')).toBe(false);
- expect(planningOperationAllowed('geometry','set_inscription_text')).toBe(false);
+ expect(planningOperationAllowed('review','set_design_target')).toBe(true);
+ expect(planningOperationAllowed('output','move_element')).toBe(true);
+ expect(planningOperationAllowed('geometry','set_inscription_text')).toBe(true);
  expect(planningOperationAllowed('design','set_inscription_text')).toBe(true);
  const edit=routeModel({},'standard',{entityType:'quotes',workflow:{purpose:'Nur den aktuellen Formularentwurf prüfen.'}});
  expect(edit.instructions).toContain('Nur den aktuellen Formularentwurf prüfen.');

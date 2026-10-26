@@ -81,7 +81,7 @@
       .map((field) => field.label),
   );
   async function review() {
-    if (busy || !available) return;
+    if (busy || !available) return false;
     busy = true;
     error = "";
     notice = "";
@@ -111,12 +111,14 @@
       skillsUsed = result.skillsUsed ?? [];
       reviewed = input;
       followup = "";
+      return true;
     } catch (problem) {
       if (current === run && !signal.aborted)
         error =
           problem instanceof Error
             ? problem.message
             : "Die KI-Prüfung ist derzeit nicht verfügbar.";
+      return false;
     } finally {
       if (current === run) {
         busy = false;
@@ -190,6 +192,7 @@
               {skillsUsed}
               disabled={busy}
               onfollowup={prepareFollowup}
+              onanswersubmit={async text=>{if(!followup.endsWith(text))await prepareFollowup(text);return await review();}}
             />{/key}
         </div>
         <label class="followup-label" for={uid + "-followup"}

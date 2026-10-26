@@ -178,7 +178,7 @@ describe("Reviewed, optional Schubert DE skills", () => {
       {
         id: "schubert-memorial-de",
         label: "Grabmal & Inschrift",
-        version: "1.0.0",
+        version: "1.1.0",
         jurisdiction: "DE",
       },
     ]);
@@ -292,7 +292,7 @@ describe("Reviewed, optional Schubert DE skills", () => {
     expect(create.mock.calls[0][0].tool_choice).toBe("none");
   });
 
-  it("preserves review restrictions and all edit boundaries after a skill is selected", async () => {
+  it("preserves explicit edit boundaries without adding a step restriction after skill selection", async () => {
     const context = {
       ...memorial,
       workflow: { ...memorial.workflow, step: "review", label: "Prüfen" },
@@ -304,7 +304,7 @@ describe("Reviewed, optional Schubert DE skills", () => {
       .mockResolvedValueOnce(final());
     await respondWithOptionalSkills({ ...options(context), create });
     const last = create.mock.calls[1][0];
-    expect(last.instructions).toContain("Keine Änderungen vorschlagen");
+    expect(last.instructions).toContain("Auf ausdrücklichen Änderungswunsch auch hier Entwurfsänderungen vorbereiten");
     expect(last.instructions).toContain("preserveWording");
     expect(JSON.parse(last.input).context.allowedCommands).toEqual([]);
   });

@@ -1,0 +1,32 @@
+[
+  {
+    "file": "office-paper-order-mobile.png",
+    "bytes": 49916,
+    "sha256": "c33e6b57ab02ca8419ff33c5958339018644b66502c1729a950a275ebc757346"
+  },
+  {
+    "file": "sketch-image-handoff.png",
+    "bytes": 160177,
+    "sha256": "5fa2db1cac87733ab2f5262007258c6c667cbe12956fe7f36e84afbc2a9662af"
+  },
+  {
+    "file": "ai-inscriptions.pdf",
+    "bytes": 25485,
+    "sha256": "8209e0e3f685e52d932b20db450edf086610df4d210c5551eb456cafcbe65672"
+  },
+  {
+    "file": "ai-inscription-sheet.png",
+    "bytes": 136959,
+    "sha256": "2f613e30ece5cfde53e031f50084ba4ebf314c8e2f4bf12e355b5d8638e8c9f2"
+  },
+  {
+    "file": "memorial.pdf",
+    "bytes": 21765,
+    "sha256": "5e43421f8ed5cefd47dd11da6cb09c9a1cdb074e95d526a0fb6d4fc9c886f065"
+  },
+  {
+    "file": "room.pdf",
+    "bytes": 23157,
+    "sha256": "81876335da041ba5065c89111c3d4285e3371bd8416e5f9c5caebdd9a1598bcc"
+  }
+]

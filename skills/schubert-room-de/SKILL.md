@@ -4,7 +4,7 @@ description: "Raumaufmaß und Natursteinbauteile für deutsche Bauvorhaben bespr
 license: Proprietary
 metadata:
   display_name: "Raum & Naturstein"
-  version: "1.0.0"
+  version: "1.1.0"
   jurisdiction: "DE"
 ---
 

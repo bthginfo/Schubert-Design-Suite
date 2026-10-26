@@ -14,7 +14,8 @@ describe('explicit assistant document references',()=>{
  });
  it('blocks image use until a bounded preview has actually completed',()=>{
   expect(()=>sourceReferences([{...source,includeImage:true,preview:{status:'pending'}}])).toThrow(/vorbereiten/);
-  expect(()=>sourceReferences([{...source,includeImage:true,preview:{status:'completed',width:1440,height:900}}])).toThrow(/vorbereiten/);
+  expect(sourceReferences([{...source,includeImage:true,preview:{status:'completed',width:1440,height:900}}])[0].include_image).toBe(true);
+  expect(()=>sourceReferences([{...source,includeImage:true,preview:{status:'completed',width:2880,height:1800}}])).toThrow(/vorbereiten/);
   expect(sourceReferences([{...source,includeImage:true,preview:{status:'completed',width:512,height:318}}])[0].include_image).toBe(true);
  });
  it('does not invent a page or silently submit more than two sources',()=>{

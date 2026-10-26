@@ -228,7 +228,7 @@ test("AI: structured clarification, explicit boundaries, cancellation and fresh 
                   {
                     id: "schubert-memorial-de",
                     label: "Grabmal & Inschrift",
-                    version: "1.0.0",
+                    version: "1.1.0",
                     jurisdiction: "DE",
                   },
                 ],
@@ -247,7 +247,9 @@ test("AI: structured clarification, explicit boundaries, cancellation and fresh 
     .click();
   await expect(
     panel.getByLabel("Nur Auswahl bearbeiten", { exact: true }),
-  ).toBeChecked();
+  ).not.toBeChecked();
+  await panel.getByLabel("Nur Auswahl bearbeiten", { exact: true }).check();
+  await panel.getByLabel("Wortlaut beibehalten", { exact: true }).check();
   await panel.getByLabel("Maßwerte beibehalten", { exact: true }).check();
   await panel.getByRole("button", { name: "Senden", exact: true }).click();
   await panel.getByText("Verwendete Fachhilfe", { exact: true }).click();
@@ -255,7 +257,7 @@ test("AI: structured clarification, explicit boundaries, cancellation and fresh 
     "Grabmal & Inschrift",
   );
   await expect(panel.locator(".reply-skills")).toContainText(
-    "Deutschland · Version 1.0.0",
+    "Deutschland · Version 1.1.0",
   );
   await expect(
     panel.getByRole("combobox", { name: /skill|fachhilfe/i }),
@@ -277,23 +279,23 @@ test("AI: structured clarification, explicit boundaries, cancellation and fresh 
     .click();
   await panel
     .getByRole("button", {
-      name: "Antworten in Nachricht übernehmen",
+      name: "Antwort senden",
       exact: true,
     })
     .click();
-  await expect(panel.locator("#assistant-message")).toBeFocused();
+  await expect.poll(()=>calls.length).toBe(2);
+  expect(calls[1].message).toContain('800 mm');
   await expect(panel.locator("#assistant-message")).toHaveValue(/800 mm/);
   await expect(panel.locator("#assistant-message")).toHaveValue(
     /Noch nicht bekannt/,
   );
-  expect(calls).toHaveLength(1);
+  expect(calls).toHaveLength(2);
   await panel.locator(".reply-assumptions>summary").click();
   await expect(panel.locator(".reply-assumptions")).toContainText(
     "nicht bestätigt",
   );
   await shot(page, "clarification-desktop");
   await audit(page, "#assistant-drawer");
-  await panel.getByRole("button", { name: "Senden", exact: true }).click();
   await expect.poll(() => calls.length).toBe(2);
   await expect(
     panel.getByRole("button", { name: "Anfrage abbrechen", exact: true }),
@@ -400,10 +402,10 @@ test("Steinmetz: exact text diff, real proposal application, inline undo and nor
     .click();
   await expect(
     panel.getByLabel("Maßwerte beibehalten", { exact: true }),
-  ).toBeChecked();
+  ).not.toBeChecked();
   await expect(
     panel.getByLabel("Wortlaut beibehalten", { exact: true }),
-  ).toBeChecked();
+  ).not.toBeChecked();
   await panel.getByLabel("Wortlaut beibehalten", { exact: true }).uncheck();
   await panel.getByLabel("Maßwerte beibehalten", { exact: true }).uncheck();
   await panel
@@ -656,7 +658,7 @@ test("Backoffice: structured draft feedback, safe cancellation and mobile footer
             {
               id: "schubert-office-drafts-de",
               label: "Büro & Entwürfe",
-              version: "1.0.0",
+              version: "1.1.0",
               jurisdiction: "DE",
             },
           ],
@@ -675,21 +677,9 @@ test("Backoffice: structured draft feedback, safe cancellation and mobile footer
   await editor
     .getByLabel("Welche Oberfläche wurde vereinbart?", { exact: true })
     .fill("Geschliffen, vom Kunden bestätigt.");
-  await editor
-    .getByRole("button", {
-      name: "Antworten in Nachricht übernehmen",
-      exact: true,
-    })
-    .click();
-  await expect(
-    editor.getByLabel("Ergänzung für die nächste Prüfung", { exact: true }),
-  ).toBeFocused();
-  expect(calls).toHaveLength(1);
   await editor.locator("#field-title").fill("TEST · Aktueller Formularstand");
   await expect(editor.locator(".review-stale")).toBeVisible();
-  await editor
-    .getByRole("button", { name: "Aktuelle Eingaben prüfen", exact: true })
-    .click();
+  await editor.getByRole("button",{name:"Antwort senden",exact:true}).click();
   await expect.poll(() => !!delayed).toBe(true);
   expect(calls[1].message).toContain("Geschliffen, vom Kunden bestätigt.");
   expect(calls[1].context.editor.values.title).toBe(

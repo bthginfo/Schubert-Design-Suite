@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {planningPresets} from './planning-workflow.js';
+import {designOperationSchema} from './planning.js';
 
 export const planningStepSchema=z.enum(['geometry','design','review','output']);
 export type PlanningStep=z.infer<typeof planningStepSchema>;
@@ -47,24 +48,22 @@ export function planningStepLabel(kind:string,step:PlanningStep,presetId?:unknow
 export function planningStepInstructions(kind:string,step:PlanningStep,presetId?:unknown){
   const preset=planningPresets.find(p=>p.id===presetId&&p.kind===kind);
   const brief=preset?.id==='memorial_existing'
-    ?'Nur belegte Bestandsmaße, Steinform und Bestandsunterlagen klären. Vorhandene Inschriften unverändert als Bestand führen; einen neuen Wortlaut getrennt als geplante Ergänzung behandeln.'
+    ?'Schwerpunkt: belegte Bestandsmaße, Steinform und Bestandsunterlagen klären. Eine beauftragte Bestandsänderung als neue geplante Fassung vorbereiten; der Originalstand bleibt im Verlauf erhalten.'
     :kind==='room_plan'&&preset?.firstElement==='stone_piece'
-    ?'Nur Länge, Tiefe, Materialstärke und Einbaubezüge für '+preset.label+' klären. Keinen vollständigen Raum oder ein Raumaufmaß voraussetzen. Fehlende Kanten-, Anschluss- oder Ausschnittangaben gezielt erfragen; keine Maße erfinden.'
+    ?'Schwerpunkt: Länge, Tiefe, Materialstärke und Einbaubezüge für '+preset.label+' klären. Keinen vollständigen Raum oder ein Raumaufmaß voraussetzen. Fehlende Kanten-, Anschluss- oder Ausschnittangaben gezielt erfragen; keine Maße erfinden.'
     :kind==='memorial'
-    ?'Nur Steinform, Außenmaße, Materialstärke und belegte Friedhofsvorgaben klären. Keine Inschrift erfinden.'
-    :'Nur Raumgeometrie, lichte Innenmaße, Wandstärke, Höhen und Öffnungen klären. Achs-, Außen- und Innenmaße unterscheiden.';
-  return ({
+    ?'Schwerpunkt: Steinform, Außenmaße, Materialstärke und belegte Friedhofsvorgaben klären. Keine Inschrift erfinden.'
+    :'Schwerpunkt: Raumgeometrie, lichte Innenmaße, Wandstärke, Höhen und Öffnungen klären. Achs-, Außen- und Innenmaße unterscheiden.';
+  return 'Der Arbeitsschritt gibt den Schwerpunkt vor; ausdrückliche Bearbeitungswünsche sind in jedem Schritt möglich. '+({
     geometry:brief+' Einen ersten Entwurf nur mit vollständig angegebenen Maßen vorbereiten. Neue manuelle Angaben sind Planmaße, kein bestätigtes Aufmaß.',
     design:kind==='memorial'
-      ?'Nur die gewünschte Gestaltung oder Inschrift bearbeiten. Text, Namen, Daten und Zeilenumbrüche wörtlich erhalten. Bestehende Inschriften schützen. Fehlende Hersteller-, Material- oder Schriftangaben als offen kennzeichnen.'
-      :'Nur die angeforderten Natursteinbauteile, Materialien, Oberflächen, Kanten und Ausschnitte besprechen. Nutzungsart und Maßbezug beachten. Keine Produktmaße, Materialeignung, Gefälle oder Montagewerte erfinden.',
-    review:'Nur prüfen und konkrete offene Punkte mit Bauteilbezug nennen. Die übergebene deterministische Prüfliste ist maßgeblich. Keine Änderungen vorschlagen, keine Maße bestätigen und keine Freigabe erteilen.',
-    output:'Nur die Kundenpräsentation oder Ausgabe vorbereiten. Technisches PDF und Stückliste stammen aus dem Modell. Generierte Bilder sind Visualisierungen. Keine Planänderung, Bildbestellung, Veröffentlichung oder Freigabe auslösen.'
+      ?'Die gewünschte Gestaltung oder Inschrift bearbeiten. Text, Namen, Daten und Zeilenumbrüche ohne Änderungswunsch wörtlich erhalten. Ausdrücklich gewünschte Textänderungen und zusätzliche Inschriften vorbereiten. Fehlende Hersteller-, Material- oder Schriftangaben als offen kennzeichnen.'
+      :'Die angeforderten Natursteinbauteile, Materialien, Oberflächen, Kanten und Ausschnitte besprechen. Nutzungsart und Maßbezug beachten. Keine Produktmaße, Materialeignung, Gefälle oder Montagewerte erfinden.',
+    review:'Bei einer reinen Prüffrage: Nur prüfen und konkrete offene Punkte mit Bauteilbezug nennen. Die deterministische Prüfliste ist maßgeblich. Auf ausdrücklichen Änderungswunsch auch hier Entwurfsänderungen vorbereiten; der Schritt sperrt keine Bearbeitung. Maße und Freigaben nicht bestätigen.',
+    output:'Kundenpräsentation und Ausgabe stehen im Vordergrund. Auf ausdrücklichen Wunsch Entwurfsänderungen vorbereiten oder die angebundene Bildfunktion mit passendem Prompt anbieten. Technisches PDF und Stückliste stammen aus dem Modell. Bilder sind Visualisierungen; Kosten und Nutzungsrechte zeigt der Bilddialog. Keine Veröffentlichung oder fachliche Freigabe selbst bestätigen.'
   })[step];
 }
 
 export function planningOperationAllowed(step:PlanningStep,type:string){
-  if(step==='review'||step==='output')return false;
-  if(step==='geometry')return ['add_element','move_element','set_element_position','rotate_element','set_design_target'].includes(type);
-  return ['move_element','set_element_position','rotate_element','set_design_target','set_inscription_text','set_inscription_layout'].includes(type);
+  return designOperationSchema.options.some(schema=>schema.shape.type.value===type)&&!['confirm_design_target','record_survey_measurement','confirm_survey_measurement','correct_existing_inscription','set_inscription_originals','confirm_contour_import','add_asset_reference'].includes(type);
 }

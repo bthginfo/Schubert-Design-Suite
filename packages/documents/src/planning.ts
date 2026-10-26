@@ -120,14 +120,15 @@ export async function createPlanningPdf(snapshot:DesignSnapshot,meta:PlanningPdf
     }
     y-=20;
     const ref=meta.fontReferences?.[inscription.fontVariantVersionId];
+    const length=(id:string|null,empty='offen')=>{const value=measureValue(snapshot,id);return value===null?empty:String(value).replace('.',',')+' mm';};
     const specifications=[`Herstellerschrift: ${meta.fontLabels?.[inscription.fontVariantVersionId]??'noch nicht zugeordnet – nur Entwurf'}`,
       `Lieferform: ${{individual_letters:'Einzelbuchstaben',wording:'Schriftzug',engraved:'graviert',other:'andere'}[inscription.supplyForm]}`,
-      `Gewünschte Zeichenhöhe: ${measureValue(snapshot,inscription.requestedHeightMeasureId)??'offen'} mm`,
-      `Kleinbuchstabenhöhe: ${measureValue(snapshot,inscription.requestedLowercaseHeightMeasureId)??'nicht festgelegt'} mm`,
-      `Verbindliche maximale Schriftbreite: ${measureValue(snapshot,inscription.requestedMaxWidthMeasureId)??'offen'} mm`,
-      `Zeilenabstand: ${measureValue(snapshot,inscription.lineGapMeasureId)??'offen'} mm`,
+      `Gewünschte Zeichenhöhe: ${length(inscription.requestedHeightMeasureId)}`,
+      `Kleinbuchstabenhöhe: ${length(inscription.requestedLowercaseHeightMeasureId,'nicht festgelegt')}`,
+      `Verbindliche maximale Schriftbreite: ${length(inscription.requestedMaxWidthMeasureId)}`,
+      `Zeilenabstand: ${length(inscription.lineGapMeasureId)}`,
       `Ursprung auf der Beschriftungsfläche (unten links): u ${inscription.originUV.uMm} / v ${inscription.originUV.vMm} mm`,
-      `Drehung ${inscription.rotationDeg}° · Ausrichtung ${inscription.alignment}`,
+      `Drehung ${inscription.rotationDeg}° · Ausrichtung ${{left:'linksbündig',center:'zentriert',right:'rechtsbündig'}[inscription.alignment]}`,
       `Materialartikelreferenz: ${inscription.materialArticleReference??ref?.materialArticleRef??'offen'} · Auswahl ${ref?.selectionRef??'siehe eingefrorene Schriftversion'}`,
       inscription.renderingBasis==='shop_image_reference'?'GENAUIGKEIT: Herstellerbildreferenz. Keine bestätigten Einzelzeichenkonturen, Satzbreiten oder Bohrpunkte. Der Lieferant erstellt/bestätigt den Satz.':'Originalkonturen/-modelle gemäß eingefrorenem Revisionsmanifest.',
       ...(ref?.sourceUrl?[`Herstellerquelle: ${ref.sourceUrl}`]:[])];

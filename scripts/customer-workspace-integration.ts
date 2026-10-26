@@ -59,6 +59,6 @@ export async function customerWorkspaceIntegration(actor:(role:string)=>ActorCon
     const prepared=await prepareAssistantContext(office,input,'https://test.invalid');assert.equal(prepared.context.record.id,customer.id);assert.equal(prepared.context.customerWorkspace.area,'orders');
     assert.deepEqual(prepared.context.customerWorkspace.recentRecords.map((r:any)=>r.id),[order.id]);assert(!JSON.stringify(prepared.context).includes(foreign.id));
     const workspace=await prepareAssistantContext(office,assistantInputSchema.parse({message:'Wo finde ich meine Angebote?',context:{path:'office'}}),'https://test.invalid');
-    assert.deepEqual(workspace.context.allowedCommands,[]);assert.deepEqual(workspace.context.tasks.map((task:any)=>task.href),['/quotes','/invoices']);
+    assert(workspace.context.allowedCommands.includes('sales.quote.create'));assert(!workspace.context.allowedCommands.includes('billing.payment.create'));assert.deepEqual(workspace.context.tasks.map((task:any)=>task.href),['/quotes','/invoices']);
   });
 }

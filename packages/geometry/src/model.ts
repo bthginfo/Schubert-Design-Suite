@@ -167,7 +167,7 @@ function move(snapshot: DesignSnapshot, element: DesignElement, delta: Point3): 
     }
   } else throw new Error('Dieses Element wird über seine Bezugsgeometrie verschoben.');
 }
-export function applyOperations(input: DesignSnapshot, operations: DesignOperation[]): DesignSnapshot {
+export function applyOperations(input: DesignSnapshot, operations: DesignOperation[],options:{validate?:boolean}={}): DesignSnapshot {
   const snapshot = structuredClone(designSnapshotSchema.parse(input));
   for (const raw of operations) {
     syncHostBackReferences(snapshot);
@@ -175,11 +175,11 @@ export function applyOperations(input: DesignSnapshot, operations: DesignOperati
     const element = 'elementId' in operation ? snapshot.elements.find(e => e.id === operation.elementId) : undefined;
     if ('elementId' in operation && !element) throw new Error(`Element ${operation.elementId} fehlt.`);
     if(element&&lockedAncestor(snapshot,element)&&operation.type!=='duplicate_element')throw new Error(`„${element.label}“ liegt in einer gesperrten Gruppe.`);
-    if (element?.locked && !['set_element_lock','duplicate_element','correct_existing_inscription','set_inscription_originals','confirm_contour_import'].includes(operation.type)) throw new Error(`„${element.label}“ ist gesperrt. Bestand zuerst ausdrücklich prüfen.`);
+    if (element?.locked && !['set_element_lock','duplicate_element','correct_existing_inscription','set_inscription_originals','confirm_contour_import','plan_inscription_revision'].includes(operation.type)) throw new Error(`„${element.label}“ ist gesperrt. Bestand zuerst ausdrücklich prüfen.`);
     if (element?.kind === 'inscription' && element.phase === 'existing' && operation.type === 'set_element_lock' && !operation.locked) throw new Error('Eine bestehende Inschrift bleibt geschützt. Verwenden Sie eine dokumentierte Bestandskorrektur.');
     if(element&&!['set_element_lock','duplicate_element','rename_element','reparent_element','confirm_contour_import'].includes(operation.type)){
       const changed=[element.id];if(element.kind==='wall'&&(operation.type==='move_element'||operation.type==='remove_element'||operation.type==='set_element_phase'||operation.type==='set_wall'&&(operation.startNodeId||operation.endNodeId||operation.coreThicknessMeasureId)))changed.push(element.startNodeId,element.endNodeId);if(operation.type==='set_wall'){if(operation.startNodeId)changed.push(operation.startNodeId);if(operation.endNodeId)changed.push(operation.endNodeId);}
-      guardLockedDependencies(snapshot,changed,['correct_existing_inscription','set_inscription_originals'].includes(operation.type)?element.id:undefined);
+      guardLockedDependencies(snapshot,changed,['correct_existing_inscription','set_inscription_originals','plan_inscription_revision'].includes(operation.type)?element.id:undefined);
     }
     if((operation.type==='add_element'||operation.type==='add_opening')&&operation.element.kind==='wall')guardLockedDependencies(snapshot,[operation.element.startNodeId,operation.element.endNodeId]);
     if(operation.type==='add_element'&&['machining','slope','connection','clearance'].includes(operation.element.kind)&&'hostElementId'in operation.element&&operation.element.hostElementId)guardLockedDependencies(snapshot,[operation.element.hostElementId]);
@@ -232,7 +232,7 @@ export function applyOperations(input: DesignSnapshot, operations: DesignOperati
         guardLockedMeasure(snapshot,operation.measureId);
         const previous = snapshot.measurements[operation.measureId];
         if (previous && previous.semantic !== 'design_target') throw new Error('Aufmaß, Katalognennmaß und Referenzmaß werden nicht durch einen Planwunsch überschrieben.');
-        snapshot.measurements[operation.measureId] = targetMeasure(operation.valueMm, operation.isEstimated ?? previous?.isEstimated ?? false);
+        snapshot.measurements[operation.measureId] = {...targetMeasure(operation.valueMm, operation.isEstimated ?? previous?.isEstimated ?? false),origin:operation.origin??'manual'};
         for (const dim of snapshot.elements) if (dim.kind === 'dimension' && dim.mode === 'driving' && dim.measureId === operation.measureId && operation.valueMm !== null) driveDimension(snapshot,dim,operation.valueMm);
         for(const slope of snapshot.elements)if(slope.kind==='slope'&&[slope.riseMeasureId,slope.runMeasureId].includes(operation.measureId)&&operation.valueMm!==null)driveSlope(snapshot,slope,operation.measureId,operation.valueMm);
         // Confirmation is a separate authenticated server action; a browser flag cannot attest a reviewer.
@@ -265,6 +265,9 @@ export function applyOperations(input: DesignSnapshot, operations: DesignOperati
         if (element!.kind !== 'catalog_object') throw new Error('Kein Katalogobjekt.');
         Object.assign(element!, { productVariantVersionId: operation.productVariantVersionId, assetVersionId: operation.assetVersionId, accuracy: operation.accuracy, footprint: operation.footprint }); break;
       }
+      case 'plan_inscription_revision':
+        if(element!.kind!=='inscription')throw Error('Diese Bearbeitung benötigt eine Inschrift.');
+        element!.phase='planned';element!.locked=false;break;
       case 'set_inscription_text':
         if (element!.kind !== 'inscription') throw new Error('Keine Inschrift.');
         if (element!.phase === 'existing') throw new Error('Bestehende Inschrift benötigt dokumentierte Bestandskorrektur.');
@@ -337,7 +340,7 @@ export function applyOperations(input: DesignSnapshot, operations: DesignOperati
   }
   syncHostBackReferences(snapshot);
   for(const feature of snapshot.elements)if(feature.kind==='machining'&&feature.machiningType==='miter'&&feature.miter){const host=snapshot.elements.find(e=>e.id===feature.hostElementId);if(host?.kind==='stone_piece')feature.contour=miterCut(snapshot,host,feature.miter.edgeIndex,feature.miter.angleDeg,feature.face).contour;}
-  const parsed = designSnapshotSchema.parse(snapshot), issues = validateDesign(parsed);
+  const parsed = designSnapshotSchema.parse(snapshot), issues = options.validate===false?{blocking:[]}:validateDesign(parsed);
   if (issues.blocking.length) throw new Error(issues.blocking.join('\n'));
   return parsed;
 }

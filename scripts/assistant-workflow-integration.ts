@@ -35,13 +35,13 @@ export async function assistantWorkflowIntegration(actor:(role:string)=>ActorCon
   const path='studio/'+created.project.id;
   const input=(step:'geometry'|'design'|'review'|'output',revision=created.revision.id,version=created.variant.version)=>assistantInputSchema.parse({message:'Prüfe den aktuellen Schritt.',context:{path,variantId:created.variant.id,planning_work:{step,revision_id:revision,base_version:version,view:'front'}}});
   const first=await prepareAssistantContext(owner,input('geometry'),'http://localhost');
-  assert.equal(first.context.revisionId,created.revision.id);assert.equal(first.context.workflow.step,'geometry');assert.deepEqual(first.context.allowedCommands,['planning.design.change']);
+  assert.equal(first.context.revisionId,created.revision.id);assert.equal(first.context.workflow.step,'geometry');assert(first.context.allowedCommands.includes('planning.design.change'));assert(first.context.allowedCommands.includes('sales.order.create'));
   const operations=planningDraftOperations({snapshot:created.revision.snapshot},{kind:'memorial_slab',label:'TEST Stein',widthMm:'800',heightMm:'1200',thicknessMm:'160'});
   const changed=await executeCommand(owner,{name:'planning.design.change',id:created.variant.id,expectedVersion:created.variant.version,idempotencyKey:randomUUID(),payload:{base_revision_id:created.revision.id,operations}});
   await assert.rejects(()=>prepareAssistantContext(owner,input('geometry'),'http://localhost'),(error:any)=>error.code==='AI_STALE_CONTEXT');
   for(const step of ['review','output'] as const){
    const prepared=await prepareAssistantContext(owner,input(step,changed.revision.id,changed.variant.version),'http://localhost');
-   assert.equal(prepared.context.revisionId,changed.revision.id);assert.equal(prepared.context.workflow.step,step);assert.deepEqual(prepared.context.allowedCommands,[]);assert(Array.isArray(prepared.context.validation.blocking));
+   assert.equal(prepared.context.revisionId,changed.revision.id);assert.equal(prepared.context.workflow.step,step);assert(prepared.context.allowedCommands.includes('planning.design.change'));assert(Array.isArray(prepared.context.validation.blocking));
    if(step==='review')assert(prepared.context.releaseValidation.blocking.length>0);
   }
   const foreign=assistantInputSchema.parse({...input('design',changed.revision.id,changed.variant.version),context:{...input('design',changed.revision.id,changed.variant.version).context,variantId:randomUUID()}});

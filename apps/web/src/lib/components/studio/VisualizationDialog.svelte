@@ -10,13 +10,13 @@
  import AssistantSources from '../AssistantSources.svelte';
  import ReferencePicker from '../ReferencePicker.svelte';
  import Icon from '../Icon.svelte';
- let {data,revisionId,jobs=[],intent='plan',designKind='memorial',onclose}:{data:AppData;revisionId:string;jobs?:any[];intent?:'plan'|'photo';designKind?:string;onclose:()=>void}=$props();
+ let {data,revisionId,jobs=[],intent='plan',initialPrompt='',initialSources=[],designKind='memorial',onclose}:{data:AppData;revisionId:string;jobs?:any[];intent?:'plan'|'photo';initialPrompt?:string;initialSources?:AssistantSource[];designKind?:string;onclose:()=>void}=$props();
  let dialog:HTMLDialogElement;
  let errorElement=$state<HTMLParagraphElement>();
- let mode=$state<'plan'|'photo'>(untrack(()=>intent)),prompt=$state(''),quality=$state<'low'|'medium'|'high'>('medium'),size=$state<'1024x1024'|'1536x1024'|'1024x1536'>('1536x1024');
+ let mode=$state<'plan'|'photo'>(untrack(()=>intent)),prompt=$state(untrack(()=>initialPrompt.slice(0,2000))),quality=$state<'low'|'medium'|'high'>('medium'),size=$state<'1024x1024'|'1536x1024'|'1024x1536'>('1536x1024');
  let rightsBasis=$state<'own_content'|'licensed_document'>('own_content'),rightsId=$state(''),statement=$state(''),rightsConfirmed=$state(false);
  let uploadNotice=$state('');
- let sources:AssistantSource[]=$state([]),busy=$state(false),refreshing=$state(false),error=$state(''),quote:any=$state(null),quotedFor=$state(''),accepted=$state(false),submittedId=$state('');
+ let sources:AssistantSource[]=$state(untrack(()=>initialSources.slice(0,intent==='photo'?2:1).map(source=>({...source})))),busy=$state(false),refreshing=$state(false),error=$state(''),quote:any=$state(null),quotedFor=$state(''),accepted=$state(false),submittedId=$state('');
  const input=$derived({revision_id:revisionId,intent:mode,prompt:prompt.trim(),quality,size,reference_document_ids:sources.map(row=>row.documentId),reference_preview_job_ids:sources.map(row=>row.preview?.job_id??''),rights_basis:rightsBasis,...(rightsBasis==='licensed_document'?{rights_evidence_version_id:rightsId}:{}),rights_statement:rightsBasis==='own_content'?'Ich bestätige, dass ich die ausgewählten eigenen Fotos und Entwürfe für diese KI-Bildbearbeitung verwenden und an OpenAI übermitteln darf.':statement.trim()});
  const fingerprint=$derived(JSON.stringify(input));
  const qualityLabel={low:'Schneller Entwurf',medium:'Ausgewogen',high:'Hohe Detailqualität'};

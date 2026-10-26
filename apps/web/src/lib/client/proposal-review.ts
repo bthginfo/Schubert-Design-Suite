@@ -20,6 +20,15 @@ export type PlanChange = {
   fields: ChangeField[];
 };
 const names: Record<string, string> = {
+  phase: "Planungsphase",
+  locked: "Bearbeitungssperre",
+  finishedContour: "Steinform",
+  contour: "Kontur",
+  transform: "Position und Drehung",
+  edgeTreatments: "Kantenbearbeitung",
+  thicknessMeasureId: "Materialstärke",
+  parentId: "Zugehörige Gruppe",
+  purpose: "Verwendung",
   exactText: "Wortlaut",
   originUV: "Position auf dem Stein",
   rotationDeg: "Drehung",
@@ -63,6 +72,9 @@ function value(v: any): string {
   return (
     (
       {
+        existing: "Bestand",
+        planned: "Neue geplante Fassung",
+        removed: "Zur Entfernung vorgesehen",
         left: "Linksbündig",
         center: "Zentriert",
         right: "Rechtsbündig",

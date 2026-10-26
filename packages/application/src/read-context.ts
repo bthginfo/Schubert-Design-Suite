@@ -39,8 +39,9 @@ export async function recordRelations(db:DbClient,ctx:ActorContext,m:ModuleDefin
   const orderId=slug==='orders'?id:record.order_id;
   specs.push({slug:'dispatch',key:'dispatch_assignments',where:'order_id',value:orderId,columns:'id,title,employee_id,starts_at,ends_at,status'});
   if(has(ctx,'orders'))related.work_reports=await rows(db,'SELECT id,order_id,work_package_id,employee_id,description,performed_on,status FROM work_reports WHERE order_id=$1 AND legal_entity_id=$2 ORDER BY created_at DESC LIMIT 50',[orderId,ctx.legalEntityId]);
-  related.documents=await rows(db,'SELECT id,name,current_version_id,status,mime_type,created_at FROM documents WHERE(entity_id=$1 OR entity_id=$2) AND '+documentReadPredicate(ctx)+' ORDER BY created_at DESC LIMIT 50',[id,orderId]);
+
  }
+ if(has(ctx,'documents')){const orderId=slug==='orders'?id:record.order_id??null;related.documents=await rows(db,`SELECT d.id,d.name,d.original_name,d.current_version_id,d.status,d.mime_type,d.created_at FROM documents d WHERE(d.entity_id=$1 OR d.entity_id=$2 OR EXISTS(SELECT 1 FROM document_links dl WHERE dl.document_id=d.id AND((dl.entity_type=$3 AND dl.entity_id=$1)OR(dl.entity_type IN('orders','order') AND dl.entity_id=$2)))) AND ${documentReadPredicate(ctx,'d')} ORDER BY d.created_at DESC LIMIT 50`,[id,orderId,slug]);}
  if(['stock','orders'].includes(slug)){
   if(has(ctx,'inventory'))related.stock_reservations=await rows(db,`SELECT r.id,s.name,r.order_id,r.quantity,s.unit,r.status,r.created_at FROM stock_reservations r JOIN stock_items s ON s.id=r.stock_item_id WHERE r.${slug==='stock'?'stock_item_id':'order_id'}=$1 AND r.legal_entity_id=$2 ORDER BY r.created_at DESC LIMIT 50`,[id,ctx.legalEntityId]);
  }

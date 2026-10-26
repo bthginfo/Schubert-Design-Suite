@@ -10,6 +10,7 @@
     clarifications=[],displayUnit='mm',allowMaterials=false,
     disabled = false,
     onfollowup,
+    onanswersubmit,
   }: {
     text: string;
     assumptions?: string[];
@@ -18,6 +19,7 @@
     clarifications?:unknown;displayUnit?:string;allowMaterials?:boolean;
     disabled?: boolean;
     onfollowup: (text: string) => void;
+    onanswersubmit?: (text:string)=>Promise<boolean|void>|boolean|void;
   } = $props();
   const uid = $props.id();
   let answers: Record<number, string> = $state({});
@@ -31,13 +33,17 @@
   const hasAnswers = $derived(!Object.values(invalid).some(Boolean)&&
     Object.values(answers).some((value) => value.trim()),
   );
-  function prepare() {
+  let answersSent=$state(false),answerSending=$state(false);
+  async function prepare() {
+    if(answerSending||answersSent||disabled)return;
     const reply = questions
       .flatMap((question, index) =>
         answers[index]?.trim() ? [question + "\n" + answers[index].trim()] : [],
       )
       .join("\n\n");
-    if (reply) onfollowup("Zu Ihren Rückfragen:\n\n" + reply);
+    if(!reply)return;
+    const text="Zu Ihren Rückfragen:\n\n"+reply;
+    if(onanswersubmit){answerSending=true;try{const result=await onanswersubmit(text);answersSent=result!==false;}finally{answerSending=false;}}else onfollowup(text);
   }
 </script>
 
@@ -51,8 +57,7 @@
     >
       <h4>Noch zu klären</h4>
       <p class="reply-hint">
-        Beantworten Sie, was Sie schon wissen. Vor dem Senden können Sie die
-        Nachricht bearbeiten.
+        Beantworten Sie, was Sie schon wissen. „Antwort senden“ schickt Ihre Angaben direkt an die KI.
       </p>
       {#each visibleQuestions as question, index}<div class="clarification">
 <label for={uid + "-question-" + index}>{question}</label>{#if answers[index]===unknown&&fields[index]?.kind!=='text'}<input id={uid+'-question-'+index} value={unknown} disabled/><button type="button" class="text-link" {disabled} onclick={()=>{answers[index]='';invalid[index]=false;}}>Angabe bearbeiten</button>{:else if fields[index]?.kind!=='text'&&(fields[index]?.kind!=='material'||allowMaterials)}<ClarificationField field={fields[index]} id={uid+'-question-'+index} {displayUnit} {disabled} onchange={value=>answers[index]=value} oninvalid={value=>invalid[index]=value}/>{:else}<textarea
@@ -74,9 +79,10 @@
         </div>{/each}{#if questions.length>questionLimit}<button type="button" class="text-link" {disabled} onclick={()=>questionLimit+=3}>Weitere Rückfragen anzeigen ({questions.length-questionLimit})</button>{/if}<button
         type="button"
         class="btn small"
-        disabled={disabled || !hasAnswers}
-        onclick={prepare}>Antworten in Nachricht übernehmen</button
+        disabled={disabled || !hasAnswers || answerSending || answersSent}
+        onclick={prepare}>{answersSent?'Antwort gesendet':answerSending?'Wird gesendet …':'Antwort senden'}</button
       >
+      {#if answersSent}<button class="text-link" type="button" {disabled} onclick={()=>answersSent=false}>Antworten erneut bearbeiten</button>{/if}
     </section>{/if}
   {#if assumptions.length}<details class="reply-assumptions">
       <summary>Annahmen der KI ({assumptions.length})</summary>

@@ -1,4 +1,5 @@
 import {manufacturerDeliveries} from '@schubert/application';
+import {assistantAttachmentStatus} from '@schubert/application';
 import {applyAIProposal} from '@schubert/application';
 import {feedbackReport,feedbackPacket,feedbackMarkdown,timeSyncFailure,assistantInputSchema,prepareAssistantContext,searchPlanningProducts,searchPlanningReference,searchManufacturerAssets} from '@schubert/application';
 import {personnelDocumentTypes,reconcileWork,readBackupChunk,exportRecords,referenceSearch} from '@schubert/application';
@@ -68,6 +69,7 @@ const portalDownload=path.match(/^portal\/publications\/([\w-]+)\/download$/);if
 
 const previewStatus=path.match(/^planning\/source-preview\/([\w-]+)$/);if(previewStatus)return success(await sourcePreviewStatus(context(e),previewStatus[1]));
 if(path==='planning/manufacturer-deliveries')return success(await manufacturerDeliveries(context(e)));
+const assistantAttachment=path.match(/^ai\/attachments\/([\w-]+)$/);if(assistantAttachment)return success(await assistantAttachmentStatus(context(e),assistantAttachment[1]));
 if(path==='planning/manufacturer-assets')return success(await searchManufacturerAssets(context(e),{q:e.url.searchParams.get('q')??'',studio:e.url.searchParams.get('studio')??undefined,kind:e.url.searchParams.get('kind')??undefined,cursor:e.url.searchParams.get('cursor')??undefined}));
 const studioReference=path.match(/^lookups\/planning-(rules|finishes|edges|manufacturers)$/);if(studioReference)return success(await searchPlanningReference(context(e),studioReference[1] as 'rules'|'finishes'|'edges'|'manufacturers',e.url.searchParams.get('q')??'',e.url.searchParams.get('include_id')??undefined));
 const lookup=path.match(/^lookups\/([a-z-]+)$/);if(lookup)return success(await referenceSearch(context(e),lookup[1],{q:e.url.searchParams.get('q')??undefined,includeId:e.url.searchParams.get('include_id')??undefined,parentId:e.url.searchParams.get('parent_id')??undefined,asOf:e.url.searchParams.get('as_of')??undefined,kind:e.url.searchParams.get('kind')??undefined}));

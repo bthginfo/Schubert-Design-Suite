@@ -8,7 +8,7 @@
   function switchUnit(event:Event){const control=event.currentTarget as HTMLSelectElement;const invalid=studioRoot?.querySelector<HTMLInputElement>('input[data-length-input][aria-invalid="true"]:not(:disabled)');if(invalid){control.value=units.unit;invalid.focus();invalid.reportValidity();return;}units.unit=control.value as LengthUnit;try{localStorage.setItem('schubert:planning-unit:'+data.user?.id,units.unit);}catch{}}
   import {planningPadding} from '#lib/client/studio-viewport.ts';
   import {feedbackFetch} from "#lib/client/feedback-context.ts";
-  import {onMount,onDestroy,tick,type Component} from 'svelte';
+  import {onMount,onDestroy,tick,untrack,type Component} from 'svelte';
   import {goto,invalidateAll,beforeNavigate} from '$app/navigation';
   import {page} from '$app/state';
   import {designSnapshotSchema,type DesignSnapshot,type DesignElement,type DesignOperation,type Point3,type Point2} from '@schubert/contracts';
@@ -106,6 +106,8 @@
   import SourcePlanDialog from './studio/SourcePlanDialog.svelte';
   import ReleasePackages from './studio/ReleasePackages.svelte';
   import CompositeDialog from './studio/CompositeDialog.svelte';
+  import {takeVisualization} from '#lib/client/visualization-handoff.ts';
+  import type {AssistantSource} from '#lib/client/assistant.ts';
   import VisualizationDialog from './studio/VisualizationDialog.svelte';
   import ConstraintDialog from './studio/ConstraintDialog.svelte';
   import MachiningEditor from './studio/MachiningEditor.svelte';
@@ -118,7 +120,7 @@
   import ComparisonDetails from './studio/ComparisonDetails.svelte';
   import type{CameraAction,CameraCommand}from'./studio/camera-navigation.ts';
   let constraintOpen=$state(false);
-  let compositeOpen=$state(false),visualizationOpen=$state(false),visualizationMode=$state<'plan'|'photo'>('plan');
+  let compositeOpen=$state(false),visualizationOpen=$state(false),visualizationMode=$state<'plan'|'photo'>('plan'),visualizationPrompt=$state(''),visualizationSources:AssistantSource[]=$state([]);
   let sourcePlanOpen=$state(false),sourceReferenceId=$state('');
   let glyphLayoutOpen=$state(false);
   let{data}:{data:AppData}=$props();
@@ -231,9 +233,9 @@
       if(!snapshot||baseRevisionId!==base||pending.length||saving||outgoing||isHistoric||conflict)return false;
       const next=parseSnapshot(result.revision?.snapshot);if(!next||next.variantId!==snapshot.variantId)return false;
       const before=snapshot;let inverse:DesignOperation[]|null=null;try{inverse=inverseOperations(before,operations);}catch{}
-      history=[...history,{operations,inverse,before,after:next}];redo=[];adoptResult(result);pending=[];
+      if(!operations.length){const last=history.at(-1);if(last?.after.revisionId===base){history=history.slice(0,-1);redo=[...redo,last];}}else{history=[...history,{operations,inverse,before,after:next}];redo=[];}adoptResult(result);pending=[];
       if(!before.elements.length&&next.elements.length){const primary=next.elements.find(e=>next.kind==='memorial'?e.kind==='stone_piece':e.kind==='room');if(primary)selectedIds=[primary.id];if(!compactWorkbench){leftPanel=false;rightPanel=true;}tab='properties';}
-      selectedIds=selectedIds.filter(id=>next.elements.some(e=>e.id===id));notice=inverse?'Änderung übernommen. Rückgängig bleibt verfügbar.':'Änderung übernommen. Frühere Planstände bleiben unter Stände verfügbar.';return true;
+      selectedIds=selectedIds.filter(id=>next.elements.some(e=>e.id===id));notice='Änderung übernommen. Rückgängig bleibt verfügbar.';return true;
     });
     const narrow=window.matchMedia('(max-width:1280px)');
     let desktopPanels={left:leftPanel,right:rightPanel},previousCompact=false,availableWidth=studioRoot?.getBoundingClientRect().width??window.innerWidth;
@@ -244,10 +246,12 @@
       compactWorkbench=compact;previousCompact=compact;
     };
     const studioSize=new ResizeObserver(entries=>{const entry=entries[0];if(entry){availableWidth=entry.contentRect.width;adapt();}});if(studioRoot)studioSize.observe(studioRoot);adapt();narrow.addEventListener('change',adapt);restoreLocal();
-    const companionAction=(event:Event)=>{const action=(event as CustomEvent).detail?.action;if(!snapshot)return;if(action==='image'||action==='photo')void openVisualization(action==='photo'?'photo':'plan');else if(action==='exports')openInspector('images');};
+    const companionAction=(event:Event)=>{const detail=(event as CustomEvent).detail,action=detail?.action;if(!snapshot)return;if(action==='image'||action==='photo')void openVisualization(action==='photo'?'photo':'plan',detail.prompt,detail.sources);else if(action==='exports')openInspector('images');};
+
     window.addEventListener('schubert:studio:action',companionAction);
     return()=>{unregisterAssistant();mounted=false;studioSize.disconnect();narrow.removeEventListener('change',adapt);window.removeEventListener('schubert:studio:action',companionAction);};
   });
+  $effect(()=>{const id=data.detail?.id;if(mounted&&id&&snapshot?.planningProjectId===id)untrack(()=>{const handoff=takeVisualization(id);if(handoff)void openVisualization(handoff.intent,handoff.prompt,handoff.sources);});});
   function restoreLocal(){if(!mounted||!snapshot)return;try{const stored=JSON.parse(sessionStorage.getItem(storageKey)||'null');if(stored?.baseRevisionId===baseRevisionId&&stored.operations?.length&&!pending.length){snapshot=applyOperations(snapshot,stored.operations);pending=stored.operations;notice='Nicht synchronisierte Änderungen aus dieser Sitzung wiederhergestellt.';}else if(stored?.operations?.length&&stored.baseRevisionId!==baseRevisionId){conflict={message:'Lokaler Entwurf basiert auf einer älteren Revision.',stored};}}catch{localAvailable=false;}}
   function storeLocal(){if(!mounted||!snapshot)return;const payload={baseRevisionId,operations:pending,savedAt:new Date().toISOString()};try{if(pending.length)sessionStorage.setItem(storageKey,JSON.stringify(payload));else sessionStorage.removeItem(storageKey);}catch{localAvailable=false;}}
   $effect(()=>{storeLocal();});
@@ -264,14 +268,14 @@
     outgoing??={base_revision_id:baseRevisionId,expected_version:baseVersion,operations:$state.snapshot(pending),idempotency_key:crypto.randomUUID(),count:pending.length};const batch=outgoing;
     const {count:_count,...body}=batch;const response=await feedbackFetch(`/api/v1/designs/${snapshot.variantId}/commands`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const payload=await response.json();
     if(!response.ok){if(response.status===409){conflict=payload;throw new Error('Eine andere Änderung hat diesen Variantenstand fortgeschrieben. Ihr lokaler Entwurf bleibt erhalten.');}outgoing=null;throw new Error(payload.error?.message??payload.message??'Plan konnte nicht gespeichert werden.');}
-    const remaining=pending.slice(batch.count);adoptResult(payload.result??payload);pending=remaining;if(remaining.length)snapshot=applyOperations(snapshot!,remaining);outgoing=null;try{await invalidateAll();}catch{notice='Änderungen sind gespeichert. Die Ansicht bei wiederhergestellter Verbindung neu laden.';}return true;
+    const remaining=pending.slice(batch.count);adoptResult(payload.result??payload);const last=history.at(-1);if(last&&last.before.revisionId===batch.base_revision_id&&JSON.stringify(last.operations)===JSON.stringify(batch.operations))history=[...history.slice(0,-1),{...last,after:snapshot!}];pending=remaining;if(remaining.length)snapshot=applyOperations(snapshot!,remaining);outgoing=null;try{await invalidateAll();}catch{notice='Änderungen sind gespeichert. Die Ansicht bei wiederhergestellter Verbindung neu laden.';}return true;
   }catch(e){error=e instanceof TypeError?'Der Server ist derzeit nicht erreichbar. Ihre Änderungen bleiben in dieser Sitzung erhalten. Speichern Sie erneut, sobald die Verbindung wieder besteht.':(e as Error).message;return false;}finally{saving=false;}}
-  function undo(){if(!snapshot||!history.length||saving||outgoing)return;const step=history[history.length-1];try{
+  async function undo(){if(saveInFlight&&!(await saveInFlight))return;if(!snapshot||!history.length||saving||outgoing)return;const step=history[history.length-1];try{
     if(pending.length>=step.operations.length&&JSON.stringify(pending.slice(-step.operations.length))===JSON.stringify(step.operations)){snapshot=step.before;pending=pending.slice(0,-step.operations.length);}
-    else if(step.inverse){applyBatch(step.inverse,undefined,false);}else{notice='Dieser Nachweis bleibt versioniert. Nutzen Sie für eine Korrektur einen neuen fachlichen Änderungsstand.';return;}
+    else if(step.inverse){applyBatch(step.inverse,undefined,false);}else if(!pending.length&&step.after.revisionId===baseRevisionId){saving=true;try{const result=await command('planning.design.restore_previous',snapshot.variantId,{base_revision_id:baseRevisionId,source_revision_id:step.before.revisionId},baseVersion);adoptResult(result);try{await invalidateAll();}catch{notice='Die Änderung ist zurückgenommen. Die Ansicht kann bei wiederhergestellter Verbindung neu geladen werden.';}}finally{saving=false;}}else{notice='Speichern Sie die aktuelle Änderung, bevor Sie diesen früheren Schritt zurücknehmen.';return;}
     history=history.slice(0,-1);redo=[...redo,step];error='';
   }catch(e){error=(e as Error).message;}}
-  function redoAction(){if(!redo.length||saving||outgoing)return;const step=redo[redo.length-1];try{applyBatch(step.operations,undefined,false);history=[...history,step];redo=redo.slice(0,-1);}catch(e){error=(e as Error).message;}}
+  async function redoAction(){if(saveInFlight&&!(await saveInFlight))return;if(!redo.length||saving||outgoing)return;const step=redo[redo.length-1];try{const before=snapshot!;applyBatch(step.operations,undefined,false);history=[...history,{...step,before,after:snapshot!}];redo=redo.slice(0,-1);}catch(e){error=(e as Error).message;}}
   function select(id:string,event?:MouseEvent|KeyboardEvent){if(event?.shiftKey||multiSelect)selectedIds=selectedIds.includes(id)?selectedIds.filter(v=>v!==id):[...selectedIds,id];else selectedIds=[id];const item=snapshot?.elements.find(e=>e.id===id);if(item?.kind==='inscription')planningStep='design';else if(['review','output'].includes(planningStep))planningStep='geometry';tab='properties';}
   function path(shape:ViewShape){return shape.points.map((p,i)=>`${i?'L':'M'} ${p.xMm} ${-Number(p.yMm)}`).join(' ')+(shape.closed?' Z':'')+' '+shape.holes.map(h=>h.map((p,i)=>`${i?'L':'M'} ${p.xMm} ${-Number(p.yMm)}`).join(' ')+' Z').join(' ');}
   function fit(){zoom=1;panX=0;panY=0;threeReset++;}
@@ -307,7 +311,7 @@
   async function release(event:SubmitEvent){event.preventDefault();if(!snapshot)return;try{if(pending.length&&!(await save()))return;await command('planning.manufacturing.release',undefined,{variant_id:snapshot.variantId,revision_id:baseRevisionId,reason:releaseReason});notice='Fertigungsfreigabe angefordert. Das Paket ist erst nach vollständiger Artefaktprüfung verwendbar.';releaseOpen=false;await invalidateAll();}catch(e){error=(e as Error).message;}}
   async function requestRender(){if(!snapshot||renderRequestBusy)return;renderRequestBusy=true;try{if(pending.length&&!(await save()))return;const result=await command('planning.render.request',undefined,{variant_id:snapshot.variantId,revision_id:baseRevisionId,profile:renderProfile});notice=result.status==='unavailable'?'Renderdienst ist noch nicht betriebsbereit. Der Auftrag zeigt diesen Zustand in der Verarbeitung.':result.message??'Renderauftrag gespeichert. Den Stand der Verarbeitung mit „Renderstatus aktualisieren“ abrufen.';await invalidateAll();}catch(e){error=(e as Error).message;}finally{renderRequestBusy=false;}}
   async function refreshRenderStatus(){if(renderStatusBusy)return;renderStatusBusy=true;try{await invalidateAll();}catch{error='Der Renderstatus konnte gerade nicht abgerufen werden. Bitte später erneut versuchen.';}finally{renderStatusBusy=false;}}
-  async function openVisualization(intent:'plan'|'photo'='plan'){planningStep='output';visualizationMode=intent;if(pending.length&&!(await save()))return;visualizationOpen=true;}
+  async function openVisualization(intent:'plan'|'photo'='plan',initialPrompt='',initialSources:AssistantSource[]=[]){planningStep='output';visualizationMode=intent;visualizationPrompt=initialPrompt;visualizationSources=initialSources;if(pending.length&&!(await save()))return;visualizationOpen=true;}
   async function openComposite(){if(pending.length&&!(await save()))return;compositeOpen=true;}
   async function replaceCatalog(versionId:string,assetId:string|null=null){if(selected?.kind!=='catalog_object'||!versionId)return;const elementId=selected.id,variantId=snapshot?.variantId;try{const product=await frozenProductVersion(versionId);if(snapshot?.variantId!==variantId||selected?.id!==elementId)return;resolvedProducts=[...resolvedProducts.filter(p=>p.id!==product.id),product];edit([{type:'replace_product_variant',elementId,productVariantVersionId:versionId,assetVersionId:assetId,accuracy:'verified_envelope',footprint:rectangleContour(String(product.width_mm),String(product.depth_mm))}]);if(!error)notice=`Produktstand als Entwurf gewählt: ${product.width_mm} × ${product.depth_mm} × ${product.height_mm??'Höhe offen'} mm. ${selected.connectionElementIds.length} Anschlussbezug / ${selected.clearanceElementIds.length} Freiraumbezug: Lage, Montage, benachbarte Ausschnitte und zugehörige Preisfassung prüfen. Der Produktwechsel bestätigt keine Ausführung.`;}catch(problem){error=(problem as Error).message;}}
   async function repairIssue(raw:string){const issue=describeStudioIssue(activeSnapshot,raw);if(!issue.elementId)return;selectedIds=[issue.elementId];openInspector('properties');const binding=activeSnapshot?.constraints.find(c=>raw.includes(c.id)||c.measureId===issue.measureId);if(binding)constraintOpen=true;await tick();const target=issue.measureId?document.querySelector<HTMLElement>(`[data-measure-id="${CSS.escape(issue.measureId)}"]`):binding?document.querySelector<HTMLElement>(`[data-constraint-id="${CSS.escape(binding.id)}"]`):document.querySelector<HTMLElement>('.inspector-body');if(target){let ancestor=target.parentElement;while(ancestor){if(ancestor instanceof HTMLDetailsElement)ancestor.open=true;ancestor=ancestor.parentElement;}await tick();}target?.scrollIntoView({block:'center',behavior:'smooth'});target?.querySelector<HTMLElement>('input:not(:disabled),select:not(:disabled),textarea:not(:disabled),button:not(:disabled)')?.focus();}
@@ -477,7 +481,7 @@
 {#if constraintOpen&&activeSnapshot}<ConstraintDialog snapshot={activeSnapshot} selectedId={selectedIds[0]??''} rules={data.related?.rules??[]} disabled={!canEdit||isHistoric} onapply={ops=>applyBatch(ops)} onclose={()=>constraintOpen=false}/>{/if}
 {#if manufacturerOpen}<ManufacturerPicker studio={snapshot?.kind??'both'} canImportContour={!!selected&&['stone_piece','surface','clearance','grave_border'].includes(selected.kind)&&!selected.locked&&canEdit&&!isHistoric} onchoose={useManufacturer} onclose={()=>manufacturerOpen=false}/>{/if}
 {#if libraryOutlineOpen&&activeSnapshot}<OutlineImportDialog documents={planningDocuments} planningProjectId={activeSnapshot.planningProjectId} initialSourceVersion={librarySourceVersion} initialUnit={librarySourceUnit} onapply={contour=>{applyBatch([{type:'set_contour',elementId:libraryTargetId,contour}]);}} onclose={()=>libraryOutlineOpen=false}/>{/if}
-{#if visualizationOpen}<VisualizationDialog {data} revisionId={baseRevisionId} intent={visualizationMode} designKind={snapshot?.kind??'memorial'} jobs={data.related?.ai_visualizations??[]} onclose={()=>visualizationOpen=false}/>{/if}
+{#if visualizationOpen}<VisualizationDialog {data} revisionId={baseRevisionId} intent={visualizationMode} initialPrompt={visualizationPrompt} initialSources={visualizationSources} designKind={snapshot?.kind??'memorial'} jobs={data.related?.ai_visualizations??[]} onclose={()=>visualizationOpen=false}/>{/if}
 {#if compositeOpen}<CompositeDialog revisionId={baseRevisionId} jobs={renderJobs} documents={planningDocuments} onclose={()=>compositeOpen=false}/>{/if}
 <dialog class="studio-leave-dialog" bind:this={leaveDialog!} aria-labelledby="studio-leave-title" aria-describedby="studio-leave-description" oncancel={(event)=>{event.preventDefault();continueEditing();}} onclose={()=>{if(leaveOpen&&!navigationBusy)continueEditing();}}>
   <h2 id="studio-leave-title">Änderungen noch nicht gespeichert</h2>

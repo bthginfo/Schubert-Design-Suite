@@ -14,6 +14,23 @@ export type Runtime={db:DbClient;ctx:ActorContext;command:Command;payload:Record
 export type Handler=(r:Runtime)=>Promise<any>;
 const handlers=new Map<string,{permission:string;handler:Handler;system?:boolean}>();
 export function register(name:string,permission:string,handler:Handler){if(handlers.has(name)&&process.env.APP_ENV!=='development')throw new Error('Duplicate command '+name);handlers.set(name,{permission,handler});}
+
+async function childCommandAccess(db:DbClient,ctx:ActorContext,name:string){
+ const custom=handlers.get(name),module=modules.find(m=>name.startsWith(m.commandPrefix+'.')),permission=custom?.permission??module?.permission;
+ requireRule(permission,'UNKNOWN_COMMAND','Dieser Fachvorgang ist nicht verfügbar.',404);
+ if(name.startsWith('communication.email.'))requireRule(ctx.permissions.some(p=>p==='sales'||p==='billing'),'FORBIDDEN','Für E-Mail-Entwürfe fehlt der Zugriff.',403);else assertPermission(ctx.permissions,permission);
+ if(module?.table==='orders'&&['Employee','Workshop','Dispatcher'].includes(ctx.role))throw new DomainError('FORBIDDEN','Kaufmännische Auftragsänderungen benötigen eine gesonderte Rolle.',403);
+ const capability=module?.permission??permission.split('.')[0];
+ if(name.startsWith('communication.email.')){const candidates=['sales','billing'].filter(p=>ctx.permissions.includes(p)),settings=await rows<any>(db,'SELECT module,enabled FROM module_settings WHERE module=ANY($1::text[])',[candidates]);requireRule(candidates.some(p=>!settings.some(s=>s.module===p&&!s.enabled)),'MODULE_DISABLED','Dieser Bereich ist derzeit deaktiviert.',403);}else{const setting=await one<any>(db,'SELECT enabled FROM module_settings WHERE module=$1',[capability]);requireRule(!setting||setting.enabled,'MODULE_DISABLED','Dieser Bereich ist derzeit deaktiviert.',403);}
+ return {custom,module};
+}
+/** Compose authorized draft actions in the caller's single transaction. */
+export async function executeChildCommand(parent:Runtime,input:Command){
+ const command=commandSchema.parse(input),{custom,module}=await childCommandAccess(parent.db,parent.ctx,command.name);
+ const runtime:Runtime={...parent,command,payload:command.payload as Record<string,any>,module};
+ let result;if(custom)result=await custom.handler(runtime);else{requireRule(module,'UNKNOWN_COMMAND','Fachvorgang unbekannt.');result=await genericCommand(runtime,module);}
+ const root=result?.variant??result?.record??result;await auditEvent(runtime,module?.table??command.name.split('.').slice(0,2).join('.'),root.id,Number(root.version??1),result);return result;
+}
 export function baseData(ctx:ActorContext){return {tenant_id:ctx.tenantId,legal_entity_id:ctx.legalEntityId,created_by:ctx.actorId,updated_by:ctx.actorId};}
 
 export async function getRecord(db:DbClient,table:string,id:unknown,lock=false){requireRule(typeof id==='string'&&z.uuid().safeParse(id).success,'OBJECT_REQUIRED','Gültigen Datensatz auswählen.');const record=await one<any>(db,`SELECT * FROM ${ident(table)} WHERE id=$1${lock?' FOR UPDATE':''}`,[id]);requireRule(record,'NOT_FOUND','Datensatz ist nicht verfügbar.',404);return record;}
@@ -23,6 +40,8 @@ export async function auditEvent(r:Runtime,aggregateType:string,aggregateId:stri
 export async function executeCommand(context:ActorContext,input:unknown){const command=commandSchema.parse(input);const custom=handlers.get(command.name);const module=modules.find(m=>command.name.startsWith(m.commandPrefix+'.'));
 const permission=custom?.permission??module?.permission;requireRule(permission,'UNKNOWN_COMMAND','Dieser Fachvorgang ist nicht verfügbar.',404);
 const ctx={...context,permissions:[...context.permissions]};return retryRolledBackCommand(()=>withTenant(ctx,async db=>{await currentActor(db,ctx);if(command.name==='reports.snapshot.create')requireRule(ctx.permissions.includes('reports')||ctx.permissions.includes('reports.read'),'FORBIDDEN','Auswertungszugriff fehlt.',403);else if(command.name.startsWith('communication.email.'))requireRule(ctx.permissions.includes('sales')||ctx.permissions.includes('billing'),'FORBIDDEN','Für E-Mail-Vorgänge ist Verkaufs- oder Rechnungszugriff erforderlich.',403);else assertPermission(ctx.permissions,permission);await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))",[ctx.tenantId+ctx.actorId+command.name+command.idempotencyKey]);
+// A cached composite result must not disclose a former role's business data.
+if(command.name==='assistant.proposal.commit'){const proposal=await getRecord(db,'ai_proposals',command.payload.proposal_id);requireRule(proposal.actor_id===ctx.actorId,'NOT_FOUND','Dieser Vorschlag ist nicht verfügbar.',404);for(const child of proposal.commands)await childCommandAccess(db,ctx,child.name);}
 const payloadHash=hash({id:command.id,expectedVersion:command.expectedVersion,payload:command.payload});const receipt=await one<any>(db,'SELECT payload_hash,result FROM command_receipts WHERE actor_scope=$1 AND command_name=$2 AND idempotency_key=$3',[ctx.actorId,command.name,command.idempotencyKey]);if(receipt){requireRule(receipt.payload_hash===payloadHash,'IDEMPOTENCY_CONFLICT','Dieser Wiederholungsschlüssel gehört zu anderen Eingaben.',409);return receipt.result;}
 const capability=module?.permission??permission.split('.')[0];if(command.name.startsWith('communication.email.')){const candidates=['sales','billing'].filter(p=>ctx.permissions.includes(p)),settings=await rows<any>(db,'SELECT module,enabled FROM module_settings WHERE module=ANY($1::text[])',[candidates]);requireRule(candidates.some(p=>!settings.some(s=>s.module===p&&!s.enabled)),'MODULE_DISABLED','Der hierfür berechtigte Verkaufs-/Rechnungsbereich ist deaktiviert.',403);}else if(['crm','sales','orders','billing','finance','purchasing','catalog','inventory','planning','dispatch','time','documents','imports','reports'].includes(capability)){const setting=await one<any>(db,'SELECT enabled FROM module_settings WHERE module=$1',[capability]);requireRule(!setting||setting.enabled,'MODULE_DISABLED','Dieser Bereich ist derzeit deaktiviert.',403);}
 const r:Runtime={db,ctx,command,payload:command.payload as Record<string,any>,module,insert:(table,data)=>insert(db,table,{...baseData(ctx),...data}),update:(table,id,data,version)=>update(db,table,id,{...data,updated_by:ctx.actorId},version)};

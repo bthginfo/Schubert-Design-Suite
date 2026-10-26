@@ -1,4 +1,5 @@
 export * from './manufacturer-deliveries.js';
+export * from './assistant-records.js';
 import './numbering-settings.js';
 import './onboarding.js';
 export * from './feedback.js';

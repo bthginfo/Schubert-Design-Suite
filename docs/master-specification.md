@@ -1267,6 +1267,11 @@ Bei Inschriften bedeutet „Großbuchstaben“ eine explizite freigegebene Textt
 
 ### 14.3 Aktionen mit passender Eingriffstiefe
 
+Bearbeitungsumfang (26.10.2026): Der aktuelle Studioschritt bestimmt den Schwerpunkt, beschränkt ausdrückliche Entwurfsänderungen aber nicht. Wortlaut, Maße und Auswahl werden nur auf ausdrücklichen Nutzerwunsch eingeschränkt. Vorhandene Inschriften dürfen in einer neuen geplanten Fassung ersetzt oder um zusätzliche Inschriften ergänzt werden; unveränderliche Originalrevisionen bleiben erhalten. Gewünschte Geburts-/Sterbezeichen `*` und `†` unmittelbar verwenden. Nur fehlende Pflichtangaben erfragen. „Antwort senden“ übermittelt ausgefüllte Rückfragen direkt.
+
+Der gemeinsame Aktionskatalog bietet die berechtigten Create-/Update-Fachaktionen für Büroentwürfe und neue Planungen an. Zusammengehörige Entwürfe werden mit aktuellen Rollenprüfungen, Versionsbindungen, Audit und Outbox in einer Transaktion angelegt. Fotos/PDFs können im Chat hochgeladen oder eingefügt werden; sie bleiben bis zur Dateiprüfung privat in Quarantäne. Eine lesbare vorbereitete Seite wird gezielt mitgegeben und das Original mit den erzeugten Vorgängen verknüpft. Skizzen können als unskalierte Planvorlage dienen. Bildwünsche öffnen die echte Bildfunktion mit übernommenem Prompt; bestehende Kosten- und Rechteprüfung bleiben erforderlich.
+
+
 | Aktionsklasse | Beispiele | Verhalten |
 |---|---|---|
 | Lesen/Erklären | Seite erklären, Daten suchen, Status nennen | unmittelbar innerhalb berechtigter Daten |

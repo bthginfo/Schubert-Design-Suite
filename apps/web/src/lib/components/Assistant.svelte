@@ -12,7 +12,8 @@
   import { fullscreenCompanion } from "#lib/client/fullscreen-companion.ts";
   import { onDestroy, onMount, untrack, tick } from "svelte";
   import { page } from "$app/state";
-  import { refreshAll } from "$app/navigation";
+  import { refreshAll, goto } from "$app/navigation";
+  import {queueVisualization} from "#lib/client/visualization-handoff.ts";
   import { request, permitted } from "#lib/client/api.ts";
   import type { AppData, Row } from "#lib/client/types.ts";
   import Icon from "./Icon.svelte";
@@ -175,6 +176,12 @@
   let open = $state(false);
   let deepReview = $state(false);
   let input = $state("");
+  let sourcePicker:{addFiles:(files:File[])=>Promise<void>}|undefined=$state();
+  let attachmentInput:HTMLInputElement|undefined=$state();
+  async function addAttachments(files:File[]){if(!files.length||sensitiveContext)return;section="chat";optionsOpen=true;await tick();await sourcePicker?.addFiles(files);}
+  function pasteAttachment(event:ClipboardEvent){const files=Array.from(event.clipboardData?.files??[]).filter(file=>file.type.startsWith("image/"));if(files.length){event.preventDefault();void addAttachments(files);}}
+  function dropAttachment(event:DragEvent){if(event.dataTransfer?.files.length){event.preventDefault();void addAttachments(Array.from(event.dataTransfer.files));}}
+  async function sendAnswers(text:string){if(busy||!available||sourcePending||studioLoading)return false;const next=input.trim()&&!input.endsWith(text)?input+"\n\n"+text:input.endsWith(text)?input:text;if(next.length>6000){error="Bitte die Angaben auf 6.000 Zeichen kürzen.";return false;}input=next;return (await send())===true;}
   let error = $state("");
   let phase = $state("idle");
   const busy = $derived(phase !== "idle");
@@ -195,8 +202,8 @@
     messageId?: string;
   } | null = null;
   let preserveMeasurements = $state(false),
-    preserveWording = $state(true),
-    selectionOnly = $state<boolean | null>(null),
+    preserveWording = $state(false),
+    selectionOnly = $state(false),
     compactHelp = $state(false),
     chatPinned = $state(true);
   const phaseLabel = $derived(
@@ -297,6 +304,7 @@
       });
   }
   let sources: AssistantSource[] = $state([]);
+  const sourcePending=$derived(sources.some(source=>source.working));
   let selectedElementIds: string[] = $state([]);
   let contextNotice = $state("");
   let lastContext = "";
@@ -311,10 +319,11 @@
       ? $studioAssistantContext
       : null,
   );
+  const studioLoading=$derived(data.view==='studio'&&!!data.detail&&!studioWork);
   const guardrails = $derived({
     preserveMeasurements,
     preserveWording,
-    selectionOnly: selectionOnly ?? !!studioWork?.selectedElementIds.length,
+    selectionOnly,
   });
   const contextKey = $derived(
     data.path +
@@ -386,9 +395,9 @@
         input = previous?.input ?? "";
         deepReview = previous?.deepReview ?? false;
         preserveMeasurements =
-          previous?.preserveMeasurements ?? studioWork?.step === "design";
-        preserveWording = previous?.preserveWording ?? true;
-        selectionOnly = previous?.selectionOnly ?? null;
+          previous?.preserveMeasurements ?? false;
+        preserveWording = previous?.preserveWording ?? false;
+        selectionOnly = previous?.selectionOnly ?? false;
         section = previous?.messages.length ? "chat" : "help";
         error = "";
         if (recording) stopRecording(true);
@@ -401,9 +410,9 @@
   const available = $derived(
     (integration?.available ?? false) && !sensitiveContext,
   );
-  async function send(event: SubmitEvent) {
-    event.preventDefault();
-    if (!input.trim() || busy || !available) return;
+  async function send(event?: SubmitEvent) {
+    event?.preventDefault();
+    if (!input.trim() || busy || !available || sourcePending || studioLoading) return false;
     const message = input.trim(),
       sendingContext = contextKey,
       history = messages
@@ -499,11 +508,14 @@
             result.missingInputs ?? result.proposal?.missing_inputs ?? [],
           skillsUsed: result.skillsUsed ?? [],
           clarifications: result.clarifications ?? [],
+          visualization: result.visualization ?? null,
+          visualizationSources: sources.filter(source=>sourceReady(source)).map(source=>({...source})),
           work: work ? { ...work } : null,
           boundaries,
         },
       ].slice(-20);
       input = "";
+      return true;
     } catch (cause) {
       if (run.id === runId && sendingContext === contextKey) {
         messages = messages.map((m) =>
@@ -537,11 +549,6 @@
         "Der Plan wurde geändert. Fordern Sie einen neuen Vorschlag zum aktuellen Stand an.";
       return;
     }
-    if (review && !review.inverse) {
-      error =
-        "Diese Änderung kann noch nicht direkt rückgängig gemacht werden. Bitte einen kleineren Vorschlag anfordern.";
-      return;
-    }
     phase = "applying";
     error = "";
     const applyingContext = contextKey;
@@ -568,13 +575,15 @@
       updateMessage(applyingContext, message.id, (m) => ({
         ...m,
         applied: true,
+        records: result.records??[],
         undo:
-          review?.inverse && result.revision && result.variant
+          review?.before && result.revision && result.variant
             ? {
                 variantId: result.variant.id,
                 revisionId: result.revision.id,
                 version: result.variant.version,
                 operations: review.inverse,
+                sourceRevisionId: review.before.revisionId,
               }
             : null,
       }));
@@ -606,16 +615,11 @@
         throw Error(
           "Seit dieser KI-Änderung wurde weitergearbeitet. Nutzen Sie Rückgängig im Studio oder öffnen Sie den früheren Stand unter Stände. Ihre spätere Arbeit wird nicht überschrieben.",
         );
-      const result = await request(
-        `/api/v1/designs/${undo.variantId}/commands`,
-        {
-          base_revision_id: undo.revisionId,
-          expected_version: undo.version,
-          operations: undo.operations,
-          idempotency_key: undo.key ?? (undo.key = crypto.randomUUID()),
-        },
-      );
-      adoptStudioAssistantResult(undo.revisionId, undo.operations, result);
+      const undoKey=undo.key??(undo.key=crypto.randomUUID());
+      const result = undo.operations ? await request(`/api/v1/designs/${undo.variantId}/commands`, {
+        base_revision_id:undo.revisionId,expected_version:undo.version,operations:undo.operations,idempotency_key:undoKey,
+      }):await request('/api/v1/commands', {name:'planning.design.restore_previous',id:undo.variantId,expectedVersion:undo.version,idempotencyKey:undoKey,payload:{base_revision_id:undo.revisionId,source_revision_id:undo.sourceRevisionId}});
+      adoptStudioAssistantResult(undo.revisionId,undo.operations??[],result);
       updateMessage(key, message.id, (m) => ({ ...m, undone: true }));
       await refreshAll().catch(() => {});
     } catch (e) {
@@ -627,6 +631,14 @@
     } finally {
       phase = "idle";
     }
+  }
+  async function visualize(message:Row){
+    const projectId=message.records?.findLast((item:Row)=>item.module==='studio')?.record?.id??message.work?.projectId??(data.module?.slug==='studio'?data.detail?.id:null);
+    if(!projectId||!message.visualization)return;
+    const handoff={...message.visualization,sources:message.visualizationSources??[]};
+    close();
+    if(studioWork?.projectId===projectId)window.dispatchEvent(new CustomEvent('schubert:studio:action',{detail:{action:handoff.intent==='photo'?'photo':'image',prompt:handoff.prompt,sources:handoff.sources}}));
+    else{queueVisualization(projectId,handoff);await goto('/studio/'+projectId);}
   }
   async function startRecording() {
     if (recording || busy || !available) return;
@@ -824,7 +836,7 @@
         </div>
         <button
           class="icon-button"
-          disabled={busy || recording || transcribing}
+          disabled={busy || recording || transcribing || studioLoading}
           onclick={newConversation}
           aria-label="Neues Gespräch"><Icon name="edit" size={18} /></button
         ><button
@@ -864,10 +876,7 @@
               ? " + " + (studioWork.selectedLabels.length - 2) + " weitere"
               : ""}
           </p>
-          {#if ["review", "output"].includes(studioWork.step)}<small
-              >Dieser Schritt bereitet Hinweise vor; Planänderungen sind
-              gesperrt.</small
-            >{/if}{#if !["review", "output"].includes(studioWork.step)}<button
+          <small>Die KI kann den ganzen Entwurf bearbeiten. Änderungen werden mit Vorschau übernommen.</small><button
               type="button"
               class="assistant-scope-link"
               aria-label="Bearbeitungsgrenzen ändern"
@@ -882,7 +891,7 @@
                 : ""}{preserveWording && studioWork.kind === "memorial"
                 ? " · Wortlaut geschützt"
                 : ""}<Icon name="settings" size={14} /></button
-            >{/if}
+            >
         </div>{/if}{#if section === "help"}<div class="companion-density">
           <button type="button" aria-pressed={compactHelp} onclick={toggleHelp}
             >{compactHelp
@@ -958,7 +967,8 @@
                   skillsUsed={message.skillsUsed ?? []}
                   disabled={busy}
                   onfollowup={appendPrompt}
-                />{#if message.work}<p class="reply-origin">
+                  onanswersubmit={sendAnswers}
+                />{#if message.visualization}<button type="button" class="btn small mt" disabled={busy||!!message.proposal&&!message.applied} onclick={()=>visualize(message)}><Icon name="image" size={16}/>{message.visualization.intent==='photo'?'Bildbearbeitung vorbereiten':'Kundenbild vorbereiten'}</button><p class="field-help">{message.proposal&&!message.applied?'Zuerst die Entwurfsänderung anwenden. Danach wird das Bild mit diesem Planstand vorbereitet.':'Die Bildbeschreibung wird übernommen. Qualität und Kosten prüfen Sie im Bildstudio.'}</p>{/if}{#if message.work}<p class="reply-origin">
                     Grundlage: {planningStepLabel(
                       message.work.kind,
                       message.work.step,
@@ -1013,6 +1023,7 @@
                         ? "Änderung zurückgenommen und als neuer Stand gespeichert."
                         : "Vom Server bestätigt angewendet."}
                     </p>
+                    {#if message.records?.length}<div class="proposal-actions">{#each message.records as item}<a class="btn small" href={item.href} onclick={close}><Icon name="arrow" size={14}/>{item.record.number??item.record.title??item.record.name??'Entwurf'} öffnen</a>{/each}</div>{/if}
                     {#if message.undo && !message.undone}<button
                         type="button"
                         class="btn small"
@@ -1060,20 +1071,21 @@
               <div>{error}</div>
             </div>{/if}
         </div>
-        <form class="assistant-input" onsubmit={send}>
+        <form class="assistant-input" onsubmit={send} onpaste={pasteAttachment} ondragover={event=>{if(event.dataTransfer?.types.includes("Files"))event.preventDefault();}} ondrop={dropAttachment}>
           <div class="assistant-compose-fields">
             <details class="companion-options" bind:open={optionsOpen}>
               <summary
                 ><Icon name="plus" size={16} />Unterlagen & Modell</summary
               >{#if !sensitiveContext}<AssistantSources
+                  bind:this={sourcePicker}
                   {data}
                   bind:rows={sources}
-                  disabled={busy || recording || transcribing}
-                />{/if}{#if studioWork && !["review", "output"].includes(studioWork.step)}<fieldset
+                  disabled={busy || recording || transcribing || studioLoading}
+                />{/if}{#if studioWork}<fieldset
                   class="assistant-boundaries"
                   id="assistant-boundaries"
                 >
-                  <legend>Bearbeitungsgrenzen</legend><label
+                  <legend>Optionale Einschränkungen</legend><label
                     ><input
                       type="checkbox"
                       checked={guardrails.selectionOnly}
@@ -1156,7 +1168,7 @@
                 : available
                   ? "Was ist in diesem Schritt zu tun?"
                   : "Texteingabe nach Einrichtung verfügbar"}
-              disabled={!available || busy || recording}
+              disabled={!available || busy || recording || studioLoading}
             ></textarea>{#if recording}<div
                 class="notice warning mt"
                 role="status"
@@ -1175,6 +1187,7 @@
               </p>{/if}
           </div>
           <div class="assistant-input-actions">
+            {#if !sensitiveContext&&permitted(data,"documents.upload")}<input class="assistant-attachment-input" type="file" accept="image/jpeg,image/png,image/webp,image/tiff,application/pdf" multiple bind:this={attachmentInput} onchange={event=>{void addAttachments(Array.from(event.currentTarget.files??[]));event.currentTarget.value="";}} aria-label="Foto oder PDF im Chat hochladen"/><button type="button" class="btn small" aria-label="Foto oder PDF im Chat hochladen" disabled={busy||studioLoading||sources.length>=2} onclick={()=>attachmentInput?.click()}><Icon name="camera" size={15}/>Foto / PDF</button>{/if}
             {#if ["preparing", "requesting"].includes(phase)}<button
                 type="button"
                 class="btn small"
@@ -1194,14 +1207,14 @@
               </div>{:else}<button
                 type="button"
                 class="btn small ghost"
-                disabled={!available || busy || transcribing}
+                disabled={!available || busy || transcribing || studioLoading}
                 onclick={startRecording}
                 ><Icon name="mic" size={17} />Sprechen</button
               >{/if}<button
               class="btn primary"
               type="submit"
               disabled={!available ||
-                busy ||
+                busy || studioLoading ||
                 recording ||
                 transcribing ||
                 !input.trim() ||
@@ -1209,6 +1222,7 @@
               >Senden<Icon name="arrow" size={16} /></button
             >
           </div>
+          {#if studioLoading}<p class="field-help" role="status">Der aktuelle Planstand wird geladen. Danach können Sie die Nachricht senden.</p>{/if}
           <p class="field-help mt">
             Namen, Daten, Maße und Beträge vor der Anwendung prüfen. Sprache ist
             freiwillig; die manuelle Eingabe bleibt verfügbar.
@@ -1217,7 +1231,8 @@
     </div>{/if}
 </div>
 
-<style>
+<style>.assistant-input-actions{flex-wrap:wrap}
+.assistant-attachment-input{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap}
   .assistant-header {
     flex-shrink: 0;
   }
@@ -1555,5 +1570,15 @@
     .assistant-messages {
       padding: 14px 18px;
     }
+  }
+  @media (max-width:760px) {
+    .assistant-input-actions :global(.btn){padding-inline:10px;font-size:12px;gap:6px;min-height:44px}
+    .assistant-compose-fields{flex:1 1 auto;min-height:78px}
+    .assistant-input{min-height:218px;max-height:52dvh}
+  }
+  @media (max-width:760px) and (max-height:700px) {
+    .assistant-context small,.assistant-input>p{display:none}
+    .assistant-context{padding-block:7px}
+    .assistant-messages{min-height:60px}
   }
 </style>

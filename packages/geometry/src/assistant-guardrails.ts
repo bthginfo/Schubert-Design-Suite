@@ -65,20 +65,22 @@ export function assistantGuardrailIssues(
       )
         collect(element);
   }
+  const knownElements=new Map(before.elements.map(element=>[element.id,element])),knownMeasures=new Set(Object.keys(before.measurements));
   for (const op of operations) {
+    if("measurements" in op)for(const id of Object.keys(op.measurements??{}))knownMeasures.add(id);
     const element =
       "elementId" in op
-        ? before.elements.find((e) => e.id === op.elementId)
+        ? knownElements.get(op.elementId)
         : undefined;
     if (
       ("elementId" in op && !element) ||
-      (op.type === "set_design_target" && !before.measurements[op.measureId]) ||
+      (op.type === "set_design_target" && !knownMeasures.has(op.measureId)) ||
       (op.type === "set_inscription_layout" &&
         Object.entries(op).some(
           ([key, value]) =>
             key.endsWith("MeasureId") &&
             typeof value === "string" &&
-            !before.measurements[value],
+            !knownMeasures.has(value),
         ))
     )
       return [
@@ -88,7 +90,10 @@ export function assistantGuardrailIssues(
       const allowed =
         op.type === "set_design_target"
           ? measures.has(op.measureId)
-          : "elementId" in op && selection.has(op.elementId);
+          : (op.type==='add_element'||op.type==='add_opening')
+            ? selection.has(op.element.parentId??'')||('surfaceElementId' in op.element&&selection.has(op.element.surfaceElementId))||('wallId' in op.element&&selection.has(op.element.wallId))
+            :op.type==='move_selection'?op.elementIds.every(id=>selection.has(id))
+            : "elementId" in op && selection.has(op.elementId);
       if (!allowed)
         issues.add(
           "Der Vorschlag bearbeitet etwas außerhalb Ihrer Auswahl. Auswahl erweitern oder den ganzen Plan erlauben.",
@@ -117,6 +122,11 @@ export function assistantGuardrailIssues(
           issues.add(
             "Die gewählte Schriftänderung verändert einen Maßbezug. „Maßwerte beibehalten“ zuerst ausschalten.",
           );
+    if(op.type==='add_element'||op.type==='add_opening'){
+      knownElements.set(op.element.id,op.element);
+      if(guardrails.selectionOnly){selection.add(op.element.id);for(const id of measureReferences(op.element))measures.add(id);}
+    }else if(op.type==='remove_element')knownElements.delete(op.elementId);
+    else if(op.type==='duplicate_element'&&element){knownElements.set(op.newId,{...element,id:op.newId});if(selection.has(element.id))selection.add(op.newId);}
   }
   if (
     guardrails.selectionOnly ||

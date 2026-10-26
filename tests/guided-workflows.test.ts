@@ -30,7 +30,7 @@ describe("Task presets keep manual source values and studio scope", () => {
     expect(model.instructions).toContain("Fensterbank");
     expect(model.instructions).not.toContain("Nur Raumgeometrie");
     expect(planningStepInstructions("room_plan", "geometry")).toContain(
-      "Nur Raumgeometrie",
+      "Schwerpunkt: Raumgeometrie",
     );
   });
   it("keeps an existing inscription as stock evidence and requires new planned text for an addition", () => {

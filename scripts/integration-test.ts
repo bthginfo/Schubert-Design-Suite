@@ -1,3 +1,4 @@
+import {assistantFullEditIntegration} from './assistant-full-edit-integration.js';
 import {guidedWorkflowIntegration} from './guided-workflow-integration.js';
 import {customerWorkspaceIntegration} from './customer-workspace-integration.js';
 import {usabilityFixesIntegration} from './usability-fixes-integration.js';
@@ -116,6 +117,7 @@ await guidedWorkflowIntegration(actor,test);
 await flowContextIntegration(actor,test);
 await assistantWorkflowIntegration(actor,test);
 await manufacturerAssetsIntegration(actor,test);
+await assistantFullEditIntegration(actor,test);
 await aiSkillsIntegration(actor,test);
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}
