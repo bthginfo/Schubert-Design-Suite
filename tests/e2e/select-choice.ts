@@ -59,7 +59,7 @@ export async function setDisplayOption(page:Page,name:string,checked:boolean){
 /** Document tasks remain explicit destinations in the compact project menu. */
 export async function studioAction(page:Page,name:string){
  const action=page.locator('#studio-project-menu').getByRole('button',{name:new RegExp('^'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)')});
- if(!await action.isVisible())await page.getByRole('button',{name:'Projektaktionen',exact:true}).click();
+ if(!await action.isVisible())await page.locator('#studio-project-actions').click();
  await expect(action).toBeVisible();await action.click();
 }
 
@@ -70,8 +70,10 @@ export async function studioPanel(page:Page,side:'elements'|'properties'){
  await expect(panel).toBeVisible();return panel;
 }
 export async function studioAdd(page:Page,name:string){
- await page.getByRole('button',{name:'Element hinzufügen',exact:true}).click();
- await page.locator('#studio-add-menu').getByRole('button',{name,exact:true}).click();
+ await page.locator('#studio-add-element').click();
+ const menu=page.locator('#studio-add-menu'),action=menu.getByRole('button',{name:new RegExp('^'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)')});
+ if(!await action.isVisible())await menu.locator('.advanced-tools>summary').click();
+ await action.click();
 }
 export async function studioMetadata(page:Page){
  await studioPanel(page,'properties');const details=page.locator('.element-metadata');

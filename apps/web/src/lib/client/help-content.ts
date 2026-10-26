@@ -96,7 +96,7 @@ export const guides = [
     action: "Planungsstudio öffnen",
     steps: [
       "Planung öffnen oder neu anlegen und „Grabmal“ wählen. Grabstätte und bestätigte Maße zuordnen.",
-      "Steinkörper, Sockel und Inschrift auswählen. Oben mm, cm oder m wählen und Maße in dieser Einheit eingeben. „Bauteile“ öffnet die Liste, „Eigenschaften“ die Angaben zur Auswahl. Den genauen Inschrifttext Zeichen für Zeichen prüfen.",
+      "Über „Hinzufügen“ Stein, Sockel oder Inschrift anlegen. Unter der Zeichnung mm, cm oder m wählen. „Bauteile“ öffnet die Liste, „Eigenschaften“ (mobil „Details“) die Angaben zur Auswahl. Den Inschrifttext Zeichen für Zeichen prüfen.",
       "Zwischen 2D und 3D wechseln. Vor Planexport und Freigabe die Prüfliste abarbeiten. Eine KI-Visualisierung ersetzt keine technische Zeichnung.",
     ],
   },
@@ -109,7 +109,7 @@ export const guides = [
     action: "Grundriss im Studio öffnen",
     steps: [
       "Eine Raumplanung anlegen oder das vorbereitete Beispiel öffnen. Eine vorhandene Planquelle zuordnen und ihren Maßstab prüfen.",
-      "Wände, Knoten, Öffnungen und Räume bearbeiten. Türanschläge, Wandstärken und Höhen mit den tatsächlichen Maßen vergleichen.",
+      "Über „Hinzufügen“ einen Raum und seine Öffnungen anlegen. Mit „Bearbeiten“ ein Bauteil wählen, unter „Eigenschaften“ (mobil „Details“) seine Angaben ändern. Unter der Zeichnung mm, cm oder m wählen. Türanschläge, Wandstärken und Höhen mit den tatsächlichen Maßen vergleichen.",
       "In 2D die Raumaufteilung und Bemaßung prüfen, in 3D Material und räumliche Wirkung. Änderungen speichern und anschließend die Prüfliste öffnen.",
     ],
   },

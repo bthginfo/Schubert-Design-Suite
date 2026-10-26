@@ -833,8 +833,8 @@ test("Design consistency: real dark preference, compact help, reduced motion and
     await page.keyboard.press("Escape");
     await expect(panel).toBeHidden();
     await expect(
-      page.locator("#studio-properties-toggle .selection-count"),
-    ).toHaveText("1");
+      page.locator(".tool-hint .selection-properties"),
+    ).toHaveText("Natursteinbauteil");
   } finally {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/account");

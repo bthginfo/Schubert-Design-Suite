@@ -23,6 +23,6 @@ export async function prepareStudioAssistant(){
   if(!prepare)throw new Error('Der Plan wird noch geladen. Bitte öffnen Sie die aktuelle Variante.');
   // Commit the focused measurement's change event before waiting for a save.
   if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
-  if(!reportLengthValidity(document.querySelector('.studio-root')))throw new Error('Bitte das ungültige Maß im Plan korrigieren, bevor die KI den Plan erhält.');
+  if(!reportLengthValidity(document.querySelector('.studio-root'),{allowEmptyForms:true}))throw new Error('Bitte das ungültige Maß im Plan korrigieren, bevor die KI den Plan erhält.');
   return prepare();
 }

@@ -1072,6 +1072,8 @@ Für Glyphen verweist `supplierProductVariantVersionId` auf einen eingefrorenen 
 
 Unterstütze Auswahl/Mehrfachauswahl, Gruppen, Ebenen, Sperren, Zahleninspektor, Drehen, Verschieben, Duplizieren, Snapping, Einpassen, Pan/Zoom, Variantenvergleich und Undo/Redo. Snapping an Endpunkte, Mittelpunkte, Achsen, Raster, Wandflächen und Anschlüsse muss Ziel und Maß anzeigen. Fangradius in Bildschirmpixeln; reale Geometrie in mm. Zoom verändert keine Maße.
 
+Die Werkzeugleiste trennt Hinzufügen, Bearbeiten und Bewegen der Ansicht. Häufige Bauteile haben sichtbare deutsche Bezeichnungen und kurze Erklärungen; seltene Fachwerkzeuge werden zusätzlich aufgeklappt. Ansichten, Einheit und Zoom liegen getrennt unter der Zeichenfläche. Eigenschaften beginnen mit den Angaben für das gewählte Bauteil; Fachnachweise, Konturen, Position und Organisation werden bei Bedarf aufgeklappt. Beschriftungen müssen zur Sprachsteuerung und zu den zugänglichen Namen passen. Leere Pläne und offene Werkzeuge dürfen sich nicht überdecken. Kleine Fenster, Vollbild und mobile Seitenpanels behalten eine tatsächlich nutzbare Zeichenfläche.
+
 Ein Drag erzeugt eine lokale Vorschau und beim Loslassen einen zusammengefassten Command. Keine persistierten Events für jedes Pointermove. Dieselbe fachliche Operation muss über Zahlenfelder und über KI erreichbar sein. „Waschtisch 20 cm nach links“ und der entsprechende Drag unterliegen identischer Backendvalidierung.
 
 Katalogobjekte und Herstellerzeichen dürfen nicht frei verzerrt werden. Größenänderung wählt eine reale verfügbare Variante oder nutzt ausdrücklich bestätigte parametrische Grenzen. Ein 600-mm-Produkt bleibt nach freiem Ziehen nicht fälschlich dasselbe Produkt mit 742 mm.
@@ -1103,6 +1105,8 @@ Technische PDFs verwenden serverseitiges Layout und skalierbare SVG-Zeichnungen,
 Fotorealistische exakte Render entstehen auf dem Blender-Worker aus Kapitel 4. Jobs verwenden unveränderliche Geometrie, Kameras, Materialien, Beleuchtung und Assets. Der Browser zeigt Fortschritt; Tab-Schließen beendet den Job nicht. Ein verspätetes Ergebnis von Revision 4 erscheint niemals ungekennzeichnet als Revision 5.
 
 Generative OpenAI-Bilder sind eigenständige **Visualisierungen**. Sie können Designwirkung/Umgebung illustrieren, aber keine unveränderten Herstellerprodukte, Maße, Aderung oder Buchstaben garantieren. Verknüpfe sie mit dem genutzten Planstand und kennzeichne sie im Portal; der genaue Plan bleibt jederzeit erreichbar. Für beide Studios müssen manuelle Kernfunktionen auch bei AI-Ausfall funktionieren.
+
+Die interaktive 3D-Vorschau zeigt die wörtliche Entwurfsinschrift auf der tatsächlichen Beschriftungsfläche. Positive Oberflächenaufbauten liegen unter der Schrift; die Steinkörperstärke wird nicht fälschlich auf die entgegengesetzte Schriftseite addiert. Die Startkamera eines Grabmals folgt der tatsächlichen Flächennormalen. Laden und fehlende Schrift-/Originaldaten sind sichtbar; eine explizite Wiederholung darf keine Scheinerfolge melden. Darstellungsstatus und Kamerabedienung ändern keine gespeicherte Revision oder fachliche Freigabe.
 
 ## 12. Grabmalstudio
 

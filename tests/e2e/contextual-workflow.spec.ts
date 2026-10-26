@@ -55,7 +55,7 @@ test('Steinmetz: room dimensions use inner wall faces, persist exact geometry an
  const responsePromise=page.waitForResponse(response=>response.request().method()==='POST'&&/\/api\/v1\/designs\/.+\/commands$/.test(new URL(response.url()).pathname));await dialog.getByRole('button',{name:'In den Plan übernehmen',exact:true}).click();
  const response=await responsePromise;expect(response.ok()).toBe(true);const body=await response.json(),state=body.result??body,nodes=state.revision.snapshot.elements.filter((element:any)=>element.kind==='node');expect(nodes[0].point).toEqual({xMm:'-100',yMm:'-100',zMm:'0'});expect(nodes[2].point).toEqual({xMm:'4300',yMm:'3300',zMm:'0'});
  await page.reload();await expect(page.locator('.plan-shape')).not.toHaveCount(0);await page.screenshot({path:'work/ux-review/room-desktop.png',animations:'disabled'});
- await page.getByRole('button',{name:'Herstellerdaten',exact:true}).click();const library=page.getByRole('dialog',{name:'Herstellerdaten auswählen'});await expect(library).toBeVisible();await expect(library).toContainText('Maßeinheit und Maßstab');await audit(page,'dialog');await page.keyboard.press('Escape');await expect(library).toBeHidden();
+ await page.getByRole('button',{name:/^Herstellerdaten/}).click();const library=page.getByRole('dialog',{name:'Herstellerdaten auswählen'});await expect(library).toBeVisible();await expect(library).toContainText('Maßeinheit und Maßstab');await audit(page,'dialog');await page.keyboard.press('Escape');await expect(library).toBeHidden();
  await page.setViewportSize({width:375,height:812});await page.screenshot({path:'work/ux-review/room-mobile.png',animations:'disabled'});await audit(page,'.studio-root');
 });
 
@@ -116,7 +116,7 @@ test('Manufacturer selection: both studios retain exact source versions; contour
    }
   });
   await login(page,'PLANNER');let calls=0;await page.route('**/api/v1/ai/chat',route=>{calls++;return route.abort();});
-  async function picker(){await page.getByRole('button',{name:'Herstellerdaten',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Herstellerdaten auswählen'});await dialog.getByLabel('Hersteller oder Modell suchen',{exact:true}).fill(prefix);await dialog.getByRole('button',{name:'Suchen',exact:true}).click();await expect(dialog.locator('article')).toHaveCount(3);return dialog;}
+  async function picker(){await page.getByRole('button',{name:/^Herstellerdaten/}).click();const dialog=page.getByRole('dialog',{name:'Herstellerdaten auswählen'});await dialog.getByLabel('Hersteller oder Modell suchen',{exact:true}).fill(prefix);await dialog.getByRole('button',{name:'Suchen',exact:true}).click();await expect(dialog.locator('article')).toHaveCount(3);return dialog;}
   for(const kind of ['memorial','room_plan'] as const){
    await createPlan(page,kind);if(kind==='memorial')await addStone(page);
    let library=await picker();const pdf=assets.find(asset=>asset.extension==='pdf');await library.locator('article').filter({hasText:pdf.name}).getByRole('button',{name:'Als Planvorlage öffnen',exact:true}).click();

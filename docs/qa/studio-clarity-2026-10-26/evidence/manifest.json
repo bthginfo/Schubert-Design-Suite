@@ -1,0 +1,71 @@
+{
+  "syntheticData": true,
+  "captured": "2026-10-26",
+  "files": [
+    {
+      "file": "dropdown-padding.png",
+      "bytes": 160338,
+      "sha256": "dc619aca5234f700be1937a51f52ee60517ef04faa6613af4d64700724cd17b7"
+    },
+    {
+      "file": "lettering-first-view.png",
+      "bytes": 154185,
+      "sha256": "1bc3511f59614d7f241d79d82cb5780693902367eeeae6dfcf135503bb35296f"
+    },
+    {
+      "file": "lettering-font-failure.png",
+      "bytes": 173167,
+      "sha256": "6df2f1cb0847facaa4f14add5d15129e2a6446df038b4feed6141420c19e37f6"
+    },
+    {
+      "file": "lettering-rotated-host.png",
+      "bytes": 173853,
+      "sha256": "805ef7e2b5acc6c8ab4bca2037b041c83c1e8c67cbd8ac2b0376d752bc357476"
+    },
+    {
+      "file": "memorial-1440.png",
+      "bytes": 128879,
+      "sha256": "03f27e4abf06f8671092a89363ff73932a71a32b5ececdf55efc1e13073cd9c0"
+    },
+    {
+      "file": "memorial-375.png",
+      "bytes": 52887,
+      "sha256": "607207e3604e34b314e9408aee2ddef068d143ff97622b635fc6faecd72e99ae"
+    },
+    {
+      "file": "memorial-dark-properties.png",
+      "bytes": 164799,
+      "sha256": "fbb7158e8a12e29f1a8dd60c973852f0d4c23e2eae734405d36ba43cb78b5594"
+    },
+    {
+      "file": "memorial.pdf",
+      "bytes": 21810,
+      "sha256": "76254beeb1c33f86579401e9d7355a08612d2b8103ddf5b7ad4b94e1a949410b"
+    },
+    {
+      "file": "room_plan-1440.png",
+      "bytes": 143014,
+      "sha256": "f2dc7c59d9b985fb6230b0b61dfde643365f9777cbec7856b36bf5bd415c46cb"
+    },
+    {
+      "file": "room_plan-375.png",
+      "bytes": 56199,
+      "sha256": "795c4a569eba14e74fff4552eab4201ce206bdb20ebdaa05d27104890a726718"
+    },
+    {
+      "file": "room_plan.pdf",
+      "bytes": 23129,
+      "sha256": "f52e9ecffc733a5b4f67ec651676c0a71068997484a38945ffc03442449d077a"
+    },
+    {
+      "file": "studio-ai-1440.png",
+      "bytes": 218235,
+      "sha256": "93c84cf335df23a1446854cbeae7eddd8c3812ff24bbb4a68581c9671cfc18f8"
+    },
+    {
+      "file": "studio-ai-fullscreen.png",
+      "bytes": 146117,
+      "sha256": "3e1097919d70c44218f3302f010617887ed3d560bf9f562d6033ab356dded96f"
+    }
+  ]
+}

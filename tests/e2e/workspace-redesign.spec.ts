@@ -55,7 +55,7 @@ for(const kind of ['memorial','room_plan'] as const)test('Studio '+kind+': large
   else {const nodes=state.revision.snapshot.elements.filter((e:any)=>e.kind==='node');expect(nodes[0].point).toEqual({xMm:'-100',yMm:'-100',zMm:'0'});expect(nodes[2].point).toEqual({xMm:'4300',yMm:'3300',zMm:'0'});}
   await expect(page.getByRole('button',{name:'Speichern',exact:true})).toBeDisabled();
   const revision=await page.locator('.revision-chip').innerText();let writes=0;page.on('request',r=>{if(r.method()==='POST'&&/\/designs\/.+\/commands$/.test(new URL(r.url()).pathname))writes++;});
-  await unit.selectOption('m');await expect(page.locator('.plan-units')).toHaveText('m');
+  await unit.selectOption('m');await expect(unit).toHaveValue('m');
   await expect(page.locator('.revision-chip')).toHaveText(revision);await page.reload();await expect(unit).toHaveValue('m');
   await expect(page.locator('.revision-chip')).toHaveText(revision);await expect(page.locator('svg[role=application]')).toContainText(kind==='memorial'?'1,2':'4,2');
   await unit.selectOption('mm');await expect(page.locator('.revision-chip')).toHaveText(revision);expect(writes).toBe(0);

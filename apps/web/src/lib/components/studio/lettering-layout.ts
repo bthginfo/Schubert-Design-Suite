@@ -4,9 +4,10 @@ import{measureValue,applyMatrix,surfaceMatrix,projectPoint,sampleRing,type Desig
 import{planningFont}from'./planning-fonts.ts';
 
 const loaded=new Map<string,Promise<void>>();
-export function loadPlanningFont(key?:string):Promise<void>{
+// A CSS FontFace keeps its failed state. An explicit retry creates a fresh face.
+export function loadPlanningFont(key?:string,retry=false):Promise<void>{
  const font=planningFont(key);let ready=loaded.get(font.key);
- if(!ready){ready=document.fonts.load(`400 100px "${font.family}"`,'Erinnerung Äöß 0123456789').then(()=>{if(!document.fonts.check(`400 100px "${font.family}"`))throw Error('Entwurfsschrift konnte nicht geladen werden.');});loaded.set(font.key,ready);ready.catch(()=>loaded.delete(font.key));}
+ if(!ready){ready=retry?new FontFace(font.family,`url("${font.path}")`,{style:"normal",weight:"400"}).load().then(face=>{document.fonts.add(face);}):document.fonts.load(`400 100px "${font.family}"`,'Erinnerung Äöß 0123456789').then(()=>{if(!document.fonts.check(`400 100px "${font.family}"`))throw Error('Entwurfsschrift konnte nicht geladen werden.');});loaded.set(font.key,ready);ready.catch(()=>loaded.delete(font.key));}
  return ready;
 }
 /** Visual layout only. Supplier glyph geometry and production dimensions stay separate. */

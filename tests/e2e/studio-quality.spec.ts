@@ -37,6 +37,7 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
     else {await dialog.getByLabel('Lichte Raumtiefe (mm)',{exact:true}).fill('3200');await dialog.getByLabel('Wandstärke ohne Belag (mm)',{exact:true}).fill('200');}
     await dialog.getByRole('button',{name:'In den Plan übernehmen',exact:true}).click();await expect(dialog).toBeHidden();
     if(kind==='memorial'){
+      await page.locator('.geometry-details>summary').click();
       await page.getByRole('button',{name:'Kontur & Bögen bearbeiten',exact:true}).click();
       const edges=page.locator('.contour-editor .edge');
       await edges.nth(1).getByLabel('Endpunkt Y mm',{exact:true}).fill('800');await edges.nth(1).getByLabel('Endpunkt Y mm',{exact:true}).press('Tab');

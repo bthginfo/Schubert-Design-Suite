@@ -5,7 +5,12 @@
   import Icon from '../Icon.svelte';
   import{machiningDepth,measureValue}from'@schubert/geometry';
   import type{CameraAction,CameraCommand}from'./camera-navigation.ts';
-  let { snapshot, showWalls=true, resetKey = 0,materials=[],assets=[],glyphs=[],navigationCommand=null,onzoomchange=()=>{} }:{ snapshot:DesignSnapshot;showWalls?:boolean;resetKey?:number;materials?:any[];assets?:any[];glyphs?:any[];navigationCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void }=$props();
+  let { snapshot, showWalls=true, resetKey = 0,materials=[],assets=[],glyphs=[],navigationCommand=null,onzoomchange=()=>{},onselect=()=>{} }:{ snapshot:DesignSnapshot;showWalls?:boolean;resetKey?:number;materials?:any[];assets?:any[];glyphs?:any[];navigationCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void;onselect?:(id:string)=>void }=$props();
+  let letteringRetryKey=$state(0),letteringStates:Record<string,'loading'|'ready'|'unavailable'>=$state({});
+  function reportLettering(states:typeof letteringStates){letteringStates=states;}
+  const inscriptions=$derived(snapshot.elements.filter(e=>e.kind==='inscription'&&e.phase!=='demolition'));
+  const pendingLettering=$derived(inscriptions.some(e=>!letteringStates[e.id]||letteringStates[e.id]==='loading'));
+  const failedLettering=$derived(inscriptions.filter(e=>letteringStates[e.id]==='unavailable'));
   let cameraCommand:CameraCommand|null=$state(null),commandNumber=0;
   $effect(()=>{cameraCommand=navigationCommand;});
   function navigate(action:CameraAction){cameraCommand={id:++commandNumber,action};}
@@ -18,7 +23,8 @@
 </script>
 <div class="three-stage" aria-label="Interaktive dreidimensionale Planvorschau">
   <div class="three-canvas"><svelte:boundary>
-    <Canvas renderMode="on-demand" shadows={false} dpr={Math.min(globalThis.devicePixelRatio||1,2)}><Scene {materials} {snapshot} {showWalls} {resetKey} {assets} {glyphs} {cameraCommand} {onzoomchange}/></Canvas>
+    <Canvas renderMode="on-demand" shadows={false} dpr={Math.min(globalThis.devicePixelRatio||1,2)}><Scene {materials} {snapshot} {showWalls} {resetKey} {assets} {glyphs} {cameraCommand} {onzoomchange} {onselect} onletteringstate={reportLettering} {letteringRetryKey}/></Canvas>
+    {#if inscriptions.length}<div class="lettering-status" class:failed={failedLettering.length>0} role="status"><span>{pendingLettering?'Schrift wird geladen …':failedLettering.length?`${failedLettering.length} ${failedLettering.length===1?'Inschrift':'Inschriften'} nicht darstellbar`:`${inscriptions.length} ${inscriptions.length===1?'Inschrift':'Inschriften'} dargestellt`}</span><button type="button" onclick={()=>navigate('inscription')}>Schriftseite anzeigen</button>{#if failedLettering.length}<button type="button" onclick={()=>letteringRetryKey++}>Erneut laden</button><small>Die Inschrift bleibt gespeichert. Entwurfsschrift oder benötigte Originaldateien prüfen.</small>{/if}</div>{/if}
     {#snippet failed(_error,reset)}<div class="three-error"><strong>3D ist auf diesem Gerät nicht verfügbar.</strong><p>Die maßhaltigen 2D-Ansichten und alle Eingabefelder bleiben nutzbar.</p><button class="btn" onclick={reset}>Erneut versuchen</button></div>{/snippet}
   </svelte:boundary></div>
   <div class="three-footer">
@@ -53,4 +59,5 @@
 .camera-disclosure summary span,.camera-tools span,.three-caption{color:var(--muted)}
 .camera-tools button{background:var(--paper);border-color:var(--line)}
 .camera-tools button:hover{background:var(--wash)}
+.lettering-status{position:absolute;left:12px;bottom:12px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;max-width:calc(100% - 24px);padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);font-size:12px;box-shadow:0 4px 18px #17274012}.lettering-status button{min-height:32px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--wash);color:var(--forest);font:inherit;cursor:pointer}.lettering-status.failed{border-color:var(--warning);background:var(--warning-wash)}.lettering-status small{flex-basis:100%;font-size:11px;line-height:1.5}.lettering-status button:focus-visible{outline:2px solid var(--forest);outline-offset:2px}@media(max-width:760px){.lettering-status{font-size:11px;gap:5px;padding:5px 8px;bottom:8px}.lettering-status button{min-height:36px}}
 </style>

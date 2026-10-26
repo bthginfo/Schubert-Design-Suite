@@ -25,7 +25,7 @@
   <nav class="planning-steps" aria-label={memorial?'Arbeitsschritte im Grabmalstudio':'Arbeitsschritte im Raumstudio'}>
     {#each steps as item,index}
       <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={hints[item]} onclick={()=>onstep(item)}>
-        <span class="step-number">{index+1}</span><span>{planningStepLabel(snapshot.kind,item)}</span>
+        <span class="step-number">{index+1}</span>{' '}<span class="step-long">{planningStepLabel(snapshot.kind,item)}</span><span class="step-short">{{geometry:'Maße',design:memorial?'Text':'Material',review:'Prüfen',output:'Zeigen'}[item]}</span>
         {#if index<3}<Icon name="chevron" size={13}/>{/if}
       </button>
     {/each}
@@ -70,4 +70,5 @@
 .planning-flow{display:flex;align-items:center;gap:12px;padding:7px 12px;border-bottom:1px solid var(--line)}.planning-steps{flex:1;min-width:0;margin:0;padding:0;border:0;gap:5px}.planning-steps button{min-height:38px;padding:6px 10px;font-size:12px}.planning-steps button>span:nth-child(2){flex:1}.step-task{padding:0;flex:none}.step-task>p{display:none}.step-actions button{min-height:36px;font-size:11px;padding:7px 9px}.step-number{width:23px;height:23px;font-size:11px}.flow-action{white-space:nowrap}
 @media(max-width:1150px){.planning-flow{gap:7px}.planning-steps button{padding:6px;font-size:11px}.step-actions .flow-ai span{display:none}.planning-steps button :global(svg){display:none}}
 @media(max-width:760px){.planning-flow{display:block;padding:5px 8px}.planning-steps{gap:3px;margin-bottom:4px}.planning-steps button{min-height:46px;font-size:10px;padding:4px 3px;gap:3px}.step-number{width:20px;height:20px}.step-task{padding:0}.step-actions{width:100%;justify-content:space-between;gap:6px}.step-actions button{min-height:40px;font-size:11px}.flow-action{flex:1}.flow-ai{min-width:44px}.step-actions .flow-ai span{display:inline}}
+.step-short{display:none}@media(max-width:760px){.planning-steps{padding-block:6px;gap:4px}.planning-steps button{min-height:40px;flex-direction:row;gap:5px;padding:5px;font-size:12px;align-items:center;justify-content:center}.planning-steps .step-number{width:18px;height:18px;min-width:18px;font-size:10px}.planning-steps .step-long{display:none}.planning-steps .step-short{display:block;font-size:12px;line-height:1.35}.step-task{padding-bottom:6px}.step-actions button{min-height:40px}}
 </style>

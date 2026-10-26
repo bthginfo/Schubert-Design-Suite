@@ -768,7 +768,9 @@
       "Do Auftrags-, Kunden- und Lieferantenbezüge in nächste Formulare mitnehmen und übernommene Beziehungen verständlich benennen.",
       "Do offene Studioänderungen vor dem Verlassen klären und bei mehreren passenden Bezugsbauteilen eine bewusste Auswahl verlangen.",
       "Do Auswahlen lokal durchsuchen lassen und native Formularwerte, Pflichtprüfung, Sperren und vorhandene Änderungsaktionen erhalten.",
-      "Do im kompakten Studio Seiten ausdrücklich öffnen und die Zeichenfläche beim Auswählen sowie Verschieben im Vordergrund halten."
+      "Do im kompakten Studio Seiten ausdrücklich öffnen und die Zeichenfläche beim Auswählen sowie Verschieben im Vordergrund halten.",
+      "Do im Studio Hinzufügen, Bearbeiten und Ansicht bewegen mit sichtbaren Bezeichnungen trennen; Ansichten und Einheiten unter der Zeichnung halten und Fachangaben erst bei Bedarf öffnen.",
+      "Do 3D-Schriftladen, fehlende Originale und die Rückkehr zur tatsächlichen Schriftseite verständlich anzeigen, ohne eine technische Freigabe zu behaupten."
     ],
     "donts": [
       "Don't persönliche Akzentfarben als Ersatz für Fehler-, Warn- oder Erfolgsfarben einsetzen.",
