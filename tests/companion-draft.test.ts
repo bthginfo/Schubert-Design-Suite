@@ -1,9 +1,25 @@
 import{describe,it,expect}from'vitest';
-import{createDesign,applyOperations,calculateBOM}from'@schubert/geometry';
-import{planningDraftOperations,bindPlanningDraft,planningDraftSchema}from'../packages/ai/src/planning-draft.js';
+import{createDesign,applyOperations,calculateBOM,contourBounds,validateDesign}from'@schubert/geometry';
+import{planningDraftOperations,bindPlanningDraft,planningDraftSchema,initialMemorialDraftFormat}from'../packages/ai/src/planning-draft.js';
 import{visualizationInputSchema,visualizationQuote}from'../packages/application/src/ai-visualizations.js';
 import{randomUUID}from'node:crypto';
 describe('Companion draft planning',()=>{
+ it('builds the complete sketched memorial with independent measurements, exact text and an unverified material wish',()=>{
+  const snapshot=createDesign('memorial'),exactText='MARIA MUSTER\n1950 - 2025\nIn liebevoller Erinnerung';
+  const operations=planningDraftOperations({snapshot},{kind:'memorial_assembly',label:'Rundbogenstele',shape:'round_arch',widthMm:'600',heightMm:'900',thicknessMm:'120',base:{widthMm:'700',heightMm:'140',depthMm:'180'},inscription:exactText,materialWish:'grauer Granit'});
+  const after=applyOperations(snapshot,operations),stones=after.elements.filter(e=>e.kind==='stone_piece');
+  expect(stones).toHaveLength(2);expect(snapshot.elements).toEqual([]);
+  expect(contourBounds(stones[1].finishedContour)).toMatchObject({width:'600',height:'900'});
+  expect(stones[1].transform.position).toEqual({xMm:'50',yMm:'-30',zMm:'140'});
+  expect(after.measurements[stones[0].thicknessMeasureId].valueMm).toBe('180');expect(after.measurements[stones[1].thicknessMeasureId].valueMm).toBe('120');
+  expect(after.elements.find(e=>e.kind==='inscription')).toMatchObject({exactText,alignment:'center',surfaceElementId:stones[1].id,fontVariantVersionId:'unassigned:font'});
+  expect(after.elements.find(e=>e.kind==='technical_note')).toMatchObject({text:'Materialwunsch (ungeprüft): grauer Granit'});
+  expect(Object.values(after.measurements).every(m=>m.origin==='ai'&&m.reviewStatus==='unreviewed')).toBe(true);
+  expect(validateDesign(after).blocking).toEqual([]);
+  const assembly=initialMemorialDraftFormat.anyOf[1] as any;
+  expect(new RegExp(assembly.properties.widthMm.pattern).test('600.25')).toBe(true);
+  expect(()=>planningDraftSchema.parse({kind:'memorial_assembly',label:'Incomplete'})).toThrow();
+ });
  it('binds a structured model draft to authoritative server targets and refuses incomplete or numeric dimensions',()=>{const context={snapshot:createDesign('room_plan'),variantId:randomUUID(),revisionId:randomUUID(),baseVersion:4},draft={kind:'rectangular_room',label:'Testbad',clearWidthMm:'4000',clearDepthMm:'3000',heightMm:'2600',wallThicknessMm:'200'},bound=bindPlanningDraft(context,draft),payload=JSON.parse(bound.commands[0].inputJson);expect(bound.targetId).toBe(context.variantId);expect(bound.baseVersion).toBe(4);expect(payload.base_revision_id).toBe(context.revisionId);expect(applyOperations(context.snapshot,payload.operations).elements).toHaveLength(9);expect(()=>planningDraftSchema.parse({...draft,clearWidthMm:4000})).toThrow();expect(()=>planningDraftSchema.parse({...draft,heightMm:undefined})).toThrow();});
  it('creates editable room geometry using clear dimensions without technical confirmation',()=>{const snapshot=createDesign('room_plan'),operations=planningDraftOperations({snapshot},{kind:'rectangular_room',label:'Bad',clearWidthMm:'4000',clearDepthMm:'6000',heightMm:'2600',wallThicknessMm:'200'}),after=applyOperations(snapshot,operations);expect(after.elements.filter(e=>e.kind==='wall')).toHaveLength(4);expect(after.elements.filter(e=>e.kind==='room')).toHaveLength(1);expect(Object.values(after.measurements).every(m=>m.origin==='ai'&&m.reviewStatus==='unreviewed')).toBe(true);const floor=calculateBOM(after).lines.find(line=>line.category==='Raumfläche');expect(floor?.netAreaM2).toBe('26.04'); // Room quantity explicitly uses wall axes; the requested clear dimensions remain 4 × 6 m.
 expect(snapshot.elements).toHaveLength(0);});

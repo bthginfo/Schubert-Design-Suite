@@ -48,6 +48,13 @@ const unlocked = {
   selectionOnly: false,
 };
 describe("Complete editable AI drafts", () => {
+  it('scopes reused new measurement labels to their own components without changing an earlier stone',()=>{
+    const snapshot=createDesign('memorial');
+    const operations=normalizePlanningEdits({snapshot},['120','180'].map((value,index)=>({type:'add_element',element:{id:'new:piece:'+index,kind:'stone_piece',label:'Stein '+index,widthMm:'600',heightMm:'900',thicknessMeasureId:'new:thickness'},measurements:{'new:thickness':{valueMm:value}}})));
+    const after=applyOperations(snapshot,operations),stones=after.elements.filter(e=>e.kind==='stone_piece');
+    expect(stones.map(e=>after.measurements[e.thicknessMeasureId].valueMm)).toEqual(['120','180']);
+    expect(stones[0].thicknessMeasureId).not.toBe(stones[1].thicknessMeasureId);
+  });
   it.each(['base','plinth','pedestal','Sockel'])('keeps the memorial purpose of a %s without inventing a new manufacturing category', purpose => {
     const snapshot=createDesign('memorial');
     const operations=normalizePlanningEdits({snapshot},[{type:'add_element',element:{id:'new:base',kind:'stone_piece',label:'Sockel',purpose,widthMm:'700',heightMm:'140',thicknessMm:'180'}}]);

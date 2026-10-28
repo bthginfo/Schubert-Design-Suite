@@ -135,13 +135,18 @@ export function normalizePlanningEdits(
         "AI_EDIT_MEASURE",
         "Eine KI-Bearbeitung bestätigt kein Aufmaß.",
       );
-      measurements[id] = {
+      const nextMeasure = {
         ...targetMeasure(
           typeof source === "string" ? source : (source?.valueMm ?? null),
           source?.isEstimated ?? false,
         ),
         origin: "ai",
       };
+      const previous=current.measurements[aliases.get(id)!];
+      // Reused local labels in two newly added components do not update the
+      // first component's measure. Existing plan measures remain protected above.
+      if(previous&&(previous.valueMm!==nextMeasure.valueMm||previous.isEstimated!==nextMeasure.isEstimated))aliases.set(id,randomUUID());
+      measurements[id] = nextMeasure;
     }
     if (raw.type === "add_element" || raw.type === "add_opening") {
       let e: any = raw.element;
