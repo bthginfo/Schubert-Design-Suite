@@ -1,5 +1,7 @@
 # Planungsabläufe für Büro und operative Mitarbeitende · 28.10.2026
 
+Der spätere Nachtest zu Audiofehlern, größerem Chat und gemeinsamem Bild-/Text-/Spracheingang ist im [Ergänzungsbericht](multimodal-chat-2026-10-28.md) dokumentiert.
+
 Agentengestützter Usability-Durchlauf auf der echten Anwendung, mit synthetischen Testkonten und Testplänen. Kein Test mit menschlichen Versuchspersonen. Ausgangsstand: `4975f6d`, Produktion `dpl_7rzsEfTiaQn9mDc8cWYrqQTTLFBh`.
 
 ## Aufgaben und Testdaten

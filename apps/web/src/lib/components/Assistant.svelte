@@ -14,7 +14,8 @@
   import { page } from "$app/state";
   import { refreshAll, goto } from "$app/navigation";
   import {queueVisualization} from "#lib/client/visualization-handoff.ts";
-  import { request, permitted } from "#lib/client/api.ts";
+  import { request, permitted, RequestError } from "#lib/client/api.ts";
+  import { validateVoiceRecording, appendDictation } from "#lib/client/voice-recording.ts";
   import type { AppData, Row } from "#lib/client/types.ts";
   import Icon from "./Icon.svelte";
   import ProposalPreview from "./ProposalPreview.svelte";
@@ -29,11 +30,13 @@
   let { data }: { data: AppData } = $props();
   let section = $state<"help" | "chat">("help"),
     mobile = $state(false),
-    optionsOpen = $state(false);
+    optionsOpen = $state(false),
+    expanded = $state(true);
+  const expandedChat = $derived(expanded && section === "chat");
   let chatArea = $state<HTMLDivElement>();
   const conversations = new Map<string, Row>();
   let launcher = $state<HTMLButtonElement>();
-  function companionFocus(node: HTMLElement) {
+  function companionFocus(node: HTMLElement, enlarged: boolean) {
     const candidate = document.activeElement;
     const previous =
       candidate instanceof HTMLElement &&
@@ -45,8 +48,8 @@
     const media = matchMedia("(max-width:760px)"),
       update = () => {
         mobile = media.matches;
-        if (media.matches && !trap) trap = focusTrap(node);
-        else if (!media.matches && trap) {
+        if ((media.matches || enlarged) && !trap) trap = focusTrap(node);
+        else if (!media.matches && !enlarged && trap) {
           trap.destroy();
           trap = undefined;
         }
@@ -55,6 +58,7 @@
     if (!media.matches) node.querySelector<HTMLElement>("button")?.focus();
     media.addEventListener("change", update);
     return {
+      update(value: boolean) { enlarged = value; update(); },
       destroy() {
         media.removeEventListener("change", update);
         trap?.destroy();
@@ -110,6 +114,7 @@
     input = "";
     sources = [];
     error = "";
+    retryAudio = null;
     section = "help";
   }
   let displayedReply = "";
@@ -176,9 +181,9 @@
   let open = $state(false);
   let deepReview = $state(false);
   let input = $state("");
-  let sourcePicker:{addFiles:(files:File[])=>Promise<void>}|undefined=$state();
+  let sourcePicker:{addFiles:(files:File[])=>Promise<void>;remove:(row:AssistantSource)=>void}|undefined=$state();
   let attachmentInput:HTMLInputElement|undefined=$state();
-  async function addAttachments(files:File[]){if(!files.length||sensitiveContext)return;section="chat";optionsOpen=true;await tick();await sourcePicker?.addFiles(files);}
+  async function addAttachments(files:File[]){if(!files.length||sensitiveContext)return;section="chat";await tick();await sourcePicker?.addFiles(files);}
   function pasteAttachment(event:ClipboardEvent){const files=Array.from(event.clipboardData?.files??[]).filter(file=>file.type.startsWith("image/"));if(files.length){event.preventDefault();void addAttachments(files);}}
   function dropAttachment(event:DragEvent){if(event.dataTransfer?.files.length){event.preventDefault();void addAttachments(Array.from(event.dataTransfer.files));}}
   async function sendAnswers(text:string){if(busy||!available||sourcePending||studioLoading)return false;const next=input.trim()&&!input.endsWith(text)?input+"\n\n"+text:input.endsWith(text)?input:text;if(next.length>6000){error="Bitte die Angaben auf 6.000 Zeichen kürzen.";return false;}input=next;return (await send())===true;}
@@ -186,11 +191,12 @@
   let phase = $state("idle");
   const busy = $derived(phase !== "idle");
   let recording = $state(false);
+  let recordingStarting = $state(false);
   let transcribing = $state(false);
+  let retryAudio = $state<{ blob: Blob; key: string } | null>(null);
   let messages: Row[] = $state([]);
   let recorder: MediaRecorder | null = null;
   let stream: MediaStream | null = null;
-  let audio: BlobPart[] = [];
   let recordingTimeout: ReturnType<typeof setTimeout>;
   let cancelled = false;
   const proposalKeys = new Map<string, string>();
@@ -400,7 +406,8 @@
         selectionOnly = previous?.selectionOnly ?? false;
         section = previous?.messages.length ? "chat" : "help";
         error = "";
-        if (recording) stopRecording(true);
+        retryAudio = null;
+        if (recording || recordingStarting) stopRecording(true);
       }
     });
   });
@@ -412,7 +419,7 @@
   );
   async function send(event?: SubmitEvent) {
     event?.preventDefault();
-    if (!input.trim() || busy || !available || sourcePending || studioLoading) return false;
+    if (!input.trim() || busy || !available || sourcePending || studioLoading || recording || recordingStarting || transcribing) return false;
     const message = input.trim(),
       sendingContext = contextKey,
       history = messages
@@ -640,106 +647,103 @@
     if(studioWork?.projectId===projectId)window.dispatchEvent(new CustomEvent('schubert:studio:action',{detail:{action:handoff.intent==='photo'?'photo':'image',prompt:handoff.prompt,sources:handoff.sources}}));
     else{queueVisualization(projectId,handoff);await goto('/studio/'+projectId);}
   }
-  async function startRecording() {
-    if (recording || busy || !available) return;
+  let microphoneRequest = 0;
+  async function transcribeRecording(blob: Blob, key: string) {
+    if (transcribing || key !== contextKey) return;
+    transcribing = true;
     error = "";
+    retryAudio = null;
+    try {
+      await validateVoiceRecording(blob);
+      if (key !== contextKey) return;
+      const body = new FormData();
+      body.append("audio", blob, blob.type.includes("mp4") ? "aufnahme.m4a" : "aufnahme.webm");
+      const result = await request("/api/v1/ai/transcribe", body);
+      if (key !== contextKey) return;
+      if (typeof result?.text !== "string") throw new Error("Es wurde kein bearbeitbarer Text erkannt.");
+      input = appendDictation(input, result.text);
+      await tick();
+      document.getElementById("assistant-message")?.focus();
+    } catch (cause) {
+      if (key === contextKey) {
+        error = cause instanceof Error ? cause.message : "Die Spracherkennung ist fehlgeschlagen. Text und Anhänge bleiben erhalten.";
+        // Only definitive pre-provider rejections may offer an explicit retry.
+        if (cause instanceof RequestError && ["AUDIO_INSPECTION", "WORKER_FAILED", "INTEGRATION_UNAVAILABLE", "AUDIO_PROVIDER_CONFIGURATION"].includes(cause.code))
+          retryAudio = { blob, key };
+      }
+    } finally { transcribing = false; }
+  }
+  async function startRecording() {
+    if (recording || recordingStarting || transcribing || busy || !available || studioLoading) return;
+    error = "";
+    retryAudio = null;
+    recordingStarting = true;
+    const key = contextKey, token = ++microphoneRequest;
+    let capture: MediaStream | null = null;
     try {
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder)
-        throw new Error(
-          "Dieser Browser unterstützt die Audioaufnahme nicht. Nutzen Sie die Texteingabe.",
-        );
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audio = [];
+        throw new Error("Dieser Browser unterstützt die Audioaufnahme nicht. Nutzen Sie die Texteingabe.");
+      capture = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (token !== microphoneRequest || key !== contextKey || !open) {
+        capture.getTracks().forEach(track => track.stop());
+        return;
+      }
+      stream = capture;
+      const parts: Blob[] = [];
       cancelled = false;
-      const mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(
-        (t) => MediaRecorder.isTypeSupported(t),
-      );
-      recorder = new MediaRecorder(stream, {
-        ...(mime ? { mimeType: mime } : {}),
-        audioBitsPerSecond: 48000,
-      });
-      recorder.ondataavailable = (e) => {
-        if (e.data.size) audio.push(e.data);
-        if (
-          audio.reduce(
-            (total, part) => total + (part instanceof Blob ? part.size : 0),
-            0,
-          ) > 2800000
-        ) {
-          error =
-            "Die Aufnahme ist zu groß. Verwenden Sie eine kürzere Aufnahme oder die Texteingabe.";
+      const mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(type => MediaRecorder.isTypeSupported(type));
+      const current = new MediaRecorder(capture, { ...(mime ? { mimeType: mime } : {}), audioBitsPerSecond: 48000 });
+      recorder = current;
+      let bytes = 0;
+      current.ondataavailable = event => {
+        if (event.data.size) { parts.push(event.data); bytes += event.data.size; }
+        if (bytes > 2_800_000) {
+          error = "Die Aufnahme ist zu groß. Bitte kürzer aufnehmen. Text und Anhänge bleiben erhalten.";
           stopRecording(true);
         }
       };
-      recorder.onstop = async () => {
+      current.onstop = () => {
         clearTimeout(recordingTimeout);
-        stream?.getTracks().forEach((t) => t.stop());
+        capture?.getTracks().forEach(track => track.stop());
         stream = null;
+        recorder = null;
         recording = false;
-        if (cancelled) return;
-        transcribing = true;
-        const transcribingContext = contextKey;
-        try {
-          const audioBlob = new Blob(audio, {
-            type: recorder?.mimeType || "audio/webm",
-          });
-          if (audioBlob.size > 2800000)
-            throw new Error(
-              "Die Aufnahme ist zu groß. Bitte kürzer aufnehmen oder den Text eingeben.",
-            );
-          const body = new FormData();
-          body.append(
-            "audio",
-            audioBlob,
-            recorder?.mimeType.includes("mp4")
-              ? "aufnahme.m4a"
-              : "aufnahme.webm",
-          );
-          const result = await request("/api/v1/ai/transcribe", body);
-          if (typeof result?.text !== "string")
-            throw new Error("Es wurde kein bearbeitbarer Text erkannt.");
-          if (transcribingContext !== contextKey) return;
-          input = input ? `${input}\n${result.text}` : result.text;
-        } catch (e) {
-          if (transcribingContext === contextKey)
-            error =
-              e instanceof Error
-                ? e.message
-                : "Die Transkription ist fehlgeschlagen.";
-        } finally {
-          transcribing = false;
-          audio = [];
-        }
+        if (cancelled || key !== contextKey) return;
+        // onstop follows the final dataavailable event: keep every container chunk.
+        void transcribeRecording(new Blob(parts, { type: current.mimeType || "audio/webm" }), key);
       };
-      recorder.onerror = () => {
-        error =
-          "Die Audioaufnahme ist fehlgeschlagen. Nutzen Sie die Texteingabe.";
+      current.onerror = () => {
+        error = "Die Audioaufnahme ist fehlgeschlagen. Bitte erneut aufnehmen. Text und Anhänge bleiben erhalten.";
         stopRecording(true);
       };
-      recorder.start(1000);
+      current.start(1000);
       recording = true;
       recordingTimeout = setTimeout(() => stopRecording(), 120000);
-    } catch (e) {
-      error =
-        e instanceof Error
-          ? e.message
-          : "Der Mikrofonzugriff ist nicht verfügbar.";
-      stream?.getTracks().forEach((t) => t.stop());
-      stream = null;
-    }
+    } catch (cause) {
+      capture?.getTracks().forEach(track => track.stop());
+      if (token === microphoneRequest) {
+        stream = null;
+        error = cause instanceof DOMException && cause.name === "NotAllowedError"
+          ? "Das Mikrofon ist nicht freigegeben. Erlauben Sie den Zugriff im Browser oder schreiben Sie weiter. Text und Anhänge bleiben erhalten."
+          : cause instanceof Error ? cause.message : "Der Mikrofonzugriff ist nicht verfügbar.";
+      }
+    } finally { if (token === microphoneRequest) recordingStarting = false; }
   }
   function stopRecording(cancel = false) {
     cancelled = cancel;
+    ++microphoneRequest;
+    recordingStarting = false;
     clearTimeout(recordingTimeout);
     if (recorder && recorder.state !== "inactive") recorder.stop();
     else {
-      stream?.getTracks().forEach((t) => t.stop());
+      stream?.getTracks().forEach(track => track.stop());
       stream = null;
       recording = false;
     }
   }
   function close() {
-    if (recording) stopRecording(true);
+    if (recording || recordingStarting) stopRecording(true);
+    retryAudio = null;
     open = false;
   }
   onMount(() => {
@@ -790,6 +794,8 @@
     activeRun?.controller.abort();
     runId++;
     cancelled = true;
+    ++microphoneRequest;
+    retryAudio = null;
     clearTimeout(recordingTimeout);
     if (recorder?.state === "recording") recorder.stop();
     stream?.getTracks().forEach((t) => t.stop());
@@ -807,15 +813,18 @@
       title="Assistent öffnen"><Icon name="spark" size={19} />Assistent</button
     >{:else}<div
       class="assistant-overlay"
+      class:expanded={expandedChat}
       role="presentation"
       onclick={close}
     ></div>
     <div
-      use:companionFocus
+      use:companionFocus={expandedChat}
       id="assistant-drawer"
       class="assistant-drawer"
+      class:chat={section === "chat"}
+      class:expanded={expandedChat}
       role="dialog"
-      aria-modal={mobile ? "true" : undefined}
+      aria-modal={mobile || expandedChat ? "true" : undefined}
       aria-label="Schubert Begleiter"
       tabindex="-1"
       onkeydown={(e) => {
@@ -836,10 +845,10 @@
         </div>
         <button
           class="icon-button"
-          disabled={busy || recording || transcribing || studioLoading}
+          disabled={busy || recording || recordingStarting || transcribing || studioLoading}
           onclick={newConversation}
           aria-label="Neues Gespräch"><Icon name="edit" size={18} /></button
-        ><button
+        >{#if section === "chat"}<button class="icon-button assistant-resize" onclick={() => (expanded = !expanded)} aria-label={expanded ? "Chat verkleinern" : "Chat vergrößern"} aria-pressed={expanded}><Icon name={expanded ? "panel-close" : "panel-open"} size={18}/></button>{/if}<button
           class="icon-button"
           onclick={close}
           aria-label="Assistent schließen"><Icon name="close" /></button
@@ -1073,14 +1082,54 @@
         </div>
         <form class="assistant-input" onsubmit={send} onpaste={pasteAttachment} ondragover={event=>{if(event.dataTransfer?.types.includes("Files"))event.preventDefault();}} ondrop={dropAttachment}>
           <div class="assistant-compose-fields">
+            {#if sources.length}<div class="assistant-attachments" aria-label="Anhänge dieser Nachricht">
+              {#each sources as source, index (source.key)}<div class="assistant-attachment">
+                {#if source.preview?.status === "completed" && source.preview.document_id && source.preview.document_version_id}<img src={'/api/v1/documents/'+source.preview.document_id+'/download?version='+source.preview.document_version_id+'&inline=1'} alt={'Bildvorlage '+source.name}/>{:else}<Icon name="file" size={22}/>{/if}
+                <div><strong>{source.name || 'Quelle '+(index+1)}</strong><span role="status">{sourceReady(source) ? 'Bereit · wird mit Ihrer Nachricht gesendet' : source.working ? 'Wird vorbereitet …' : source.error || 'Vorbereitung prüfen'}</span></div>
+                <button type="button" class="icon-button" aria-label={'Anhang '+(index+1)+' prüfen'} onclick={()=>optionsOpen=true}><Icon name="settings" size={16}/></button>
+                <button type="button" class="icon-button" aria-label={'Anhang '+(index+1)+' entfernen'} disabled={busy} onclick={()=>sourcePicker?.remove(source)}><Icon name="close" size={16}/></button>
+              </div>{/each}
+            </div>{/if}
+            <label class="sr-only" for="assistant-message"
+              >Nachricht an den Assistenten</label
+            ><textarea
+              id="assistant-message"
+              class="field-control"
+              maxlength="6000"
+              bind:value={input}
+              rows="2"
+              placeholder={sensitiveContext
+                ? "Nutzen Sie die Hinweise an den Eingabefeldern."
+                : available
+                  ? sources.length ? "Was soll die KI mit dem Bild oder der Unterlage machen? Tippen oder diktieren …" : "Nachricht schreiben, Bild hinzufügen oder sprechen …"
+                  : "Texteingabe nach Einrichtung verfügbar"}
+              disabled={!available || busy || studioLoading}
+            ></textarea>{#if recording}<div
+                class="notice warning mt"
+                role="status"
+              >
+                <Icon name="mic" size={17} />
+                <div>
+                  Aufnahme läuft. Stoppen Sie die Aufnahme, um den Text zu
+                  prüfen.
+                </div>
+              </div>{/if}{#if transcribing}<p
+                class="field-help mt"
+                role="status"
+              >
+                Audio wird transkribiert. Anschließend können Sie den Text
+                bearbeiten.
+              </p>{/if}{#if recordingStarting}<p class="field-help" role="status">Mikrofon im Browser freigeben … <button type="button" class="text-link" onclick={()=>stopRecording(true)}>Abbrechen</button></p>{/if}{#if retryAudio}<div class="inline-actions"><button type="button" class="btn small" disabled={transcribing} onclick={()=>{if(retryAudio)void transcribeRecording(retryAudio.blob,retryAudio.key);}}>Spracherkennung erneut versuchen</button><button type="button" class="text-link" onclick={()=>retryAudio=null}>Aufnahme verwerfen</button></div>{/if}
+          </div>
+          <div class="assistant-input-actions">
             <details class="companion-options" bind:open={optionsOpen}>
-              <summary
-                ><Icon name="plus" size={16} />Unterlagen & Modell</summary
-              >{#if !sensitiveContext}<AssistantSources
+              <summary aria-label="Unterlagen und Modelloptionen"
+                ><Icon name="settings" size={16} /><span class="options-label">Optionen</span></summary
+              ><div class="companion-options-body"><div class="options-heading"><strong>Unterlagen & Modell</strong><button type="button" class="icon-button" aria-label="Optionen schließen" onclick={finishOptions}><Icon name="close" size={16}/></button></div>{#if !sensitiveContext}<AssistantSources
                   bind:this={sourcePicker}
                   {data}
                   bind:rows={sources}
-                  disabled={busy || recording || transcribing || studioLoading}
+                  disabled={busy || studioLoading}
                 />{/if}{#if studioWork}<fieldset
                   class="assistant-boundaries"
                   id="assistant-boundaries"
@@ -1155,39 +1204,9 @@
                       Die gespeicherte Revision bleibt die Grundlage.
                     </p>{/if}
                 </div>{/if}
-            </details>
-            <label class="sr-only" for="assistant-message"
-              >Nachricht an den Assistenten</label
-            ><textarea
-              id="assistant-message"
-              class="field-control"
-              maxlength="6000"
-              bind:value={input}
-              placeholder={sensitiveContext
-                ? "Nutzen Sie die Hinweise an den Eingabefeldern."
-                : available
-                  ? "Was ist in diesem Schritt zu tun?"
-                  : "Texteingabe nach Einrichtung verfügbar"}
-              disabled={!available || busy || recording || studioLoading}
-            ></textarea>{#if recording}<div
-                class="notice warning mt"
-                role="status"
-              >
-                <Icon name="mic" size={17} />
-                <div>
-                  Aufnahme läuft. Stoppen Sie die Aufnahme, um den Text zu
-                  prüfen.
-                </div>
-              </div>{/if}{#if transcribing}<p
-                class="field-help mt"
-                role="status"
-              >
-                Audio wird transkribiert. Anschließend können Sie den Text
-                bearbeiten.
-              </p>{/if}
-          </div>
-          <div class="assistant-input-actions">
-            {#if !sensitiveContext&&permitted(data,"documents.upload")}<input class="assistant-attachment-input" type="file" accept="image/jpeg,image/png,image/webp,image/tiff,application/pdf" multiple bind:this={attachmentInput} onchange={event=>{void addAttachments(Array.from(event.currentTarget.files??[]));event.currentTarget.value="";}} aria-label="Foto oder PDF im Chat hochladen"/><button type="button" class="btn small" aria-label="Foto oder PDF im Chat hochladen" disabled={busy||studioLoading||sources.length>=2} onclick={()=>attachmentInput?.click()}><Icon name="camera" size={15}/>Foto / PDF</button>{/if}
+            </div></details>
+
+            {#if !sensitiveContext&&permitted(data,"documents.upload")}<input class="assistant-attachment-input" type="file" tabindex="-1" aria-hidden="true" accept="image/jpeg,image/png,image/webp,image/tiff,application/pdf" multiple bind:this={attachmentInput} onchange={event=>{void addAttachments(Array.from(event.currentTarget.files??[]));event.currentTarget.value="";}} aria-label="Foto oder PDF im Chat hochladen"/><button type="button" class="btn small" aria-label="Foto oder PDF im Chat hochladen" disabled={busy||studioLoading||sources.length>=2} onclick={()=>attachmentInput?.click()}><Icon name="camera" size={15}/>Foto / PDF</button>{/if}
             {#if ["preparing", "requesting"].includes(phase)}<button
                 type="button"
                 class="btn small"
@@ -1207,7 +1226,7 @@
               </div>{:else}<button
                 type="button"
                 class="btn small ghost"
-                disabled={!available || busy || transcribing || studioLoading}
+                disabled={!available || busy || recordingStarting || transcribing || studioLoading}
                 onclick={startRecording}
                 ><Icon name="mic" size={17} />Sprechen</button
               >{/if}<button
@@ -1215,7 +1234,7 @@
               type="submit"
               disabled={!available ||
                 busy || studioLoading ||
-                recording ||
+                recording || recordingStarting ||
                 transcribing ||
                 !input.trim() ||
                 sources.some((source) => !sourceReady(source))}
@@ -1224,361 +1243,96 @@
           </div>
           {#if studioLoading}<p class="field-help" role="status">Der aktuelle Planstand wird geladen. Danach können Sie die Nachricht senden.</p>{/if}
           <p class="field-help mt">
-            Namen, Daten, Maße und Beträge vor der Anwendung prüfen. Sprache ist
-            freiwillig; die manuelle Eingabe bleibt verfügbar.
+            Bilder, Text und Sprache lassen sich kombinieren. Namen und Maße vor der Anwendung prüfen.
           </p>
         </form>{/if}
     </div>{/if}
 </div>
 
-<style>.assistant-input-actions{flex-wrap:wrap}
-.assistant-attachment-input{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap}
-  .assistant-header {
-    flex-shrink: 0;
-  }
-  .assistant-input {
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    max-height: 55dvh;
-    overflow: hidden;
-  }
-  .assistant-compose-fields {
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-  .assistant-input-actions,
-  .assistant-input > p {
-    flex-shrink: 0;
-  }
-  .assistant-input-actions {
-    padding-top: 12px;
-  }
-  .assistant-messages {
-    min-height: 90px;
-  }
-  .assistant-model-choice details summary {
-    cursor: pointer;
-    min-height: 30px;
-  }
-  @media (max-width: 760px) {
-    .assistant-input {
-      max-height: calc(95dvh - 185px);
-    }
-    .assistant-model-choice details summary {
-      min-height: 40px;
-    }
-  }
-  .companion-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 0 18px 14px;
-    flex: none;
-  }
-  .companion-tabs button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--muted);
-    font-size: 13px;
-    min-height: 42px;
-    padding: 10px;
-  }
-  .companion-tabs button[aria-pressed="true"] {
-    background: var(--wash);
-    color: var(--ink);
-    font-weight: 550;
-  }
-  .companion-options {
-    margin-bottom: 12px;
-  }
-  .companion-options :global(> summary) {
-    font-size: 12px;
-    min-height: 38px;
-  }
-  .companion-options :global(.assistant-sources) {
-    border-top: 0;
-    margin: 0;
-  }
-  .assistant-input :global(textarea#assistant-message) {
-    min-height: 85px;
-    max-height: 180px;
-    border-radius: 10px;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  .assistant-header h2 {
-    font-size: 16px;
-    letter-spacing: -0.01em;
-  }
-  .assistant-header p {
-    font-size: 12px;
-  }
-  .assistant-header > div:nth-child(2) {
-    flex: 1;
-    min-width: 0;
-  }
-  .assistant-header > .icon-button {
-    flex: none;
-  }
-  .assistant-messages :global(.chat-message) {
-    overflow-wrap: anywhere;
-    white-space: normal;
-  }
-  .chat-body {
-    white-space: pre-wrap;
-  }
-  .assistant-messages :global(.chat-message.user) {
-    background: var(--wash);
-    border: 0;
-    border-radius: 12px 12px 3px 12px;
-    padding: 14px 16px;
-  }
-  .assistant-messages :global(.chat-message.assistant) {
-    padding-right: 0;
-  }
-  .assistant-messages :global(.chat-role) {
-    font-size: 11px;
-    text-transform: none;
-    letter-spacing: 0;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .assistant-messages :global(.assistant-proposal) {
-    border-radius: 10px;
-    background: var(--paper);
-    padding: 16px;
-    border: 1px solid var(--line);
-  }
-  @media (min-width: 761px) {
-    .assistant-overlay {
-      display: none;
-    }
-    .assistant-drawer {
-      inset: 82px 22px 22px auto;
-      width: 460px;
-      max-height: calc(100dvh - 104px);
-      border: 0;
-      border-radius: 16px;
-      box-shadow: 0 14px 65px #00000028;
-      background: var(--paper);
-      overflow: hidden;
-    }
-    .assistant-header {
-      padding: 22px 20px 17px;
-    }
-    .assistant-messages {
-      padding: 20px 24px;
-    }
-    .assistant-input {
-      padding: 16px 22px;
-    }
-    .assistant-input > p {
-      font-size: 11px;
-      line-height: 1.55;
-    }
-    .chat-message {
-      font-size: 14px;
-    }
-  }
-  @media (max-width: 760px) {
-    .companion-tabs button {
-      font-size: 13px;
-      min-height: 44px;
-    }
-    .assistant-input {
-      max-height: 55dvh;
-    }
-    .assistant-input :global(textarea#assistant-message) {
-      font-size: 16px;
-    }
-    .assistant-header {
-      padding: 18px 16px;
-    }
-    .assistant-header p {
-      font-size: 11px;
-    }
-  }
-
-  .assistant-context {
-    flex: none;
-    padding: 13px 22px;
-    border-bottom: 1px solid var(--line);
-    background: var(--accent-wash);
-    color: var(--forest);
-  }
-  .assistant-context > div {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 13px;
-  }
-  .assistant-context strong {
-    font-weight: 600;
-  }
-  .assistant-context p {
-    margin: 5px 0 3px;
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--ink);
-    overflow-wrap: anywhere;
-  }
-  .assistant-context small {
-    font-size: 11px;
-    line-height: 1.6;
-    color: var(--muted);
-  }
-  .assistant-boundaries {
-    margin: 14px 0;
-    padding: 12px 14px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    white-space: normal;
-    min-width: 0;
-  }
-  .assistant-boundaries legend {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 0 5px;
-    color: var(--ink);
-  }
-  .assistant-scope-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: space-between;
-    width: 100%;
-    min-height: 40px;
-    font: inherit;
-    font-size: 11px;
-    line-height: 1.6;
-    text-align: left;
-    color: var(--forest);
-    border: 0;
-    background: transparent;
-    padding: 5px 0;
-  }
-  .assistant-scope-link :global(svg) {
-    flex: none;
-  }
-  .assistant-scope-link:hover {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .assistant-boundaries label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 44px;
-    font-size: 12px;
-    color: var(--ink);
-  }
-  .assistant-boundaries input {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--forest);
-  }
-  .assistant-boundaries > p {
-    font-size: 11px;
-    line-height: 1.6;
-  }
-  .reply-origin {
-    font-size: 11px;
-    line-height: 1.6;
-    color: var(--muted);
-    margin-top: 10px;
-    white-space: normal;
-  }
-  .reply-stale {
-    font-size: 12px;
-    line-height: 1.6;
-    padding: 10px;
-    background: var(--warning-wash);
-    border-radius: 9px;
-    color: var(--warning);
-    white-space: normal;
-  }
-  .proposal-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-  }
-  .proposal-actions > .primary {
-    flex-basis: 100%;
-  }
-  .proposal-actions > .btn {
-    min-height: 44px;
-  }
-  .companion-density {
-    padding: 0 24px;
-    flex: none;
-  }
-  .companion-density button {
-    font: inherit;
-    font-size: 12px;
-    color: var(--muted);
-    min-height: 40px;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .assistant-input-actions {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .assistant-input {
-    flex: 0 1 auto;
-    min-height: 170px;
-    max-height: 43dvh;
-  }
-  .assistant-messages {
-    flex: 1 1 200px;
-    min-height: 90px;
-    position: relative;
-  }
-  @media (max-width: 760px) {
-    .assistant-header {
-      padding: 12px 16px;
-    }
-    .assistant-header p {
-      display: none;
-    }
-    .companion-tabs {
-      padding: 0 12px 10px;
-    }
-    .assistant-context {
-      padding: 10px 16px;
-    }
-    .assistant-input {
-      padding: 12px 16px;
-      max-height: 43dvh;
-    }
-    .assistant-input-actions {
-      margin-top: 0;
-      padding-top: 8px;
-    }
-    .assistant-input > p {
-      font-size: 11px;
-      line-height: 1.5;
-    }
-    .assistant-messages {
-      padding: 14px 18px;
-    }
+<style>
+  .assistant-header { flex-shrink: 0; padding: 16px 20px; gap: 10px; }
+  .assistant-header h2 { font-size: 16px; letter-spacing: -.01em; }
+  .assistant-header p { font-size: 12px; }
+  .assistant-header > div:nth-child(2) { flex: 1; min-width: 0; }
+  .assistant-header > .icon-button { flex: none; margin-left: 0; width: 44px; height: 44px; }
+  .companion-tabs { display: flex; gap: 4px; padding: 0 18px 10px; flex: none; }
+  .companion-tabs button { display: flex; justify-content: center; align-items: center; gap: 8px; flex: 1; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 13px; min-height: 44px; padding: 10px; }
+  .companion-tabs button[aria-pressed="true"] { background: var(--wash); color: var(--ink); font-weight: 550; }
+  .assistant-drawer { overflow: hidden; }
+  .assistant-messages { min-height: 100px; flex: 1 1 200px; position: relative; padding: 20px 24px; overscroll-behavior: contain; }
+  .assistant-messages :global(.chat-message) { overflow-wrap: anywhere; white-space: normal; font-size: 14px; }
+  .chat-body { white-space: pre-wrap; }
+  .assistant-messages :global(.chat-message.user) { background: var(--wash); border: 0; border-radius: 12px 12px 3px 12px; padding: 14px 16px; }
+  .assistant-messages :global(.chat-message.assistant) { padding-right: 0; }
+  .assistant-messages :global(.chat-role) { font-size: 12px; text-transform: none; letter-spacing: 0; color: var(--muted); margin-bottom: 6px; }
+  .assistant-messages :global(.assistant-proposal) { border-radius: 10px; background: var(--paper); padding: 16px; border: 1px solid var(--line); }
+  .assistant-input { position: relative; display: flex; flex-direction: column; flex: none; padding: 12px 20px 16px; min-height: 0; max-height: none; overflow: visible; }
+  .assistant-compose-fields { min-height: 0; }
+  .assistant-input textarea#assistant-message { min-height: 64px; max-height: 150px; field-sizing: content; resize: vertical; overflow-y: auto; border-radius: 10px; font-size: 15px; line-height: 1.6; }
+  .assistant-input-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-start; gap: 8px; margin-top: 8px; padding: 0; }
+  .assistant-input-actions :global(.btn), .companion-options > summary { min-height: 44px; font-size: 13px; }
+  .assistant-input-actions > .primary { margin-left: auto; }
+  .assistant-input > p { margin-top: 6px; font-size: 12px; line-height: 1.5; }
+  .assistant-attachment-input { position: absolute!important; width: 1px!important; height: 1px!important; min-height: 0!important; padding: 0!important; overflow: hidden!important; clip-path: inset(50%); white-space: nowrap; }
+  .assistant-attachments { display: flex; flex-direction: column; gap: 6px; max-height: 146px; overflow: auto; margin-bottom: 8px; }
+  .assistant-attachment { display: flex; align-items: center; gap: 10px; padding: 5px 8px; background: var(--wash); border-radius: 8px; min-width: 0; }
+  .assistant-attachment > img { width: 48px; height: 48px; object-fit: contain; border-radius: 4px; background: white; }
+  .assistant-attachment > div { flex: 1; min-width: 0; }
+  .assistant-attachment strong { display: block; font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .assistant-attachment span { display: block; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+  .assistant-attachment .icon-button { flex: none; min-width: 44px; min-height: 44px; }
+  .companion-options { position: static; border: 0; padding: 0; margin: 0; }
+  .companion-options > summary { display: flex; align-items: center; gap: 6px; padding: 8px 10px; cursor: pointer; color: var(--muted); border-radius: 8px; list-style: none; }
+  .companion-options > summary::-webkit-details-marker { display: none; }
+  .companion-options[open] > summary { background: var(--wash); color: var(--ink); }
+  .companion-options-body { position: absolute; bottom: calc(100% + 8px); left: 12px; right: 12px; z-index: 5; max-height: min(56dvh, 560px); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 35px #0003; padding: 16px; background: var(--paper); }
+  .options-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .options-heading strong { font-size: 14px; }
+  .companion-options :global(.assistant-sources) { border-top: 0; margin: 0; }
+  .companion-options :global(.assistant-source-body) { max-height: none; overflow: visible; }
+  .assistant-model-choice details summary { cursor: pointer; min-height: 40px; }
+  .assistant-context { flex: none; padding: 10px 22px; border-bottom: 1px solid var(--line); background: var(--accent-wash); color: var(--forest); }
+  .assistant-context > div { display: flex; align-items: center; gap: 8px; }
+  .assistant-context strong { font-weight: 600; }
+  .assistant-context p { margin: 5px 0 3px; font-size: 13px; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; }
+  .assistant-context small { font-size: 12px; line-height: 1.5; color: var(--muted); }
+  .assistant-boundaries { margin: 14px 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; white-space: normal; min-width: 0; }
+  .assistant-boundaries legend { font-size: 13px; font-weight: 600; padding: 0 5px; color: var(--ink); }
+  .assistant-scope-link { display: flex; align-items: center; gap: 8px; justify-content: space-between; width: 100%; min-height: 40px; font: inherit; font-size: 12px; line-height: 1.5; text-align: left; color: var(--forest); border: 0; background: transparent; padding: 5px 0; }
+  .assistant-scope-link :global(svg) { flex: none; }
+  .assistant-scope-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .assistant-boundaries label { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; color: var(--ink); }
+  .assistant-boundaries input { width: 16px; height: 16px; accent-color: var(--forest); }
+  .assistant-boundaries > p, .reply-origin { font-size: 12px; line-height: 1.6; }
+  .reply-origin { color: var(--muted); margin-top: 10px; white-space: normal; }
+  .reply-stale { font-size: 13px; line-height: 1.6; padding: 10px; background: var(--warning-wash); border-radius: 9px; color: var(--warning); white-space: normal; }
+  .proposal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .proposal-actions > .primary { flex-basis: 100%; }
+  .proposal-actions > .btn { min-height: 44px; }
+  .companion-density { padding: 0 24px; flex: none; }
+  .companion-density button { font: inherit; font-size: 13px; color: var(--muted); min-height: 40px; text-decoration: underline; text-underline-offset: 3px; }
+  @media (min-width:761px) {
+    .assistant-overlay { display: none; }
+    .assistant-overlay.expanded { display: block; }
+    .assistant-drawer { inset: 72px 22px 22px auto; width: min(460px, calc(100vw - 44px)); max-height: calc(100dvh - 94px); border: 0; border-radius: 16px; box-shadow: 0 14px 65px #0004; background: var(--paper); }
+    .assistant-drawer.chat { width: min(620px, calc(100vw - 44px)); }
+    .assistant-drawer.expanded { inset: 24px 24px 24px auto; width: min(1000px, calc(100vw - 48px)); max-height: calc(100dvh - 48px); }
   }
   @media (max-width:760px) {
-    .assistant-input-actions :global(.btn){padding-inline:10px;font-size:12px;gap:6px;min-height:44px}
-    .assistant-compose-fields{flex:1 1 auto;min-height:78px}
-    .assistant-input{min-height:218px;max-height:52dvh}
-  }
-  @media (max-width:760px) and (max-height:700px) {
-    .assistant-context small,.assistant-input>p{display:none}
-    .assistant-context{padding-block:7px}
-    .assistant-messages{min-height:60px}
+    .assistant-header { padding: 8px 12px; gap: 4px; }
+    .assistant-header p, .assistant-resize, .assistant-input > p, .assistant-context small { display: none; }
+    .assistant-header h2 { font-size: 15px; }
+    .companion-tabs { padding: 0 12px 6px; }
+    .assistant-context { padding: 8px 14px; }
+    .assistant-context p { font-size: 12px; }
+    .assistant-input { padding: 10px 12px calc(12px + env(safe-area-inset-bottom)); }
+    .assistant-input textarea#assistant-message { font-size: 16px; max-height: 112px; }
+    .assistant-input-actions { gap: 4px; }
+    .assistant-input-actions :global(.btn), .companion-options > summary { padding-inline: 8px; gap: 4px; }
+    .companion-options > summary { width: 44px; justify-content: center; }
+    .options-label { display: none; }
+    .assistant-messages { padding: 14px 16px; min-height: 80px; }
+    .assistant-attachments { max-height: 116px; }
+    .companion-options-body { left: 6px; right: 6px; padding: 12px; }
   }
 </style>

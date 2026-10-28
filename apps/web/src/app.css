@@ -929,7 +929,7 @@ select[data-searchable-control][hidden] { display: none !important; }
 /* Keep the plan usable while the non-modal desktop companion is open. */
 @media (min-width:761px){
  .app-shell:has(.studio-root.workbench){--studio-companion-width:clamp(320px,35vw,460px)}
- .app-shell:has(.studio-root.workbench) .assistant-drawer{width:var(--studio-companion-width)}
- body:has(#assistant-drawer) .studio-root.workbench:not(.is-fullscreen):not(:fullscreen){margin-right:calc(var(--studio-companion-width) + 12px)}
- .studio-root.workbench.is-fullscreen:has(#assistant-drawer),.studio-root.workbench:fullscreen:has(#assistant-drawer){padding-right:calc(var(--studio-companion-width) + 24px)}
+ .app-shell:has(.studio-root.workbench) .assistant-drawer:not(.expanded){width:var(--studio-companion-width)}
+ body:has(#assistant-drawer:not(.expanded)) .studio-root.workbench:not(.is-fullscreen):not(:fullscreen){margin-right:calc(var(--studio-companion-width) + 12px)}
+ .studio-root.workbench.is-fullscreen:has(#assistant-drawer:not(.expanded)),.studio-root.workbench:fullscreen:has(#assistant-drawer:not(.expanded)){padding-right:calc(var(--studio-companion-width) + 24px)}
 }

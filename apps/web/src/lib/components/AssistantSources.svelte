@@ -261,7 +261,7 @@
       }
     }
   }
-  function remove(row: AssistantSource) {
+  export function remove(row: AssistantSource) {
     uploads.get(row.key)?.abort();
     rows = rows.filter((item) => item.key !== row.key);
   }
