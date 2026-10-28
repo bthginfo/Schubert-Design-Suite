@@ -54,6 +54,9 @@ export async function dispatchNotifications(ctx:ActorContext,limit=100){return w
      }
     }
    }
+   // Old events may outlive a removed or no-longer-visible aggregate. Do not
+   // invent a recipient/link, or let it block unrelated file and print jobs.
+   if(!record&&(table||event.aggregate_type==='job_runs'))rule=undefined;
    if(rule){
     const employeeId=record?.employee_id??(event.aggregate_type==='memberships'?record?.employee_id:null),userId=record?.user_id??(rule.category==='security'?event.actor_id:null),orderId=record?.order_id??(table==='orders'?record.id:null)??(table==='quotes'?(await one<any>(db,"SELECT order_id FROM quote_acceptances WHERE quote_id=$1 AND status='accepted' ORDER BY created_at DESC LIMIT 1",[record.id]))?.order_id:null);
     const assigned=orderId?await rows<any>(db,"SELECT employee_id FROM dispatch_assignments WHERE order_id=$1 AND status NOT IN('cancelled','deleted')",[orderId]):[];

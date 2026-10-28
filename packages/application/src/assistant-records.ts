@@ -13,6 +13,7 @@ import {
   assertManufacturerUse,
 } from "./document-access.js";
 import { initialPlanningOperations } from "../../ai/src/planning-edits.js";
+import { documentProcessingConfigured } from "./document-processing.js";
 
 function references(value: any, created: any[], field = ""): any {
   if (
@@ -250,23 +251,31 @@ export async function assistantAttachmentStatus(ctx: ActorContext, id: string) {
       blob = await getRecord(db, "blob_objects", version.blob_object_id);
     const job = await one<any>(
       db,
-      "SELECT status,last_error FROM job_runs WHERE job_type='document.ingest' AND payload->>'documentId'=$1 ORDER BY created_at DESC LIMIT 1",
-      [doc.id],
+      "SELECT status,lease_until FROM job_runs WHERE job_type='document.ingest' AND payload->>'documentId'=$1 AND payload->>'documentVersionId'=$2 ORDER BY created_at DESC LIMIT 1",
+      [doc.id, version.id],
     );
+    const available = doc.status === "available" && version.status === "available" && ["clean", "trusted_generator"].includes(blob.scan_status),
+      blocked = ["infected", "rejected", "blocked"].includes(blob.scan_status) || doc.status === "blocked" || version.status === "blocked",
+      configured = documentProcessingConfigured(),
+      quarantined = !doc.archived && doc.status === "quarantine" && version.status === "quarantine" && blob.scan_status === "quarantine",
+      active = job?.status === "running" && job.lease_until && new Date(job.lease_until) > new Date(),
+      canRetry = configured && quarantined && ctx.permissions.includes("documents.upload") && job && !active && ["pending", "retry", "failed", "unavailable", "running"].includes(job.status);
     return {
       id: doc.id,
       name: doc.name,
-      status:
-        doc.status === "available" &&
-        version.status === "available" &&
-        ["clean", "trusted_generator"].includes(blob.scan_status)
-          ? "available"
-          : ["infected", "rejected", "blocked"].includes(blob.scan_status)
-            ? "blocked"
-            : job && ["failed", "unavailable"].includes(job.status)
-              ? "unavailable"
-              : "checking",
-      message: job?.last_error ?? null,
+      version: doc.version,
+      document_version_id: version.id,
+      can_retry: !!canRetry,
+      status: available ? "available" : blocked ? "blocked" : !configured || !job || ["failed", "unavailable"].includes(job.status) ? "unavailable" : "checking",
+      message: available ? null : blocked
+        ? "Diese Datei wurde bei der Dateiprüfung gesperrt. Eine korrigierte, unbedenkliche Originaldatei hochladen."
+        : !configured
+          ? "Die Datei ist privat gespeichert. Die automatische Dateiprüfung ist noch nicht eingerichtet. Die Administration kann die Dokumentverarbeitung verbinden."
+          : !job
+            ? "Die Datei ist gespeichert, aber ihr Prüfauftrag fehlt. Die Administration kann den Dateistand prüfen."
+            : ["failed", "unavailable"].includes(job.status)
+              ? "Die Datei ist gespeichert. Ihre Prüfung wurde unterbrochen. Mit „Vorbereitung fortsetzen“ erneut starten."
+              : null,
     };
   });
 }

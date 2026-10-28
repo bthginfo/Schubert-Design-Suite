@@ -1,3 +1,5 @@
+import {usabilityDocumentIntegration} from './usability-document-integration.js';
+import {backofficeUsabilityIntegration} from './backoffice-usability-integration.js';
 import {assistantFullEditIntegration} from './assistant-full-edit-integration.js';
 import {guidedWorkflowIntegration} from './guided-workflow-integration.js';
 import {customerWorkspaceIntegration} from './customer-workspace-integration.js';
@@ -99,15 +101,18 @@ await test('Numbering settings reject a backwards start and retain issued string
 });
 await test('Personal onboarding is persisted, optimistic and cannot target another user',async()=>{
  const prior=await withTenant(owner,db=>one<any>(db,'SELECT * FROM user_onboarding WHERE actor_id=$1',[owner.actorId]));
- const result=await command(owner,'account.onboarding.update',{status:'deferred',step:2},prior);
- assert.equal(result.actor_id,owner.actorId);assert.equal(result.step,2);
- await assert.rejects(()=>command(owner,'account.onboarding.update',{status:'completed',step:2},prior),(e:any)=>e.code==='VERSION_CONFLICT');
+ const step=prior?.step===2?3:2;
+ const result=await command(owner,'account.onboarding.update',{status:'deferred',step},prior);
+ assert.equal(result.actor_id,owner.actorId);assert.equal(result.step,step);
+ await assert.rejects(()=>command(owner,'account.onboarding.update',{status:'completed',step},prior),(e:any)=>e.code==='VERSION_CONFLICT');
  await assert.rejects(()=>command(owner,'account.onboarding.update',{status:'completed',step:2,actor_id:employee.actorId},result));
  assert.equal(await withTenant(employee,db=>one(db,'SELECT id FROM user_onboarding WHERE id=$1',[result.id])),null);
  const studio=await loadPage(owner,'studio',new URL('https://test.invalid/studio?onboarding-check='+result.version));
  const entity=await withTenant(owner,db=>one<any>(db,'SELECT training_mode FROM legal_entities WHERE id=$1',[owner.legalEntityId]));
  assert.equal(studio.summary.onboarding?.id,result.id);assert.equal(studio.summary.trainingMode,entity.training_mode);
 });
+await usabilityDocumentIntegration(actor,test);
+await backofficeUsabilityIntegration(actor,test);
 await feedbackIntegration(actor,test);
 await appearanceIntegration(actor,test);
 await uxFlowIntegration(actor,test);

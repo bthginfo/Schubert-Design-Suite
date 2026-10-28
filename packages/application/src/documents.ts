@@ -25,7 +25,7 @@ const registerUpload:Handler=async r=>{
  const blob=await r.insert('blob_objects',{storage_key:p.storage_key,provider:'vercel_blob',content_hash:p.content_hash,mime_type:p.mime_type,size_bytes:p.size_bytes,scan_status:'quarantine',status:'quarantine'});
  const {storage_key,intent_id,...fields}=p,document=await r.insert('documents',{...fields,status:'quarantine',visibility:'internal'}),version=await r.insert('document_versions',{document_id:document.id,blob_object_id:blob.id,content_hash:p.content_hash,revision:1,status:'quarantine'});
  await r.db.query('UPDATE documents SET current_version_id=$1 WHERE id=$2',[version.id,document.id]);if(intent)await r.update('upload_intents',intent.id,{document_id:document.id,status:'completed'},intent.version);
- await r.insert('job_runs',{name:'Originaldatei prüfen',job_type:'document.ingest',payload:{documentId:document.id,documentVersionId:version.id},status:'pending'});return{...document,current_version_id:version.id};
+ const job=await r.insert('job_runs',{name:'Originaldatei prüfen',job_type:'document.ingest',payload:{documentId:document.id,documentVersionId:version.id},status:'pending'});return{...document,current_version_id:version.id,job_id:job.id};
 };
 register('documents.upload.register','documents.upload',registerUpload);
 register('manufacturer.asset.upload.register','manufacturer_assets',async r=>{requireRule(r.payload.entity_type==='manufacturer-assets','UPLOAD_SCOPE','Dieser Dateieingang ist auf Herstellerunterlagen beschränkt.',403);return registerUpload(r);});

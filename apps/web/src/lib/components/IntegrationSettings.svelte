@@ -10,13 +10,14 @@
 
   let {data}:{data:AppData}=$props();
   let smtp:Row=$state({host:'',port:'',user:'',from:'',replyTo:''});
-  let ai:Row=$state({textModel:'gpt-6-luna',transcriptionModel:'gpt-4o-mini-transcribe-2025-12-15',imageModel:'gpt-image-2.5-flare',imageFallbackModel:'gpt-image-2',imageTextCostPerMillion:'5',imageInputCostPerMillion:'8',imageOutputCostPerMillion:'30',imageMaxRequestCost:'0.5',transcriptionInputCostPerMillion:'1.25',transcriptionOutputCostPerMillion:'5',transcriptionMaxRequestCost:'0.031',inputCostPerMillion:'0.10',outputCostPerMillion:'0.50',maxRequestCost:'0.02',monthlyBudget:'5',designModel:'gpt-6.1-sol',designInputCostPerMillion:'2',designOutputCostPerMillion:'10',designMaxRequestCost:'0.25'});let modelPolicyConfirmed=$state(false);
+  let ai:Row=$state({textModel:'gpt-6-luna',transcriptionModel:'gpt-4o-mini-transcribe-2025-12-15',imageModel:'gpt-image-2.5-flare',imageFallbackModel:'gpt-image-2',imageTextCostPerMillion:'5',imageInputCostPerMillion:'8',imageOutputCostPerMillion:'30',imageMaxRequestCost:'0.5',transcriptionInputCostPerMillion:'1.25',transcriptionOutputCostPerMillion:'5',transcriptionMaxRequestCost:'0.031',inputCostPerMillion:'0.10',outputCostPerMillion:'0.50',maxRequestCost:'0.10',monthlyBudget:'5',designModel:'gpt-6.1-sol',designInputCostPerMillion:'2',designOutputCostPerMillion:'10',designMaxRequestCost:'0.25'});let modelPolicyConfirmed=$state(false);
   let smtpSecret=$state('');let apiKey=$state('');let ownPassword=$state('');
   let recipient=$state('');let busy=$state('');let error=$state('');let notice=$state('');
   let fieldErrors:Record<string,string>=$state({});
   const allowed=$derived(permitted(data,'admin.integrations'));
   const config=$derived((data.related?.integration_settings as unknown as Row)||{});
   onMount(()=>{
+    ai.maxRequestCost=data.summary?.assistantModelProfile?.standard?.maxRequestCost??ai.maxRequestCost;
     for(const key of Object.keys(smtp))smtp[key]=config.smtp?.[key]??'';
     for(const key of Object.keys(ai))ai[key]=config.openai?.[key]??ai[key];
     recipient=data.user?.email||'';

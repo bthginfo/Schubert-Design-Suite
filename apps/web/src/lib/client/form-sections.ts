@@ -13,7 +13,13 @@ const sales:Section[]=[
   {title:'Rechnungsgrundlagen',description:'Die bestätigten Regeln und Empfängerangaben bestimmen die Prüfung vor der Ausstellung.',keys:['settlement_rule_version_id','rule_version_id','recipient_profile_version_id','recipient_regime','tax_category','tax_exemption_reason']},
   {title:'Bedingungen & Notizen',keys:['terms','notes'],optional:true}
 ];
-const definitions:Record<string,Section[]>={customers:contact,suppliers:contact,quotes:sales,invoices:sales,
+const quote:Section[]=[
+  {title:'Angebot',description:'Kunde und Vorhaben festlegen. Die Leistungen und Preise ergänzen Sie unter Positionen.',keys:['title','customer_id']},
+  {title:'Angebotsgültigkeit',keys:['valid_until']},
+  {title:'Bedingungen & Notizen',description:'Übernommene Kundenwünsche können Sie hier prüfen und bearbeiten.',keys:['terms','notes'],optional:true},
+  {title:'Weitere Angaben',description:'Nur bei Bedarf: Währung, ein bestehender Auftrag oder bereits vereinbarte Leistungs- und Zahlungstermine. Für einen ersten Angebotsentwurf können Auftrag und Termine leer bleiben.',keys:['currency','order_id','service_date','due_date'],optional:true}
+];
+const definitions:Record<string,Section[]>={customers:contact,suppliers:contact,quotes:quote,invoices:sales,
   inquiries:[{title:'Vorhaben',keys:['title','customer_id','business_unit','description']},{title:'Nächste Schritte',keys:['channel','requested_date','next_contact','assigned_to']}],
   orders:[{title:'Auftrag',keys:['title','customer_id','currency','business_unit']},{title:'Ort & Organisation',keys:['site_id','grave_plot_id','due_date','assigned_to']},{title:'Notizen',keys:['notes'],optional:true}]
 };

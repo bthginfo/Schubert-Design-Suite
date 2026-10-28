@@ -1,0 +1,63 @@
+[
+  {
+    "file": "angebot-aus-anfrage.png",
+    "bytes": 173612,
+    "sha256": "f6515e436356577d3772804681396cf198f2f851632faa9b3a49ff75f5b5bfcd",
+    "width": 1440,
+    "height": 1000
+  },
+  {
+    "file": "preisfehler-mobil.png",
+    "bytes": 58632,
+    "sha256": "5b47235c5aa6753cdd456e6ba6910873fe18466ff96b24d56823eb3333adac89",
+    "width": 390,
+    "height": 844
+  },
+  {
+    "file": "inschrift-bedienung.png",
+    "bytes": 184200,
+    "sha256": "963a061cd2889a914c0c4ac3489a44bc3363c4f9e36eeedf484e905659e8f27a",
+    "width": 1440,
+    "height": 1000
+  },
+  {
+    "file": "tuerposition-mobil.png",
+    "bytes": 53190,
+    "sha256": "14d109b9308600d9906e7262ef68be197a52c3aecd05b36aa48c67c4386148b7",
+    "width": 390,
+    "height": 844
+  },
+  {
+    "file": "skizze-grossansicht.png",
+    "bytes": 52280,
+    "sha256": "96b26ece4821a5315f6257054d442580828985ba0315d73e685e4acc97a582fe",
+    "width": 1440,
+    "height": 1000
+  },
+  {
+    "file": "testskizze.png",
+    "bytes": 56404,
+    "sha256": "f9e88943e5e013ea9bbecc9a466bd7219d3a579dc957aed37ef43e47227bfc60",
+    "width": 1100,
+    "height": 1400
+  },
+  {
+    "file": "grabmal.pdf",
+    "bytes": 25111,
+    "sha256": "bf5d7091c919c3d9da4918f67e0054cd620eeeb124b66d40d52e252464f0d9d8"
+  },
+  {
+    "file": "kundenunterlagen.png",
+    "bytes": 237613,
+    "sha256": "2fdcab808304e90592aaf7393a31deb393030df4649c077018f44be0ea008269",
+    "width": 1440,
+    "height": 1010
+  },
+  {
+    "file": "chat-upload-kundenakte.png",
+    "bytes": 240202,
+    "sha256": "2ffed554eeb08f4d9b93995694b043bbcef2630aa588664118f4bf3914287a87",
+    "width": 1440,
+    "height": 1000
+  }
+]

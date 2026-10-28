@@ -109,6 +109,7 @@
     supplier_id: module.slug === "suppliers" ? record.id : record.supplier_id,
     purchase_order_id:
       module.slug === "purchase-orders" ? record.id : undefined,
+    inquiry_id: module.slug === "inquiries" ? record.id : undefined,
   });
   const orderAreas = $derived(
     [
@@ -213,7 +214,7 @@
             ? [
                 {
                   slug: "quotes",
-                  label: "Angebot für diesen Kunden anlegen",
+                  label: "Angebot aus Anfrage anlegen",
                   permission: "sales",
                 },
               ]

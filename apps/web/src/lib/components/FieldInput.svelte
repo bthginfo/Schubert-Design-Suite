@@ -7,9 +7,9 @@
   import WorkPattern from './WorkPattern.svelte';import MappingEditor from './MappingEditor.svelte';import CuttingOutputs from './CuttingOutputs.svelte';import DatevMapping from './DatevMapping.svelte';
   import TaxSplits from './TaxSplits.svelte';
   import ReferencePicker from './ReferencePicker.svelte';
-  let {field,value=$bindable(),lookups={},error='',prefix='field',mappingKind='customers',referenceParentId,referenceAsOf,referenceKind}:{field:Field;value?:any;lookups?:Record<string,{id:string;name:string}[]>;error?:string;prefix?:string;mappingKind?:string;referenceParentId?:string;referenceAsOf?:string;referenceKind?:string}=$props();
+  let {field,value=$bindable(),lookups={},error='',prefix='field',mappingKind='customers',referenceParentId,referenceAsOf,referenceKind,helpText}:{field:Field;value?:any;lookups?:Record<string,{id:string;name:string}[]>;error?:string;prefix?:string;mappingKind?:string;referenceParentId?:string;referenceAsOf?:string;referenceKind?:string;helpText?:string}=$props();
   const id=$derived(`${prefix}-${field.key}`);
-  const help=$derived(fieldHelp(field));
+  const help=$derived(helpText??fieldHelp(field));
   const descriptions=$derived([help?`${id}-help`:'',error?`${id}-error`:''].filter(Boolean).join(' ')||undefined);
   const emptyReference=$derived(({ 'report-rules':'Noch keine freigegebene Bewertungsregel auswählbar. Lassen Sie die fachliche Grundlage im Bereich Regeln & Freigaben prüfen.', 'design-revisions':'Noch kein technisch freigegebener Planstand auswählbar. Prüfen und bestätigen Sie die passende Revision im Planungsstudio.', 'documents':'Noch kein geprüftes Original auswählbar. Laden Sie die Datei hoch und warten Sie ihre Sicherheitsprüfung ab.', 'document-versions':'Noch keine geprüfte Originalversion auswählbar. Laden Sie den Nachweis privat hoch und warten Sie seine Sicherheitsprüfung ab.', 'bank-accounts':'Noch keine bestätigte eigene Bankverbindung auswählbar. Die Geschäftsführung prüft und bestätigt das Konto in den Betriebseinstellungen.'} as Record<string,string>)[field.reference||'']||'Noch kein Eintrag auswählbar. Legen Sie die zugehörigen Stammdaten zuerst an.');
 </script>

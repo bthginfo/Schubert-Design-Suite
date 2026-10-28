@@ -51,6 +51,12 @@
   let busy = $state(false);
   let error = $state("");
   let fieldErrors: Record<string, string> = $state({});
+  function lineFieldError(index:number,key:string){return fieldErrors[`lines.${index}.${key}`]||'';}
+  function removeLine(index:number){
+    lines=lines.filter((_,i)=>i!==index);
+    fieldErrors=Object.fromEntries(Object.entries(fieldErrors).flatMap(([key,value])=>{const match=key.match(/^lines\.(\d+)\.(.+)$/);if(!match)return [[key,value]];const old=Number(match[1]);return old===index?[]:[[`lines.${old>index?old-1:old}.${match[2]}`,value]];}));
+    if(!Object.keys(fieldErrors).length)error='';
+  }
   let form: HTMLFormElement;
   let initialized = $state(false);
   let localVersion: number | undefined = $state();
@@ -620,7 +626,10 @@
       bind:this={form!}
       onsubmit={save}
       oninput={(event) => {
-        const key = (event.target as HTMLElement).id?.replace(/^field-/, "");
+        const target=event.target as HTMLElement;
+        const line=target.id?.match(/^line-(description|quantity|unit|price|tax|discount|cost|type)-(\d+)$/);
+        const keys:Record<string,string>={price:'unit_price',tax:'tax_rate',discount:'discount_percent',cost:'cost_unit',type:'line_type'};
+        const key = line?`lines.${line[2]}.${keys[line[1]]||line[1]}`:target.id?.replace(/^field-/, "");
         if (key && fieldErrors[key]) {
           const next = { ...fieldErrors };
           delete next[key];
@@ -658,6 +667,7 @@
             <Icon name="alert" />
             <div>{error}</div>
           </div>{/if}
+        {#if !record&&data.module?.slug==='quotes'&&data.summary?.createSource}<div class="notice info"><Icon name="file"/><div><strong>Aus Anfrage übernommen</strong><p class="field-help"><a class="text-link" href={data.summary.createSource.href}>{data.summary.createSource.number?data.summary.createSource.number+' · ':''}{data.summary.createSource.title}</a></p><p class="field-help">Titel, Kunde und Kundenwunsch sind vorbelegt und bearbeitbar. Ergänzen Sie die tatsächlichen Leistungen und Preise.</p>{#if data.summary.createSource.truncated}<p class="field-help">Die lange Beschreibung ist im Entwurf gekürzt. Den vollständigen Text finden Sie in der verknüpften Anfrage.</p>{/if}</div></div>{/if}
         {#snippet sectionFields(
           fields: import("#lib/client/types.ts").Field[],
         )}<div class="field-grid">
@@ -668,6 +678,7 @@
                 bind:value={values[field.key]}
                 lookups={editorLookups}
                 error={fieldErrors[field.key]}
+                helpText={data.module?.slug==='quotes'?({order_id:'Optional mit einem bestehenden Auftrag dieses Kunden verbinden. Für ein neues Vorhaben leer lassen.',service_date:'Nur einen bereits vereinbarten Leistungstermin eintragen. Ist er noch offen, lassen Sie das Feld leer.',due_date:'Nur einen bereits vereinbarten Zahlungstermin eintragen. Für den ersten Entwurf kann er offen bleiben.'} as Record<string,string>)[field.key]:undefined}
                 referenceParentId={field.reference === "purchase-order-lines"
                   ? values.purchase_order_id || record?.purchase_order_id
                   : undefined}
@@ -693,6 +704,7 @@
               />{#if field.key==='customer_id'&&data.module?.slug==='inquiries'&&permitted(data,'crm')}<QuickCustomer oncreated={customer=>{addedChoices={...addedChoices,customers:[...(addedChoices.customers??[]),{id:customer.id,name:customer.name}]};values.customer_id=customer.id;}}/>{/if}
               {#if field.key==='document_id'&&data.module?.slug==='supplier-invoices'&&permitted(data,'documents.upload')}<InlineOriginal onready={doc=>{addedChoices={...addedChoices,documents:[...(addedChoices.documents??[]),{id:doc.id,name:doc.name}]};values.document_id=doc.id;}}/>{/if}{/each}
           </div>{/snippet}
+        {#snippet lineError(index:number,key:string)}{#if lineFieldError(index,key)}<span class="field-error" id={`line-error-${index}-${key}`}>{lineFieldError(index,key)}</span>{/if}{/snippet}
         {#if data.module?.slug==='team'}<div class="notice info"><div>Für ein vorläufiges Beschäftigtenprofil genügen Name und gegebenenfalls der persönliche Zugang. Ein bestätigtes Arbeitsmodell benötigt zusätzlich Beginn, Wochenstunden, sieben Tagesstunden und Feiertagsregion. Angaben nur aus den tatsächlichen Personalgrundlagen übernehmen.</div></div>{/if}
         <div class="editor-sections">
           {#each sections as section, index}
@@ -700,7 +712,7 @@
                 data-editor-section={index}
                 class="form-disclosure"
                 open={section.fields.some(
-                  (field) => !!fieldErrors[field.key] || !!values[field.key],
+                  (field) => !!fieldErrors[field.key] || (!!values[field.key]&&!(data.module?.slug==='quotes'&&field.key==='currency'&&values.currency===(data.settings?.currency||'EUR'))),
                 )}
               >
                 <summary
@@ -776,8 +788,7 @@
                         title={lines.length === 1 && record
                           ? "Eine gespeicherte Leistungsliste benötigt mindestens eine Position."
                           : undefined}
-                        onclick={() =>
-                          (lines = lines.filter((_, i) => i !== index))}
+                        onclick={() => removeLine(index)}
                         ><Icon name="trash" size={16} /></button
                       >
                     </div>
@@ -787,15 +798,19 @@
                           >Leistung *</label
                         ><textarea
                           id={`line-description-${index}`}
+                          aria-invalid={!!lineFieldError(index,'description')}
+                          aria-describedby={lineFieldError(index,'description')?`line-error-${index}-description`:undefined}
                           bind:value={line.description}
                           required
-                          style="min-height:70px"></textarea>
+                          style="min-height:70px"></textarea>{@render lineError(index,'description')}
                       </div>
                       <div class="field">
                         <label for={`line-type-${index}`}>Positionsart</label
                         ><select
                           use:searchableSelect={line.line_type}
                           id={`line-type-${index}`}
+                          aria-invalid={!!lineFieldError(index,'line_type')}
+                          aria-describedby={lineFieldError(index,'line_type')?`line-error-${index}-line_type`:undefined}
                           bind:value={line.line_type}
                           onchange={(event) => {
                             if (event.currentTarget.value !== "item") {
@@ -811,7 +826,7 @@
                           ><option value="text">Text</option><option
                             value="subtotal">Zwischensumme</option
                           ></select
-                        >
+                        >{@render lineError(index,'line_type')}
                       </div>
                       {#if !["heading", "text", "subtotal"].includes(line.line_type)}<details
                           class="field description catalog-line"
@@ -854,22 +869,26 @@
                           <label for={`line-quantity-${index}`}>Menge *</label
                           ><input
                             id={`line-quantity-${index}`}
+                            aria-invalid={!!lineFieldError(index,'quantity')}
+                            aria-describedby={lineFieldError(index,'quantity')?`line-error-${index}-quantity`:undefined}
                             inputmode="decimal"
                             bind:value={line.quantity}
                             required
-                          />
+                          />{@render lineError(index,'quantity')}
                         </div>
                         <div class="field">
                           <label for={`line-unit-${index}`}>Einheit *</label
                           ><select
                             use:searchableSelect={line.unit}
                             id={`line-unit-${index}`}
+                            aria-invalid={!!lineFieldError(index,'unit')}
+                            aria-describedby={lineFieldError(index,'unit')?`line-error-${index}-unit`:undefined}
                             bind:value={line.unit}
                             onchange={() => (line.price_version_id = undefined)}
                             >{#each [{ value: "piece", label: "Stück" }, { value: "mm", label: "mm" }, { value: "m", label: "m" }, { value: "m2", label: "m²" }, { value: "m3", label: "m³" }, { value: "kg", label: "kg" }, { value: "h", label: "Stunde" }, { value: "day", label: "Tag" }, { value: "package", label: "Pauschale" }] as unit}<option
                                 value={unit.value}>{unit.label}</option
                               >{/each}</select
-                          >
+                          >{@render lineError(index,'unit')}
                         </div>
                         <div class="field">
                           <label for={`line-price-${index}`}
@@ -878,22 +897,26 @@
                               "EUR"} *</label
                           ><input
                             id={`line-price-${index}`}
+                            aria-invalid={!!lineFieldError(index,'unit_price')}
+                            aria-describedby={lineFieldError(index,'unit_price')?`line-error-${index}-unit_price`:undefined}
                             inputmode="decimal"
                             bind:value={line.unit_price}
                             oninput={() => (line.price_version_id = undefined)}
                             required
-                          />
+                          />{@render lineError(index,'unit_price')}
                         </div>
                         <div class="field">
                           <label for={`line-tax-${index}`}
                             >Steuersatz · % *</label
                           ><input
                             id={`line-tax-${index}`}
+                            aria-invalid={!!lineFieldError(index,'tax_rate')}
+                            aria-describedby={lineFieldError(index,'tax_rate')?`line-error-${index}-tax_rate`:undefined}
                             inputmode="decimal"
                             bind:value={line.tax_rate}
                             oninput={() => (line.price_version_id = undefined)}
                             required
-                          />
+                          />{@render lineError(index,'tax_rate')}
                         </div>
                         <details class="field description line-advanced">
                           <summary
@@ -909,10 +932,12 @@
                                     "EUR"}</label
                                 ><input
                                   id={`line-cost-${index}`}
+                                  aria-invalid={!!lineFieldError(index,'cost_unit')}
+                                  aria-describedby={lineFieldError(index,'cost_unit')?`line-error-${index}-cost_unit`:undefined}
                                   inputmode="decimal"
                                   bind:value={line.cost_unit}
                                   pattern="[0-9]+([,.][0-9]+)?"
-                                /><span class="field-help"
+                                />{@render lineError(index,'cost_unit')}<span class="field-help"
                                   >Interne Kalkulationsgrundlage je Einheit.
                                   Leer bedeutet unbekannt. Dies ist keine
                                   Verbrauchs- oder Lohnbuchung.</span
@@ -923,9 +948,11 @@
                                 >Rabatt · %</label
                               ><input
                                 id={`line-discount-${index}`}
+                                aria-invalid={!!lineFieldError(index,'discount_percent')}
+                                aria-describedby={lineFieldError(index,'discount_percent')?`line-error-${index}-discount_percent`:undefined}
                                 inputmode="decimal"
                                 bind:value={line.discount_percent}
-                              />
+                              />{@render lineError(index,'discount_percent')}
                             </div>
                           </div>
                         </details>

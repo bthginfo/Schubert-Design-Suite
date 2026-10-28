@@ -4,6 +4,7 @@
   import { command, request, permitted } from "#lib/client/api.ts";
   import type { AppData } from "#lib/client/types.ts";
   import type { AssistantSource } from "#lib/client/assistant.ts";
+  import { assistantUploadTarget } from "#lib/client/assistant.ts";
   import ReferencePicker from "./ReferencePicker.svelte";
   import Status from "./Status.svelte";
   import Icon from "./Icon.svelte";
@@ -24,6 +25,7 @@
     imageMode?: boolean;
     maxSources?: number;
   } = $props();
+  const uploadTarget = $derived(assistantUploadTarget(data));
   function add() {
     if (rows.length < maxSources)
       rows = [
@@ -110,7 +112,7 @@
       }
       signal.addEventListener("abort", abort, { once: true });
     });
-  async function prepareUploaded(row: AssistantSource) {
+  async function prepareUploaded(row: AssistantSource, resume = false) {
     const controller = new AbortController();
     uploads.set(row.key, controller);
     const signal = controller.signal,
@@ -140,6 +142,15 @@
           signal,
         );
         if (state.status === "available") break;
+        if (resume && state.can_retry) {
+          resume = false;
+          await command("documents.document.resume_processing", row.documentId, {
+            document_version_id: state.document_version_id,
+          }, state.version);
+          await pause(signal);
+          continue;
+        }
+        if (state.status === "blocked") row.stage = "blocked";
         if (["blocked", "unavailable"].includes(state.status))
           throw Error(
             state.message ||
@@ -177,7 +188,7 @@
       }
       row.stage = "ready";
     } catch (cause) {
-      row.stage = "paused";
+      if (row.stage !== "blocked") row.stage = "paused";
       row.error = signal.aborted
         ? "Die Vorbereitung ist pausiert. Bereits hochgeladene Dateien bleiben gespeichert."
         : cause instanceof Error
@@ -235,8 +246,8 @@
       try {
         const doc = await uploadOriginal(
           file,
-          undefined,
-          undefined,
+          uploadTarget?.entityType,
+          uploadTarget?.entityId,
           transfer.signal,
         );
         row.documentId = doc.id ?? doc.document?.id;
@@ -273,6 +284,7 @@
         ? "Wählen Sie ein vorhandenes Foto, einen früheren Bildentwurf oder eine bestimmte PDF-Seite aus den Dokumenten. Fotos und PDFs können Sie direkt hier im Chat hochladen."
         : "Fotos, Zeichnungen und PDFs direkt hinzufügen oder vorhandene Unterlagen auswählen. Hochgeladene Bildseiten werden nach der Dateiprüfung automatisch lesbar vorbereitet."}
     </p>
+    {#if uploadTarget}<p class="field-help">Neue Uploads werden bei „{uploadTarget.entityName}“ abgelegt und bleiben dort auch nach dem Schließen des Chats auffindbar.</p>{/if}
     {#each rows as row, index (row.key)}<fieldset
         class="assistant-source"
         disabled={disabled || row.working}
@@ -293,6 +305,7 @@
               preparing: "Bildseite wird lesbar vorbereitet …",
               ready: "Bereit für die KI",
               paused: "Vorbereitung pausiert",
+              blocked: "Datei gesperrt",
             }[row.stage ?? "paused"]}
           </p>{/if}
         {#if !row.uploaded}<div class="field">
@@ -376,7 +389,9 @@
                 <p class="field-help">
                   Vorbereitet: {row.preview.width} × {row.preview.height} Pixel ·
                   Quelle und Seite vor dem Senden prüfen.
-                </p>{:else if ["pending", "running", "retry"].includes(row.preview.status)}<p
+                </p>
+                <a class="btn small mt" href={imageUrl(row)!} target="_blank" rel="noopener" aria-label="Bildvorlage groß ansehen – öffnet einen neuen Tab">Bildvorlage groß ansehen</a>
+                <p class="field-help">Öffnet die geprüfte Bildseite in einem neuen Tab.</p>{:else if ["pending", "running", "retry"].includes(row.preview.status)}<p
                   class="field-help mt"
                 >
                   Die konkrete Seite wird verarbeitet. Bei einem neuen Upload
@@ -395,11 +410,11 @@
           class="text-link"
           onclick={() => uploads.get(row.key)?.abort()}
           >Vorbereitung pausieren</button
-        >{:else if row.uploaded && row.documentId && row.stage !== "ready"}<button
+        >{:else if row.uploaded && row.documentId && row.stage !== "ready" && row.stage !== "blocked"}<button
           type="button"
           class="btn small"
           {disabled}
-          onclick={() => prepareUploaded(row)}>Vorbereitung fortsetzen</button
+          onclick={() => prepareUploaded(row, true)}>Vorbereitung fortsetzen</button
         >{/if}{/each}
     {#if uploadError}<p class="field-error" role="alert">
         {uploadError}

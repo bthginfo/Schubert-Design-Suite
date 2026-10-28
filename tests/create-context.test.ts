@@ -21,8 +21,8 @@ describe('Contextual record creation proposals',()=>{
   expect(createContext(fields,lookups,new URLSearchParams(),dispatchCreateContext('2026-10-25',other))).not.toHaveProperty('employee_id');
   expect(dispatchCreateContext('2026-02-30',employee)).toEqual({});
  });
- it('rejects impossible dates and malformed local times even when proposed by an in-app callback',()=>{
-  expect(createContext(fields,lookups,new URLSearchParams({due_date:'2026-02-30'}),{starts_at:'2026-02-30T08:00',ends_at:'2026-10-25T25:00',status:'confirmed',title:'Ignore'})).toEqual({});
+ it('rejects impossible dates, malformed local times and status changes while retaining explicitly supplied editable source text',()=>{
+  expect(createContext(fields,lookups,new URLSearchParams({due_date:'2026-02-30',title:'Nicht aus der URL übernehmen'}),{starts_at:'2026-02-30T08:00',ends_at:'2026-10-25T25:00',status:'confirmed',title:'Übernommene Anfrage'})).toEqual({title:'Übernommene Anfrage'});
  });
  it('carries only explicit relationship UUIDs into a create link',()=>{
   const target=new URL(createHref('invoices',{order_id:order,customer_id:other,title:'Ignore',status:'issued',tenant_id:employee,supplier_id:'not-an-id'}),'https://test.invalid');
