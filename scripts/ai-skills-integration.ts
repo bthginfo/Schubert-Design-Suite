@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 import type { ActorContext } from "@schubert/contracts";
 import { withTenant, one, rows } from "@schubert/db";
 import { assistant } from "@schubert/ai";
+import { integrationConfiguration } from "@schubert/adapters";
+import { compactContext, routeModel } from "../packages/ai/src/model-routing.js";
+import { skillRegistryVersion } from "../packages/ai/src/skills.js";
 import {
   assistantInputSchema,
   prepareAssistantContext,
@@ -160,6 +163,23 @@ export async function aiSkillsIntegration(
   try {
     globalThis.fetch = syntheticFetch;
     process.env.OPENAI_API_KEY = "synthetic-offline-skills-transport";
+    await test("A previous response contract cannot shadow a new request; current answers still reuse their cache", async () => {
+      reset("direct");
+      const message = "TEST SKILLS legacy contract " + randomUUID();
+      const config = await integrationConfiguration(owner, "openai");
+      const context = compactContext(prepared.context);
+      const profile = routeModel(config, "standard", context);
+      const legacyInput = {message,context,references:[],promptVersion:profile.promptVersion,skillRegistryVersion,connectionVersionId:config.connectionVersionId??null};
+      const legacyHash = createHash("sha256").update(JSON.stringify({capability:"assistant_reasoning",model:profile.model,input:legacyInput})).digest("hex");
+      await withTenant(owner,db=>db.query("INSERT INTO ai_runs(tenant_id,legal_entity_id,actor_id,capability,model_id,request_hash,status,result,cost_actual) VALUES($1,$2,$3,'assistant_reasoning',$4,$5,'completed',$6,'0')",[owner.tenantId,owner.legalEntityId,owner.actorId,profile.model,legacyHash,JSON.stringify({text:"LEGACY RESPONSE",proposal:null})]));
+      const fresh = await assistant(owner,message,prepared.context);
+      assert.equal(requests.length,1);
+      assert.notEqual(fresh.text,"LEGACY RESPONSE");
+      assert.notEqual((await latest()).request_hash,legacyHash);
+      const cached = await assistant(owner,message,prepared.context);
+      assert.equal(cached.cached,true);
+      assert.equal(requests.length,1);
+    });
     await test("Skill load uses the real OpenAI SDK, unchanged authorized draft and summed PostgreSQL billing", async () => {
       reset("load");
       const message = "TEST SKILLS " + randomUUID(),

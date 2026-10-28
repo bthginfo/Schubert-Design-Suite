@@ -1,5 +1,5 @@
 import{describe,it,expect}from'vitest';
-import{createDesign,applyOperations,calculateBOM,contourBounds,validateDesign}from'@schubert/geometry';
+import{createDesign,applyOperations,calculateBOM,contourBounds,validateDesign,projectDesign}from'@schubert/geometry';
 import{planningDraftOperations,bindPlanningDraft,planningDraftSchema,initialMemorialDraftFormat}from'../packages/ai/src/planning-draft.js';
 import{visualizationInputSchema,visualizationQuote}from'../packages/application/src/ai-visualizations.js';
 import{randomUUID}from'node:crypto';
@@ -10,7 +10,11 @@ describe('Companion draft planning',()=>{
   const after=applyOperations(snapshot,operations),stones=after.elements.filter(e=>e.kind==='stone_piece');
   expect(stones).toHaveLength(2);expect(snapshot.elements).toEqual([]);
   expect(contourBounds(stones[1].finishedContour)).toMatchObject({width:'600',height:'900'});
-  expect(stones[1].transform.position).toEqual({xMm:'50',yMm:'-30',zMm:'140'});
+  expect(stones[1].transform.position).toEqual({xMm:'50',yMm:'30',zMm:'140'});
+  expect(projectDesign({...after,elements:stones},'front').bounds).toMatchObject({width:700,height:1040});
+  expect(projectDesign({...after,elements:stones},'side').bounds).toMatchObject({minX:0,maxX:180,width:180,height:1040});
+  const stoneSide=projectDesign({...after,elements:[stones[1]]},'side').bounds;
+  expect(stoneSide.minX).toBe(30);expect(stoneSide.maxX).toBe(150);
   expect(after.measurements[stones[0].thicknessMeasureId].valueMm).toBe('180');expect(after.measurements[stones[1].thicknessMeasureId].valueMm).toBe('120');
   expect(after.elements.find(e=>e.kind==='inscription')).toMatchObject({exactText,alignment:'center',surfaceElementId:stones[1].id,fontVariantVersionId:'unassigned:font'});
   expect(after.elements.find(e=>e.kind==='technical_note')).toMatchObject({text:'Materialwunsch (ungeprüft): grauer Granit'});

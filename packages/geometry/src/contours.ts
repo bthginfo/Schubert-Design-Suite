@@ -56,8 +56,16 @@ export function sampleRing(edges: PathEdge[], chordErrorMm = 0.05): Point2[] {
     const sweep = arcSweep(edge), start = Math.atan2(Number(edge.from.yMm) - Number(edge.center.yMm), Number(edge.from.xMm) - Number(edge.center.xMm));
     const step = r > chordErrorMm ? 2 * Math.acos(Math.max(-1, 1 - chordErrorMm / r)) : Math.PI / 8;
     const count = Math.min(65536, Math.max(2, Math.ceil(Math.abs(sweep) / step)));
-    for (let i = 1; i < count; i++) {
-      const a = start + sweep * i / count;
+    const progress = Array.from({length:count-1},(_,i)=>(i+1)/count);
+    // Keep exact axis extrema: otherwise an odd segment count shortens a
+    // round arch in the projected overall dimensions and the exported PDF.
+    for (const angle of [0,Math.PI/2,Math.PI,Math.PI*1.5]) {
+      const t=normalized(Math.sign(sweep)*(angle-start))/Math.abs(sweep);
+      if(t>1e-9&&t<1-1e-9&&!progress.some(value=>Math.abs(value-t)<1e-9))progress.push(t);
+    }
+    progress.sort((a,b)=>a-b);
+    for (const t of progress) {
+      const a = start + sweep * t;
       result.push({ xMm: mm(Number(edge.center.xMm) + r * Math.cos(a)), yMm: mm(Number(edge.center.yMm) + r * Math.sin(a)) });
     }
   }

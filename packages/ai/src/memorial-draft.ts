@@ -35,7 +35,7 @@ export function memorialAssemblyOperations(snapshot:DesignSnapshot,draft:z.infer
  const stoneId=randomUUID();
  stone(stoneId,draft.label,draft.widthMm,draft.heightMm,draft.thicknessMm,{
   xMm:draft.base?mm((Number(draft.base.widthMm)-Number(draft.widthMm))/2):'0',
-  yMm:draft.base?mm((Number(draft.thicknessMm)-Number(draft.base.depthMm))/2):'0',zMm:draft.base?.heightMm??'0'
+  yMm:draft.base?mm((Number(draft.base.depthMm)-Number(draft.thicknessMm))/2):'0',zMm:draft.base?.heightMm??'0'
  },memorialContour(draft.shape,draft.widthMm,draft.heightMm));
  if(draft.inscription.trim()){
   const id=randomUUID();

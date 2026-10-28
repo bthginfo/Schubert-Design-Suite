@@ -1,7 +1,19 @@
 import{describe,it,expect}from'vitest';
 import{memorialShapes,memorialContour,roundContourCorner,contourArcRadius}from'./presets.js';
-import{rectangleContour,validateContour,contourAreaMm2,contourBounds}from'./contours.js';
+import{rectangleContour,validateContour,contourAreaMm2,contourBounds,sampleRing}from'./contours.js';
 describe('Editable memorial outlines and corner radii',()=>{
+ it('includes exact arc extrema in both sampling directions without extending a partial arc',()=>{
+  const arc=memorialContour('round_arch','600','900').outer[2];
+  if(arc.kind!=='circular_arc')throw Error('Expected an arc');
+  for(const edge of [arc,{...arc,from:arc.to,to:arc.from,clockwise:true}]){
+   const points=sampleRing([edge]);expect(points).toContainEqual({xMm:'300',yMm:'900'});
+   expect(Math.min(...points.map(p=>Number(p.xMm)))).toBeGreaterThanOrEqual(0);
+   expect(Math.max(...points.map(p=>Number(p.xMm)))).toBeLessThanOrEqual(600);
+   expect(Math.min(...points.map(p=>Number(p.yMm)))).toBeGreaterThanOrEqual(600);
+  }
+  const quarter={...arc,to:{xMm:'300',yMm:'900'}};
+  expect(sampleRing([quarter]).every(p=>Number(p.xMm)>=300&&Number(p.yMm)>=600)).toBe(true);
+ });
  it.each(memorialShapes)('$label has a closed, valid contour and retains the chosen dimensions',({id})=>{
   const contour=memorialContour(id,'800',id==='circle'?'800':'1200');expect(validateContour(contour)).toEqual([]);const bounds=contourBounds(contour);expect(Number(bounds.maxX)-Number(bounds.minX)).toBeCloseTo(800,1);expect(Number(bounds.maxY)-Number(bounds.minY)).toBeCloseTo(id==='circle'?800:1200,1);expect(Number(contourAreaMm2(contour))).toBeGreaterThan(0);
  });
