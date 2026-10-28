@@ -23,11 +23,15 @@ Im Raum- oder Grabmalstudio beginnen Sie mit einer Variante. Geben Sie Einheiten
 
 Vier Schritte führen durch beide Studios: **Stein & Maße** beziehungsweise **Raum & Aufmaß**, danach **Inschrift & Details** beziehungsweise **Bauteile & Material**, anschließend **Prüfen** und **Präsentieren**. Sie können jederzeit zwischen den Schritten wechseln. Die Aktion neben dem Hinweis passt zum aktuellen Schritt. Bei einem leeren Plan bleibt die Zeichenfläche frei; nach dem ersten Bauteil erscheinen die passenden Eigenschaften.
 
+In der **3D-Raumansicht** schalten Sie die **Wände** direkt oben rechts im Bild auf **Ein** oder **Aus**. So werden auch verdeckte Bauteile sichtbar. Die Anzeige gilt für die aktuelle Ansicht; gespeicherte Geometrie, Mengen und Planungsunterlagen bleiben vollständig.
+
 Beim rechteckigen Raum sind **lichte Innenmaße** voreingestellt. Geben Sie dazu die tatsächliche Wandstärke ohne Belag ein. Alternativ können Sie ausdrücklich **Wandachsmaße** wählen. Die Zeichnung kennzeichnet Maße zwischen den Wandmitten mit „Achse“. Raumflächen und Bodenschichten in der Stückliste beziehen sich ebenfalls auf Wandachsen; eine konkrete Belagsmenge planen Sie als eigene Belagsfläche mit den bestätigten Innenmaßen. Am Stein stehen Außenmaße und Materialstärke im Vordergrund. Position, Drehung und Rohmaße öffnen Sie nur bei Bedarf.
 
 Benennen Sie wichtige Revisionen. Varianten vergleichen unabhängige Entwürfe. Vorschau, Stückliste und technische Unterlagen beziehen sich auf eine konkrete Revision. Für Herstellerprodukte werden genaue Produktstände verwendet. Reine Bildreferenzen besitzen keine zugesicherte Herstellergenauigkeit. Fehlende Konturen, Bohrdaten, Rechte oder Qualifikationen bleiben bei einer Fertigungsfreigabe sichtbar.
 
 Die KI kann erklären und einen Änderungsvorschlag vorbereiten. Prüfen Sie Vorschau, Zielobjekt und Planstand vor der Übernahme. Für ein KI-Konzeptbild wählen Sie eigene freigegebene Referenzen, bestätigen Nutzungsgrundlage und Kostenobergrenze und starten bewusst. Ein Konzeptbild ist sichtbar gekennzeichnet. Bestehende Inschriften benötigen den gesonderten geschützten Compositing-Ablauf.
+
+Unter **Präsentieren → Fotorealistisches Bild erstellen** wählen Sie Bildformat und Detailqualität. Fertige Bilder bleiben bei ihrem Planungsprojekt gespeichert. **Inschrift mit dem Plan abgleichen** zeigt den Wortlaut aus genau dem Planstand, auf dem das Bild basiert. Prüfen Sie vor der Weitergabe Wortlaut und dargestellte Bauteile; ein KI-Konzept kann vom Plan abweichen. Das Bild lässt sich herunterladen oder mit einer neuen Bildanweisung weiterbearbeiten.
 
 **KI für diesen Schritt** bereitet eine passende Frage vor. Erst **Senden** startet die Anfrage. Der Begleiter nennt den aktuellen Schritt und die Auswahl. Offene Studioänderungen werden vorher gespeichert; bei einem Speicherfehler oder Versionskonflikt startet keine KI-Anfrage. Der Server prüft den aktuellen Planstand erneut. Beim Prüfen und Präsentieren kann die KI erklären, aber keine Planänderung vorbereiten. Gespräche werden je Projekt, Variante und Schritt getrennt gehalten.
 

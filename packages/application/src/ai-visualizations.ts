@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {withTenant,one,update} from '@schubert/db';
 import {assertVersion,requireRule,dec} from '@schubert/domain';
 import {integrationConfiguration,privateBytes,contentHash,callWorker} from '@schubert/adapters';
-import {planningVisualizationContext,imageQualitySchema,imageSizeSchema,imageIntentSchema,visualizationInstructions} from '@schubert/ai';
+import {planningVisualizationContext,imageQualitySchema,imageSizeSchema,imageIntentSchema,visualizationInstructions,visualizationPromptVersion} from '@schubert/ai';
 import {createPlanningPdf} from '@schubert/documents';
 import type {ActorContext} from '@schubert/contracts';
 import {register,getRecord,hash,assertOrderScope} from './core.js';
@@ -44,7 +44,7 @@ export function visualizationQuote(profile:any,p:z.infer<typeof visualizationInp
  const rates={text:profile.imageTextCostPerMillion??'5',image:profile.imageInputCostPerMillion??'8',output:profile.imageOutputCostPerMillion??'30'};
  const estimated=dec(new TextEncoder().encode(p.prompt).length+16000).mul(rates.text).add(dec(references*maxInput).mul(rates.image)).add(dec(maxOutput).mul(rates.output)).div(1000000).toDecimalPlaces(6,0).toString(),limit=profile.imageMaxRequestCost??'0.5';
  requireRule(dec(estimated).lte(limit),'IMAGE_REQUEST_LIMIT','Die vorsichtige Kostenreservierung überschreitet das eingestellte Bildlimit. Weniger Vorlagen auswählen oder das Bildprofil in den Einstellungen prüfen.');
- return{estimatedMaxCost:estimated,maximum:limit,currency:'USD',rates,fallbackRates:{text:'5',image:'8',output:'30'},maxOutputTokens:maxOutput,maxInputTokensPerReference:maxInput,preferredModel:profile.imageModel??'gpt-image-2.5-flare',fallbackModel:profile.imageFallbackModel??'gpt-image-2',size:p.size,quality:p.quality,planReference:p.intent==='plan',connectionVersionId:profile.connectionVersionId??null};
+ return{estimatedMaxCost:estimated,maximum:limit,currency:'USD',rates,fallbackRates:{text:'5',image:'8',output:'30'},maxOutputTokens:maxOutput,maxInputTokensPerReference:maxInput,preferredModel:profile.imageModel??'gpt-image-2.5-flare',fallbackModel:profile.imageFallbackModel??'gpt-image-2',size:p.size,quality:p.quality,planReference:p.intent==='plan',promptVersion:visualizationPromptVersion,connectionVersionId:profile.connectionVersionId??null};
 }
 register('planning.visualization.quote','planning',async r=>{
  const p=visualizationInputSchema.parse(r.payload),basis=await imageBasis(r.db,r.ctx,p),profile=await integrationConfiguration(r.ctx,'openai'),pricing=visualizationQuote(profile,p);

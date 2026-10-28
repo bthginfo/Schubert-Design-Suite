@@ -4,7 +4,7 @@ import {assistantCommandAllowed} from '@schubert/contracts';
 export {planningDraftOperations} from './planning-draft.js';
 import {planningDraftOperations,planningDraftInstructions,planningDraftFormat,initialMemorialDraftFormat,planningDraftSchema,bindPlanningDraft} from './planning-draft.js';
 import {imageParameters} from './image-profile.js';
-export {imageQualitySchema,imageSizeSchema,imageIntentSchema,visualizationInstructions} from './image-profile.js';
+export {imageQualitySchema,imageSizeSchema,imageIntentSchema,visualizationInstructions,visualizationPromptVersion} from './image-profile.js';
 import {clarificationControls,assistantClarificationSchema,clarificationOutputFormat,designOperationSchema,planningStepSchema,planningOperationAllowed} from '@schubert/contracts';
 import OpenAI,{toFile} from 'openai';
 import {z} from 'zod';
