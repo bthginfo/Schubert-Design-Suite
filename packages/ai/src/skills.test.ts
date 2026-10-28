@@ -12,6 +12,7 @@ import {
 import {
   respondWithOptionalSkills,
   estimatedSkillResponseCost,
+  affordableSkillResponse,
 } from "./skill-response.js";
 import { aggregateTextResponses, normalizeUsage, usageCost } from "./usage.js";
 import { routeModel } from "./model-routing.js";
@@ -382,6 +383,31 @@ describe("Reviewed, optional Schubert DE skills", () => {
     expect(skillTool(setup.skills).parameters).toMatchObject({
       additionalProperties: false,
     });
+  });
+
+  it("completes an affordable task in one call when optional guidance would exceed the existing limit", async () => {
+    const setup = options({...memorial, sources: [source]});
+    const profile = routeModel({}, 'standard', memorial);
+    const schema = {type: 'object'};
+    const oneCall = estimatedSkillResponseCost(profile, setup.parameters.input, 1, [], schema);
+    const twoCalls = estimatedSkillResponseCost(profile, setup.parameters.input, 1, setup.skills, schema);
+    const maxRequestCost = String((oneCall.cost + twoCalls.cost) / 2);
+    const plan = affordableSkillResponse({...profile, maxRequestCost}, setup.parameters.input, 1, setup.skills, schema);
+    const create = vi.fn().mockResolvedValue(final());
+    const result = await respondWithOptionalSkills({...setup, skills: plan.skills, create});
+    expect(plan.cost).toBeLessThan(Number(maxRequestCost));
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create.mock.calls[0][0].tools).toEqual([]);
+    expect(create.mock.calls[0][0].model).toBe(profile.model);
+    expect(create.mock.calls[0][0].input).toBe(setup.parameters.input);
+    expect(result.skillsUsed).toEqual([]);
+  });
+
+  it("keeps model-selected guidance when both calls fit and explains a genuine cost block", () => {
+    const setup = options(), profile = routeModel({}, 'standard', memorial);
+    const plan = affordableSkillResponse(profile, setup.parameters.input, 1, setup.skills, {type:'object'});
+    expect(plan.skills).toEqual(setup.skills);
+    expect(() => affordableSkillResponse({...profile, maxRequestCost:'0.000001'}, setup.parameters.input, 1, setup.skills, {type:'object'})).toThrow(/0,000001 USD.*kein KI-Aufruf gestartet.*Eingaben bleiben erhalten/);
   });
 
   it("adds paid usage from both responses, including sparse cache details, and retains unknown usage", () => {

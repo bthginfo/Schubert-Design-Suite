@@ -17,6 +17,8 @@ Melden Sie sich mit Ihrem persönlichen Zugang an. Die Startseite zeigt Aufgaben
 
 ## Planung und Ausführung
 
+Büro und Mitarbeiter können in beiden Studios Entwürfe anlegen und bearbeiten. Auftragsbezogene Planungen bleiben an den berechtigten Auftrag gebunden. Die technische Fertigungsfreigabe benötigt weiterhin die gesonderte Fähigkeit und dokumentierte Qualifikation.
+
 Im Raum- oder Grabmalstudio beginnen Sie mit einer Variante. Geben Sie Einheiten und Herkunft von Maßen an. Ein Wunschmaß ersetzt kein bestätigtes Aufmaß. Wählen Sie ein Element im Plan oder in der Objektliste; die Eigenschaften enthalten die passenden Zahlenfelder. Rückgängig und Wiederholen speichern nachvollziehbare neue Stände.
 
 Vier Schritte führen durch beide Studios: **Stein & Maße** beziehungsweise **Raum & Aufmaß**, danach **Inschrift & Details** beziehungsweise **Bauteile & Material**, anschließend **Prüfen** und **Präsentieren**. Sie können jederzeit zwischen den Schritten wechseln. Die Aktion neben dem Hinweis passt zum aktuellen Schritt. Bei einem leeren Plan bleibt die Zeichenfläche frei; nach dem ersten Bauteil erscheinen die passenden Eigenschaften.

@@ -2,7 +2,7 @@ import type {
   Response,
   ResponseCreateParamsNonStreaming,
 } from "openai/resources/responses/responses";
-import { DomainError } from "@schubert/domain";
+import { dec, DomainError } from "@schubert/domain";
 import { estimatedTextCost } from "./model-routing.js";
 import {
   loadedSkillInstructions,
@@ -106,4 +106,25 @@ export function estimatedSkillResponseCost(
     inputTokenCeiling: first.inputTokenCeiling + final.inputTokenCeiling,
     cost: Math.ceil((first.cost + final.cost) * 1000000) / 1000000,
   };
+}
+
+/** Optional guidance must not make an otherwise affordable task unavailable. */
+export function affordableSkillResponse(
+  profile: Parameters<typeof estimatedTextCost>[0] & {maxRequestCost: string},
+  input: unknown,
+  imageCount: number,
+  skills: readonly AssistantSkill[],
+  responseSchema: unknown,
+) {
+  let selected = skills;
+  let estimate = estimatedSkillResponseCost(profile, input, imageCount, selected, responseSchema);
+  if (selected.length && dec(estimate.cost).gt(profile.maxRequestCost)) {
+    selected = [];
+    estimate = estimatedSkillResponseCost(profile, input, imageCount, selected, responseSchema);
+  }
+  if (dec(estimate.cost).gt(profile.maxRequestCost)) {
+    const dollars = (value: string | number) => new Intl.NumberFormat('de-DE', {maximumFractionDigits: 6}).format(Number(value)) + ' USD';
+    throw new DomainError('AI_REQUEST_LIMIT', `Diese Anfrage benötigt eine Kostenreservierung von ${dollars(estimate.cost)}. Freigegeben sind ${dollars(profile.maxRequestCost)} je Anfrage. Es wurde kein KI-Aufruf gestartet. Wählen Sie weniger Unterlagen oder bitten Sie die Administration, das Anfragelimit zu prüfen. Ihre Eingaben bleiben erhalten.`);
+  }
+  return {...estimate, skills: selected};
 }

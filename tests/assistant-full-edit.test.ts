@@ -13,6 +13,7 @@ import {
 import {
   normalizePlanningEdits,
   initialPlanningOperations,
+  planningEditInstructions,
 } from "../packages/ai/src/planning-edits.js";
 import { planningDraftOperations } from "../packages/ai/src/planning-draft.js";
 import { rolePermissions } from "@schubert/domain";
@@ -47,6 +48,20 @@ const unlocked = {
   selectionOnly: false,
 };
 describe("Complete editable AI drafts", () => {
+  it.each(['base','plinth','pedestal','Sockel'])('keeps the memorial purpose of a %s without inventing a new manufacturing category', purpose => {
+    const snapshot=createDesign('memorial');
+    const operations=normalizePlanningEdits({snapshot},[{type:'add_element',element:{id:'new:base',kind:'stone_piece',label:'Sockel',purpose,widthMm:'700',heightMm:'140',thicknessMm:'180'}}]);
+    const saved=applyOperations(snapshot,operations);
+    expect(saved.elements.find(e=>e.kind==='stone_piece')).toMatchObject({label:'Sockel',purpose:'memorial'});
+    expect(planningEditInstructions).toContain('originUV hat exakt {uMm:');
+    expect(planningEditInstructions).toContain('notoserif|cinzel|lora|cormorantgaramond|greatvibes|montserrat');
+  });
+
+  it('preserves an untouched draft and offers plain German recovery for unsupported model fields', () => {
+    const snapshot=createDesign('memorial'),before=structuredClone(snapshot);
+    expect(()=>normalizePlanningEdits({snapshot},[{type:'add_element',element:{id:'new:base',kind:'stone_piece',label:'Sockel',purpose:'not-a-purpose',widthMm:'700',heightMm:'140',thicknessMm:'180'}}])).toThrow(/Sockel.*Verwendungszweck.*Plan bleibt unverändert/);
+    expect(snapshot).toEqual(before);
+  });
   it("replaces a placeholder literally with the requested birth and death symbols in every step", () => {
     const { snapshot, text } = fixture(),
       exactText = "Anna Müller\n* 1948\n† 2025";

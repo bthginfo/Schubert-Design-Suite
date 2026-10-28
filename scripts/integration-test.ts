@@ -1,4 +1,5 @@
 import {usabilityDocumentIntegration} from './usability-document-integration.js';
+import {planningRoleIntegration} from './planning-role-integration.js';
 import {backofficeUsabilityIntegration} from './backoffice-usability-integration.js';
 import {assistantFullEditIntegration} from './assistant-full-edit-integration.js';
 import {guidedWorkflowIntegration} from './guided-workflow-integration.js';
@@ -112,6 +113,7 @@ await test('Personal onboarding is persisted, optimistic and cannot target anoth
  assert.equal(studio.summary.onboarding?.id,result.id);assert.equal(studio.summary.trainingMode,entity.training_mode);
 });
 await usabilityDocumentIntegration(actor,test);
+await planningRoleIntegration(actor,test);
 await backofficeUsabilityIntegration(actor,test);
 await feedbackIntegration(actor,test);
 await appearanceIntegration(actor,test);

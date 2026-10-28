@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import {
   designOperationSchema,
   designElementSchema,
+  stonePieceElementSchema,
+  inscriptionElementSchema,
   planningOperationAllowed,
   type DesignSnapshot,
   type DesignOperation,
@@ -249,6 +251,7 @@ export function normalizePlanningEdits(
         delete e.type;
         delete e.measurements;
       } else if (e.kind === "stone_piece") {
+        if (current.kind === 'memorial' && typeof e.purpose === 'string' && ['base','plinth','pedestal','sockel','stele','headstone','gravestone'].includes(e.purpose.trim().toLowerCase())) e.purpose = 'memorial';
         if (!e.finishedContour) {
           requireRule(
             e.widthMm && e.heightMm,
@@ -354,13 +357,12 @@ export function normalizePlanningEdits(
     } catch (error) {
       throw new DomainError(
         "AI_EDIT_FIELDS",
-        "Die vorgeschlagene Änderung enthält unvollständige Bauteilangaben. " +
-          (error instanceof z.ZodError
-            ? error.issues
-                .slice(0, 3)
-                .map((issue) => issue.path.join(".") + ": " + issue.message)
-                .join("; ")
-            : ""),
+        `Die KI konnte die Angaben für „${raw.element?.label ?? 'dieses Bauteil'}“ noch nicht in einen bearbeitbaren Entwurf übersetzen. ` +
+          (error instanceof z.ZodError ? 'Bitte prüfen: ' + [...new Set(error.issues.slice(0,3).map(issue=>{
+            const fields:Record<string,string>={purpose:'Verwendungszweck',previewFontKey:'Vorschauschrift',originUV:'Position der Inschrift',transform:'Lage des Bauteils',finishedContour:'Steinform',thicknessMeasureId:'Materialstärke',exactText:'Wortlaut der Inschrift'};
+            return fields[String(issue.path[1])] ?? 'Bauteilangaben';
+          }))].join(', ') + '. ' : '') +
+          'Der Plan bleibt unverändert. Ihre Nachricht und Unterlagen bleiben erhalten. Präzisieren Sie das betroffene Bauteil oder ergänzen Sie es über „Hinzufügen“.',
         422,
       );
     }
@@ -556,6 +558,7 @@ const elementFields = designElementSchema.options.map(
       .join(", "),
 );
 export const planningEditInstructions =
+  'Verbindliche Werte und Koordinaten: stone_piece.purpose ist einer von '+stonePieceElementSchema.shape.purpose.options.join('|')+'. Grabstein, Stele und Sockel haben alle purpose:"memorial"; die Bezeichnung "Sockel" ist label, keine neue Kategorie. inscription.previewFontKey ist einer von '+inscriptionElementSchema.shape.previewFontKey.unwrap().options.join('|')+'. Vorschau-Schrift weglassen, wenn keine konkrete verlangt wurde; niemals erfundene Schriftkennungen oder "serif" verwenden. inscription.originUV hat exakt {uMm:"300",vMm:"600"}, lokale waagerechte/senkrechte Position auf dem Stein in mm. Keine Felder x/y/u/v. Ohne Positionswunsch originUV weglassen; der Server platziert den Text mittig. transform ist {position:{xMm:"0",yMm:"0",zMm:"0"},rotationDeg:{x:"90",y:"0",z:"0"}}. Konturen bestehen aus outer und holes; eine Linie ist {kind:"line",from:{xMm:"0",yMm:"0"},to:{xMm:"600",yMm:"0"}}, ein Bogen {kind:"circular_arc",from:{xMm:"600",yMm:"600"},to:{xMm:"0",yMm:"600"},center:{xMm:"300",yMm:"600"},clockwise:false}. Ein Rundbogen liegt oberhalb seiner waagerechten Kämpferlinie; Radius und Bauteilgesamthöhe aus den angegebenen Maßen ableiten. Alle Koordinaten, Winkel und Maße sind Dezimalstrings. ' +
   'Du kannst den gesamten berechtigten Entwurf bearbeiten: Elemente hinzufügen, ändern, entfernen, duplizieren, Material/Form/Text/Schrift/Kanten/Ausschnitte bearbeiten, Räume/Wände/Öffnungen verändern. Der aktuelle Studioschritt ist Orientierung, keine Bearbeitungssperre. Setze ausdrückliche Gestaltungswünsche direkt als konkreten Vorschlag um. Vorhandene IDs aus dem Kontext verwenden. Neue Elemente und Maße mit lokalen Kennungen new:... anlegen; der Server vergibt eigene IDs. Neue Maße sind ungeprüfte Entwurfsziele, keine Bestandsbestätigung. Für neue Inschrift genügt {type:"add_inscription",surfaceElementId,exactText,label?,heightMm?,lineGapMm?,previewFontKey?,previewColor?,originUV?}; vorhandene Gestaltung wird übernommen, ansonsten editierbare Entwurfsdarstellung. Nicht nach optionaler Schriftgröße/Farbe fragen, wenn eine vorhandene Gestaltung oder ein sinnvoller Entwurf möglich ist. Für neue Steinplatte add_element mit element:{kind:"stone_piece",id:"new:stein",widthMm,heightMm,thicknessMm?,purpose?,...}; alternativ vollständige Kontur. Für eine Skizzenvorlage add_element mit element:{kind:"plan_reference",id:"new:vorlage",sourceDocumentId,label?}; Original/Hash bindet der Server. Maße in measurements können kompakt {valueMm:"40"} sein. Bestehende Inschrift bei gewünschter Gestaltung als neue geplante Fassung weiterbearbeiten; historische Originalrevision bleibt erhalten. set_inscription_text für den genauen neuen Wortlaut; Geburtszeichen * und Sterbezeichen † sind die üblichen gewünschten Zeichen, keine Rückfrage dazu. Für gleiche Eigenschaft an mehreren Elementen {type:"apply_to_elements",elementIds:[...IDs] oder "all_inscriptions",operation:{type:...,weitereFelder...}}. Zulässige Operationen mit Feldern: ' +
   operationFields.join("; ") +
   ". Bauteilfelder (Basisfelder ergänzt der Server): " +

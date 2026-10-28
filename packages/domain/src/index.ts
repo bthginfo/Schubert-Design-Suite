@@ -23,9 +23,9 @@ export function durationSeconds(start:string|Date,end:string|Date){const duratio
 export function laborCost(seconds:number,rate:string){return money(dec(seconds).div(3600).mul(rate));}
 export const rolePermissions:Record<string,string[]>={
  Owner:['crm','sales','orders','billing','billing.invoice.issue','finance','purchasing','catalog','inventory','planning','dispatch','time','time.approve','documents','imports','tasks','reports','portal.publish','admin','audit','system','finance.bank.manage'],
- Office:['reports.read','crm','sales','orders','billing','purchasing','catalog','documents','tasks','time','portal.publish'],
+ Office:['reports.read','crm','sales','orders','billing','purchasing','catalog','planning','documents','tasks','time','portal.publish'],
  Finance:['catalog.read','crm','billing','billing.invoice.issue','finance','purchasing','documents','reports','time','tasks'],
- Planner:['reports.read','orders','planning','catalog','documents','time','tasks'],Dispatcher:['reports.read','documents','orders','dispatch','time','time.approve','tasks'],Workshop:['documents','orders','inventory','time','tasks'],Employee:['documents','orders','time','tasks'],HR:['hr','time','time.approve','tasks'],TaxAdvisor:['finance.read','reports','documents','time'],TechAdmin:['system','admin.technical'],Portal:[]};
+ Planner:['reports.read','orders','planning','catalog','documents','time','tasks'],Dispatcher:['reports.read','documents','orders','dispatch','time','time.approve','tasks'],Workshop:['documents','orders','inventory','time','tasks'],Employee:['documents','orders','planning','time','tasks'],HR:['hr','time','time.approve','tasks'],TaxAdvisor:['finance.read','reports','documents','time'],TechAdmin:['system','admin.technical'],Portal:[]};
 rolePermissions.SuperAdmin=[...new Set([...rolePermissions.Owner,'hr','admin.technical','admin.integrations','manufacturer_assets'])];
 for(const [role,permissions] of Object.entries(rolePermissions))if(role!=='Portal')permissions.push('account.self');
 for(const permissions of Object.values(rolePermissions))if(permissions.includes('documents')||permissions.includes('hr'))permissions.push('documents.upload');
