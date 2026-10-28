@@ -43,7 +43,7 @@ Bestätigte lokale Prüfungen:
 
 ## Ergebnis auf Produktion
 
-Finaler Anwendungscode: `363b6a5aa4dc51d2227c3f6560047b7eb30905c6`, Deployment `dpl_946yWvoKSbB9G44hjZtLK4L2t8JL`, Zustand READY und öffentliche Produktionsdomain bestätigt. Beide Rollen besitzen im Live-Test leere persönliche Zusatzrechtslisten; das Planungsrecht kommt aus der Rolle.
+Anwendungscode beim Abschluss der Plananlage: `363b6a5aa4dc51d2227c3f6560047b7eb30905c6`, Deployment `dpl_946yWvoKSbB9G44hjZtLK4L2t8JL`, Zustand READY und öffentliche Produktionsdomain bestätigt. Beide Rollen besitzen im Live-Test leere persönliche Zusatzrechtslisten; das Planungsrecht kommt aus der Rolle. Der ergänzende Kundenbild- und Wandschalter-Nachtest folgt unten.
 
 | Rolle | Gespeicherter Plan | Ergebnis / PDF |
 | --- | --- | --- |
@@ -57,3 +57,35 @@ Für den letzten Grabstein-Nachtest wurde jeweils die vorherige Teständerung ü
 Alle vier authentifizierten PDF-Exporte antworteten mit HTTP 200. Die Grabmal-PDFs haben sechs, die Bad-PDFs fünf Seiten. Front, Seite, Inschriftenwortlaut und Raumgrundrisse wurden geprüft; die finalen Grabmal-PDFs nennen 1040 mm Gesamthöhe und 180 mm Gesamttiefe. Die Texte und Maßangaben sind lesbar. Schrift- und Materialfreigaben bleiben ausdrücklich offen.
 
 Die gezielte Prüfung der Fehler-/Fatal-Logs des finalen Anwendungsdeployments fand im Nachtestfenster keine Einträge. Das ist eine begrenzte Logprüfung, keine Aussage über sämtliche historischen oder fachlichen Fehler. Synthetische Testpläne und gekennzeichnete Testzugänge bleiben zur Nachvollziehbarkeit vorhanden.
+
+## Ergänzung: Kundenbilder und 3D-Wände
+
+Auf ergänzenden Benutzerwunsch wurden die echte fotorealistische Bildgenerierung mit dem Mitarbeiterzugang und ein direkt sichtbarer Wandschalter getestet. Finaler Anwendungscode dieser Ergänzung: `b2648a095011ff9c9232af439cc54d913b5995ae`, Deployment `dpl_2BwAuaq67h9X4dGBYSDkEy4AJa8q`, READY, Produktionsalias und im Browser geladener Stand bestätigt.
+
+| ID | Befund / Wunsch | Änderung und Nachtest |
+| --- | --- | --- |
+| B01 | Das erste Grabmalbild wirkt fotografisch gut, ergänzt aber eine im Plan nicht vorhandene Einfassung. Die Standardvorgabe nennt Einfassung und Bepflanzung unabhängig vom tatsächlichen Entwurf. | Neutrale Bildvorgaben verwenden die geplanten Bauteile; Ergänzungen benötigen Planbezug oder einen ausdrücklichen Gestaltungswunsch. Die Vorgabenversion gehört zum Auftragsschlüssel. Ein erneuter echter Aufruf mit klarer Anweisung liefert nur Rundbogenstein und Sockel, ohne zusätzliche Einfassung. |
+| B02 | Zum Abgleich einer generierten Inschrift fehlt im Bildstudio der gebundene Originalwortlaut. | **Inschrift mit dem Plan abgleichen** zeigt den Text aus der tatsächlichen Bildgrundlage, auch unabhängig vom aktuell bearbeiteten Planstand. Live geöffnet und mit der dreizeiligen Testinschrift abgeglichen. Das ist eine Vergleichshilfe, keine automatische Bildfreigabe. |
+| B03 | Gewünscht ist ein unmittelbar erreichbarer Schalter für Wände in der 3D-Raumansicht; bislang nur unter „Darstellung“. | **Wände · Ein/Aus** sitzt direkt oben rechts in der 3D-Raumansicht. Desktop und 390 × 844 px geprüft, einschließlich Tastaturumschaltung. Wände verschwinden sichtbar, Boden und Platte bleiben erhalten. Der Schalter ist rund 134 × 44 px groß, die Mobilansicht hat keinen horizontalen Überlauf. „Speichern“ bleibt deaktiviert und Revision 5 unverändert. |
+
+### Echte Bildaufträge und Qualitätsbewertung
+
+Die Aufträge wurden über **Präsentieren → Fotorealistisches Bild erstellen**, mit eigener synthetischer Planung, ausdrücklicher Kostenbestätigung, **hoher Detailqualität** und **1536 × 1024 px** ausgelöst. Alle drei liefen mit `gpt-image-2.5-flare` erfolgreich durch die tatsächliche Anbieter-, Worker- und private Dokumentverarbeitung.
+
+| Bild | Auftrag | Tatsächliche Kosten | Ergebnis |
+| --- | --- | --- | --- |
+| Grabmal, erster Versuch | `a7d38a55-5727-44ad-8526-a5b53eac2edf` | 0,068470 USD | Material, Licht und exakte Inschrift überzeugen. Wegen zusätzlicher Einfassung als Vergleichs-/Fehlversuch erhalten. |
+| Raum | `695fbc1f-7c8e-4c0c-9fb3-49ef881a7856` | 0,069790 USD | Glaubwürdige Innenansicht mit schwebender Natursteinplatte, ruhiger Beleuchtung und sauberen Oberflächen. Keine erfundenen Türen, Fenster oder Sanitärmöbel. Der gespeicherte Entwurf enthält noch keine vollständige Badeinrichtung; entsprechend bleibt das Bild ein Raum- und Materialkonzept. |
+| Grabmal, Nachtest | `34e9fd05-9891-4a4a-9dbc-943e6d69b729` | 0,069155 USD | Gute fotografische Material- und Lichtwirkung, korrekte dreizeilige Inschrift einschließlich Bindestrich; nur die zwei geplanten Steinbauteile, keine zusätzliche Einfassung. Als gekennzeichnetes Gestaltungskonzept geeignet. |
+
+Gesamtkosten der drei Bildtests: **0,207415 USD**. Die angezeigten Reservierungen lagen jeweils bei etwa 0,40 USD; das ist kein Festpreis. Das separate Bildlimit wurde nicht verändert. Text-KI bleibt bei 0,25 USD pro Anfrage, Monatsbudget 5 USD.
+
+Die PNG-Originale wurden authentifiziert mit HTTP 200 abgerufen, als 1536 × 1024 px verifiziert und in Originalauflösung visuell geprüft. Der Automationsbrowser brach seinen nativen Download ab; der direkte authentifizierte Originalabruf und die lokal gespeicherten PNGs funktionierten. Eine erfolgreiche native Browserdateispeicherung wird deshalb nicht behauptet.
+
+Die Bilder tragen die eingebrannte Kennzeichnung **KI-Visualisierung · Konzept · keine technische Zeichnung** und die Planrevision. Sie eignen sich als unverbindliche Material-/Gestaltungsvisualisierung nach Abgleich mit dem Plan. Generative Perspektive und Proportionen ersetzen keine Maßprüfung oder Kundenfreigabe des technischen Plans. Es wurde nichts an Kunden versandt.
+
+Private Bildoriginale in der Anwendung: [Grabmal-Nachtest](https://schubert-design-suite.vercel.app/api/v1/documents/3ef2003e-6c6c-467a-afe7-b3f9f9a27456/download?version=ed2bde1d-42a9-4a2b-813e-702e30db9aa5), [Raum](https://schubert-design-suite.vercel.app/api/v1/documents/98bcfecb-0e4f-4ed2-abfb-83612156e0d0/download?version=e2e44f6b-0a40-4daa-88e9-d99fbfc17a9e). Die Originale bleiben privat; sie sind nicht als öffentliche Repository-Bilddateien veröffentlicht. Lokal liegen sie unter der oben genannten Evidenzablage als `KI-Grabmal-Kundenvisualisierung.png` und `KI-Raum-Kundenvisualisierung.png`.
+
+Wandschalter-Evidenz: [Desktop ein](usability-role-planning-2026-10-28/evidence/30-raum-waende-ein-desktop.png), [Desktop aus](usability-role-planning-2026-10-28/evidence/31-raum-waende-aus-desktop.png), [Mobil aus](usability-role-planning-2026-10-28/evidence/32-raum-waende-aus-mobil.png), [Mobil ein](usability-role-planning-2026-10-28/evidence/33-raum-waende-ein-mobil.png). Der Inschriftabgleich ist zusätzlich lokal mit Bildschirm 34 dokumentiert.
+
+Nach dieser Ergänzung erneut bestanden: `pnpm check` ohne Fehler/Warnungen, 446 Unit-Tests, 93 PostgreSQL-Prüfungen, Produktionsbuild und Zugangsdaten-Quelltextscan. Die begrenzte Fehler-/Fatal-Logprüfung des finalen Anwendungsdeployments fand im Nachtestfenster keine Einträge.
