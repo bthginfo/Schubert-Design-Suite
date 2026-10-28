@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-28T12:52:37.296Z",
+  "codeCommit": "e9564a95198f455c5c0e0a61dabe589d68c2b8a8",
+  "microphone": "synthetic German speech played into real browser MediaRecorder",
+  "providerStubs": false,
+  "attachmentReady": true,
+  "audio": {
+    "http": 200,
+    "mime": "audio/webm;codecs=opus",
+    "bytes": 47842,
+    "sha256": "3bfcd2812fcf329dce93011c65fd4c10a0db665e4012309732bdb2f846a084ca",
+    "text": "Bitte verwende die hochgeladene Skizze. Der Grabstein soll 600 Millimeter breit und 900 Millimeter hoch sein.",
+    "requiresReview": true,
+    "durationSeconds": 9.06,
+    "model": "gpt-4o-mini-transcribe-2025-12-15",
+    "actualCost": "0.0002675"
+  },
+  "chat": {
+    "http": 200,
+    "message": "UX-TEST: Bitte die hochgeladene Skizze kurz beschreiben und die diktierten Maße bestätigen. Keine Planänderung vornehmen. Die Oberfläche soll matt wirken.\nBitte verwende die hochgeladene Skizze. Der Grabstein soll 600 Millimeter breit und 900 Millimeter hoch sein.",
+    "references": [
+      {
+        "document_id": "e609e00a-64be-4179-923a-17416f687377",
+        "page_index": 0,
+        "include_image": true
+      }
+    ],
+    "text": "Die grobe Skizze zeigt einen oben gerundeten, aufrechten Grabstein mittig auf einem rechteckigen Sockel. Sichtbare Maße: Stein 600 × 900 × 120 mm; Sockel 700 × 140 × 180 mm (B × H × T). Die Inschrift lautet „MARIA MUSTER / 1950 - 2025 / In liebevoller Erinnerung“. Das stimmt mit den diktierten 600 mm Breite und 900 mm Höhe überein. Die Zeichnung selbst belegt keine matte Oberfläche; sie ist eine Linienzeichnung. Keine Planänderung vorgenommen.",
+    "actualCost": "0.004228975",
+    "proposalId": null
+  },
+  "revisionBefore": "Rev. 4",
+  "revisionAfter": "Rev. 4",
+  "desktop": {
+    "width": 1000,
+    "height": 952,
+    "history": 438,
+    "composer": 247
+  },
+  "accessibilityViolations": [],
+  "success": true,
+  "errors": [],
+  "failedRequests": []
+}
