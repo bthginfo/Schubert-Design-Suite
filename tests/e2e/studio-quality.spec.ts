@@ -85,6 +85,12 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
     await studioPanel(page,'elements');await page.locator('.element-tree button').filter({has:page.locator('small').filter({hasText:kind==='memorial'?/^Naturstein$/:/^Wand$/})}).first().click();
     await page.getByRole('button',{name:'3D',exact:true}).click();const canvas=page.locator('.three-stage canvas');await expect(canvas).toBeVisible();
     await page.locator('.camera-disclosure summary').click();const turn=page.getByRole('button',{name:'Kamera nach links drehen',exact:true});await turn.focus();await page.keyboard.press('ArrowLeft');await turn.click();
+    if(kind==='room_plan'){
+      const walls=page.getByRole('switch',{name:'Wände in 3D anzeigen',exact:true});
+      await walls.click();await expect(walls).toHaveAttribute('aria-checked','false');await walls.click();await expect(walls).toHaveAttribute('aria-checked','true');
+      const switchBox=(await walls.boundingBox())!,viewport=(await page.locator('.three-canvas').boundingBox())!;
+      expect(switchBox.x).toBeGreaterThanOrEqual(viewport.x);expect(switchBox.x+switchBox.width).toBeLessThanOrEqual(viewport.x+viewport.width);
+    }
     await page.getByRole('button',{name:'Vorn',exact:true}).click();await page.getByRole('button',{name:'Einpassen',exact:true}).click();await page.locator('.camera-disclosure summary').click();
     await expect(page.getByRole('button',{name:'Speichern',exact:true})).toBeDisabled();
     for(const viewport of [{width:1440,height:1000},{width:375,height:812}]){

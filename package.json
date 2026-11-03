@@ -12,6 +12,7 @@
     "build": "node scripts/build-ai-skills.mjs --check && pnpm --filter @schubert/web build && node scripts/build-worker.mjs",
     "check": "node scripts/build-ai-skills.mjs --check && pnpm --filter @schubert/web check && tsc --noEmit",
     "test": "vitest run",
+    "ai:quality": "tsx scripts/ai-quality.ts",
     "test:integration": "tsx scripts/integration-test.ts",
     "test:e2e": "playwright test",
     "db:migrate": "tsx scripts/migrate.ts",

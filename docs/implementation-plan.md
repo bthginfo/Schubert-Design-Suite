@@ -26,4 +26,6 @@ Full scope: docs/master-specification.md. Empty upstream repository inspected. D
 | 18 Guided project tasks and source deliveries | Implemented and checked | Stored workflow presets, actual customer next actions, inscription additions and reviewed source deliveries; see docs/qa/guided-workflows-2026-10-26.md |
 | 19 Complete AI drafts and direct paper workflows | Implemented and checked | Full editable planning operations across steps, explicit optional boundaries, direct clarification send, private chat image/PDF preparation, atomic authorized office drafts, source links, image handoff and version-preserving undo; 424 unit, 75 PostgreSQL checks, 77 distinct browser scenarios with targeted final passes and actual PDFs; see docs/qa/ai-full-edit-2026-10-26.md |
 
+| 20 Task evaluations and bounded factual AI tools | Implemented and verified | 469 unit checks, 101 real PostgreSQL checks, 12 final real-model scenarios, assistant/studio browser and PDF checks; bounded catalog/plan reads, token/cost accounting, explicit editable concepts and corrected camera-control overlap. See docs/qa/ai-quality-tools-2026-11-03.md. |
+
 Missing operational inputs are tracked in docs/operations/configuration.md. They block their dependent live operation only. No financial, legal, supplier or manufacturing approval may be fabricated.

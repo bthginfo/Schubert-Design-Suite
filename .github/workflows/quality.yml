@@ -32,6 +32,8 @@ jobs:
       - run: node scripts/security-check.mjs
       - run: pnpm check
       - run: pnpm test
+      - run: pnpm ai:quality
+      - run: pnpm ai:quality --tools
       - run: pnpm db:migrate
       - run: node scripts/ci-database.mjs
       - run: pnpm exec tsx scripts/testing-fixture.ts

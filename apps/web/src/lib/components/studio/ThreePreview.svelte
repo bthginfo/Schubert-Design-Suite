@@ -1,11 +1,12 @@
 <script lang="ts">
   import { Canvas } from '@threlte/core';
+  import type {Snippet} from 'svelte';
   import type { DesignSnapshot } from '@schubert/contracts';
   import Scene from './ThreeScene.svelte';
   import Icon from '../Icon.svelte';
   import{machiningDepth,measureValue}from'@schubert/geometry';
   import type{CameraAction,CameraCommand}from'./camera-navigation.ts';
-  let { snapshot, showWalls=true, resetKey = 0,materials=[],assets=[],glyphs=[],navigationCommand=null,onzoomchange=()=>{},onselect=()=>{} }:{ snapshot:DesignSnapshot;showWalls?:boolean;resetKey?:number;materials?:any[];assets?:any[];glyphs?:any[];navigationCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void;onselect?:(id:string)=>void }=$props();
+  let { snapshot, children, showWalls=true, resetKey = 0,materials=[],assets=[],glyphs=[],navigationCommand=null,onzoomchange=()=>{},onselect=()=>{} }:{ snapshot:DesignSnapshot;children?:Snippet;showWalls?:boolean;resetKey?:number;materials?:any[];assets?:any[];glyphs?:any[];navigationCommand?:CameraCommand|null;onzoomchange?:(zoom:number)=>void;onselect?:(id:string)=>void }=$props();
   let letteringRetryKey=$state(0),letteringStates:Record<string,'loading'|'ready'|'unavailable'>=$state({});
   function reportLettering(states:typeof letteringStates){letteringStates=states;}
   const inscriptions=$derived(snapshot.elements.filter(e=>e.kind==='inscription'&&e.phase!=='demolition'));
@@ -26,7 +27,7 @@
     <Canvas renderMode="on-demand" shadows={false} dpr={Math.min(globalThis.devicePixelRatio||1,2)}><Scene {materials} {snapshot} {showWalls} {resetKey} {assets} {glyphs} {cameraCommand} {onzoomchange} {onselect} onletteringstate={reportLettering} {letteringRetryKey}/></Canvas>
     {#if inscriptions.length}<div class="lettering-status" class:failed={failedLettering.length>0} role="status"><span>{pendingLettering?'Schrift wird geladen …':failedLettering.length?`${failedLettering.length} ${failedLettering.length===1?'Inschrift':'Inschriften'} nicht darstellbar`:`${inscriptions.length} ${inscriptions.length===1?'Inschrift':'Inschriften'} dargestellt`}</span><button type="button" onclick={()=>navigate('inscription')}>Schriftseite anzeigen</button>{#if failedLettering.length}<button type="button" onclick={()=>letteringRetryKey++}>Erneut laden</button><small>Die Inschrift bleibt gespeichert. Entwurfsschrift oder benötigte Originaldateien prüfen.</small>{/if}</div>{/if}
     {#snippet failed(_error,reset)}<div class="three-error"><strong>3D ist auf diesem Gerät nicht verfügbar.</strong><p>Die maßhaltigen 2D-Ansichten und alle Eingabefelder bleiben nutzbar.</p><button class="btn" onclick={reset}>Erneut versuchen</button></div>{/snippet}
-  </svelte:boundary></div>
+  </svelte:boundary>{@render children?.()}</div>
   <div class="three-footer">
   <details class="camera-disclosure"><summary>Kamera bewegen <span>Drehen, verschieben & Blickrichtung</span></summary><div class="camera-tools" aria-label="3D-Kamera ohne Ziehen bedienen">
     <div><span>Drehen</span><button aria-label="Kamera nach links drehen" onclick={()=>navigate('left')}><Icon name="rotate-ccw" size={17}/></button><button aria-label="Kamera nach rechts drehen" onclick={()=>navigate('right')}><Icon name="refresh" size={17}/></button><button aria-label="Kamera nach oben drehen" onclick={()=>navigate('up')}><Icon name="arrow-up" size={17}/></button><button aria-label="Kamera nach unten drehen" onclick={()=>navigate('down')}><Icon name="arrow-down" size={17}/></button></div>

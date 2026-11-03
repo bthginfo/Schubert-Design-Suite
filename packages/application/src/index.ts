@@ -53,5 +53,6 @@ export * from './backup.js';
 export * from './reconcile.js';
 
 export * from './assistant-context.js';
+export * from './assistant-tools.js';
 
 export * from './catalog-search.js';

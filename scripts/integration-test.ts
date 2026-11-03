@@ -1,3 +1,4 @@
+import {aiToolsIntegration} from './ai-tools-integration.js';
 import {usabilityDocumentIntegration} from './usability-document-integration.js';
 import {planningRoleIntegration} from './planning-role-integration.js';
 import {backofficeUsabilityIntegration} from './backoffice-usability-integration.js';
@@ -30,6 +31,11 @@ const owner=actor('Owner');let employee=actor('Employee');let checks=0;
 async function test(label:string,run:()=>Promise<void>){await run();checks++;console.log('PASS '+label);}
 const command=(ctx:ActorContext,name:string,payload:Record<string,unknown>={},record?:any,key=randomUUID())=>executeCommand(ctx,{name,id:record?.id,expectedVersion:record?.version,idempotencyKey:key,payload});
 try{
+await test('A post-migration application role can use only the explicitly granted authentication and intake entry points',async()=>{
+ const checks=await getPool().query("SELECT has_function_privilege(current_user,'lookup_membership(text)','EXECUTE') membership,has_function_privilege(current_user,'lookup_request_context(text,text)','EXECUTE') request_context,has_function_privilege(current_user,'public_intake_context()','EXECUTE') intake");
+ assert.deepEqual(checks.rows[0],{membership:true,request_context:true,intake:true});
+ assert.equal((await getPool().query('SELECT lookup_request_context($1,NULL) context',[randomUUID()])).rows[0].context,null);
+});
 await test('Application database role cannot bypass RLS or own schema',async()=>{const row=(await getPool().query('SELECT rolname,rolbypassrls,rolsuper FROM pg_roles WHERE rolname=current_user')).rows[0];assert.equal(row.rolname,'schubert_app');assert.equal(row.rolbypassrls,false);assert.equal(row.rolsuper,false);const outside=await getPool().query('SELECT id FROM parties LIMIT 1');assert.equal(outside.rowCount,0);});
 await test('Catalog with only document references loads through real PostgreSQL',async()=>{const page=await loadPage(owner,'edge-treatments',new URL('http://localhost/edge-treatments'));assert.equal(page.module.slug,'edge-treatments');assert.equal(page.view,'list');assert.ok(Array.isArray(page.lookups['document-versions']));});
 const customer=await command(owner,'crm.customer.create',{name:'Synthetischer Integrationstest '+randomUUID().slice(0,6),party_type:'person',street:'Teststraße 1',postal_code:'85051',city:'Ingolstadt',country:'DE'});
@@ -126,5 +132,6 @@ await assistantWorkflowIntegration(actor,test);
 await manufacturerAssetsIntegration(actor,test);
 await assistantFullEditIntegration(actor,test);
 await aiSkillsIntegration(actor,test);
+await aiToolsIntegration(actor,test);
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}
