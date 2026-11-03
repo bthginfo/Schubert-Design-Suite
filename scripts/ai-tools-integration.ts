@@ -64,9 +64,10 @@ export async function aiToolsIntegration(actor:(role:string)=>ActorContext,test:
     const result=compactToolEvidence({items:Array.from({length:100},()=>({name:'ä'.repeat(100)})),meaning:'actual source references'});
     assert(result.truncated&&result.omittedForContext>0);assert(Buffer.byteLength(JSON.stringify(result))<=ASSISTANT_READ_RESULT_BYTES);assert(Array.isArray(JSON.parse(JSON.stringify(result)).items));
   });
-  const nativeFetch=globalThis.fetch;let requests:any[]=[],mode='read',attempts=0;
+  const nativeFetch=globalThis.fetch,priorKey=process.env.OPENAI_API_KEY;let requests:any[]=[],mode='read',attempts=0;
   const prefix='resp_tools_'+randomUUID().replaceAll('-','');
   try{
+    process.env.OPENAI_API_KEY='synthetic-offline-read-tools-transport';
     globalThis.fetch=async(input,init)=>{
       const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url);
       assert.equal(url.origin,'https://api.openai.com');assert.equal(url.pathname,'/v1/responses');
@@ -97,6 +98,7 @@ export async function aiToolsIntegration(actor:(role:string)=>ActorContext,test:
     });
   }finally{
     globalThis.fetch=nativeFetch;
+    if(priorKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=priorKey;
     await withTenant(owner,async db=>{
       const runs=await db.query("SELECT a.id,a.status,a.cost_actual,r.id reservation_id,r.budget_id,r.amount,r.settled FROM ai_runs a JOIN ai_budget_reservations r ON r.run_id=a.id WHERE a.actor_id=$1 AND a.provider_id LIKE $2 FOR UPDATE OF a,r",[owner.actorId,prefix+'%']);
       for(const run of runs.rows){
