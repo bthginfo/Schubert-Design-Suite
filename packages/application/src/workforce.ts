@@ -4,6 +4,7 @@ import {z} from 'zod';
 import {one,rows} from '@schubert/db';
 import {assertVersion,assertPermission,dec,durationSeconds,laborCost,requireRule} from '@schubert/domain';
 import {register,getRecord,nextNumber,hash,assertOrderScope,type Runtime} from './core.js';
+import {assertLegalScope} from './catalog.js';
 async function ownEmployee(r:Runtime,requested?:string){const employeeId=requested??r.ctx.employeeId;requireRule(employeeId,'EMPLOYEE_REQUIRED','Benutzer zuerst einem Beschäftigten zuordnen.');if(employeeId!==r.ctx.employeeId)assertPermission(r.ctx.permissions,'hr');return getRecord(r.db,'employees',employeeId,true);}
 register('workforce.employee.create','hr',async r=>{
  const optional=(value:unknown)=>value===''||value===null?undefined:value;
@@ -31,7 +32,54 @@ register('workforce.employee.create','hr',async r=>{
  if(p.user_id)await r.db.query('UPDATE memberships SET employee_id=$1,version=version+1 WHERE user_id=$2 AND legal_entity_id=$3',[employee.id,p.user_id,r.ctx.legalEntityId]);
  return employee;
 });
-register('workforce.dispatch.create','dispatch',async r=>{const p=z.object({title:z.string().min(1),employee_id:z.uuid(),order_id:z.uuid(),work_package_id:z.uuid().nullable().optional(),starts_at:z.string(),ends_at:z.string(),equipment_id:z.uuid().nullable().optional(),location:z.string().nullable().optional(),required_skill:z.string().nullable().optional(),notes:z.string().nullable().optional()}).parse(r.payload);const employee=await getRecord(r.db,'employees',p.employee_id,true);const start=new Date(p.starts_at),end=new Date(p.ends_at);requireRule(end>start,'DISPATCH_INTERVAL','Einsatzende muss nach Beginn liegen.');const conflict=await one<any>(r.db,"SELECT id,title,employee_id,starts_at,ends_at FROM dispatch_assignments WHERE status<>'cancelled' AND (employee_id=$1 OR ($2::uuid IS NOT NULL AND equipment_id=$2)) AND tstzrange(starts_at,ends_at,'[)') && tstzrange($3::timestamptz,$4::timestamptz,'[)') LIMIT 1",[employee.id,p.equipment_id??null,start,end]);requireRule(!conflict,'DISPATCH_CONFLICT',conflict?`Überschneidung mit „${conflict.title||'Einsatz'}“: ${new Intl.DateTimeFormat('de-DE',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Berlin'}).format(new Date(conflict.starts_at))} bis ${new Intl.DateTimeFormat('de-DE',{timeStyle:'short',timeZone:'Europe/Berlin'}).format(new Date(conflict.ends_at))}. ${conflict.employee_id===employee.id?employee.name:'Das ausgewählte Betriebsmittel'} ist bereits eingeplant. Zeitraum oder Zuordnung ändern.`:'Einsatz überschneidet sich.',409);const absence=await one(r.db,"SELECT id FROM leave_requests WHERE employee_id=$1 AND status='approved' AND starts_on<=$3::date AND ends_on>=$2::date LIMIT 1",[employee.id,start,end]);requireRule(!absence,'DISPATCH_ABSENCE','Mitarbeiter ist in diesem Zeitraum nicht verfügbar.',409);if(p.required_skill){const skill=await one(r.db,'SELECT 1 FROM employee_skills WHERE employee_id=$1 AND skill=$2 AND (valid_until IS NULL OR valid_until>=$3::date)',[employee.id,p.required_skill,start]);requireRule(skill,'DISPATCH_SKILL','Erforderliche gültige Qualifikation fehlt.');}await getRecord(r.db,'orders',p.order_id);return r.insert('dispatch_assignments',{...p,starts_at:start,ends_at:end,status:'draft'});});
+const dispatchPayload=z.object({
+ title:z.string().trim().min(1).max(20000),employee_id:z.uuid(),order_id:z.uuid(),
+ work_package_id:z.uuid().nullable().optional(),
+ starts_at:z.union([z.string().min(1),z.date()]).pipe(z.coerce.date()),
+ ends_at:z.union([z.string().min(1),z.date()]).pipe(z.coerce.date()),
+ equipment_id:z.uuid().nullable().optional(),location:z.string().nullable().optional(),
+ required_skill:z.string().nullable().optional(),notes:z.string().nullable().optional()
+});
+async function validateDispatch(r:Runtime,p:z.infer<typeof dispatchPayload>,exceptId?:string){
+ const employee=await getRecord(r.db,'employees',p.employee_id,true),start=p.starts_at,end=p.ends_at;
+ assertLegalScope(r,employee);
+ requireRule(employee.active&&employee.status!=='inactive','DISPATCH_EMPLOYEE','Die ausgewählte Person ist nicht aktiv.');
+ requireRule(end>start,'DISPATCH_INTERVAL','Einsatzende muss nach Beginn liegen.');
+ if(p.equipment_id)assertLegalScope(r,await getRecord(r.db,'equipment',p.equipment_id,true));
+ assertLegalScope(r,await getRecord(r.db,'orders',p.order_id));
+ await assertOrderScope(r.db,r.ctx,p.order_id);
+ if(p.work_package_id){
+  const work=await getRecord(r.db,'work_packages',p.work_package_id);
+  requireRule(work.order_id===p.order_id,'DISPATCH_PACKAGE','Das Arbeitspaket gehört zu einem anderen Auftrag.');
+ }
+ const conflict=await one<any>(r.db,`SELECT title,employee_id,starts_at,ends_at FROM dispatch_assignments
+   WHERE status NOT IN('cancelled','deleted') AND id IS DISTINCT FROM $5::uuid
+   AND (employee_id=$1 OR ($2::uuid IS NOT NULL AND equipment_id=$2))
+   AND tstzrange(starts_at,ends_at,'[)') && tstzrange($3::timestamptz,$4::timestamptz,'[)') LIMIT 1`,[employee.id,p.equipment_id??null,start,end,exceptId??null]);
+ const date=new Intl.DateTimeFormat('de-DE',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Berlin'});
+ requireRule(!conflict,'DISPATCH_CONFLICT',conflict?`Überschneidung mit „${conflict.title||'Einsatz'}“. ${date.format(new Date(conflict.starts_at))} bis ${date.format(new Date(conflict.ends_at))}. ${conflict.employee_id===employee.id?employee.name:'Das ausgewählte Betriebsmittel'} ist bereits eingeplant.`:'Einsatz überschneidet sich.',409);
+ const absence=await one(r.db,`SELECT id FROM leave_requests WHERE employee_id=$1 AND status='approved'
+   AND starts_on<=((($3::timestamptz-interval '1 microsecond') AT TIME ZONE 'Europe/Berlin')::date)
+   AND ends_on>=(($2::timestamptz AT TIME ZONE 'Europe/Berlin')::date) LIMIT 1`,[employee.id,start,end]);
+ requireRule(!absence,'DISPATCH_ABSENCE','Mitarbeiter ist in diesem Zeitraum nicht verfügbar.',409);
+ if(p.required_skill){
+  const skill=await one(r.db,"SELECT 1 FROM employee_skills WHERE employee_id=$1 AND skill=$2 AND (valid_until IS NULL OR valid_until>=($3::timestamptz AT TIME ZONE 'Europe/Berlin')::date)",[employee.id,p.required_skill,start]);
+  requireRule(skill,'DISPATCH_SKILL','Erforderliche gültige Qualifikation fehlt.');
+ }
+}
+register('workforce.dispatch.create','dispatch',async r=>{
+ const payload=dispatchPayload.parse(r.payload);
+ await validateDispatch(r,payload);
+ return r.insert('dispatch_assignments',{...payload,status:'draft'});
+});
+register('workforce.dispatch.update','dispatch',async r=>{
+ const record=await getRecord(r.db,'dispatch_assignments',r.command.id,true);
+ assertLegalScope(r,record);assertVersion(record.version,r.command.expectedVersion);
+ requireRule(record.status==='draft','DISPATCH_STATE','Nur Einsatzentwürfe können bearbeitet werden.',409);
+ const payload=dispatchPayload.parse({...record,...r.payload});
+ await validateDispatch(r,payload,record.id);
+ return r.update('dispatch_assignments',record.id,payload,record.version);
+});
 register('workforce.leave.create','time',async r=>{const p=z.object({employee_id:z.uuid().nullable().optional(),kind:z.enum(['vacation','unavailable','other']).default('vacation'),starts_on:z.string(),ends_on:z.string(),days:z.string(),notes:z.string().nullable().optional()}).parse(r.payload);const employee=await ownEmployee(r,p.employee_id??undefined);requireRule(p.ends_on>=p.starts_on,'LEAVE_INTERVAL','Zeitraum prüfen.');requireRule(dec(p.days).gt(0),'LEAVE_DAYS','Bestätigte Arbeitstage angeben.');return r.insert('leave_requests',{...p,employee_id:employee.id,status:'requested'});});
 register('workforce.leave.approve','time.approve',async r=>{
  const request=await getRecord(r.db,'leave_requests',r.command.id,true);assertVersion(request.version,r.command.expectedVersion);requireRule(request.status==='requested','LEAVE_STATE','Antrag ist bereits entschieden.');requireRule(request.employee_id!==r.ctx.employeeId,'SELF_APPROVAL','Eigene Anträge benötigen einen anderen Genehmiger.');await getRecord(r.db,'employees',request.employee_id,true);

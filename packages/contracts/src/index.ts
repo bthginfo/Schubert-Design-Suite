@@ -12,6 +12,7 @@ export * from './dispatch-calendar.js';
 export * from './manufacturer-reference.js';
 export * from './assistant-workflow.js';
 export * from './assistant-tools.js';
+export * from './assistant-suite.js';
 export * from './manufacturer-assets.js';
 export * from './customer-workspace.js';
 export * from './workspaces.js';

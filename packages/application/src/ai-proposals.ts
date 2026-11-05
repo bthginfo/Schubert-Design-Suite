@@ -8,6 +8,24 @@ import {
 } from "@schubert/contracts";
 import { requireRule } from "@schubert/domain";
 import { getRecord, executeCommand } from "./core.js";
+import { authorizeAssistantRead, readAssistantPlan } from "./assistant-suite.js";
+
+export async function assistantProposalPlan(ctx: ActorContext, id: string) {
+  return withTenant(ctx, async db => {
+    const actor = await authorizeAssistantRead(db, ctx);
+    const proposal = await getRecord(db, "ai_proposals", id);
+    const target = proposal.validation?.planningTarget;
+    requireRule(proposal.actor_id === actor.actorId && proposal.status === "proposed" &&
+      new Date(proposal.expires_at) > new Date() && target?.variantId &&
+      proposal.commands.some((command: any) => command.name === "planning.design.change" && command.targetId === target.variantId),
+      "PROPOSAL_EXPIRED", "Diese Planvorschau ist nicht mehr verfügbar.", 404);
+    const plan = await readAssistantPlan(db, actor, target.variantId);
+    requireRule(plan.binding.revisionId === target.revisionId && plan.binding.baseVersion === target.baseVersion &&
+      (!target.contentHash || plan.binding.contentHash === target.contentHash),
+      "AI_STALE_TARGET", "Der Plan wurde seit dem Vorschlag geändert. Fordern Sie eine neue Vorschau an.", 409);
+    return { id: plan.binding.revisionId, snapshot: plan.context.snapshot };
+  });
+}
 
 export async function applyAIProposal(ctx: ActorContext, id: string) {
   const proposal = await withTenant(ctx, (db) =>

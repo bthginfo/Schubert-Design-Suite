@@ -74,7 +74,8 @@ register("assistant.proposal.commit", "account.self", async (r) => {
       "AI_COMMAND",
       "Dieser Entwurf enthält keine unterstützte Fachaktion.",
     );
-    const capability = catalog.find((item: any) => item.name === command.name);
+    const capability = catalog.find((item: any) => item.name === command.name &&
+      (!command.name.endsWith(".update") || item.targetId === command.targetId));
     requireRule(
       capability ||
         (command.name === "planning.design.change" &&

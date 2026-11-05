@@ -20,6 +20,7 @@ export type PlanChange = {
   fields: ChangeField[];
 };
 const names: Record<string, string> = {
+  label: "Bezeichnung",
   phase: "Planungsphase",
   locked: "Bearbeitungssperre",
   finishedContour: "Steinform",
@@ -240,7 +241,7 @@ export function planChanges(
   }
   return changes;
 }
-export function planningProposalReview(data: AppData, proposal: Row) {
+export function planningProposalReview(data: AppData, proposal: Row, boundRevision?: Row) {
   const command = (proposal.proposedCommands ?? proposal.commands ?? []).find(
     (c: Row) => c.name === "planning.design.change",
   );
@@ -248,7 +249,7 @@ export function planningProposalReview(data: AppData, proposal: Row) {
   try {
     const input =
         command.input?.payload ?? command.payload ?? command.input ?? {},
-      revision = data.related?.revisions?.find(
+      revision = boundRevision?.id === input.base_revision_id ? boundRevision : data.related?.revisions?.find(
         (r: Row) => r.id === input.base_revision_id,
       );
     if (!revision)

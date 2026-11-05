@@ -1,5 +1,13 @@
 # KI-Qualität, Fachabfragen und Planungsablauf
 
+## Suite-Chat
+
+Der Assistent ist auf internen Seiten und im Studio-Vollbild verfügbar. **Mit Seitenbezug** berücksichtigt den geöffneten Vorgang oder die gespeicherte Planvariante. **Suite-Chat** führt ein eigenes Gespräch über Seitenwechsel hinweg. Geschützte Personal- und Einstellungsseiten öffnen den Suite-Chat ohne die Daten der angezeigten Akte.
+
+In beiden Ansichten kann der Assistent berechtigte Kunden, Aufträge, Belege, Einsätze, Artikel, Unterlagen und Planvarianten nachschlagen. Der Chat verlinkt gefundene Vorgänge. Die Einsatzabfrage löst Person und Auftrag gemeinsam auf. Bei mehreren passenden Treffern klärt der Assistent den Bezug vor einer Änderung. Die Abfragen laden begrenzte Ausschnitte aus dem aktuellen Datenstand.
+
+Angebote, Rechnungen und Einsätze lassen sich als Entwürfe vorbereiten und nach der Vorschau speichern. Die Fachlogik berechnet Belegpositionen und prüft Einsätze auf Überschneidungen. Eine Änderung an einer anderen Planvariante erhält eine Vorher-nachher-Vorschau gegen ihre genaue Revision. Ausstellung, Versand, verbindliche Einsatzbestätigung und Fertigungsfreigabe erfolgen im Fachdialog. Der Verbrauch wird nach der ausgeführten Aufgabenart erfasst.
+
 Die Suite verwendet weiter die vorhandene Responses-Integration. Standardaufgaben bleiben beim konfigurierten günstigen Modell; eine vertiefte Designprüfung erfolgt nur nach ausdrücklicher Auswahl. Es gibt keinen zusätzlichen Agentendienst und keine automatische Eskalation zu einem teureren Modell.
 
 ## Qualität vor Modellwechseln

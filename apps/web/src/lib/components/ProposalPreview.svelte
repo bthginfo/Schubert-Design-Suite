@@ -4,7 +4,7 @@
   import InitialPlanPreview from "./studio/InitialPlanPreview.svelte";
   import type { AppData, Row } from "#lib/client/types.ts";
   import { label, display } from "#lib/client/api.ts";
-  let { proposal, data }: { proposal: Row; data: AppData } = $props();
+  let { proposal, data, revision }: { proposal: Row; data: AppData; revision?: Row } = $props();
   const commands = $derived(
     proposal.proposedCommands ?? proposal.commands ?? [],
   );
@@ -46,6 +46,8 @@
     );
   }
   function shown(value: unknown, key: string) {
+    if (typeof value === "string" && proposal.validation?.referenceLabels?.[value])
+      return proposal.validation.referenceLabels[value];
     if (typeof value === "string" && value.startsWith("$created:")) {
       const index = Number(value.slice(9).split(".")[0]),
         command = commands[index];
@@ -60,6 +62,10 @@
 <div class="proposal-preview">
   {#each commands as item, index}<section>
       <h4>{index + 1}. {name(item)}</h4>
+      {#if item.targetId && item.name.endsWith(".update")}
+        {@const target = proposal.validation?.actionCatalog?.find((action: Row) => action.name === item.name && action.targetId === item.targetId)}
+        {#if target?.targetLabel}<p class="field-help">{target.targetLabel} · Version {target.baseVersion}</p>{/if}
+      {/if}
       {#if item.baseVersion ?? proposal.base_version}<p class="field-help">
           Gilt für Version {item.baseVersion ?? proposal.base_version}
         </p>{/if}
@@ -67,6 +73,7 @@
           {data}
           operations={input(item).operations ?? []}
           revisionId={input(item).base_revision_id}
+          {revision}
         />{:else}<dl>
           {#each Object.entries(input(item)).filter(([key]) => !["initial_plan", "operations", "lines", "idempotencyKey", "expectedVersion", "ai_proposal_id"].includes(key)) as [key, value]}<div
             >

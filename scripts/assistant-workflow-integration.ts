@@ -59,6 +59,9 @@ export async function assistantWorkflowIntegration(actor:(role:string)=>ActorCon
   assert.equal(editing.context.record,undefined);assert.equal(editing.context.lines,undefined);assert.equal(editing.context.allowedRecipients,undefined);
   assert(!JSON.stringify(editing.context).includes('ALTE POSITION NICHT ÜBERMITTELN'));
   await assert.rejects(()=>prepareAssistantContext(owner,assistantInputSchema.parse({...input,context:{...input.context,editor:{...input.context!.editor!,module:'customers'}}}),'http://localhost'),(error:any)=>error.code==='AI_EDITOR_SCOPE');
-  await assert.rejects(()=>prepareAssistantContext(actor('HR'),assistantInputSchema.parse({message:'Personal prüfen',context:{path:'team'}}),'http://localhost'),(error:any)=>error.code==='AI_CONTEXT');
+  const fromTeam=await prepareAssistantContext(actor('HR'),assistantInputSchema.parse({message:'Allgemeine Frage',context:{path:'team'}}),'http://localhost');
+  assert.equal(fromTeam.context.suite.pageIncluded,false);
+  assert.deepEqual(fromTeam.context.record,{});
+  assert(!JSON.stringify(fromTeam.context).includes('weekly_hours'));
  });
 }

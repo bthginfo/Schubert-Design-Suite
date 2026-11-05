@@ -7,7 +7,7 @@
     prepareStudioAssistant,
     adoptStudioAssistantResult,
   } from "#lib/client/studio-assistant.ts";
-  import { planningStepLabel } from "@schubert/contracts";
+  import { assistantPrivateScreen, moduleBySlug, planningStepLabel, type AssistantRecordLink } from "@schubert/contracts";
   import { focusTrap } from "#lib/client/focus-trap.ts";
   import { fullscreenCompanion } from "#lib/client/fullscreen-companion.ts";
   import { onDestroy, onMount, untrack, tick } from "svelte";
@@ -21,7 +21,6 @@
   import ProposalPreview from "./ProposalPreview.svelte";
   import AssistantSources from "./AssistantSources.svelte";
   import {
-    assistantRestrictedPaths,
     selectedPlanningElements,
     sourceReady,
     sourceReferences,
@@ -31,7 +30,7 @@
   let section = $state<"help" | "chat">("help"),
     mobile = $state(false),
     optionsOpen = $state(false),
-    expanded = $state(true);
+    expanded = $state(false);
   const expandedChat = $derived(expanded && section === "chat");
   let chatArea = $state<HTMLDivElement>();
   const conversations = new Map<string, Row>();
@@ -102,6 +101,23 @@
     await tick();
     document.getElementById("assistant-message")?.focus();
   }
+  async function switchChatScope(next: "page" | "suite") {
+    if (busy || scope === next) return;
+    const previousKey = contextKey;
+    const pending = input;
+    scope = next;
+    await tick();
+    if (!input && pending) {
+      input = pending;
+      const previous = conversations.get(previousKey);
+      if (previous) conversations.set(previousKey, { ...previous, input: "" });
+    }
+    section = "chat";
+  }
+  async function choosePagePrompt(prompt: string) {
+    if (!sensitiveContext) await switchChatScope("page");
+    await choosePrompt(prompt);
+  }
   function studioAction(action: string) {
     close();
     if (action !== "close")
@@ -115,7 +131,7 @@
     sources = [];
     error = "";
     retryAudio = null;
-    section = "help";
+    section = "chat";
   }
   let displayedReply = "";
   const chatPositions = new Map<string, { top: number; pinned: boolean }>();
@@ -183,7 +199,7 @@
   let input = $state("");
   let sourcePicker:{addFiles:(files:File[])=>Promise<void>;remove:(row:AssistantSource)=>void}|undefined=$state();
   let attachmentInput:HTMLInputElement|undefined=$state();
-  async function addAttachments(files:File[]){if(!files.length||sensitiveContext)return;section="chat";await tick();await sourcePicker?.addFiles(files);}
+  async function addAttachments(files:File[]){if(!files.length)return;section="chat";await tick();await sourcePicker?.addFiles(files);}
   function pasteAttachment(event:ClipboardEvent){const files=Array.from(event.clipboardData?.files??[]).filter(file=>file.type.startsWith("image/"));if(files.length){event.preventDefault();void addAttachments(files);}}
   function dropAttachment(event:DragEvent){if(event.dataTransfer?.files.length){event.preventDefault();void addAttachments(Array.from(event.dataTransfer.files));}}
   async function sendAnswers(text:string){if(busy||!available||sourcePending||studioLoading)return false;const next=input.trim()&&!input.endsWith(text)?input+"\n\n"+text:input.endsWith(text)?input:text;if(next.length>6000){error="Bitte die Angaben auf 6.000 Zeichen kürzen.";return false;}input=next;return (await send())===true;}
@@ -279,19 +295,36 @@
     }
   }
   function proposalStale(message: Row) {
+    const target = message.proposal?.validation?.planningTarget;
     return !!(
-      studioWork &&
-      message.work &&
+      studioWork && target?.variantId === studioWork.variantId &&
       !message.applied &&
-      (studioWork.revisionId !== message.work.revisionId ||
-        studioWork.baseVersion !== message.work.baseVersion ||
+      (studioWork.revisionId !== target.revisionId ||
+        studioWork.baseVersion !== target.baseVersion ||
         studioWork.dirty)
     );
   }
   function reviewMessage(message: Row) {
     return message.proposal
-      ? planningProposalReview(data, message.proposal)
+      ? planningProposalReview(data, message.proposal, message.planRevision)
       : null;
+  }
+  function planPreviewNeeded(message: Row) {
+    const target = message.proposal?.validation?.planningTarget;
+    return !!target && !message.planRevision &&
+      !data.related?.revisions?.some((revision: Row) => revision.id === target.revisionId);
+  }
+  async function loadPlanPreview(message: Row) {
+    if (message.previewLoading || !message.proposal?.id) return;
+    const key = contextKey;
+    updateMessage(key, message.id, item => ({ ...item, previewLoading: true, previewError: "" }));
+    try {
+      const planRevision = await request(`/api/v1/ai/proposals/${message.proposal.id}/plan`, undefined, "GET");
+      updateMessage(key, message.id, item => ({ ...item, planRevision, previewLoading: false }));
+    } catch (cause) {
+      updateMessage(key, message.id, item => ({ ...item, previewLoading: false,
+        previewError: cause instanceof Error ? cause.message : "Die Planvorschau ist gerade nicht verfügbar." }));
+    }
   }
   function updateMessage(
     key: string,
@@ -314,6 +347,10 @@
   let selectedElementIds: string[] = $state([]);
   let contextNotice = $state("");
   let lastContext = "";
+  let scope = $state<"page" | "suite">("page");
+  const sensitiveContext = $derived(assistantPrivateScreen((data.path || "").split("/")[0]));
+  const suiteChat = $derived(scope === "suite" || sensitiveContext);
+  $effect(() => { if (open && sensitiveContext) scope = "suite"; });
   const variantId = $derived(
     page.url.searchParams.get("variant") ||
       data.summary?.selectedVariantId ||
@@ -325,13 +362,13 @@
       ? $studioAssistantContext
       : null,
   );
-  const studioLoading=$derived(data.view==='studio'&&!!data.detail&&!studioWork);
+  const studioLoading=$derived(!suiteChat&&data.view==='studio'&&!!data.detail&&!studioWork);
   const guardrails = $derived({
     preserveMeasurements,
     preserveWording,
     selectionOnly,
   });
-  const contextKey = $derived(
+  const contextKey = $derived((data.context?.assistantScope ?? data.user?.id ?? "") + ":" + (suiteChat ? "suite" :
     data.path +
       ":" +
       (data.detail?.id || "") +
@@ -340,20 +377,16 @@
       ":" +
       page.url.search +
       ":" +
-      (studioWork?.step ?? ""),
-  );
-  const sensitiveContext = $derived(
-    !!data.module?.hr ||
-      data.module?.permission === "hr" ||
-      assistantRestrictedPaths.has((data.path || "").split("/")[0]),
-  );
+      (studioWork?.step ?? "")));
+  const screenLabel = $derived(data.detail?.title ?? data.detail?.name ?? data.module?.label ??
+    (data.view === "studio" ? "Planungsstudio" : data.view === "reports" ? "Auswertungen" : data.view === "help" ? "Hilfe" : "Arbeitsbereich"));
   const designContext = $derived(
-    data.path === "studio" ||
+    !suiteChat && (data.path === "studio" ||
       data.path?.startsWith("studio/") ||
       data.module?.permission === "planning" ||
       ["planning", "design", "surveys"].some((section) =>
         data.path?.startsWith(section),
-      ),
+      )),
   );
   const modelProfile = $derived(data.summary?.assistantModelProfile || {});
   const chosenProfile = $derived(
@@ -389,7 +422,7 @@
             conversations.delete(conversations.keys().next().value!);
         }
         const previous = conversations.get(next);
-        contextNotice = lastContext
+        contextNotice = lastContext && !suiteChat
           ? previous
             ? "Ihr Gespräch zu diesem Arbeitsbereich ist wieder geöffnet."
             : "Die Hilfe bezieht sich jetzt auf die geöffnete Seite."
@@ -404,7 +437,7 @@
           previous?.preserveMeasurements ?? false;
         preserveWording = previous?.preserveWording ?? false;
         selectionOnly = previous?.selectionOnly ?? false;
-        section = previous?.messages.length ? "chat" : "help";
+        section = previous?.messages.length || suiteChat ? "chat" : "help";
         error = "";
         retryAudio = null;
         if (recording || recordingStarting) stopRecording(true);
@@ -414,9 +447,14 @@
   const integration = $derived(
     data.integrations?.ai || data.integrations?.openai,
   );
-  const available = $derived(
-    (integration?.available ?? false) && !sensitiveContext,
-  );
+  const available = $derived(integration?.available ?? false);
+  const quickPrompts = $derived([
+    ...(permitted(data,"crm") ? [{ label: "Kunden finden", icon: "search", prompt: "Suche in der Suite nach diesem Kunden: " }] : []),
+    ...(permitted(data,"billing") ? [{ label: "Rechnung vorbereiten", icon: "file", prompt: "Bereite einen Rechnungsentwurf für diesen Auftrag vor: " }] : []),
+    ...(permitted(data,"sales") ? [{ label: "Angebot vorbereiten", icon: "file", prompt: "Bereite einen Angebotsentwurf vor für: " }] : []),
+    ...(permitted(data,"dispatch") ? [{ label: "Einsatz planen", icon: "calendar", prompt: "Plane einen Einsatz. Person, Auftrag und Zeitraum: " }] : []),
+    ...(permitted(data,"planning") ? [{ label: "Plan bearbeiten", icon: "edit", prompt: "Bereite diese Änderung für einen Plan vor: " }] : []),
+  ]);
   async function send(event?: SubmitEvent) {
     event?.preventDefault();
     if (!input.trim() || busy || !available || sourcePending || studioLoading || recording || recordingStarting || transcribing) return false;
@@ -425,7 +463,11 @@
       history = messages
         .filter((m) => !["pending", "failed", "cancelled"].includes(m.status))
         .slice(-6)
-        .map(({ role, text }) => ({ role, text: text.slice(0, 1800) }));
+        .map(({ role, text, applied, undone, records }) => ({
+          role,
+          text: (text + (applied && !undone && records?.length ?
+            "\nÜbernommen: " + records.map((item: Row) => item.record.number ?? item.record.title ?? item.record.name ?? item.module).join(", ") : "")).slice(0, 1800),
+        }));
     const run = {
       id: ++runId,
       controller: new AbortController(),
@@ -441,7 +483,7 @@
     const boundaries = { ...guardrails };
     try {
       const references = sourceReferences(sources),
-        work = studioWork ? await prepareStudioAssistant() : null;
+        work = studioWork && !suiteChat ? await prepareStudioAssistant() : null;
       if (
         run.id !== runId ||
         sendingContext !== contextKey ||
@@ -475,8 +517,7 @@
           mode: designContext && deepReview ? "design_review" : "standard",
           context: {
             path: data.path,
-            variantId: work?.variantId ?? variantId,
-            search: page.url.search,
+            ...(suiteChat ? { scope: "suite" } : { variantId: work?.variantId ?? variantId, search: page.url.search }),
             ...(work
               ? {
                   planning_work: {
@@ -514,8 +555,10 @@
           missingInputs:
             result.missingInputs ?? result.proposal?.missing_inputs ?? [],
           skillsUsed: result.skillsUsed ?? [],
+          recordLinks: result.recordLinks ?? [],
           clarifications: result.clarifications ?? [],
           visualization: result.visualization ?? null,
+          visualizationTarget: result.visualizationTarget ?? null,
           visualizationSources: sources.filter(source=>sourceReady(source)).map(source=>({...source})),
           work: work ? { ...work } : null,
           boundaries,
@@ -548,7 +591,7 @@
   }
   async function apply(index: number) {
     const message = messages[index];
-    if (!message.proposal?.id || busy) return;
+    if (!message.proposal?.id || busy || planPreviewNeeded(message)) return;
     const review = reviewMessage(message);
     if (proposalStale(message) || review?.error) {
       error =
@@ -560,9 +603,10 @@
     error = "";
     const applyingContext = contextKey;
     try {
-      const work = studioWork ? await prepareStudioAssistant() : null;
+      const target = message.proposal.validation?.planningTarget;
+      const work = studioWork && target?.variantId === studioWork.variantId ? await prepareStudioAssistant() : null;
       if (applyingContext !== contextKey) return;
-      if (work && message.work && work.revisionId !== message.work.revisionId)
+      if (work && work.revisionId !== target.revisionId)
         throw Error(
           "Der Plan wurde geändert. Bitte einen neuen Vorschlag anfordern.",
         );
@@ -573,7 +617,7 @@
         idempotencyKey: key,
       });
       proposalKeys.delete(proposalId);
-      if (review?.before && result.revision)
+      if (work && review?.before && result.revision)
         adoptStudioAssistantResult(
           review.before.revisionId,
           review.operations,
@@ -613,11 +657,11 @@
     error = "";
     const key = contextKey;
     try {
-      const work = await prepareStudioAssistant();
+      const work = studioWork?.variantId === undo.variantId ? await prepareStudioAssistant() : null;
       if (contextKey !== key) return;
       if (
-        work.revisionId !== undo.revisionId ||
-        work.baseVersion !== undo.version
+        work && (work.revisionId !== undo.revisionId ||
+        work.baseVersion !== undo.version)
       )
         throw Error(
           "Seit dieser KI-Änderung wurde weitergearbeitet. Nutzen Sie Rückgängig im Studio oder öffnen Sie den früheren Stand unter Stände. Ihre spätere Arbeit wird nicht überschrieben.",
@@ -626,7 +670,7 @@
       const result = undo.operations ? await request(`/api/v1/designs/${undo.variantId}/commands`, {
         base_revision_id:undo.revisionId,expected_version:undo.version,operations:undo.operations,idempotency_key:undoKey,
       }):await request('/api/v1/commands', {name:'planning.design.restore_previous',id:undo.variantId,expectedVersion:undo.version,idempotencyKey:undoKey,payload:{base_revision_id:undo.revisionId,source_revision_id:undo.sourceRevisionId}});
-      adoptStudioAssistantResult(undo.revisionId,undo.operations??[],result);
+      if(work)adoptStudioAssistantResult(undo.revisionId,undo.operations??[],result);
       updateMessage(key, message.id, (m) => ({ ...m, undone: true }));
       await refreshAll().catch(() => {});
     } catch (e) {
@@ -640,12 +684,13 @@
     }
   }
   async function visualize(message:Row){
-    const projectId=message.records?.findLast((item:Row)=>item.module==='studio')?.record?.id??message.work?.projectId??(data.module?.slug==='studio'?data.detail?.id:null);
+    const target=message.visualizationTarget??message.proposal?.validation?.planningTarget;
+    const projectId=message.records?.findLast((item:Row)=>item.module==='studio')?.record?.id??target?.projectId??message.work?.projectId??(data.module?.slug==='studio'?data.detail?.id:null);
     if(!projectId||!message.visualization)return;
     const handoff={...message.visualization,sources:message.visualizationSources??[]};
     close();
-    if(studioWork?.projectId===projectId)window.dispatchEvent(new CustomEvent('schubert:studio:action',{detail:{action:handoff.intent==='photo'?'photo':'image',prompt:handoff.prompt,sources:handoff.sources}}));
-    else{queueVisualization(projectId,handoff);await goto('/studio/'+projectId);}
+    if(studioWork&&studioWork.projectId===projectId&&(!target?.variantId||target.variantId===studioWork.variantId))window.dispatchEvent(new CustomEvent('schubert:studio:action',{detail:{action:handoff.intent==='photo'?'photo':'image',prompt:handoff.prompt,sources:handoff.sources}}));
+    else{queueVisualization(projectId,handoff);await goto(target?.href??'/studio/'+projectId);}
   }
   let microphoneRequest = 0;
   async function transcribeRecording(blob: Blob, key: string) {
@@ -747,9 +792,13 @@
     open = false;
   }
   onMount(() => {
-    const show = (event: Event) => {
+    const show = async (event: Event) => {
       open = true;
       const detail = (event as CustomEvent).detail;
+      if ((detail?.prompt || detail?.source) && studioWork && suiteChat) {
+        scope = "page";
+        await tick();
+      }
       if (detail?.prompt)
         void choosePrompt(String(detail.prompt).slice(0, 6000));
       if (detail?.section === "help") section = "help";
@@ -806,7 +855,7 @@
   {#if !open}<button
       bind:this={launcher}
       class="assistant-trigger"
-      onclick={() => (open = true)}
+      onclick={() => { section = "chat"; open = true; }}
       aria-expanded="false"
       aria-haspopup="dialog"
       aria-controls="assistant-drawer"
@@ -841,7 +890,7 @@
         </div>
         <div>
           <h2>Schubert Begleiter</h2>
-          <p>Hilfe und Ideen für Ihren nächsten Schritt</p>
+          <p>Vorgänge finden und bearbeiten</p>
         </div>
         <button
           class="icon-button"
@@ -867,7 +916,23 @@
             : ""}</button
         >
       </div>
-      {#if studioWork}<div class="assistant-context">
+      {#if section === "chat"}
+        <div class="chat-scope">
+          {#if !sensitiveContext}<div class="chat-scope-options" role="group" aria-label="Gesprächsbezug">
+            <button type="button" aria-pressed={!suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("page")}>Mit Seitenbezug</button>
+            <button type="button" aria-pressed={suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("suite")}>Suite-Chat</button>
+          </div>{/if}
+          <p class="chat-scope-status">
+            <Icon name={suiteChat ? "grid" : "link"} size={15} />
+            <span>{sensitiveContext
+              ? "Suite-Chat · Daten dieser Seite sind ausgeblendet."
+              : suiteChat
+                ? "Dieses Gespräch bleibt beim Seitenwechsel geöffnet."
+                : screenLabel + " · Suche in der gesamten Suite"}</span>
+          </p>
+        </div>
+      {/if}
+      {#if studioWork && !suiteChat}<div class="assistant-context">
           <div>
             <Icon name="link" size={15} /><strong
               >{planningStepLabel(studioWork.kind, studioWork.step, studioWork.presetId)}</strong
@@ -912,7 +977,7 @@
           {data}
           {available}
           compact={compactHelp}
-          onchat={choosePrompt}
+          onchat={choosePagePrompt}
           onaction={studioAction}
         />{:else}<div
           class="assistant-messages"
@@ -924,22 +989,18 @@
               <Icon name="alert" />
               <div class="notice-content">
                 <div class="notice-title">
-                  {sensitiveContext
-                    ? "Lokale Feldhilfe für diesen Bereich"
-                    : "Noch nicht verfügbar"}
+                  Noch nicht verfügbar
                 </div>
                 <p>
-                  {sensitiveContext
-                    ? "Personal- und Administrationsakten bleiben außerhalb der KI. Die Hinweise direkt an den Eingabefeldern erklären die erforderlichen Angaben."
-                    : integration?.message ||
+                  {integration?.message ||
                       "Die OpenAI-Verbindung und das Modellprofil sind noch nicht eingerichtet."}
                 </p>
-                {#if !sensitiveContext && permitted(data, "admin")}<a
+                {#if permitted(data, "admin")}<a
                     class="text-link mt"
                     href="/settings"
                     onclick={close}
                     >Integration prüfen<Icon name="arrow" size={14} /></a
-                  >{:else if !sensitiveContext}<p class="field-help mt">
+                  >{:else}<p class="field-help mt">
                     Die zuständige Administration kann die Verbindung in den
                     Betriebseinstellungen einrichten.
                   </p>{/if}
@@ -949,17 +1010,15 @@
               role="status"
             >
               {contextNotice}
-            </p>{/if}{#if !messages.length && !sensitiveContext}<div
-              class="chat-message assistant"
-            >
-              <div class="chat-role">Arbeiten mit dem Assistenten</div>
-              Beschreiben Sie Ihr Vorhaben. Wir können es Schritt für Schritt besprechen,
-              Unterlagen einbeziehen und konkrete Änderungen vorbereiten.
-              <p class="field-help mt">
-                Änderungsvorschläge sehen Sie vor der Anwendung. Im
-                Planungsstudio können Sie daneben weiterarbeiten.
-              </p>
-            </div>{/if}{#each messages as message, index (message.id)}<article
+            </p>{/if}{#if available && !messages.length}<section class="chat-start" aria-label="Beispiele für den Assistenten">
+              <h3>Wobei kann ich helfen?</h3>
+              <p>Fragen Sie nach einem Vorgang oder beschreiben Sie, was ich vorbereiten soll. Änderungen können Sie vor dem Speichern prüfen.</p>
+              {#if quickPrompts.length}<div class="chat-prompts">
+                {#each quickPrompts as suggestion (suggestion.label)}
+                  <button type="button" onclick={() => choosePrompt(suggestion.prompt)}><Icon name={suggestion.icon} size={15} />{suggestion.label}</button>
+                {/each}
+              </div>{/if}
+            </section>{/if}{#each messages as message, index (message.id)}<article
               class="chat-message {message.role}"
               data-message-id={message.id}
             >
@@ -977,7 +1036,15 @@
                   disabled={busy}
                   onfollowup={appendPrompt}
                   onanswersubmit={sendAnswers}
-                />{#if message.visualization}<button type="button" class="btn small mt" disabled={busy||!!message.proposal&&!message.applied} onclick={()=>visualize(message)}><Icon name="image" size={16}/>{message.visualization.intent==='photo'?'Bildbearbeitung vorbereiten':'Kundenbild vorbereiten'}</button><p class="field-help">{message.proposal&&!message.applied?'Zuerst die Entwurfsänderung anwenden. Danach wird das Bild mit diesem Planstand vorbereitet.':'Die Bildbeschreibung wird übernommen. Qualität und Kosten prüfen Sie im Bildstudio.'}</p>{/if}{#if message.work}<p class="reply-origin">
+                />
+                {#if message.recordLinks?.length}<nav class="assistant-record-links" aria-label="Gefundene Vorgänge">
+                  {#each message.recordLinks as link (link.href)}{@const source = link as AssistantRecordLink}
+                    <a href={source.href} onclick={close}><Icon name={source.area === "studio" ? "grid" : "file"} size={15} />
+                      <span><strong>{source.label}</strong><small>{moduleBySlug(source.area)?.label ?? (source.area === "reports" ? "Controlling" : "Planungsstudio")}</small></span><Icon name="arrow" size={14} />
+                    </a>
+                  {/each}
+                </nav>{/if}
+                {#if message.visualization}<button type="button" class="btn small mt" disabled={busy||!!message.proposal&&!message.applied} onclick={()=>visualize(message)}><Icon name="image" size={16}/>{message.visualization.intent==='photo'?'Bildbearbeitung vorbereiten':'Kundenbild vorbereiten'}</button><p class="field-help">{message.proposal&&!message.applied?'Zuerst die Entwurfsänderung anwenden. Danach wird das Bild mit diesem Planstand vorbereitet.':'Die Bildbeschreibung wird übernommen. Qualität und Kosten prüfen Sie im Bildstudio.'}</p>{/if}{#if message.work && (message.proposal?.validation?.planningTarget || !message.recordLinks?.length && !message.proposal)}<p class="reply-origin">
                     Grundlage: {planningStepLabel(
                       message.work.kind,
                       message.work.step,
@@ -1003,13 +1070,17 @@
                   Bewusst gewählte Quellen: {message.sources.join(" · ")}
                 </p>{/if}{#if message.proposal}<div class="assistant-proposal">
                   <h3>Änderungsvorschlag prüfen</h3>
-                  {#if message.proposal.target}<p>
-                      Bezug: {message.proposal.target.entityType} · Version {message
-                        .proposal.target.baseVersion}
-                    </p>{/if}<ProposalPreview
+                  {#if message.proposal.validation?.planningTarget?.label}<p class="field-help">{message.proposal.validation.planningTarget.label} · Version {message.proposal.validation.planningTarget.baseVersion}</p>{/if}
+                  {#if planPreviewNeeded(message) && !message.applied && !message.dismissed}
+                    <button type="button" class="btn small mt" disabled={busy || message.previewLoading} onclick={() => loadPlanPreview(message)}>
+                      <Icon name="grid" size={16} />{message.previewLoading ? "Planvorschau wird geladen …" : "Planvorschau laden"}
+                    </button>
+                    {#if message.previewError}<p class="reply-stale" role="status">{message.previewError}</p>{/if}
+                  {:else if !planPreviewNeeded(message)}<ProposalPreview
                     proposal={message.proposal}
                     {data}
-                  />
+                    revision={message.planRevision}
+                  />{/if}
                   <details class="mt">
                     <summary style="font-size:12px;cursor:pointer"
                       >Technische Details ansehen</summary
@@ -1033,6 +1104,7 @@
                         : "Vom Server bestätigt angewendet."}
                     </p>
                     {#if message.records?.length}<div class="proposal-actions">{#each message.records as item}<a class="btn small" href={item.href} onclick={close}><Icon name="arrow" size={14}/>{item.record.number??item.record.title??item.record.name??'Entwurf'} öffnen</a>{/each}</div>{/if}
+                    {#if !message.records?.length && message.proposal.validation?.planningTarget?.href}<div class="proposal-actions"><a class="btn small" href={message.proposal.validation.planningTarget.href} onclick={close}>Plan öffnen <Icon name="arrow" size={14}/></a></div>{/if}
                     {#if message.undo && !message.undone}<button
                         type="button"
                         class="btn small"
@@ -1048,6 +1120,7 @@
                         class="btn primary full"
                         onclick={() => apply(index)}
                         disabled={busy ||
+                          planPreviewNeeded(message) ||
                           proposalStale(message) ||
                           !!reviewMessage(message)?.error ||
                           !!message.proposal.validation?.blocking?.length ||
@@ -1098,9 +1171,7 @@
               maxlength="6000"
               bind:value={input}
               rows="2"
-              placeholder={sensitiveContext
-                ? "Nutzen Sie die Hinweise an den Eingabefeldern."
-                : available
+              placeholder={available
                   ? sources.length ? "Was soll die KI mit dem Bild oder der Unterlage machen? Tippen oder diktieren …" : "Nachricht schreiben, Bild hinzufügen oder sprechen …"
                   : "Texteingabe nach Einrichtung verfügbar"}
               disabled={!available || busy || studioLoading}
@@ -1125,12 +1196,12 @@
             <details class="companion-options" bind:open={optionsOpen}>
               <summary aria-label="Unterlagen und Modelloptionen"
                 ><Icon name="settings" size={16} /><span class="options-label">Optionen</span></summary
-              ><div class="companion-options-body"><div class="options-heading"><strong>Unterlagen & Modell</strong><button type="button" class="icon-button" aria-label="Optionen schließen" onclick={finishOptions}><Icon name="close" size={16}/></button></div>{#if !sensitiveContext}<AssistantSources
+              ><div class="companion-options-body"><div class="options-heading"><strong>Unterlagen & Modell</strong><button type="button" class="icon-button" aria-label="Optionen schließen" onclick={finishOptions}><Icon name="close" size={16}/></button></div><AssistantSources
                   bind:this={sourcePicker}
                   {data}
                   bind:rows={sources}
                   disabled={busy || studioLoading}
-                />{/if}{#if studioWork}<fieldset
+                />{#if studioWork && !suiteChat}<fieldset
                   class="assistant-boundaries"
                   id="assistant-boundaries"
                 >
@@ -1164,7 +1235,7 @@
                     class="btn small"
                     onclick={finishOptions}>Zur Nachricht</button
                   >
-                </fieldset>{/if}{#if !sensitiveContext}<div
+                </fieldset>{/if}<div
                   class="assistant-model-choice"
                 >
                   {#if designContext}<label class="check-field"
@@ -1203,10 +1274,10 @@
                       Aktuell {selectedElementIds.length} ausgewählte Studiokomponente(n).
                       Die gespeicherte Revision bleibt die Grundlage.
                     </p>{/if}
-                </div>{/if}
+                </div>
             </div></details>
 
-            {#if !sensitiveContext&&permitted(data,"documents.upload")}<input class="assistant-attachment-input" type="file" tabindex="-1" aria-hidden="true" accept="image/jpeg,image/png,image/webp,image/tiff,application/pdf" multiple bind:this={attachmentInput} onchange={event=>{void addAttachments(Array.from(event.currentTarget.files??[]));event.currentTarget.value="";}} aria-label="Foto oder PDF im Chat hochladen"/><button type="button" class="btn small" aria-label="Foto oder PDF im Chat hochladen" disabled={busy||studioLoading||sources.length>=2} onclick={()=>attachmentInput?.click()}><Icon name="camera" size={15}/>Foto / PDF</button>{/if}
+            {#if permitted(data,"documents.upload")}<input class="assistant-attachment-input" type="file" tabindex="-1" aria-hidden="true" accept="image/jpeg,image/png,image/webp,image/tiff,application/pdf" multiple bind:this={attachmentInput} onchange={event=>{void addAttachments(Array.from(event.currentTarget.files??[]));event.currentTarget.value="";}} aria-label="Foto oder PDF im Chat hochladen"/><button type="button" class="btn small" aria-label="Foto oder PDF im Chat hochladen" disabled={busy||studioLoading||sources.length>=2} onclick={()=>attachmentInput?.click()}><Icon name="camera" size={15}/>Foto / PDF</button>{/if}
             {#if ["preparing", "requesting"].includes(phase)}<button
                 type="button"
                 class="btn small"
@@ -1258,6 +1329,27 @@
   .companion-tabs { display: flex; gap: 4px; padding: 0 18px 10px; flex: none; }
   .companion-tabs button { display: flex; justify-content: center; align-items: center; gap: 8px; flex: 1; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 13px; min-height: 44px; padding: 10px; }
   .companion-tabs button[aria-pressed="true"] { background: var(--wash); color: var(--ink); font-weight: 550; }
+  .chat-scope { padding: 2px 18px 11px; border-bottom: 1px solid var(--line-soft,var(--line)); flex: none; }
+  .chat-scope-options { display:flex; flex-wrap:wrap; gap:4px; }
+  .chat-scope-options button { font:inherit; font-size:12px; min-height:44px; padding:0 10px; border:0; border-radius:9px; color:var(--muted); background:transparent; }
+  .chat-scope-options button[aria-pressed="true"] { color:var(--forest); background:var(--accent-soft,var(--wash)); font-weight:600; }
+  .chat-scope-options button:hover:not(:disabled) { background:var(--wash); color:var(--ink); }
+  .chat-scope-status { margin:5px 0 0; display:flex; gap:8px; align-items:flex-start; color:var(--muted); font-size:12px; line-height:1.5; }
+  .chat-scope-status :global(svg) { flex:none; margin-top:1px; }
+  .chat-scope-status span { overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; }
+  .chat-start { padding:14px 2px 8px; }
+  .chat-start h3 { margin:0; font-size:clamp(20px,3vw,25px); letter-spacing:-.025em; font-weight:650; }
+  .chat-start p { margin:8px 0 15px; max-width:48ch; color:var(--muted); font-size:13px; line-height:1.6; }
+  .chat-prompts { display:flex; flex-wrap:wrap; gap:7px; }
+  .chat-prompts button { display:flex; gap:7px; align-items:center; min-height:44px; padding:7px 10px; border:1px solid var(--line); border-radius:9px; background:var(--paper); color:var(--ink); font:inherit; font-size:12px; text-align:left; }
+  .chat-prompts button:hover { background:var(--wash); }
+  .chat-prompts :global(svg) { color:var(--forest); flex:none; }
+  .assistant-record-links { margin:12px 0 4px; border-top:1px solid var(--line); }
+  .assistant-record-links a { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:10px; align-items:center; min-height:44px; padding:7px 3px; border-bottom:1px solid var(--line); color:var(--ink); text-decoration:none; }
+  .assistant-record-links a:hover { color:var(--forest); }
+  .assistant-record-links strong,.assistant-record-links small { display:block; white-space:normal; overflow-wrap:anywhere; }
+  .assistant-record-links strong { font-size:13px; }
+  .assistant-record-links small { font-size:11px; color:var(--muted); }
   .assistant-drawer { overflow: hidden; }
   .assistant-messages { min-height: 100px; flex: 1 1 200px; position: relative; padding: 20px 24px; overscroll-behavior: contain; }
   .assistant-messages :global(.chat-message) { overflow-wrap: anywhere; white-space: normal; font-size: 14px; }
@@ -1323,6 +1415,7 @@
     .assistant-header p, .assistant-resize, .assistant-input > p, .assistant-context small { display: none; }
     .assistant-header h2 { font-size: 15px; }
     .companion-tabs { padding: 0 12px 6px; }
+    .chat-scope { padding-inline:12px; }
     .assistant-context { padding: 8px 14px; }
     .assistant-context p { font-size: 12px; }
     .assistant-input { padding: 10px 12px calc(12px + env(safe-area-inset-bottom)); }

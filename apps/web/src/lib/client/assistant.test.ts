@@ -1,5 +1,6 @@
 import {describe,expect,it} from 'vitest';
-import {sourceReferences,assistantRestrictedPaths,selectedPlanningElements,type AssistantSource} from './assistant';
+import {assistantPrivateScreen} from '@schubert/contracts';
+import {sourceReferences,selectedPlanningElements,type AssistantSource} from './assistant';
 const source:AssistantSource={key:'local-only',documentId:'selected-document',name:'Konkrete Testquelle',pageNumber:3,includeImage:false};
 describe('explicit assistant document references',()=>{
  it('retains template component IDs while bounding untrusted browser selection events',()=>{
@@ -24,8 +25,8 @@ describe('explicit assistant document references',()=>{
   expect(()=>sourceReferences([source,source,source])).toThrow();
   expect(sourceReferences([])).toEqual([]);
  });
- it('keeps personal and administrative contexts behind local field help',()=>{
-  for(const path of ['team','time','leave','work-calendars','account','settings','audit'])expect(assistantRestrictedPaths.has(path)).toBe(true);
-  expect(assistantRestrictedPaths.has('reports')).toBe(false);
+ it('excludes private screens from the ambient context',()=>{
+  for(const path of ['team','time','leave','work-calendars','account','settings','audit','bank-imports'])expect(assistantPrivateScreen(path)).toBe(true);
+  expect(assistantPrivateScreen('reports')).toBe(false);
  });
 });

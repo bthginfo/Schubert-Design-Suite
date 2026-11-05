@@ -1,11 +1,12 @@
 <script lang="ts">
-  import type { AppData } from "#lib/client/types.ts";
+  import type { AppData, Row } from "#lib/client/types.ts";
   import { planningProposalReview } from "#lib/client/proposal-review.ts";
   let {
     data,
     operations,
     revisionId,
-  }: { data: AppData; operations: unknown[]; revisionId: string } = $props();
+    revision,
+  }: { data: AppData; operations: unknown[]; revisionId: string; revision?: Row } = $props();
   const preview = $derived(
     planningProposalReview(data, {
       commands: [
@@ -14,7 +15,7 @@
           input: { operations, base_revision_id: revisionId },
         },
       ],
-    }),
+    }, revision),
   );
   const changes = $derived(
     preview && !preview.error ? (preview.changes ?? []) : [],

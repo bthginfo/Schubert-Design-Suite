@@ -1,10 +1,11 @@
 import {z} from 'zod';
 import {withTenant,one,rows,type DbClient} from '@schubert/db';
 import {requireRule,rolePermissions,DomainError} from '@schubert/domain';
-import {ASSISTANT_READ_TOOL_VERSION,ASSISTANT_READ_RESULT_BYTES,type ActorContext,type AssistantReadToolAccess} from '@schubert/contracts';
+import {ASSISTANT_READ_TOOL_VERSION,ASSISTANT_READ_RESULT_BYTES,dispatchLookupSchema,suiteLookupSchema,type ActorContext,type AssistantReadToolAccess} from '@schubert/contracts';
 import {inspectPlanningSnapshot} from '../../ai/src/planning-facts.js';
 import {catalogLookupSchema} from '../../ai/src/specialist-tools.js';
 import {planningProductSearchSchema,planningProductsInTransaction} from './catalog-search.js';
+import {assistantAreaEnabled,authorizeAssistantRead,createSuiteReadScope,suiteAreasFor} from './assistant-suite.js';
 
 const canPlan=(permissions:readonly string[])=>permissions.some(p=>['*','planning','planning.read','planning.*'].includes(p));
 const text=(value:unknown,max=100)=>typeof value==='string'?value.slice(0,max):value;
@@ -23,10 +24,17 @@ export function compactToolEvidence(input:any){
 }
 
 /** Request-scoped, read-only tools. Model arguments cannot choose a tenant, actor, URL or plan. */
-export function createAssistantReadTools(ctx:ActorContext,input:Record<string,any>):AssistantReadToolAccess{
+export function createAssistantReadTools(ctx:ActorContext,input:Record<string,any>,message=''):AssistantReadToolAccess{
   const context=structuredClone(input);
-  const available:AssistantReadToolAccess['available']=context.entityType==='planning'&&context.snapshot&&canPlan(ctx.permissions)
-    ?['lookup_planning_catalog','inspect_current_plan']:[];
+  const suite=context.suite?createSuiteReadScope(message):undefined;
+  const areas=suite?suiteAreasFor(ctx):[];
+  const currentPlan=context.entityType==='planning'&&context.snapshot&&canPlan(ctx.permissions);
+  const available:AssistantReadToolAccess['available']=[
+    ...(currentPlan||areas.includes('studio')?['lookup_planning_catalog'] as const:[]),
+    ...(currentPlan?['inspect_current_plan'] as const:[]),
+    ...(areas.length?['find_suite_records'] as const:[]),
+    ...(areas.includes('dispatch')?['resolve_dispatch_assignment'] as const:[]),
+  ];
   async function authorize(db:DbClient){
     const member=await one<any>(db,`SELECT m.role,m.permissions,m.permission_version,m.legal_entity_id,
       (SELECT jsonb_build_object('revisionId',v.head_revision_id,'version',v.version,'hash',r.content_hash) FROM design_variants v JOIN design_revisions r ON r.id=v.head_revision_id AND r.variant_id=v.id WHERE v.id=$2::uuid AND v.planning_project_id=$3::uuid) live,
@@ -37,11 +45,42 @@ export function createAssistantReadTools(ctx:ActorContext,input:Record<string,an
     requireRule(canPlan(permissions)&&member.planning_enabled!==false,'FORBIDDEN','Die Planungsbibliothek ist für diesen Zugang nicht freigegeben.',403);
     requireRule(member.permission_version===ctx.permissionVersion&&member.live?.revisionId===context.revisionId&&member.live?.version===context.baseVersion&&member.live?.hash===context.contentHash,'AI_STALE_CONTEXT','Der Planstand oder der Zugriff hat sich geändert. Die Anfrage am aktuellen Stand erneut stellen.',409);
   }
-  return {version:ASSISTANT_READ_TOOL_VERSION,available,async execute(name,args){
+  return {version:ASSISTANT_READ_TOOL_VERSION,available,...(suite?{suite:{...suite,areas}}:{}),async execute(name,args){
     requireRule(available.includes(name),'AI_TOOL_SCOPE','Diese Fachabfrage ist im aktuellen Bereich nicht verfügbar.',403);
+    if(name==='resolve_dispatch_assignment'){
+      const {person,order}=dispatchLookupSchema.parse(args);
+      return withTenant(ctx,async db=>{
+        const actor=await authorizeAssistantRead(db,ctx);
+        const filters={status:null,from:null,to:null,details:false};
+        const team=await suite!.lookup(db,actor,{...filters,area:'team',query:person});
+        const orders=await suite!.lookup(db,actor,{...filters,area:'orders',query:order});
+        return compactToolEvidence({area:'dispatch',source:'dispatch_references',
+          items:[...team.items.map((row:any)=>({role:'employee',id:row.id,name:row.name})),
+            ...orders.items.map((row:any)=>({role:'order',id:row.id,number:row.number,title:row.title??row.name}))],
+          employee_id:team.resolvedId??null,order_id:orders.resolvedId??null,
+          employeeAmbiguous:!!team.ambiguous,orderAmbiguous:!!orders.ambiguous,
+        });
+      });
+    }
+    if(name==='find_suite_records'){
+      const payload=suiteLookupSchema.parse(args);
+      return withTenant(ctx,async db=>{
+        const raw=await suite!.lookup(db,await authorizeAssistantRead(db,ctx),payload),result=compactToolEvidence(raw);
+        if(raw.lines?.length&&raw.lines.length>result.lines.length&&result.resolvedId){
+          result.moreLines=true;
+          const reference=suite!.reference(payload.area,result.resolvedId);
+          if(reference)reference.fullLines=false;
+        }
+        return result;
+      });
+    }
     const payload=name==='lookup_planning_catalog'?catalogLookupSchema.parse(args):z.strictObject({}).parse(args);
     return withTenant(ctx,async db=>{
-      await authorize(db);
+      if(currentPlan)await authorize(db);
+      else{
+        const actor=await authorizeAssistantRead(db,ctx);
+        requireRule(canPlan(actor.permissions)&&await assistantAreaEnabled(db,'studio',actor),'FORBIDDEN','Die Planungsbibliothek ist für diesen Zugang nicht freigegeben.',403);
+      }
       if(name==='inspect_current_plan')return compactToolEvidence(inspectPlanningSnapshot(context.snapshot,context.selectedElementIds??[]));
       const {kind,query}=catalogLookupSchema.parse(payload);let items:any[];
       if(kind==='products'){

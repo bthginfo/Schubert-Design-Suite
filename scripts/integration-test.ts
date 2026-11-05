@@ -1,4 +1,5 @@
 import {aiToolsIntegration} from './ai-tools-integration.js';
+import {assistantSuiteIntegration} from './assistant-suite-integration.js';
 import {usabilityDocumentIntegration} from './usability-document-integration.js';
 import {planningRoleIntegration} from './planning-role-integration.js';
 import {backofficeUsabilityIntegration} from './backoffice-usability-integration.js';
@@ -133,5 +134,6 @@ await manufacturerAssetsIntegration(actor,test);
 await assistantFullEditIntegration(actor,test);
 await aiSkillsIntegration(actor,test);
 await aiToolsIntegration(actor,test);
+await assistantSuiteIntegration(actor,test);
 console.log(`${checks} PostgreSQL integration checks passed.`);
 }finally{await closePools();}

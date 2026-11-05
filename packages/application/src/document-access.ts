@@ -38,6 +38,11 @@ export function documentReadPredicate(ctx:ActorContext,alias='documents'){
  if(['Employee','Workshop','Dispatcher'].includes(ctx.role))terms.push(`(COALESCE(${alias}.entity_type,'')='manufacturer-assets' OR ${alias}.created_by=current_setting('app.actor_id',true) OR EXISTS(SELECT 1 FROM dispatch_assignments da WHERE da.employee_id=(SELECT employee_id FROM memberships WHERE user_id=current_setting('app.actor_id',true) AND active LIMIT 1) AND da.status NOT IN('cancelled','deleted') AND ((COALESCE(${alias}.entity_type,'') IN('order','orders','sales.order') AND da.order_id=${alias}.entity_id) OR EXISTS(SELECT 1 FROM document_links dl WHERE dl.document_id=${alias}.id AND dl.entity_type IN('order','orders') AND dl.entity_id=da.order_id))))`);
  return terms.join(' AND ');
 }
+export function assistantDocumentPredicate(ctx:ActorContext,alias='documents'){
+ const types=personnelDocumentTypes.map(type=>"'"+type+"'").join(',');
+ return '('+documentReadPredicate(ctx,alias)+') AND COALESCE('+alias+".entity_type,'') NOT IN("+types+')'+
+  ' AND NOT EXISTS(SELECT 1 FROM document_links ai_link WHERE ai_link.document_id='+alias+'.id AND ai_link.entity_type IN('+types+'))';
+}
 export async function assertCustomerDocument(db:DbClient,doc:any,customerId:string){
  requireRule(doc.status==='available'&&doc.visibility==='customer'&&!personnelDocumentTypes.includes(doc.entity_type),'DOCUMENT_AUDIENCE','Eine eigene geprüfte Kundenfassung verwenden.');
  const owner=await one(db,`SELECT 1 WHERE

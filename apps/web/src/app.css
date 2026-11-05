@@ -900,9 +900,8 @@ select[data-searchable-control][hidden] { display: none !important; }
 
 /* Keep the assistant reachable without covering mobile forms or primary actions. */
 @media(max-width:760px){
- .assistant-trigger{position:static;min-height:48px;width:calc(100% - 34px);justify-content:center;margin:12px 17px calc(82px + env(safe-area-inset-bottom));box-shadow:none}
- .assistant-host:has(.assistant-trigger){position:static}
- .page-content{padding-bottom:28px}
+ .assistant-trigger{min-height:48px;right:14px;bottom:calc(77px + env(safe-area-inset-bottom))}
+ .page-content{padding-bottom:82px}
  .timer-actions{display:flex;flex-wrap:wrap;gap:8px}
  .timer-actions .btn{white-space:nowrap;overflow-wrap:normal;word-break:normal;flex:1 1 120px}
  .modal .notice.error{scroll-margin-top:16px}

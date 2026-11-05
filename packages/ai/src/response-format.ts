@@ -25,7 +25,7 @@ export function assistantResponseFormat(context:Record<string,any>) {
   if(context.entityType!=='planning') return baseFormat;
   const initialMemorial=context.designKind==='memorial'&&context.snapshot?.elements?.length===0;
   return {...baseFormat,properties:{...baseFormat.properties,
-    commands:initialMemorial?{...baseFormat.properties.commands,maxItems:0}:baseFormat.properties.commands,
+    commands:initialMemorial&&!context.suite?{...baseFormat.properties.commands,maxItems:0}:baseFormat.properties.commands,
     planningDraft:initialMemorial?initialMemorialDraftFormat:planningDraftFormat,
   },required:[...baseFormat.required,'planningDraft']};
 }

@@ -18,8 +18,16 @@ export function aggregateTextResponses(responses:readonly {id?:string;usage?:unk
  const details=(keys:('cached_tokens'|'cache_write_tokens'|'reasoning_tokens')[])=>Object.fromEntries(keys.flatMap(key=>usage.some(item=>item.details[key]!==null)?[[key,usage.reduce((total,item)=>total+(item.details[key]??0),0)]]:[]));
  return{id,usage:{input_tokens:sum('input'),output_tokens:sum('output'),input_tokens_details:details(['cached_tokens','cache_write_tokens']),output_tokens_details:details(['reasoning_tokens'])}};
 }
-export function taskType(context:Record<string,any>,review=false){
+export function taskType(context:Record<string,any>,review=false,activity?:{command:string;area?:string}){
  if(context.entityType==='probe')return 'connection_test';
+ if(activity){
+  const {command,area}=activity;
+  if(/^(billing|purchasing\.invoice)\./.test(command)||['invoices','supplier-invoices','receivables','payables','payments'].includes(area??''))return 'billing_assistant';
+  if(command.startsWith('workforce.dispatch.')||['dispatch','team'].includes(area??''))return 'dispatch_assistant';
+  if(command.startsWith('sales.')||area==='quotes')return 'sales_assistant';
+  if(command.startsWith('crm.')||['customers','contacts','addresses'].includes(area??''))return 'customer_assistant';
+  if(command||(area&&area!=='studio'))return taskType({...context,entityType:'suite'});
+ }
  if(['planning','studio','memorial','room_plan'].includes(context.entityType)){
   const kind=context.designKind??context.snapshot?.kind??context.entityType;
   return kind==='room_plan'?(review?'room_review':'room_design'):(review?'memorial_review':'memorial_design');
