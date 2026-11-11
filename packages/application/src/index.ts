@@ -56,3 +56,4 @@ export * from './assistant-context.js';
 export * from './assistant-tools.js';
 
 export * from './catalog-search.js';
+export { manufacturerCatalogAdoptionCommand, registerManufacturerCatalogAdoption } from './manufacturer-catalog-adoption.js';

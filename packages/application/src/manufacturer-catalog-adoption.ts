@@ -1,9 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { register, hash } from "@schubert/application";
+import type { ManufacturerCatalogEntry } from "@schubert/contracts";
 import { one } from "@schubert/db";
 import { requireRule } from "@schubert/domain";
-import { availableManufacturerCatalog } from "./manufacturer-catalog.js";
+import { register, registeredCommands, hash, type Runtime } from "./core.js";
+
+export const manufacturerCatalogAdoptionCommand = "catalog.manufacturer_reference.adopt";
+type CatalogSourceLoader = (providerId: string) => Promise<{
+  items: ManufacturerCatalogEntry[];
+  digest: string;
+  checkedAt: string | null;
+  sourceUrl: string;
+} | undefined>;
 
 const selection = z.strictObject({
   providerId: z.string().regex(/^[a-z0-9][a-z0-9-]{0,40}$/),
@@ -11,10 +19,14 @@ const selection = z.strictObject({
   digest: z.string().regex(/^[a-f0-9]{64}$/),
 });
 
-register("catalog.manufacturer_reference.adopt", "catalog", async request => {
+export function registerManufacturerCatalogAdoption(loadSource: CatalogSourceLoader) {
+  if (registeredCommands().includes(manufacturerCatalogAdoptionCommand)) return;
+  register(manufacturerCatalogAdoptionCommand, "catalog", request => adoptReference(request, loadSource));
+}
+
+async function adoptReference(request: Runtime, loadSource: CatalogSourceLoader) {
   const input = selection.parse(request.payload);
-  const { snapshot } = await availableManufacturerCatalog();
-  const source = snapshot.sources[input.providerId];
+  const source = await loadSource(input.providerId);
   requireRule(source && source.digest === input.digest, "MANUFACTURER_CATALOG_CHANGED",
     "Der Herstellerkatalog wurde aktualisiert. Bitte den Artikel erneut suchen.", 409);
   const item = source.items.find(candidate => candidate.id === input.referenceId);
@@ -78,4 +90,4 @@ register("catalog.manufacturer_reference.adopt", "catalog", async request => {
     },
   });
   return { id: product.id, productId: product.id, version: product.version };
-});
+}
