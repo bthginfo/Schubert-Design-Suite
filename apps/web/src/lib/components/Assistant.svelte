@@ -1,5 +1,6 @@
 <script lang="ts">
   import CompanionHome from "./CompanionHome.svelte";
+  import ManufacturerLookup from "./ManufacturerLookup.svelte";
   import AssistantReply from "./AssistantReply.svelte";
   import { planningProposalReview } from "#lib/client/proposal-review.ts";
   import {
@@ -7,7 +8,7 @@
     prepareStudioAssistant,
     adoptStudioAssistantResult,
   } from "#lib/client/studio-assistant.ts";
-  import { assistantPrivateScreen, moduleBySlug, planningStepLabel, type AssistantRecordLink } from "@schubert/contracts";
+  import { assistantPrivateScreen, canSearchPlanningProducts, moduleBySlug, planningStepLabel, type AssistantRecordLink } from "@schubert/contracts";
   import { focusTrap } from "#lib/client/focus-trap.ts";
   import { fullscreenCompanion } from "#lib/client/fullscreen-companion.ts";
   import { onDestroy, onMount, untrack, tick } from "svelte";
@@ -27,11 +28,12 @@
     type AssistantSource,
   } from "#lib/client/assistant.ts";
   let { data }: { data: AppData } = $props();
-  let section = $state<"help" | "chat">("help"),
+  let section = $state<"help" | "chat" | "products">("help"),
     mobile = $state(false),
     optionsOpen = $state(false),
     expanded = $state(false);
   const expandedChat = $derived(expanded && section === "chat");
+  const canLookupProducts = $derived(canSearchPlanningProducts(data.context?.permissions));
   let chatArea = $state<HTMLDivElement>();
   const conversations = new Map<string, Row>();
   let launcher = $state<HTMLButtonElement>();
@@ -915,6 +917,11 @@
             ? " · " + messages.length
             : ""}</button
         >
+        {#if canLookupProducts}
+          <button type="button" aria-pressed={section === "products"} onclick={() => (section = "products")}>
+            <Icon name="search" size={16} /> Produkte
+          </button>
+        {/if}
       </div>
       {#if section === "chat"}
         <div class="chat-scope">
@@ -932,7 +939,7 @@
           </p>
         </div>
       {/if}
-      {#if studioWork && !suiteChat}<div class="assistant-context">
+      {#if studioWork && !suiteChat && section !== "products"}<div class="assistant-context">
           <div>
             <Icon name="link" size={15} /><strong
               >{planningStepLabel(studioWork.kind, studioWork.step, studioWork.presetId)}</strong
@@ -979,7 +986,14 @@
           compact={compactHelp}
           onchat={choosePagePrompt}
           onaction={studioAction}
-        />{:else}<div
+        />
+      {:else if section === "products"}
+        {#if canLookupProducts}
+          <div class="companion-products">
+            <ManufacturerLookup id="assistant-manufacturer" canManageAssets={permitted(data, "manufacturer_assets")} />
+          </div>
+        {/if}
+      {:else}<div
           class="assistant-messages"
           bind:this={chatArea}
           use:chatViewport={contextKey}
@@ -1329,6 +1343,7 @@
   .companion-tabs { display: flex; gap: 4px; padding: 0 18px 10px; flex: none; }
   .companion-tabs button { display: flex; justify-content: center; align-items: center; gap: 8px; flex: 1; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 13px; min-height: 44px; padding: 10px; }
   .companion-tabs button[aria-pressed="true"] { background: var(--wash); color: var(--ink); font-weight: 550; }
+  .companion-products { padding: 14px 24px 24px; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   .chat-scope { padding: 2px 18px 11px; border-bottom: 1px solid var(--line-soft,var(--line)); flex: none; }
   .chat-scope-options { display:flex; flex-wrap:wrap; gap:4px; }
   .chat-scope-options button { font:inherit; font-size:12px; min-height:44px; padding:0 10px; border:0; border-radius:9px; color:var(--muted); background:transparent; }

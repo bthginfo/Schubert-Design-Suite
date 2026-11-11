@@ -1,11 +1,11 @@
 import{z}from'zod';
-import type{ActorContext}from'@schubert/contracts';
+import{canSearchPlanningProducts,type ActorContext}from'@schubert/contracts';
 import{withTenant,rows,type DbClient}from'@schubert/db';
 import{requireRule}from'@schubert/domain';
 import{D,parseMillimetres}from'@schubert/geometry';
 const dimension=z.string().trim().max(32).transform(raw=>{const value=parseMillimetres(raw);requireRule(value!==null&&new D(value).gte(0),'CATALOG_FILTER_SIZE','Einen eindeutigen nichtnegativen Größenfilter in mm eingeben.');return value!;});
 export const planningProductSearchSchema=z.strictObject({q:z.string().trim().max(150).default(''),include_id:z.uuid().optional(),manufacturer_id:z.uuid().optional(),product_kind:z.enum(['merchandise','raw_material','stone_piece','service','subcontract','machine','transport','flat_rate']).optional(),surface_finish:z.string().trim().max(150).optional(),installation_type:z.string().trim().max(150).optional(),min_width_mm:dimension.optional(),max_width_mm:dimension.optional(),min_depth_mm:dimension.optional(),max_depth_mm:dimension.optional(),min_height_mm:dimension.optional(),max_height_mm:dimension.optional(),availability:z.enum(['all','available','limited','unavailable','unknown']).default('all')});
-function permitted(ctx:ActorContext){requireRule(ctx.permissions.some(p=>['*','planning','planning.read','planning.*','catalog','catalog.read','catalog.*'].includes(p)),'FORBIDDEN','Die Produktbibliothek ist für diesen Zugang nicht freigegeben.',403);}
+function permitted(ctx:ActorContext){requireRule(canSearchPlanningProducts(ctx.permissions),'FORBIDDEN','Die Produktbibliothek ist für diesen Zugang nicht freigegeben.',403);}
 function like(value:string){return'%'+value.replace(/[\\%_]/g,'\\$&')+'%';}
 /** Exported separately for a real PostgreSQL fixture test, without a mocked query. */
 export async function planningProductsInTransaction(db:DbClient,input:z.infer<typeof planningProductSearchSchema>,limit=30){

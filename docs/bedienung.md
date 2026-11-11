@@ -47,6 +47,8 @@ Die Elementliste zeigt zuerst die fachlichen Bauteile. **Technische Hilfselement
 
 ## Herstellerunterlagen für beide Studios
 
+Über **Herstellerdaten → Beim Hersteller suchen** im Studio oder **Assistent → Produkte** lassen sich Duravit- und hansgrohe-Artikel nach Modellname oder Artikelnummer finden. Bei KALDEWEI den Modellnamen und bei Geberit den deutschen Produktlink eingeben. Die Treffer zeigen die belegten Maße und verlinken die Produktseite sowie die Planungsdaten des Herstellers.
+
 Der neue Bereich **Herstellerbibliothek** ist zunächst dem Superadmin zugänglich. Unter **Zugriff vergeben → Rolle prüfen** kann der Superadmin anderen persönlichen Zugängen die zusätzliche Fähigkeit **Herstellerbibliothek verwalten** erteilen und wieder entziehen. Das vergibt keine weiteren Administrationsrechte. Planer verwenden bereitgestellte Unterlagen über **Herstellerdaten** direkt in beiden Studios.
 
 1. **Herstellerunterlage hinzufügen** öffnen, die Originaldatei auswählen und Bezeichnung sowie Hersteller eintragen. Artikel oder Modell, Quellenlink und Hinweise sind optional.
