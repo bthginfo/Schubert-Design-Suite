@@ -10,7 +10,7 @@ import { DomainError, requireRule } from "@schubert/domain";
 import { cachePublicCatalog } from "./manufacturer-lookup-cache.js";
 import { searchManufacturerProducts } from "./manufacturer-lookup.js";
 import { catalogProviderById, catalogProviders, type CatalogProvider } from "./manufacturer-catalog-sources.js";
-import { canCollectCatalog, collectManufacturerSource, type ManufacturerSourceSnapshot } from "./manufacturer-catalog-collect.js";
+import { canCollectCatalog, collectManufacturerSource, manufacturerSourceFailure, type ManufacturerSourceSnapshot } from "./manufacturer-catalog-collect.js";
 
 export interface ManufacturerCatalogSnapshot {
   version: 1;
@@ -28,6 +28,8 @@ const limitExpanded = 34 * 1024 * 1024;
 const pageSize = 24;
 const compareName = new Intl.Collator("de-DE", { numeric: true }).compare;
 const cacheTime = 60 * 60 * 1000;
+const retryDelay = 45 * 60 * 1000;
+const automatedProviderIds = catalogProviders.filter(provider => canCollectCatalog(provider.id)).map(provider => provider.id);
 let hot: { value: AvailableCatalog; expires: number } | undefined;
 let opening: Promise<AvailableCatalog> | undefined;
 
@@ -39,7 +41,7 @@ export async function refreshManufacturerSources(
   previous: ManufacturerCatalogSnapshot,
   now: Date,
   collect = collectManufacturerSource,
-  ids = catalogProviders.filter(provider => canCollectCatalog(provider.id)).map(provider => provider.id),
+  ids = automatedProviderIds,
 ): Promise<ManufacturerCatalogSnapshot> {
   const checkedAt = now.toISOString();
   const sources = { ...previous.sources };
@@ -52,13 +54,14 @@ export async function refreshManufacturerSources(
           throw new Error("Ungewöhnlich starker Rückgang im Herstellerverzeichnis.");
         }
         sources[id] = last?.digest === next.digest ? { ...next, items: last.items } : next;
-      } catch {
+      } catch (error) {
         sources[id] = {
           items: last?.items ?? [],
           digest: last?.digest ?? "",
           checkedAt: last?.checkedAt ?? null,
           attemptedAt: checkedAt,
           state: "unavailable",
+          failure: manufacturerSourceFailure(error),
           sourceUrl: last?.sourceUrl ?? catalogProviderById.get(id)?.website ?? "",
         };
       }
@@ -107,8 +110,9 @@ function remember(snapshot: ManufacturerCatalogSnapshot, storage: AvailableCatal
 
 async function storeCatalog(token: string, previous: SnapshotRead | null, now: Date) {
   const month = now.toISOString().slice(0, 7);
-  if (previous?.value.month === month) return { snapshot: previous.value, alreadyChecked: true };
-  const snapshot = await refreshManufacturerSources(previous?.value ?? emptyManufacturerCatalog(), now);
+  const ids = dueManufacturerSources(previous?.value ?? null, now);
+  if (previous && !ids.length) return { snapshot: previous.value, alreadyChecked: true };
+  const snapshot = await refreshManufacturerSources(previous?.value ?? emptyManufacturerCatalog(), now, collectManufacturerSource, ids);
   if (!Object.values(snapshot.sources).some(source => source.items.length)) {
     throw new DomainError("MANUFACTURER_CATALOG_UNAVAILABLE", "Der Katalog konnte keine Herstellerdaten abrufen.", 503);
   }
@@ -126,10 +130,21 @@ async function storeCatalog(token: string, previous: SnapshotRead | null, now: D
     });
   } catch (error) {
     const concurrent = await readSnapshot(token).catch(() => null);
-    if (concurrent?.value.month === month) return { snapshot: concurrent.value, alreadyChecked: true };
+    if (concurrent?.value.month === month && concurrent.etag !== previous?.etag &&
+        !dueManufacturerSources(concurrent.value, now).some(id => ids.includes(id))) {
+      return { snapshot: concurrent.value, alreadyChecked: true };
+    }
     throw error;
   }
   return { snapshot, alreadyChecked: false };
+}
+
+export function dueManufacturerSources(snapshot: ManufacturerCatalogSnapshot | null, now: Date) {
+  if (!snapshot || snapshot.month !== now.toISOString().slice(0, 7)) return automatedProviderIds;
+  return automatedProviderIds.filter(id => {
+    const source = snapshot.sources[id];
+    return !source || (source.state === "unavailable" && now.getTime() - Date.parse(source.attemptedAt) >= retryDelay);
+  });
 }
 
 export async function reconcileManufacturerCatalog() {
@@ -145,6 +160,7 @@ export async function reconcileManufacturerCatalog() {
     articlesAndReferences: sources.reduce((sum, [, source]) => sum + source.items.length, 0),
     articles: sources.reduce((sum, [, source]) => sum + source.items.filter(item => item.articleKind === "article").length, 0),
     unavailable: sources.filter(([, source]) => source.state === "unavailable").map(([id]) => id),
+    failures: Object.fromEntries(sources.filter(([, source]) => source.failure).map(([id, source]) => [id, source.failure])),
   };
 }
 

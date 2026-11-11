@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ActorContext, ManufacturerCatalogEntry } from "@schubert/contracts";
 import {
-  catalogSearchTarget, emptyManufacturerCatalog, refreshManufacturerSources, searchManufacturerCatalogOnline,
+  catalogSearchTarget, dueManufacturerSources, emptyManufacturerCatalog, refreshManufacturerSources, searchManufacturerCatalogOnline,
 } from "../apps/web/src/lib/server/manufacturer-catalog.js";
-import { catalogDigest, type ManufacturerSourceSnapshot } from "../apps/web/src/lib/server/manufacturer-catalog-collect.js";
+import { catalogDigest, collectManufacturerSource, type ManufacturerSourceSnapshot } from "../apps/web/src/lib/server/manufacturer-catalog-collect.js";
 
 const actor: ActorContext = {
   tenantId: "00000000-0000-4000-8000-000000000001",
@@ -68,6 +68,42 @@ describe("manufacturer catalog", () => {
     expect(catalogSearchTarget({ query: "ME by Starck Duravit 233555AA00", offset: 0 })).toMatchObject({
       id: "duravit", term: "me by starck 233555aa00",
     });
+  });
+
+  it("only retries failed sources once the previous run has had time to finish", async () => {
+    const first = new Date("2026-11-11T11:03:00.000Z");
+    const ids = dueManufacturerSources(null, first);
+    const snapshot = await refreshManufacturerSources(emptyManufacturerCatalog(), first, async id => {
+      if (id === "hansgrohe") throw new Error("temporary outage");
+      return source(id, 1, first.toISOString());
+    }, ids);
+
+    expect(dueManufacturerSources(snapshot, new Date("2026-11-11T11:04:00.000Z"))).toEqual([]);
+    expect(dueManufacturerSources(snapshot, new Date("2026-11-11T12:08:00.000Z"))).toEqual(["hansgrohe"]);
+    expect(dueManufacturerSources(snapshot, new Date("2026-12-11T11:03:00.000Z"))).toEqual(ids);
+  });
+
+  it("uses both official brand indexes when the combined trade directory is temporarily unavailable", async () => {
+    const sitemap = (href: string) => new Response("<urlset><url><loc>" + href + "</loc></url></urlset>");
+    const mockFetch = vi.fn(async (url: URL) => {
+      if (url.hostname === "pro.hansgrohe.de") return new Response(null, { status: 503 });
+      if (url.hostname === "www.hansgrohe.de") {
+        return sitemap("https://www.hansgrohe.de/articledetail-handbrause-12345678");
+      }
+      return sitemap("https://www.axor-design.com/de/articledetail-starck-87654321");
+    });
+    vi.stubGlobal("fetch", mockFetch);
+    try {
+      const result = await collectManufacturerSource("hansgrohe");
+      expect(result.items).toHaveLength(2);
+      expect(result.items).toEqual(expect.arrayContaining([
+        expect.objectContaining({ manufacturer: "hansgrohe", article: "12345678" }),
+        expect.objectContaining({ manufacturer: "AXOR", article: "87654321" }),
+      ]));
+      expect(mockFetch).toHaveBeenCalledTimes(3);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("offers a domain-limited external search only for a verified manufacturer website", async () => {

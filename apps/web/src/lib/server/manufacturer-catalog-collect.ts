@@ -4,7 +4,7 @@ import { load } from "cheerio/slim";
 import { parse } from "csv-parse/sync";
 import { unzipSync } from "fflate";
 import type { ManufacturerCatalogEntry } from "@schubert/contracts";
-import { catalogIndexes, catalogProviderById, type CatalogIndex, type CatalogProvider } from "./manufacturer-catalog-sources.js";
+import { catalogIndexFallbacks, catalogIndexes, catalogProviderById, type CatalogIndex, type CatalogProvider } from "./manufacturer-catalog-sources.js";
 
 export interface ManufacturerSourceSnapshot {
   items: ManufacturerCatalogEntry[];
@@ -13,6 +13,7 @@ export interface ManufacturerSourceSnapshot {
   attemptedAt: string;
   state: "current" | "unavailable";
   sourceUrl: string;
+  failure?: string;
 }
 
 const userAgent = "SchubertDesignSuite/1.0 (manufacturer catalog)";
@@ -24,6 +25,19 @@ const keucoPackage = /^\/content\/dam\/keuco-cms\/global\/website\/download\/art
 const sanitize = (value: string | undefined, max = 175) => (value ?? "").replace(/\s+/g, " ").trim().slice(0, max);
 export const canCollectCatalog = (providerId: string) => providerId === "keuco" || !!catalogIndexes[providerId];
 export const catalogDigest = (items: ManufacturerCatalogEntry[]) => createHash("sha256").update(JSON.stringify(items)).digest("hex");
+
+class ManufacturerHttpError extends Error {
+  constructor(readonly status: number) {
+    super("Herstellerquelle nicht verfügbar.");
+  }
+}
+
+export function manufacturerSourceFailure(error: unknown): string {
+  if (error instanceof ManufacturerHttpError) return "HTTP_" + error.status;
+  if (error instanceof Error && error.name === "TimeoutError") return "TIMEOUT";
+  if (error instanceof TypeError) return "NETWORK";
+  return "SOURCE_INVALID";
+}
 
 function sameSiteUrl(raw: string | undefined, base: string, host: string): URL | null {
   if (!raw || raw.length > 600) return null;
@@ -48,7 +62,11 @@ async function fetchBytes(url: string, max = maximumSourceBytes, accept = "text/
     if (!next) throw new Error("Herstellerquelle hat eine externe Weiterleitung.");
     response = await fetch(next, { signal, redirect: "error", headers: { accept, "user-agent": userAgent } });
   }
-  if (!response.ok || !response.body || Number(response.headers.get("content-length")) > max) {
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new ManufacturerHttpError(response.status);
+  }
+  if (!response.body || Number(response.headers.get("content-length")) > max) {
     await response.body?.cancel();
     throw new Error("Herstellerquelle nicht verfügbar.");
   }
@@ -130,7 +148,8 @@ async function collectIndex(provider: CatalogProvider, index: CatalogIndex) {
     const article = index.article?.exec(url.pathname)?.[1] ?? "";
     const name = link.title || titleFromPath(url, article);
     if (!name || (index.kind === "article" && !article)) continue;
-    const manufacturer = provider.id === "hansgrohe" ? (/^axor\b/i.test(name) ? "AXOR" : "hansgrohe") : provider.name;
+    const axor = productHost === "www.axor-design.com" || /^axor\b/i.test(name);
+    const manufacturer = provider.id === "hansgrohe" ? (axor ? "AXOR" : "hansgrohe") : provider.name;
     const key = article || url.pathname.replace(/\/$/, "") + url.search;
     const item: ManufacturerCatalogEntry = {
       id: makeId(provider.id, key),
@@ -258,12 +277,24 @@ export async function collectManufacturerSource(providerId: string, now = new Da
   const checkedAt = now.toISOString();
   const { items, sourceUrl } = providerId === "keuco"
     ? await collectKeuco(checkedAt.slice(0, 10))
-    : {
-        items: (await Promise.all(catalogIndexes[providerId].map(index => collectIndex(provider, index)))).flat(),
-        sourceUrl: catalogIndexes[providerId][0].url,
-      };
+    : await collectPublicIndexes(provider);
   const unique = [...new Map(items.map(item => [item.id, item])).values()]
     .sort((a, b) => a.id.localeCompare(b.id, "en"));
   if (!unique.length || unique.length > maximumRows) throw new Error("Das Herstellerverzeichnis liefert keine brauchbaren Einträge.");
   return { items: unique, digest: catalogDigest(unique), checkedAt, attemptedAt: checkedAt, state: "current", sourceUrl };
+}
+
+async function collectPublicIndexes(provider: CatalogProvider) {
+  const collect = async (indexes: readonly CatalogIndex[]) => {
+    const lists = await Promise.all(indexes.map(index => collectIndex(provider, index)));
+    if (lists.some(items => !items.length)) throw new Error("Ein Produktverzeichnis enthält keine passenden Einträge.");
+    return { items: lists.flat(), sourceUrl: indexes[0].url };
+  };
+  try {
+    return await collect(catalogIndexes[provider.id]);
+  } catch (error) {
+    const fallback = catalogIndexFallbacks[provider.id];
+    if (!fallback) throw error;
+    return await collect(fallback);
+  }
 }

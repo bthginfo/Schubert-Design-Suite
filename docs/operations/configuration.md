@@ -29,7 +29,7 @@ Die ausdrücklich gewünschte Vercel-Blob-Lösung sichert Originalbytes privat m
 
 ## Herstellerkatalog
 
-Der Vercel-Cron ruft die hinterlegten öffentlichen Artikelstammdaten und Herstellerverzeichnisse am 11. jedes Monats um 11:03 Uhr UTC über `/api/v1/internal/manufacturer-catalog` ab. Er verwendet das bestehende `CRON_SECRET` und legt einen komprimierten Stand im bestehenden privaten Blob-Speicher ab. Ausgefallene oder unvollständige Quellen behalten ihren letzten gültigen Stand. `MANUFACTURER_CATALOG_RECONCILED` enthält Anzahl und Zustand der abgeglichenen Quellen.
+Der Vercel-Cron ruft die hinterlegten öffentlichen Artikelstammdaten und Herstellerverzeichnisse am 11. jedes Monats um 11:03 Uhr UTC über `/api/v1/internal/manufacturer-catalog` ab. Um 12:08 Uhr UTC folgt ein gezielter Wiederholungsabruf für zuvor ausgefallene Quellen. Er verwendet das bestehende `CRON_SECRET` und legt einen komprimierten Stand im bestehenden privaten Blob-Speicher ab. Ausgefallene oder unvollständige Quellen behalten ihren letzten gültigen Stand. `MANUFACTURER_CATALOG_RECONCILED` enthält Anzahl und Zustand der abgeglichenen Quellen.
 
 Suchanfragen verwenden den zwischengespeicherten Stand im Anwendungsspeicher. Herstellerzugriffe außerhalb des Monatsabgleichs erfolgen bei einer ausdrücklich gestarteten Herstellersuche. Das Verzeichnis benötigt weder KI-Aufrufe noch Neon-Schreibvorgänge. Die gezielte Übernahme eines Artikels in den Betriebskatalog speichert die Artikelreferenz und ihren Herkunftsnachweis als Geschäftsdaten.
 

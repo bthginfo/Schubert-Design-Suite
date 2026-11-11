@@ -118,3 +118,10 @@ export const catalogIndexes: Record<string, readonly CatalogIndex[]> = {
   }],
   zierkon: [{ url: "https://www.zierkon.de/sitemap.xml", type: "sitemap", paths: /^\/produktgruppen\/[^/]+\/?$/, kind: "series" }],
 };
+
+export const catalogIndexFallbacks: Record<string, readonly CatalogIndex[]> = {
+  hansgrohe: [
+    { url: "https://www.hansgrohe.de/sitemap/hbwdesite-article-de_de-eur.xml", type: "sitemap", paths: /^\/articledetail-[^/]+-\d{8}\/?$/i, kind: "article", article: /-(\d{8})\/?$/ },
+    { url: "https://www.axor-design.com/de/sitemap/axwdesite-article-de_de-eur.xml", type: "sitemap", paths: /^\/de\/articledetail-[^/]+-\d{8}\/?$/i, kind: "article", article: /-(\d{8})\/?$/ },
+  ],
+};
