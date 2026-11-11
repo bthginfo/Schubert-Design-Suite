@@ -47,7 +47,11 @@ Die Elementliste zeigt zuerst die fachlichen Bauteile. **Technische Hilfselement
 
 ## Herstellerunterlagen für beide Studios
 
-Über **Herstellerdaten → Beim Hersteller suchen** im Studio oder **Assistent → Produkte** lassen sich Duravit- und hansgrohe-Artikel nach Modellname oder Artikelnummer finden. Bei KALDEWEI den Modellnamen und bei Geberit den deutschen Produktlink eingeben. Die Treffer zeigen die belegten Maße und verlinken die Produktseite sowie die Planungsdaten des Herstellers.
+Öffnen Sie **Herstellerdaten → Produktkatalog** im Studio, **Assistent → Produkte** oder den **Herstellerkatalog** in der Produktübersicht. Suchen Sie über alle Marken nach Name, Artikelnummer oder GTIN oder wählen Sie eine Marke aus. Die Treffer zeigen, ob ein Eintrag einen Artikel, eine Produktseite oder eine Serie bezeichnet. Unter **Quellen und Abgleich** finden Sie die verfügbaren Herstellerstände.
+
+Unter **Beim Hersteller suchen** lassen sich Duravit- und hansgrohe-Artikel nach Modellname oder Artikelnummer nachschlagen. Bei KALDEWEI den Modellnamen und bei Geberit den deutschen Produktlink eingeben. Weitere Hersteller mit öffentlichem Verzeichnis lassen sich ebenfalls direkt durchsuchen. Für Marken ohne abrufbares Verzeichnis stehen die offizielle Herstellerseite und, bei bekannter Hersteller-Domain, eine darauf begrenzte Websuche zur Verfügung.
+
+Berechtigte Personen können über **In Betriebskatalog übernehmen** Einträge mit belegter Artikelnummer als betriebliche Produktreferenz speichern. Maße aus Artikelstammdaten, Lieferbarkeit und CAD-Dateien sind gesondert zu prüfen, bevor Sie den Artikel für Fertigung oder Bestellung verwenden.
 
 Der neue Bereich **Herstellerbibliothek** ist zunächst dem Superadmin zugänglich. Unter **Zugriff vergeben → Rolle prüfen** kann der Superadmin anderen persönlichen Zugängen die zusätzliche Fähigkeit **Herstellerbibliothek verwalten** erteilen und wieder entziehen. Das vergibt keine weiteren Administrationsrechte. Planer verwenden bereitgestellte Unterlagen über **Herstellerdaten** direkt in beiden Studios.
 

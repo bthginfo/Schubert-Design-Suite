@@ -5,7 +5,7 @@
   import type {Row} from '#lib/client/types.ts';
   import Icon from '../Icon.svelte';
   import ManufacturerLookup from '../ManufacturerLookup.svelte';
-  let {studio='both',purpose='planning',canImportContour=false,canManageAssets=false,onchoose,onclose}:{studio?:string;purpose?:'planning'|'ai';canImportContour?:boolean;canManageAssets?:boolean;onchoose:(asset:Row,action:'plan'|'outline'|'ai')=>void;onclose:()=>void}=$props();
+  let {studio='both',purpose='planning',canImportContour=false,canManageAssets=false,canSaveCatalog=false,onchoose,onclose}:{studio?:string;purpose?:'planning'|'ai';canImportContour?:boolean;canManageAssets?:boolean;canSaveCatalog?:boolean;onchoose:(asset:Row,action:'plan'|'outline'|'ai')=>void;onclose:()=>void}=$props();
   let dialog:HTMLDialogElement,items:Row[]=$state([]),query=$state(''),busy=$state(false),error=$state(''),cursor=$state<string|null>(null),more=$state(false);
   let productSearch=$state(false);
   let requestNumber=0;
@@ -27,12 +27,12 @@
   {#if purpose==='planning'}
     <div class="picker-tabs" role="group" aria-label="Herstellerquellen">
       <button type="button" aria-pressed={!productSearch} onclick={()=>productSearch=false}>Bibliothek</button>
-      <button type="button" aria-pressed={productSearch} onclick={()=>productSearch=true}><Icon name="search" size={16}/>Beim Hersteller suchen</button>
+      <button type="button" aria-pressed={productSearch} onclick={()=>productSearch=true}><Icon name="box" size={16}/>Produktkatalog</button>
     </div>
   {/if}
   {#if productSearch}
     <div class="picker-results">
-      <ManufacturerLookup id="studio-manufacturer" initialQuery={query} showHeading={false} {canManageAssets}/>
+      <ManufacturerLookup id="studio-manufacturer" initialQuery={query} showHeading={false} {canManageAssets} {canSaveCatalog}/>
     </div>
   {:else}
   <form class="picker-search" onsubmit={event=>{event.preventDefault();void search();}}><label class="sr-only" for="manufacturer-picker-search">Hersteller oder Modell suchen</label><input id="manufacturer-picker-search" type="search" bind:value={query} maxlength="150" placeholder="Hersteller, Modell oder Artikel …"/><button class="btn" disabled={busy} type="submit">Suchen</button></form>

@@ -1,7 +1,10 @@
 <script lang="ts">
-  import { onDestroy, untrack } from "svelte";
-  import { manufacturerLookupLabels, type ManufacturerLookupResult } from "@schubert/contracts";
-  import { request } from "#lib/client/api.ts";
+  import { onDestroy, onMount, untrack } from "svelte";
+  import {
+    manufacturerLookupLabels, type ManufacturerCatalogEntry, type ManufacturerCatalogResult, type ManufacturerCatalogSource,
+  } from "@schubert/contracts";
+  import { command, request } from "#lib/client/api.ts";
+  import { searchableSelect } from "#lib/client/searchable-select.ts";
   import Icon from "./Icon.svelte";
 
   let {
@@ -9,18 +12,37 @@
     initialQuery = "",
     showHeading = true,
     canManageAssets = false,
+    canSaveCatalog = false,
   }: {
     id: string;
     initialQuery?: string;
     showHeading?: boolean;
     canManageAssets?: boolean;
+    canSaveCatalog?: boolean;
   } = $props();
 
   let query = $state(untrack(() => initialQuery));
-  let result = $state<ManufacturerLookupResult | null>(null);
+  let mode = $state<"catalog" | "online">("catalog");
+  let providerId = $state("");
+  let result = $state<ManufacturerCatalogResult | null>(null);
+  let providers = $state<ManufacturerCatalogSource[]>([]);
   let busy = $state(false);
   let error = $state("");
+  let saving = $state("");
+  let saveError = $state("");
+  let saved = $state<Record<string, string>>({});
   let controller: AbortController | undefined;
+  const currentProvider = $derived(providers.find(provider => provider.id === (providerId || result?.searchedProviderId)));
+  const sourcesWithEntries = $derived(providers.filter(provider => provider.count > 0).length);
+  const formatDate = new Intl.DateTimeFormat("de-DE", { dateStyle: "medium" });
+  const typeLabels = { article: "Art.-Nr.", model: "Modell", product: "Produktseite", series: "Serie" } as const;
+  const coverageLabels = {
+    articles: "Artikelstammdaten",
+    index: "Produkt- und Serienverzeichnis",
+    partner: "Stammdaten oder CAD über Fachzugang",
+    website: "Offizielle Herstellerseite",
+    unresolved: "Identität noch zu bestätigen",
+  } as const;
 
   function resetResult() {
     controller?.abort();
@@ -30,16 +52,26 @@
     result = null;
   }
 
-  async function search() {
-    const term = query.trim();
-    if (busy || term.length < 2) return;
-    resetResult();
+  async function search(append = false) {
+    if (busy || (mode === "online" && query.trim().length < 2)) return;
+    const offset = append ? result?.nextOffset : 0;
+    if (offset == null) return;
+    if (!append) resetResult();
     const run = new AbortController();
     controller = run;
     busy = true;
     try {
-      const response: ManufacturerLookupResult = await request("/api/v1/planning/manufacturer-products/search", { query: term }, "POST", run.signal);
-      if (controller === run) result = response;
+      const endpoint = mode === "online" ? "online" : "search";
+      const response: ManufacturerCatalogResult = await request(
+        "/api/v1/planning/manufacturer-catalog/" + endpoint,
+        { query: query.trim(), offset, ...(providerId ? { providerId } : {}) },
+        "POST", run.signal,
+      );
+      if (controller !== run) return;
+      if (mode === "catalog" || !providers.length) providers = response.providers;
+      result = append && result
+        ? { ...response, items: [...new Map([...result.items, ...response.items].map(item => [item.id, item])).values()] }
+        : response;
     } catch (cause) {
       if (controller === run) error = cause instanceof Error ? cause.message : "Die Suche konnte nicht abgeschlossen werden.";
     } finally {
@@ -50,6 +82,37 @@
     }
   }
 
+  function selectMode(next: "catalog" | "online") {
+    if (next === mode) return;
+    resetResult();
+    mode = next;
+    if (mode === "catalog") void search();
+  }
+
+  function chooseProvider(id: string) {
+    providerId = id;
+    resetResult();
+    if (mode === "catalog") void search();
+  }
+
+  async function saveArticle(item: ManufacturerCatalogEntry) {
+    const digest = providers.find(provider => provider.id === item.providerId)?.digest;
+    if (!digest || saving) return;
+    saving = item.id;
+    saveError = "";
+    try {
+      const result = await command("catalog.manufacturer_reference.adopt", undefined, {
+        providerId: item.providerId, referenceId: item.id, digest,
+      });
+      saved = { ...saved, [item.id]: result.productId };
+    } catch (cause) {
+      saveError = cause instanceof Error ? cause.message : "Der Artikel konnte nicht gespeichert werden.";
+    } finally {
+      saving = "";
+    }
+  }
+
+  onMount(() => { void search(); });
   onDestroy(() => {
     controller?.abort();
     controller = undefined;
@@ -57,8 +120,26 @@
 </script>
 
 <div class="manufacturer-lookup" role="search" aria-label="Herstellerartikel suchen">
-  {#if showHeading}<h3>Beim Hersteller suchen</h3>{/if}
-  <label for={id + "-query"}>Produktname, Artikelnummer oder Produktlink</label>
+  {#if showHeading}<h3>Herstellerkatalog</h3>{/if}
+  <div class="catalog-modes" role="group" aria-label="Suchquelle">
+    <button type="button" aria-pressed={mode === "catalog"} onclick={() => selectMode("catalog")}><Icon name="box" size={16}/>Im Katalog</button>
+    <button type="button" aria-pressed={mode === "online"} onclick={() => selectMode("online")}><Icon name="search" size={16}/>Beim Hersteller suchen</button>
+  </div>
+  {#if providers.length}
+    <label for={id + "-provider"}>Hersteller</label>
+    <select
+      id={id + "-provider"}
+      use:searchableSelect={providerId}
+      value={providerId}
+      onchange={(event) => chooseProvider(event.currentTarget.value)}
+    >
+      <option value="">Alle Hersteller</option>
+      {#each providers as provider (provider.id)}
+        <option value={provider.id}>{provider.name}</option>
+      {/each}
+    </select>
+  {/if}
+  <label for={id + "-query"}>{mode === "catalog" ? "Produktname, Artikelnummer oder GTIN" : "Produktname, Artikelnummer oder Produktlink"}</label>
   <div class="search-line">
     <input
       id={id + "-query"}
@@ -73,36 +154,47 @@
         }
       }}
       maxlength="300"
-      placeholder="z. B. Duravit 233555"
+      placeholder={mode === "catalog" ? "z. B. KEUCO Stageline" : "z. B. Duravit 233555"}
       aria-describedby={id + "-hint"}
       autocomplete="off"
     />
-    <button class="btn primary" type="button" disabled={busy || query.trim().length < 2} onclick={search}>
+    <button class="btn primary" type="button" disabled={busy || (mode === "online" && query.trim().length < 2)} onclick={() => search()}>
       <Icon name="search" size={17} /> Suchen
     </button>
   </div>
-  <p class="hint" id={id + "-hint"}>Ein Herstellername grenzt die Suche ein. Für Geberit können Sie einen Produktlink einsetzen.</p>
+  <p class="hint" id={id + "-hint"}>
+    {#if mode === "catalog"}Der Katalog enthält Artikel und verlinkte Serien. {result?.checkedAt ? "Abgleich vom " + formatDate.format(new Date(result.checkedAt)) + "." : ""}
+    {:else}Wählen Sie den Hersteller oder nennen Sie ihn im Suchbegriff. Für Geberit können Sie einen Produktlink einsetzen.
+    {/if}
+  </p>
+  {#if currentProvider?.website && (mode === "online" || currentProvider.coverage === "partner" || !currentProvider.count)}
+    <a class="manufacturer-link" href={currentProvider.website} target="_blank" rel="noopener noreferrer">{currentProvider.name} öffnen<Icon name="arrow" size={14} /></a>
+  {/if}
 
-  {#if busy}
-    <p class="search-status" role="status">Herstellerkataloge werden geprüft …</p>
+  {#if busy && !result}
+    <p class="search-status" role="status">{mode === "catalog" ? "Katalog wird geladen …" : "Herstellerquelle wird geprüft …"}</p>
   {:else if error}
     <p class="search-status error" role="alert">{error}</p>
   {:else if result}
     <p class="search-status" role="status">
-      {#if result.items.length}{result.items.length} Treffer
-        {result.hasMore ? " · Weitere Treffer im Herstellerkatalog." : ""}
-      {:else if result.sources.some(source => source.status === "searched")}Keine passenden Artikel gefunden.
-      {:else}Die Quellen unten zeigen, wie Sie weitersuchen können.
+      {#if result.lookupNotice}{result.lookupNotice}
+      {:else if result.total}{result.total.toLocaleString("de-DE")} Treffer
+      {:else}Keine passenden Artikel oder Serien gefunden.
       {/if}
     </p>
+    {#if result.siteSearch}
+      <a class="manufacturer-link" href={result.siteSearch} target="_blank" rel="noopener noreferrer">Websuche auf der Hersteller-Domain<Icon name="arrow" size={14} /></a>
+    {/if}
+    {#if saveError}<p class="search-status error" role="alert">{saveError}</p>{/if}
     {#if result.items.length}
       <ul class="catalog-results" aria-label="Gefundene Herstellerartikel">
-        {#each result.items as item (item.sourceUrl + "#" + item.article)}
+        {#each result.items as item (item.id)}
           <li>
             <div class="result-body">
-              <p class="item-number">{item.manufacturer} · {item.articleKind === "model" ? "Modell" : "Art.-Nr."} {item.article}</p>
+              <p class="item-number">{item.manufacturer} · {typeLabels[item.articleKind]}{item.article ? " " + item.article : ""}{item.discontinued ? " · Auslaufartikel laut Hersteller" : ""}</p>
               <h4>{item.name}</h4>
               {#if item.variant}<p class="variant">{item.variant}</p>{/if}
+              {#if item.gtin}<p class="variant">GTIN {item.gtin}</p>{/if}
               {#if item.dimensions.length}
                 <dl class="dimensions">
                   {#each item.dimensions as dimension}
@@ -112,19 +204,29 @@
               {/if}
             </div>
             <div class="result-actions">
-              <a class="source-link" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">Zum Produkt<Icon name="arrow" size={14} /></a>
+              <a class="source-link" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">{mode === "online" && item.articleKind === "article" ? "Zum Produkt" : "Quelle öffnen"}<Icon name="arrow" size={14} /></a>
               {#if item.planningDataUrl}
                 <a href={item.planningDataUrl} target="_blank" rel="noopener noreferrer">CAD &amp; Planungsdaten<Icon name="arrow" size={14} /></a>
+              {/if}
+              {#if saved[item.id]}
+                <a href={"/products/" + saved[item.id]} target="_blank" rel="noopener">Im Betriebskatalog<Icon name="arrow" size={14} /></a>
+              {:else if canSaveCatalog && mode === "catalog" && item.articleKind === "article" && item.article}
+                <button class="save-reference" type="button" onclick={() => saveArticle(item)} disabled={!!saving}>
+                  {saving === item.id ? "Wird gespeichert …" : "In Betriebskatalog übernehmen"}
+                </button>
               {/if}
             </div>
           </li>
         {/each}
       </ul>
+      {#if result.nextOffset !== null}
+        <button class="btn small load-more" type="button" disabled={busy} onclick={() => search(true)}>{busy ? "Wird geladen …" : "Mehr Treffer laden"}</button>
+      {/if}
       {#if canManageAssets}
         <a class="library-link" href="/manufacturer-assets" target="_blank" rel="noopener">Originaldatei in die Herstellerbibliothek aufnehmen<Icon name="arrow" size={14} /></a>
       {/if}
     {/if}
-    {#each result.sources.filter(source => source.status !== "searched" || !result?.items.length || result.hasMore) as source (source.provider)}
+    {#each (result.lookupSources ?? []).filter(source => source.status !== "searched" || !result?.items.length) as source (source.provider)}
       <div class="source-status">
         <p>
           <strong>{manufacturerLookupLabels[source.provider]}</strong>
@@ -136,6 +238,23 @@
         <a href={source.url} target="_blank" rel="noopener noreferrer">Herstellerkatalog öffnen<Icon name="arrow" size={14} /></a>
       </div>
     {/each}
+  {/if}
+
+  {#if mode === "catalog" && providers.length}
+    <details class="catalog-directory">
+      <summary>Quellen und Abgleich · {sourcesWithEntries} mit Katalogdaten</summary>
+      <ul>
+        {#each providers as provider (provider.id)}
+          <li>
+            <strong>{provider.name}</strong>
+            <span>{coverageLabels[provider.coverage]}{provider.count ? " · " + provider.count.toLocaleString("de-DE") + " Einträge" : ""}
+              {provider.state === "unavailable" ? " · Abruf fehlgeschlagen" : ""}
+              {provider.checkedAt ? " · Stand " + formatDate.format(new Date(provider.checkedAt)) : ""}</span>
+            {#if provider.website}<a href={provider.website} target="_blank" rel="noopener noreferrer">Quelle öffnen<Icon name="arrow" size={14} /></a>{/if}
+          </li>
+        {/each}
+      </ul>
+    </details>
   {/if}
 </div>
 
@@ -173,4 +292,18 @@
   .source-status strong { color: var(--ink); }
   .library-link { margin-top: 4px; }
   @media (max-width: 760px) { input { font-size: 16px; } }
+
+  .catalog-modes { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+  .catalog-modes button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 7px 11px; color: var(--muted); border-radius: 9px; border: 1px solid var(--line); font: inherit; font-size: 13px; }
+  .catalog-modes button[aria-pressed=true] { color: var(--ink); background: var(--wash); font-weight: 600; }
+  select { width: 100%; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--input-surface); color: var(--ink); padding: 8px 10px; margin-bottom: 12px; font: inherit; }
+  .manufacturer-link { margin-top: 3px; }
+  .save-reference { min-height: 44px; color: var(--forest); font: inherit; font-size: 12px; text-align: left; }
+  .save-reference:hover { text-decoration: underline; }
+  .load-more { min-height: 44px; margin-top: 10px; }
+  .catalog-directory { margin-top: 14px; }
+  .catalog-directory summary { padding: 10px 0; font-size: 13px; color: var(--ink); cursor: pointer; }
+  .catalog-directory ul { list-style: none; padding: 0; margin: 0; }
+  .catalog-directory li { display: grid; padding: 10px 0 0; border-top: 1px solid var(--line); font-size: 12px; gap: 3px; }
+  .catalog-directory li span { color: var(--muted); }
 </style>

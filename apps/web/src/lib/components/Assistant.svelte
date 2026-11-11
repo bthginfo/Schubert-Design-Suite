@@ -990,7 +990,7 @@
       {:else if section === "products"}
         {#if canLookupProducts}
           <div class="companion-products">
-            <ManufacturerLookup id="assistant-manufacturer" canManageAssets={permitted(data, "manufacturer_assets")} />
+            <ManufacturerLookup id="assistant-manufacturer" canManageAssets={permitted(data, "manufacturer_assets")} canSaveCatalog={permitted(data, "catalog")} />
           </div>
         {/if}
       {:else}<div

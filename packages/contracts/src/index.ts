@@ -1,5 +1,6 @@
 export * from './manufacturer-delivery.js';
 export * from './manufacturer-lookup.js';
+export * from './manufacturer-catalog.js';
 export * from './assistant-clarification.js';
 export * from './planning-workflow.js';
 export * from './assistant-actions.js';

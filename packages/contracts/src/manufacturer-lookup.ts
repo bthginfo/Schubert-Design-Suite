@@ -23,7 +23,7 @@ export interface ManufacturerLookupItem {
   manufacturer: string;
   name: string;
   article: string;
-  articleKind: "article" | "model";
+  articleKind: "article" | "model" | "product" | "series";
   sourceUrl: string;
   planningDataUrl?: string;
   variant?: string;
