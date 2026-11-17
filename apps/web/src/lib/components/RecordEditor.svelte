@@ -58,6 +58,23 @@
     if(!Object.keys(fieldErrors).length)error='';
   }
   let form: HTMLFormElement;
+  let activeSection = $state('0');
+  function trackSections(node: HTMLElement) {
+    let frame = 0;
+    const refresh = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const top = node.getBoundingClientRect().top + 80;
+        const sections = [...node.querySelectorAll<HTMLElement>('[data-editor-section],[data-editor-lines]')]
+          .filter(section => section.getBoundingClientRect().height > 0);
+        const current = sections.filter(section => section.getBoundingClientRect().top <= top).at(-1) ?? sections[0];
+        if (current) activeSection = current.dataset.editorSection ?? 'lines';
+      });
+    };
+    node.addEventListener('scroll', refresh, { passive: true });
+    refresh();
+    return { destroy() { cancelAnimationFrame(frame); node.removeEventListener('scroll', refresh); } };
+  }
   let initialized = $state(false);
   let localVersion: number | undefined = $state();
   let savedFingerprint = $state("");
@@ -585,8 +602,8 @@
         </h2>
         <p>
           {autosave
-            ? "Ihre Änderungen an diesem Entwurf werden nach einer kurzen Eingabepause gespeichert. Pflichtfelder sind mit * gekennzeichnet."
-            : "Pflichtfelder sind mit * gekennzeichnet. Erst das Speichern übernimmt die Daten."}
+            ? "Dieser Entwurf speichert automatisch. Pflichtfelder sind mit * gekennzeichnet."
+            : "Pflichtfelder sind mit * gekennzeichnet."}
         </p>
         {#if contextReferences.length}<p class="create-context">
             {contextReferences
@@ -605,9 +622,11 @@
         <nav aria-label="Abschnitte im Formular">
           {#each sections as section, index}{#if section.title}<button
                 type="button"
+                aria-current={activeSection === String(index) ? 'location' : undefined}
                 onclick={() => jumpToSection(index)}>{section.title}</button
               >{/if}{/each}{#if hasLines}<button
               type="button"
+              aria-current={activeSection === 'lines' ? 'location' : undefined}
               onclick={jumpToLines}>Positionen</button
             >{/if}
         </nav>
@@ -640,7 +659,7 @@
       oninvalidcapture={(event) => revealField(event.target as HTMLElement)}
       style="display:contents"
     >
-      <div class="modal-body" inert={busy && closingSave}>
+      <div class="modal-body" use:trackSections inert={busy && closingSave}>
         {#if discardRequested}<section
             class="discard-confirmation"
             bind:this={discardPanel!}
@@ -1075,7 +1094,7 @@
     gap: 10px;
     padding: 9px 24px;
     border-bottom: 1px solid var(--line);
-    background: var(--input-surface);
+    background: var(--glass-surface, var(--input-surface));
     min-width: 0;
   }
   .editor-outline nav {
@@ -1087,15 +1106,21 @@
   }
   .editor-outline nav button {
     flex: none;
-    min-height: 34px;
-    border-radius: 8px;
-    padding: 7px 9px;
+    min-height: 44px;
+    border-radius: 10px;
+    padding: 8px 12px;
     color: var(--muted);
     font-size: 12px;
   }
   .editor-outline nav button:hover {
     background: var(--paper);
     color: var(--forest);
+  }
+  .editor-outline nav button[aria-current="location"] {
+    background: var(--paper);
+    color: var(--forest);
+    box-shadow: var(--surface-shadow);
+    font-weight: 550;
   }
   .required-progress,
   .required-complete {

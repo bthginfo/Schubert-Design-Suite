@@ -70,16 +70,14 @@
 
 <style>
   .workbench-panel,.workbench-drawer{box-sizing:border-box;display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--paper);color:var(--ink)}
-  .workbench-panel{height:100%;overflow:hidden}
-  .workbench-panel[data-workbench-side=left]{border-right:1px solid var(--line)}
-  .workbench-panel[data-workbench-side=right]{border-left:1px solid var(--line)}
-  .panel-heading{display:flex;flex:none;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;min-height:44px;border-bottom:1px solid var(--line-soft,var(--line));background:var(--input-surface,var(--paper))}
+  .workbench-panel{height:100%;overflow:hidden;border:1px solid var(--line-soft);border-radius:18px;box-shadow:var(--content-shadow)}
+  .panel-heading{display:flex;flex:none;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;min-height:48px;border-bottom:1px solid var(--line-soft,var(--line));background:var(--glass-surface,var(--paper))}
   .panel-heading h2{min-width:0;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;line-height:1.5;font-weight:600;letter-spacing:-.015em}
   .panel-close{display:grid;place-items:center;flex:none;width:34px;height:34px;min-width:34px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer}
   .panel-close:hover{background:var(--wash);color:var(--ink)}
   .panel-close:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
   .panel-content{display:flex;flex:1;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
-  .workbench-drawer{position:fixed;inset:12px;margin:0 0 0 auto;width:min(420px,calc(100% - 24px));height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);max-width:calc(100% - 24px);padding:0;border:0;border-radius:14px;box-shadow:var(--overlay-shadow,0 18px 55px #08111f40);overscroll-behavior:contain}
+  .workbench-drawer{position:fixed;inset:12px;margin:0 0 0 auto;width:min(420px,calc(100% - 24px));height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);max-width:calc(100% - 24px);padding:0;border:1px solid var(--glass-border,var(--line));border-radius:22px;box-shadow:var(--overlay-shadow,0 18px 55px #08111f40);overscroll-behavior:contain}
   .workbench-drawer.left{margin:0 auto 0 0}
   .workbench-drawer:not([open]){display:none}
   .workbench-drawer::backdrop{background:#08111f80}

@@ -26,6 +26,8 @@ colors:
   navigation-surface: "light-dark(#eef2f7,#101a2b)"
   workspace-surface: "light-dark(#f1f4f9,#0e1726)"
   input-surface: "light-dark(#f8fafc,#111b2b)"
+  glass-surface: "light-dark(rgb(255 255 255 / .76),rgb(22 33 54 / .84))"
+  drawing-paper: "#f7f8fa"
   danger: "light-dark(#993c35,#ffb5af)"
   danger-wash: "light-dark(#fff0ed,#37232d)"
   warning: "light-dark(#7a581e,#f1cc88)"
@@ -100,12 +102,12 @@ rounded:
   segment: "7px"
   compact-control: "8px"
   control: "9px"
-  button: "11px"
+  button: "12px"
   choice: "10px"
   disclosure: "11px"
   compact-panel: "12px"
-  panel: "14px"
-  workspace: "16px"
+  panel: "18px"
+  workspace: "24px"
 spacing:
   segment-inset: "4px"
   compact-gap: "8px"
@@ -296,11 +298,11 @@ Natives Vollbild und das vergrößerte Browserfenster verwenden dieselbe Werkban
 
 ## Elevation & Depth
 
-Das Produkt verbindet abgestufte neutrale Flächen mit weichen Kontaktschatten und diffuser Tiefe. Der eingesetzte Arbeitsraum liegt sichtbar über dem äußeren Rahmen; deckende Panels erhalten einen kurzen Kontaktschatten und einen breiteren, sanften Umgebungsschatten. Ihre inneren Trennlinien halten Kopf, Inhalt und Aktionen zusammen. Im Hintergrund des Arbeitsraums liegt eine einzelne breite radiale Aufhellung mit Anteil des gewählten Akzents (14%), die zur transparenten Fläche ausläuft. Sie ist statisch und bleibt hinter den Inhalten. Aktive Segmente erhalten eine kleine Erhebung; durchsuchbare Trefferlisten, Dialoge und Begleiter eine klar begrenzte stärkere Überlagerung. Die exakten Schattenwerte stehen in den Sidecar-Erweiterungen.
+Das Produkt verbindet abgestufte neutrale Flächen mit weichen Kontaktschatten und diffuser Tiefe. Der äußere Rahmen besitzt statische, sehr schwache kühle Aufhellungen. Die eingesetzte Seitenleiste, die Kopfzeile, der Assistenteneinstieg und schwebende Studioleisten verwenden eine gemeinsame Glasfläche mit heller Innenkante und Hintergrundunschärfe. Inhaltspanels, Formulare und Datentabellen bleiben deckend. Aktive Segmente erhalten eine kleine Erhebung; durchsuchbare Trefferlisten, Dialoge und Begleiter eine klar begrenzte stärkere Überlagerung. Die gemeinsamen Glas- und Schattenwerte stehen in app.css und lib/styles/materials.css.
 
 **The Gezielte Tiefe Rule.** Tonwert, leise Trennlinien und weiche Schatten unterscheiden Hintergrund, Arbeitsraum, Panels und Überlagerungen. Die räumliche Abstufung unterstützt die verständliche Hierarchie und lässt Eingaben sowie Inhalte deckend und lesbar.
 
-**The Ein Hintergrundlicht Rule.** Die statische Akzentaufhellung gehört zum Hintergrund des Arbeitsraums. Einzelne Panels und Bedienelemente erhalten daraus keine eigenen farbigen Lichtkränze.
+**The Funktionale Glasfläche Rule.** Transparenz kennzeichnet Navigation und Werkzeuge oberhalb der Arbeitsinhalte. Einzelne Inhaltspanels erhalten keine farbigen Lichtkränze. Bei erhöhter Kontrastanforderung oder reduzierter Transparenz werden Glasflächen deckend und die Hintergrundunschärfe ausgeschaltet.
 
 Kurze Übergänge begleiten Hover, Konturwechsel, Navigation und aktive Zustände. Reguläre Aktionen verschieben sich beim Drücken leicht (1px). Die globale Regel für reduzierte Bewegung begrenzt Animationen und Übergänge; die ergänzende Produktregel entfernt die entsprechenden Zustandsübergänge und die Druckverschiebung. Die persönliche Darstellung benötigt keine zusätzliche Animation.
 
@@ -314,7 +316,7 @@ Konturen sind gewöhnlich (1px) stark. Innere Trennlinien verwenden `line-soft`,
 
 ### Buttons
 
-Primäraktionen verwenden den gewählten Akzent und `on-accent`, ihr Hover den familienabhängigen Hover-Wert. Sekundäre Aktionen verwenden `paper`, Ghost-Aktionen Transparenz und Gefahrenaktionen die semantische Fehlerfläche. Reguläre Buttons besitzen eine Mindesthöhe (42px); kleine Varianten (35px) und große Varianten (56px) bleiben eigene Größen. Mobil gelten regulär (48px), klein (44px) und groß (58px).
+Primäraktionen verwenden den gewählten Akzent und `on-accent`, ihr Hover den familienabhängigen Hover-Wert. Sekundäre Aktionen verwenden `paper`, Ghost-Aktionen Transparenz und Gefahrenaktionen die semantische Fehlerfläche. Reguläre Buttons besitzen eine Mindesthöhe (44px); kleine Varianten und große Varianten bleiben eigene Größen. Mobil gelten regulär (48px), klein (44px) und groß (58px).
 
 Beschriftungen dürfen verfügbare Breite nutzen, ergänzende SVG-Symbole schrumpfen nicht. Die Filteraktion und beschriftete Studio-Werkzeuge behalten vollständige Wörter. Im Studio trennen eigene Reihen Bearbeitung und Ansicht; kompakte Gruppen bleiben bei Platzmangel horizontal erreichbar. Deaktivierte Aktionen sind sichtbar gedimmt. Tastaturfokus bleibt eine Akzentkontur mit Abstand; globale und lokale Selektoren verwenden (2–3px).
 
@@ -384,7 +386,11 @@ Die Vorschau ändert sich sofort; die übrige Anwendung folgt nach **Darstellung
 
 ### Planungsstudio und Auswertungen
 
-Beide Studios beginnen mit einer vierteiligen Schrittleiste. Schrittzahl und Text bleiben gemeinsam sichtbar; der aktuelle Schritt besitzt eine Akzentfläche und `aria-current="step"`. Der darunterliegende Hinweis und die primäre Aktion passen zur Aufgabe. **KI für diesen Schritt** füllt zunächst eine Frage aus und nennt im Begleiter den tatsächlichen Schritt und die Auswahl. Auf kleinen Bildschirmen behält die kompakte KI-Aktion ihren vollständigen zugänglichen Namen. Der Schrittwechsel bleibt frei möglich und ist keine fachliche Freigabe.
+Beide Studios beginnen mit einer vierteiligen Schrittleiste. Auf dem Desktop stehen Schrittzahl und Text gemeinsam; mobil bleibt die kurze Schrittbezeichnung sichtbar. Der aktuelle Schritt besitzt eine erhabene Fläche, Akzenttext und `aria-current="step"`. Die primäre Aktion passt zur Aufgabe. **KI für diesen Schritt** füllt zunächst eine Frage aus und nennt im Begleiter den tatsächlichen Schritt und die Auswahl. Auf kleinen Bildschirmen behält die kompakte KI-Aktion ihren vollständigen zugänglichen Namen. Der Schrittwechsel bleibt frei möglich und ist keine fachliche Freigabe.
+
+Der Projektstart bietet Maßeingabe oder Plan/Foto als Ausgangspunkt. Kunden- und Auftragszuordnung bleibt optional aufklappbar; übernommene Beziehungen sind direkt sichtbar. Nach dem Anlegen öffnet sich der gewählte erste Arbeitsschritt. Eine proportionale Vorschau begleitet Stein- und Raummaße. Die Inschriftvorschau verwendet dieselbe Schrift-, Abstands-, Breiten- und Positionierungslogik wie der Plan. Ausgewählte Elemente bieten Bearbeiten, Einpassen, Duplizieren und Aufheben direkt über der Zeichenfläche. Tastenkürzel ergänzen dieselben sichtbaren Aktionen.
+
+Büro und Einkauf verwenden priorisierte Aufgabenübersichten. Zwei häufige Bereiche erhalten einen direkten Einstieg, weitere Bereiche kompakte Zeilen mit tatsächlichen Bestandszahlen. Alle übrigen berechtigten Fachbereiche bleiben durchsuchbar. Die primären Büroaktionen öffnen echte Angebots- und Rechnungsentwürfe. In Büroformularen folgt die hervorgehobene Abschnittsschaltfläche der sichtbaren Scrollposition.
 
 Ein leerer Plan zeigt den ersten sinnvollen Einstieg ohne leere Seitenbereiche. Formauswahl, Position, Drehung und Fertigungsdetails werden nach Bedarf geöffnet. Maße nennen Nutzung, Bezug und Einheit: lichte Raummaße gegenüber Wandachsmaßen, Außenmaße und Materialstärke am Stein. Eingetragene Planmaße bleiben von unbekannten und fachlich bestätigten Maßen unterscheidbar. Die Raumstückliste benennt ihren Achsbezug ausdrücklich.
 

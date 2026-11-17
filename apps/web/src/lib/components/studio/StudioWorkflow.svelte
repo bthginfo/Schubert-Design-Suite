@@ -72,4 +72,14 @@
 @media(max-width:1150px){.planning-flow{gap:7px}.planning-steps button{padding:6px;font-size:11px}.step-actions .flow-ai span{display:none}.planning-steps button :global(svg){display:none}}
 @media(max-width:760px){.planning-flow{display:block;padding:5px 8px}.planning-steps{gap:3px;margin-bottom:4px}.planning-steps button{min-height:46px;font-size:10px;padding:4px 3px;gap:3px}.step-number{width:20px;height:20px}.step-task{padding:0}.step-actions{width:100%;justify-content:space-between;gap:6px}.step-actions button{min-height:40px;font-size:11px}.flow-action{flex:1}.flow-ai{min-width:44px}.step-actions .flow-ai span{display:inline}}
 .step-short{display:none}@media(max-width:760px){.planning-steps{padding-block:6px;gap:4px}.planning-steps button{min-height:40px;flex-direction:row;gap:5px;padding:5px;font-size:12px;align-items:center;justify-content:center}.planning-steps .step-number{width:18px;height:18px;min-width:18px;font-size:10px}.planning-steps .step-long{display:none}.planning-steps .step-short{display:block;font-size:12px;line-height:1.35}.step-task{padding-bottom:6px}.step-actions button{min-height:40px}}
+.planning-flow{padding:4px 12px;background:var(--glass-surface);gap:12px;border-color:var(--line-soft)}
+.planning-steps{display:flex;padding:2px;border:1px solid var(--line-soft);border-radius:14px;background:var(--input-surface);gap:3px}
+.planning-steps button{min-height:40px;border:0;border-radius:10px;color:var(--muted);padding:8px;font-size:12px}
+.planning-steps button.current{background:var(--paper);color:var(--forest);box-shadow:var(--surface-shadow)}
+.step-number{border-radius:50%;width:21px;height:21px;font-size:10px;background:transparent}
+.current .step-number{background:var(--accent-wash);color:var(--forest)}
+.step-actions button{min-height:44px;border-radius:12px}
+.flow-action{background:var(--paper);box-shadow:var(--surface-shadow)}
+.flow-ai{background:transparent}
+@media(max-width:760px){.planning-flow{padding:6px}.planning-steps button{min-height:44px;padding:5px 3px}.planning-steps .step-number{display:none}.step-task{padding-bottom:0}.step-actions{padding-top:4px}.step-actions button{min-height:44px}.planning-steps{margin-bottom:4px}}
 </style>

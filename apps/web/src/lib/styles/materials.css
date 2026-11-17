@@ -1,0 +1,61 @@
+/* Translucent controls sit above opaque, readable working surfaces. */
+.nav-item.active {
+  background: light-dark(#ffffffd9, #c0d9ff12);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset, 0 2px 8px light-dark(#1b30570a, #00000012);
+}
+.nav-item { border-radius: 11px; }
+.sidebar .brand-name { letter-spacing: -.015em; font-weight: 650; }
+.sidebar .sidebar-feedback { background: transparent; border-color: var(--line); border-radius: 12px; }
+.sidebar .avatar { border-radius: 11px; }
+.rail-compact .sidebar { padding-inline: 8px; }
+.global-search { border-radius: 11px; }
+.app-shell .assistant-trigger {
+  min-height: 50px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass-surface);
+  color: var(--forest);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow), 0 8px 24px light-dark(#152b4e16,#0000002b);
+}
+.modal-header, .modal-footer { background: var(--glass-surface); }
+.modal-header h2 { font-size: 21px; letter-spacing: -.03em; }
+.modal-header .icon-button { border-radius: 50%; background: var(--wash); }
+.modal .field input, .modal .field textarea { border-radius: 11px; }
+.table-scroll { border-radius: 0 0 18px 18px; }
+.data-table th { background: var(--paper); color: var(--muted); font-weight: 500; }
+.data-table td { padding-block: 18px; font-size: 13px; }
+.data-table tbody tr { transition: background .15s ease; }
+.data-table tbody tr:hover { background: var(--input-surface); }
+.data-table .record-title { font-weight: 550; }
+.toolbar { gap: 12px; }
+.section-navigation .section-links {
+  border-color: var(--glass-border);
+  border-radius: 14px;
+  background: var(--glass-surface);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+.section-navigation .section-links a { min-height: 38px; border-radius: 10px; font-size: 13px; }
+.section-navigation .section-trigger { min-height: 44px; border-radius: 12px; }
+.mobile-nav {
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+@media (max-width: 760px) {
+  .topbar { top: 0; border-radius: 0; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .app-shell {
+    --glass-surface: var(--paper);
+    --glass-border: var(--line);
+    --glass-highlight: transparent;
+    --glass-blur: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .data-table tbody tr { transition: none; }
+}

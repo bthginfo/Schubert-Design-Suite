@@ -18,6 +18,7 @@
   import{describeStudioIssue}from'./studio/issues.ts';
   import Icon from './Icon.svelte';
   import StudioWorkflow from './studio/StudioWorkflow.svelte';
+  import SelectionBar from './studio/SelectionBar.svelte';
   import ManufacturerPicker from './studio/ManufacturerPicker.svelte';
   import OutlineImportDialog from './studio/OutlineImportDialog.svelte';
   let manufacturerOpen=$state(false),libraryOutlineOpen=$state(false),librarySourceVersion=$state(''),librarySourceUnit=$state(''),libraryTargetId=$state('');
@@ -41,7 +42,7 @@
     if(next==='review'){openInspector('checks');return;}
     if(next==='output'){openInspector('images');return;}
     const current=snapshot;if(!current)return;
-    const candidate=current.elements.find(e=>next==='geometry'?(current.kind==='memorial'?e.kind==='stone_piece':e.kind==='wall'):(current.kind==='memorial'?e.kind==='inscription':e.kind==='stone_piece'||e.kind==='surface'));
+    const candidate=current.elements.find(e=>next==='geometry'?(current.kind==='memorial'||selectedPreset.firstElement==='stone_piece'?e.kind==='stone_piece':e.kind==='wall'):(current.kind==='memorial'?e.kind==='inscription':e.kind==='stone_piece'||e.kind==='surface'));
     if(candidate)selectedIds=[candidate.id];
     openInspector('properties');
   }
@@ -142,6 +143,16 @@
   function selectFromTree(id:string,event:MouseEvent){select(id,event);if(!compactWorkbench)rightPanel=true;if(compactWorkbench&&!multiSelect&&!event.shiftKey){leftPanel=false;void tick().then(()=>canvas?.focus({preventScroll:true}));}}
   let projectPresetId:PlanningPreset=$state('memorial_new');
   let projectName=$state(''),projectKind:'memorial'|'room_plan'=$state('memorial'),orderId=$state(''),siteId=$state(''),gravePlotId=$state(''),creating=$state(false);
+  let startMethod=$state<'dimensions'|'source'>('dimensions');
+  let sourceOpenedFor='';
+  $effect(()=>{
+    if(!mounted||!snapshot||!data.detail||sourceOpenedFor===snapshot.planningProjectId)return;
+    if(page.url.searchParams.get('source')==='1'){
+      sourceOpenedFor=snapshot.planningProjectId;sourceReferenceId='';sourcePlanOpen=true;
+    }else if(page.url.searchParams.get('start')==='1'&&!snapshot.elements.length){
+      sourceOpenedFor=snapshot.planningProjectId;addKind=selectedPreset.firstElement;
+    }
+  });
   const selectedPreset=$derived(planningPreset(data.detail?.workflow_preset??projectPresetId,data.detail?.kind??projectKind));
   let appliedOrderContext:string|null=null;
   const customerPlanTargets=$derived((data.lookups?.orders?.length??0)+(projectKind==='memorial'?(data.lookups?.grave_plots?.length??0):(data.lookups?.sites?.length??0)));
@@ -256,7 +267,7 @@
   function storeLocal(){if(!mounted||!snapshot)return;const payload={baseRevisionId,operations:pending,savedAt:new Date().toISOString()};try{if(pending.length)sessionStorage.setItem(storageKey,JSON.stringify(payload));else sessionStorage.removeItem(storageKey);}catch{localAvailable=false;}}
   $effect(()=>{storeLocal();});
   $effect(()=>{if(mounted&&pending.length&&!saving&&!conflict&&!error&&!leaveOpen&&!navigationBusy&&data.connected){const timeout=setTimeout(()=>void save(),1600);return()=>clearTimeout(timeout);}});
-  async function createProject(event:SubmitEvent){event.preventDefault();creating=true;error='';try{const result=await command('planning.project.create',undefined,{name:projectName,kind:projectKind,workflow_preset:selectedPreset.id,...(projectCustomer?{customer_id:projectCustomer.id}:{}),...(orderId?{order_id:orderId}:{}),...(projectKind==='room_plan'&&siteId?{site_id:siteId}:{}),...(projectKind==='memorial'&&gravePlotId?{grave_plot_id:gravePlotId}:{})});await goto(`/studio/${result.project.id}?variant=${result.variant.id}`);await invalidateAll();}catch(e){error=(e as Error).message;}finally{creating=false;}}
+  async function createProject(event:SubmitEvent){event.preventDefault();creating=true;error='';try{const result=await command('planning.project.create',undefined,{name:projectName,kind:projectKind,workflow_preset:selectedPreset.id,...(projectCustomer?{customer_id:projectCustomer.id}:{}),...(orderId?{order_id:orderId}:{}),...(projectKind==='room_plan'&&siteId?{site_id:siteId}:{}),...(projectKind==='memorial'&&gravePlotId?{grave_plot_id:gravePlotId}:{})});await goto(`/studio/${result.project.id}?variant=${result.variant.id}${startMethod==='source'?'&source=1':'&start=1'}`);await invalidateAll();}catch(e){error=(e as Error).message;}finally{creating=false;}}
   function applyBatch(operations:DesignOperation[],id?:string,track=true){if(!snapshot||isHistoric)throw new Error('Diesen historischen Stand zuerst als neue Variante öffnen.');if(!canEdit)throw new Error('Zum Bearbeiten fehlt die Planungsberechtigung.');const before=snapshot;const after=applyOperations(before,operations);let inverse:DesignOperation[]|null=null;try{inverse=inverseOperations(before,operations);}catch{/* Atomic batches can have temporary forward references. */}snapshot=after;pending=[...pending,...operations];error='';notice='';if(track){history=[...history,{operations,inverse,before,after}];redo=[];}if(id){selectedIds=[id];if(!compactWorkbench){leftPanel=false;rightPanel=true;}tab='properties';if(after.elements.find(e=>e.id===id)?.kind==='inscription')planningStep='design';}}
   function edit(operations:DesignOperation[]){try{if(operations.some(o=>['confirm_design_target','confirm_survey_measurement','set_inscription_originals','confirm_contour_import'].includes(o.type)))void reviewMeasures(operations);else applyBatch(operations);}catch(e){error=(e as Error).message;}}
   async function reviewMeasures(operations:DesignOperation[]){if(!snapshot||!canEdit||isHistoric)return;try{if(pending.length&&!(await save()))return;await sendDirect(operations);notice='Fachliche Bestätigung auf dem Server gespeichert.';}catch(e){error=(e as Error).message;}}
@@ -279,6 +290,32 @@
   function select(id:string,event?:MouseEvent|KeyboardEvent){if(event?.shiftKey||multiSelect)selectedIds=selectedIds.includes(id)?selectedIds.filter(v=>v!==id):[...selectedIds,id];else selectedIds=[id];const item=snapshot?.elements.find(e=>e.id===id);if(item?.kind==='inscription')planningStep='design';else if(['review','output'].includes(planningStep))planningStep='geometry';tab='properties';}
   function path(shape:ViewShape){return shape.points.map((p,i)=>`${i?'L':'M'} ${p.xMm} ${-Number(p.yMm)}`).join(' ')+(shape.closed?' Z':'')+' '+shape.holes.map(h=>h.map((p,i)=>`${i?'L':'M'} ${p.xMm} ${-Number(p.yMm)}`).join(' ')+' Z').join(' ');}
   function fit(){zoom=1;panX=0;panY=0;threeReset++;}
+  function fitSelection(){
+    if(!canvas||view==='3d')return;
+    const inverse=canvas.getScreenCTM()?.inverse();
+    if(!inverse)return;
+    const selectedNodes=canvas.querySelectorAll<SVGGraphicsElement>('.plan-shape[aria-pressed="true"],.lettering-preview[aria-pressed="true"]');
+    const points=[...selectedNodes].flatMap(node=>{
+      const box=node.getBoundingClientRect();
+      return [new DOMPoint(box.left,box.top).matrixTransform(inverse),new DOMPoint(box.right,box.bottom).matrixTransform(inverse)];
+    });
+    if(!points.length)return;
+    const minX=Math.min(...points.map(point=>point.x)),maxX=Math.max(...points.map(point=>point.x));
+    const minY=Math.min(...points.map(point=>point.y)),maxY=Math.max(...points.map(point=>point.y));
+    const width=bounds.width+padding.x*2,height=bounds.height+padding.y*2;
+    const next=Math.max(.15,Math.min(12,width/Math.max(1,(maxX-minX)*1.5),height/Math.max(1,(maxY-minY)*1.5)));
+    panX=(minX+maxX)/2-(bounds.minX-padding.x)-width/next/2;
+    panY=(minY+maxY)/2-(-bounds.maxY-padding.y)-height/next/2;
+    zoom=next;
+  }
+  async function editSelection(){
+    openInspector('properties');
+    await tick();
+    const body=studioRoot?.querySelector<HTMLElement>('.inspector-body');
+    const control=body?.querySelector<HTMLElement>(selected?.kind==='inscription'?'textarea':'.inspector-section input:not(:disabled),.inspector-section textarea');
+    control?.focus({preventScroll:true});
+    control?.scrollIntoView({block:'nearest'});
+  }
   function navigateCamera(action:CameraAction){threeCameraCommand={id:++cameraCommandNumber,action};}
   function changeZoom(larger:boolean){if(view==='3d')navigateCamera(larger?'zoom_in':'zoom_out');else {const next=larger?Math.min(12,zoom*1.25):Math.max(.15,zoom/1.25);panX=centeredZoom(panX,bounds.width+padding.x*2,zoom,next);panY=centeredZoom(panY,bounds.height+padding.y*2,zoom,next);zoom=next;}}
   async function setView(next:DesignView|'3d'){if(view!==next){zoom=1;panX=0;panY=0;}if(view!==next&&next==='3d'){threeCameraCommand=null;threeZoom=1;}view=next;if(next==='3d'&&!ThreePreview){threeLoading=true;try{ThreePreview=(await import('./studio/ThreePreview.svelte')).default;}catch(e){error='Die 3D-Ansicht konnte nicht geladen werden.';}finally{threeLoading=false;}}}
@@ -296,6 +333,14 @@
     if(target?.closest('input,textarea,select,[contenteditable="true"],[role="combobox"]'))return;
     if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'){event.preventDefault();event.shiftKey?redoAction():undo();}
     if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){event.preventDefault();void save();}
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='d'&&selected&&canEdit&&!isHistoric&&!selected.locked){event.preventDefault();duplicate();}
+    if(!event.ctrlKey&&!event.metaKey&&!event.altKey&&!target?.closest('button,a,summary')){
+      if(event.key==='Enter'&&selected){event.preventDefault();void editSelection();}
+      if(event.key.toLowerCase()==='f'&&selected&&view!=='3d'){event.preventDefault();fitSelection();}
+      if(event.key==='0'){event.preventDefault();fit();}
+      if(event.key.toLowerCase()==='v'){event.preventDefault();mode='move';}
+      if(event.key.toLowerCase()==='h'){event.preventDefault();mode='pan';}
+    }
     if(event.key==='Escape'&&(selectedIds.length||addKind)){event.preventDefault();selectedIds=[];addKind='';}
     if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)&&view!=='3d'&&!target?.closest('button,a,summary')&&selected&&!selected.locked&&!isHistoric){event.preventDefault();const amount=event.shiftKey?10:1;moveSelection(event.key==='ArrowLeft'?-amount:event.key==='ArrowRight'?amount:0,event.key==='ArrowDown'?-amount:event.key==='ArrowUp'?amount:0);}
   }
@@ -340,7 +385,7 @@
   <div class="page-heading"><div><h1>Planungsstudio</h1><p>Grabmale und Räume. Eine Planung verbindet Maße, Gestaltung, Stückliste und Freigaben.</p></div></div>
   {#if projectCustomer}<div class="order-context"><span>Planungen für <strong>{projectCustomer.name}</strong></span><a class="text-link" href={`/customers/${projectCustomer.id}`}>Zur Kundenübersicht<Icon name="arrow" size={14}/></a><a class="text-link" href="/studio">Alle Planungen</a></div>{/if}{#if projectOrder}<div class="order-context"><span>Planungen zu <strong>{projectOrder.name}</strong></span>{#if canViewOrders}<a class="text-link" href={`/orders/${projectOrder.id}`}>Zum Auftrag<Icon name="arrow" size={14}/></a>{/if}<a class="text-link" href="/studio">Alle Planungen</a></div>{/if}
   {#if error}<div class="notice danger" role="alert">{error}</div>{/if}
-  <section class="studio-entry"><div class="entry-intro"><h2>Was möchten Sie planen?</h2><p>Öffnen Sie einen vorhandenen Entwurf oder beginnen Sie mit einem konkreten Objekt. Fehlende Maße bleiben sichtbar.</p><div class="entry-types" data-tour="studio-types"><button class:chosen={projectKind==='memorial'} onclick={()=>projectKind='memorial'}><Icon name="pen" size={23}/><span>Grabmalstudio<small>Stein, Inschrift & Erinnerung</small></span><Icon name="arrow" size={18}/></button><button class:chosen={projectKind==='room_plan'} onclick={()=>projectKind='room_plan'}><Icon name="box" size={23}/><span>Raum & Naturstein<small>Aufmaß, Bauteile & Material</small></span><Icon name="arrow" size={18}/></button></div></div>{#if projectCustomer&&!customerPlanTargets}<section class="project-form"><h3>Zuerst das Vorhaben zuordnen</h3><p class="small muted">Damit die Planung bei {projectCustomer.name} bleibt, braucht sie einen Auftragsentwurf, ein Objekt oder eine Grabstätte dieses Kunden.</p>{#if data.context?.permissions.includes('orders')}<a class="btn primary" href={'/orders?create=1&customer_id='+projectCustomer.id}>Auftragsentwurf anlegen<Icon name="arrow" size={16}/></a>{:else}<a class="btn" href={`/customers/${projectCustomer.id}`}>Zur Kundenübersicht</a><p class="small muted">Das Büro kann das Vorhaben zuordnen. Hierfür ist noch keine Auftragsbestätigung erforderlich.</p>{/if}</section>{:else}<form class="project-form" onsubmit={createProject}><h3>Neues Planungsprojekt</h3><label>Projektname<input bind:value={projectName} required placeholder={projectKind==='memorial'?'Zum Beispiel Grabmal Familie Weber':'Zum Beispiel Bad Erdgeschoss'}/></label><label>Vorhaben<select use:searchableSelect={selectedPreset.id} value={selectedPreset.id} onchange={event=>projectPresetId=event.currentTarget.value as PlanningPreset}>{#each planningPresets.filter(preset=>preset.kind===projectKind) as preset}<option value={preset.id}>{preset.label}</option>{/each}</select><small>{selectedPreset.hint}. Maße werden nicht vorgegeben.</small></label><label>Auftragsbezug<ReferencePicker id="planning-project-order" reference="orders" bind:value={orderId} initial={data.lookups?.orders??[]} parentId={projectCustomer?.id}/></label><label>{projectKind==='memorial'?'Grabstätte':'Objekt / Baustelle'}<ReferencePicker id="planning-project-object" reference={projectKind==='memorial'?'graves':'sites'} value={projectKind==='memorial'?gravePlotId:siteId} initial={projectKind==='memorial'?(data.lookups?.grave_plots??[]):(data.lookups?.sites??[])} parentId={projectCustomer?.id} onchange={id=>{if(projectKind==='memorial')gravePlotId=id;else siteId=id;}}/></label><button class="btn primary" type="submit" disabled={creating||!canEdit}><Icon name="plus" size={17}/>{creating?'Wird angelegt …':'Planung beginnen'}</button><p class="small muted">Alle Entwürfe sind versioniert. Freigaben erfolgen auf einem bestimmten Planstand.</p></form>{/if}</section>
+  <section class="studio-entry"><div class="entry-intro"><h2>Was möchten Sie planen?</h2><p>Wählen Sie Ihr Vorhaben. Beginnen Sie mit eigenen Maßen oder einem vorhandenen Plan.</p><div class="entry-types" data-tour="studio-types"><button type="button" aria-pressed={projectKind==='memorial'} class:chosen={projectKind==='memorial'} onclick={()=>projectKind='memorial'}><Icon name="pen" size={23}/><span>Grabmalstudio<small>Stein, Inschrift & Erinnerung</small></span><Icon name="arrow" size={18}/></button><button type="button" aria-pressed={projectKind==='room_plan'} class:chosen={projectKind==='room_plan'} onclick={()=>projectKind='room_plan'}><Icon name="box" size={23}/><span>Raum & Naturstein<small>Aufmaß, Bauteile & Material</small></span><Icon name="arrow" size={18}/></button></div></div>{#if projectCustomer&&!customerPlanTargets}<section class="project-form"><h3>Zuerst das Vorhaben zuordnen</h3><p class="small muted">Damit die Planung bei {projectCustomer.name} bleibt, braucht sie einen Auftragsentwurf, ein Objekt oder eine Grabstätte dieses Kunden.</p>{#if data.context?.permissions.includes('orders')}<a class="btn primary" href={'/orders?create=1&customer_id='+projectCustomer.id}>Auftragsentwurf anlegen<Icon name="arrow" size={16}/></a>{:else}<a class="btn" href={`/customers/${projectCustomer.id}`}>Zur Kundenübersicht</a><p class="small muted">Das Büro kann das Vorhaben zuordnen. Hierfür ist noch keine Auftragsbestätigung erforderlich.</p>{/if}</section>{:else}<form class="project-form" onsubmit={createProject}><h3>Ihre neue Planung</h3><label>Projektname<input bind:value={projectName} required placeholder={projectKind==='memorial'?'Zum Beispiel Grabmal Familie Weber':'Zum Beispiel Bad Erdgeschoss'}/></label><label>Vorhaben<select use:searchableSelect={selectedPreset.id} value={selectedPreset.id} onchange={event=>projectPresetId=event.currentTarget.value as PlanningPreset}>{#each planningPresets.filter(preset=>preset.kind===projectKind) as preset}<option value={preset.id}>{preset.label}</option>{/each}</select><small>{selectedPreset.hint}. Maße werden nicht vorgegeben.</small></label><details class="project-associations" open={!!projectCustomer||!!projectOrder}><summary>Kunde &amp; Auftrag zuordnen<span>{orderId||siteId||gravePlotId?'Zugeordnet':'Optional'}</span></summary><label>Auftragsbezug<ReferencePicker id="planning-project-order" reference="orders" bind:value={orderId} initial={data.lookups?.orders??[]} parentId={projectCustomer?.id}/></label><label>{projectKind==='memorial'?'Grabstätte':'Objekt / Baustelle'}<ReferencePicker id="planning-project-object" reference={projectKind==='memorial'?'graves':'sites'} value={projectKind==='memorial'?gravePlotId:siteId} initial={projectKind==='memorial'?(data.lookups?.grave_plots??[]):(data.lookups?.sites??[])} parentId={projectCustomer?.id} onchange={id=>{if(projectKind==='memorial')gravePlotId=id;else siteId=id;}}/></label></details><fieldset class="start-method"><legend>Wie möchten Sie beginnen?</legend><button type="button" aria-pressed={startMethod==='dimensions'} onclick={()=>startMethod='dimensions'}><Icon name="pen" size={17}/>Mit Maßen</button><button type="button" aria-pressed={startMethod==='source'} onclick={()=>startMethod='source'}><Icon name="upload" size={17}/>Mit Plan / Foto</button></fieldset><button class="btn primary" type="submit" disabled={creating||!canEdit}><Icon name="plus" size={17}/>{creating?'Wird angelegt …':'Planung beginnen'}</button><p class="start-hint">{startMethod==='source'?'Nach dem Anlegen wählen Sie Ihren Plan oder Ihr Foto aus und legen den Maßstab fest.':'Im nächsten Schritt geben Sie Form und Grundmaße ein.'}</p></form>{/if}</section>
   <section class="project-list"><header><h2>{projectOrder?'Planungen zu diesem Auftrag':'Ihre Planungen'}</h2><span>{data.records.length} angezeigt</span></header><form class="project-search" action="/studio" method="GET">{#if projectCustomer}<input type="hidden" name="customer_id" value={projectCustomer.id}/>{/if}{#if projectOrder}<input type="hidden" name="order" value={projectOrder.id}/>{/if}<label class="sr-only" for="studio-project-search">Planung suchen</label><input id="studio-project-search" type="search" name="q" maxlength="120" value={data.summary?.projectSearch??''} placeholder="Projektname suchen …"/><button class="btn" type="submit"><Icon name="search" size={16}/>Suchen</button>{#if data.summary?.projectSearch}<a class="btn" href={projectListHref}>Zurücksetzen</a>{/if}</form>{#each data.records as project}<a href={`/studio/${project.id}`}><span class="project-icon"><Icon name={project.kind==='memorial'?'pen':'box'} size={20}/></span><span><strong>{recordName(project)}</strong><small>{project.kind==='memorial'?'Grabmalstudio':'Raum & Naturstein'} · {statuses[project.status]??'Entwurf'}</small></span><Icon name="arrow" size={18}/></a>{:else}<p class="empty-projects">{data.summary?.projectSearch?'Keine Planung zu diesem Namen gefunden. Ändern Sie den Suchbegriff.':projectOrder?'Zu diesem Auftrag gibt es noch keine Planung. Beginnen Sie oben mit dem ersten Entwurf.':'Hier erscheinen Ihre ersten Planungen. Legen Sie oben ein Projekt an.'}</p>{/each}{#if data.summary?.projectNext}<footer><a class="btn" href={data.summary.projectNext}>Weitere Planungen<Icon name="arrow" size={15}/></a></footer>{/if}</section>
   <section class="library-section"><h2>Objekte & Planungsbibliotheken</h2>{#if data.context?.permissions?.some(p=>p==='*'||p==='catalog'||p==='catalog.*')}<button class="btn" onclick={importStoneLibrary}>Steinbibliothek ergänzen</button>{/if}<p>Eigene Quellen, geprüfte Materialien und reale Herstellerfassungen vorbereiten.</p><div>{#each [['buildings','Gebäude'],['floors','Geschosse'],['rooms','Räume'],['materials','Materialien'],['material-versions','Materialstände'],['product-variants','Produktausführungen'],['product-versions','Produktstände'],['product-availability','Verfügbarkeitsauskünfte'],['product-assets','Herstellerdateien'],['fonts','80 Schriftreferenzen'],['glyph-library','Originalzeichen'],['edge-treatments','Kantenprofile'],['material-boards','Materialboards']] as [href,label]}<a href={`/${href}`}>{label}<Icon name="arrow" size={13}/></a>{/each}</div></section>
 {:else if !snapshot}
@@ -404,7 +449,8 @@
       </div>
 
     </div>
-    <div class="tool-hint"><span>{view==='3d'?'Ziehen dreht das Modell. Ein kurzer Klick öffnet die Angaben zum Bauteil.':mode==='pan'?'Ziehen bewegt nur die Ansicht. Zum Ändern eines Bauteils „Bearbeiten“ wählen.':mode==='select'?'Nur auswählen: Bauteile anklicken, ohne sie zu verschieben.':'Bauteil anklicken: Angaben öffnen. Ziehen: Bauteil verschieben.'}</span>{#if selected}<button class="selection-properties" title={`Angaben öffnen: ${selected.label}`} onclick={()=>openInspector('properties')}>{selected.label}<Icon name="chevron" size={12}/></button>{/if}<button id="studio-help-toggle" class="studio-help-tool" popovertarget="studio-help-menu" aria-label="So geht's: Bedienhilfe öffnen"><Icon name="help" size={18}/><span>So geht's</span></button></div>
+    {#if selected}<SelectionBar label={selected.label} count={selectedIds.length} locked={selected.locked} editable={canEdit&&!isHistoric&&!selected.locked} canFit={view!=='3d'} onedit={()=>void editSelection()} onfit={fitSelection} onduplicate={duplicate} onclear={()=>selectedIds=[]}/>{:else}
+<div class="tool-hint"><span>{view==='3d'?'Ziehen dreht das Modell. Anklicken wählt ein Bauteil.':mode==='pan'?'Ziehen bewegt die Ansicht. Mit V wieder bearbeiten.':'Anklicken zum Auswählen · Ziehen zum Verschieben'}</span><button id="studio-help-toggle" class="studio-help-tool" popovertarget="studio-help-menu" aria-label="So geht's: Bedienhilfe öffnen"><Icon name="help" size={18}/><span>So geht’s</span></button></div>{/if}
   </div>
       <div class="drawing-area">{#if view==='3d'}{#if ThreePreview}<ThreePreview materials={data.related?.materials??[]} {showWalls} snapshot={activeSnapshot!} resetKey={threeReset} assets={data.related?.assets??[]} glyphs={data.related?.glyphs??[]} navigationCommand={threeCameraCommand} onzoomchange={(value:number)=>threeZoom=value} onselect={(id:string)=>{select(id);if(!compactWorkbench)rightPanel=true;}}>{#snippet children()}{#if snapshot?.kind==='room_plan'}<button class="wall-visibility-tool" role="switch" aria-checked={showWalls} aria-label="Wände in 3D anzeigen" title={showWalls?'Wände ausblenden und in den Raum sehen':'Wände wieder einblenden'} onclick={()=>showWalls=!showWalls}><Icon name="box" size={17}/><span>Wände</span><span class="wall-visibility-state" aria-hidden="true">{showWalls?'Ein':'Aus'}</span></button>{/if}{/snippet}</ThreePreview>{:else}<div class="canvas-empty"><div class="canvas-empty-content"><Icon name="box" size={30}/><h3>{threeLoading?'3D wird geladen …':'3D-Ansicht nicht verfügbar'}</h3><p>Die übrigen Ansichten bleiben bearbeitbar.</p></div></div>{/if}
 
@@ -495,7 +541,7 @@
 <style>
 /* The application theme supplies surfaces. Technical drawing paper stays physical. */
 .studio-root{container-type:inline-size;--studio-ink:var(--ink);--studio-green:var(--forest);--studio-muted:var(--muted);--studio-border:var(--line);color:var(--ink);min-width:0}
-.studio-root.workbench{display:flex;flex-direction:column;height:var(--workbench-height,calc(100dvh - 200px));min-height:320px;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--panel-shadow,0 8px 26px #08111f0e);box-sizing:border-box}
+.studio-root.workbench{display:flex;flex-direction:column;height:var(--workbench-height,calc(100dvh - 200px));min-height:320px;overflow:hidden;background:var(--workspace-surface);border:1px solid var(--glass-border,var(--line));border-radius:24px;box-shadow:var(--content-shadow);box-sizing:border-box}
 .studio-root.workbench.is-fullscreen,.studio-root.workbench:fullscreen{position:fixed;inset:0;z-index:180;width:100%;height:100dvh;min-height:0;max-height:100dvh;max-width:none;padding:0;margin:0;overflow:hidden;border:0;border-radius:0;background:var(--paper);box-shadow:none;overscroll-behavior:contain}
 .studio-heading{flex:none;min-width:0;padding:11px 16px 12px;border-bottom:1px solid var(--line-soft,var(--line));background:var(--paper)}
 .studio-breadcrumb{display:flex;align-items:center;gap:7px;min-width:0;margin:0 0 7px;font-size:11px;line-height:1.4;color:var(--muted);white-space:nowrap;overflow:auto}
@@ -861,7 +907,7 @@
 .floating-toolbar .add-tool{background:var(--forest);color:var(--on-accent);font-weight:550}.floating-toolbar .add-tool small{color:inherit;opacity:.85}.floating-toolbar .add-tool:hover{background:var(--forest-dark)}
 .floating-toolbar .tool-group,.floating-toolbar .panel-tools{display:flex;align-items:stretch;gap:3px}.floating-toolbar .tool-group{padding-right:5px;border-right:1px solid var(--line)}.floating-toolbar .manufacturer-tool{min-width:0}.mobile-panel-label{display:none!important}
 .three-tool-hint{display:flex;align-items:center;gap:8px;margin:0;padding:5px 10px;color:var(--muted);font-size:12px}
-.tool-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:27px;padding:1px 6px;color:var(--muted);font-size:11px;line-height:1.5}.tool-hint>span{flex:1}.tool-hint .selection-properties{min-height:24px;max-width:42%;padding:2px 5px;color:var(--forest);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tool-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:27px;padding:1px 6px;color:var(--muted);font-size:11px;line-height:1.5}.tool-hint>span{flex:1}
 .floating-toolbar .studio-help-tool{margin-left:auto;min-height:30px;padding:4px 6px;font-size:11px;color:var(--forest);flex:none}.floating-toolbar .studio-help-tool:hover{background:var(--paper)}
 .header-history{display:flex;gap:2px;margin-right:5px}.header-history button{display:grid;place-items:center;width:34px;min-height:36px;padding:5px;border:0;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer}.header-history button:hover{background:var(--wash)}.header-history button:disabled{opacity:.4;cursor:default}.header-history button:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
 .wall-visibility-tool{position:absolute;top:12px;right:12px;z-index:2;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:11px;background:var(--paper);color:var(--ink);box-shadow:0 3px 15px #17274018;font:inherit;font-size:13px;cursor:pointer}.wall-visibility-tool:hover{border-color:var(--forest)}.wall-visibility-tool:focus-visible{outline:2px solid var(--forest);outline-offset:3px}.wall-visibility-state{min-width:28px;padding:3px 7px;border-radius:9px;background:var(--wash);color:var(--muted);font-size:13px;text-align:center}.wall-visibility-tool[aria-checked="true"] .wall-visibility-state{background:var(--forest);color:var(--paper)}
@@ -877,9 +923,69 @@
 @media(max-width:760px){
  .floating-toolbar{margin:6px 7px 0}.floating-toolbar .main-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:5px;gap:4px;border-radius:13px}.floating-toolbar button{min-width:0;min-height:42px;padding:6px;gap:5px;font-size:12px}.floating-toolbar small{display:none}.floating-toolbar .add-tool{grid-column:1;grid-row:1}.floating-toolbar .tool-modes{display:grid;grid-template-columns:1fr 1fr;grid-column:2;grid-row:1;border:0;padding:0;gap:2px}.floating-toolbar .tool-modes button{flex-direction:column;gap:2px;font-size:10px;padding:3px}.floating-toolbar .tool-modes button span{font-size:12px;line-height:1.2}.floating-toolbar .three-tool-hint{grid-column:2;grid-row:1;font-size:12px;line-height:1.4;padding:3px}
  .floating-toolbar .manufacturer-tool{grid-column:1;grid-row:2;justify-content:center}.floating-toolbar .manufacturer-tool span{display:inline;font-size:12px}.floating-toolbar .panel-tools{display:grid;grid-template-columns:1fr 1fr;grid-column:2;grid-row:2;gap:2px}.floating-toolbar .panel-tools button{flex-direction:column;gap:2px;min-width:0;font-size:10px;padding:3px}.floating-toolbar .panel-tools button span{display:block;font-size:12px}.floating-toolbar .panel-tools .desktop-panel-label{display:none!important}.floating-toolbar .panel-tools .mobile-panel-label{display:block!important}
- .floating-toolbar .tool-hint{min-height:29px;padding:2px 4px;gap:6px}.tool-hint>span{display:none}.tool-hint .selection-properties{max-width:62%;min-height:28px;justify-content:flex-start;font-size:11px}.floating-toolbar .studio-help-tool{min-height:30px;font-size:11px}.header-history{display:none}
+ .floating-toolbar .tool-hint{min-height:29px;padding:2px 4px;gap:6px}.tool-hint>span{display:none}.floating-toolbar .studio-help-tool{min-height:30px;font-size:11px}.header-history{display:none}
  .view-dock{margin:3px 7px 6px;padding:5px 7px;gap:4px;border-radius:12px;min-height:44px}.view-dock .view-tools{width:100%;gap:3px;justify-content:space-between;flex-wrap:nowrap}.view-dock button{min-height:38px;padding:5px 7px;font-size:11px}.view-dock .view-toggle{gap:0;padding:2px}.view-dock .view-toggle button{min-height:34px;padding:5px 8px}.view-dock .studio-unit-control>span{display:none}.view-dock .studio-unit-control select{min-height:38px;font-size:16px;min-width:58px;padding:5px}.view-dock .display-tool>span,.view-dock .fit-button>span{display:none}.view-dock .display-tool>:global(svg:last-child){display:none}.view-dock .zoom-control{justify-content:center;width:100%;border:0;padding:0;gap:9px}.view-dock .zoom-control button{min-height:30px;min-width:40px;font-size:17px}.view-dock .zoom-control span{min-width:40px;text-align:center}
  .inspector>nav button{min-height:44px}.add-menu button,.inspector-menu button{min-height:58px}.add-menu button strong{font-size:14px}.add-menu button small{font-size:12px}
 }
 @media(prefers-reduced-motion:reduce){.floating-toolbar *,.view-dock *{transition:none;scroll-behavior:auto}}
+/* Spacious content surfaces and a translucent layer for the working controls. */
+.studio-entry{border-color:var(--line-soft);border-radius:22px;box-shadow:var(--content-shadow)}
+.entry-intro{background:transparent;padding:30px}
+.entry-intro h2{font-size:27px;letter-spacing:-.035em}
+.entry-intro>p{font-size:14px;max-width:42ch;line-height:1.75}
+.entry-types{gap:12px}
+.entry-types button{border-radius:15px;padding:17px;min-height:82px;background:var(--paper);box-shadow:var(--content-shadow)}
+.entry-types button.chosen{background:var(--accent-wash);border-color:color-mix(in srgb,var(--forest) 45%,var(--line));box-shadow:none}
+.project-form{padding:30px;background:var(--paper)}
+.project-form h3{font-size:19px;margin-bottom:19px;letter-spacing:-.025em}
+.project-form :global(input),.project-form select{border-radius:11px}
+.project-associations{margin:19px 0 0}
+.project-associations>summary{gap:8px;background:var(--input-surface);font-size:13px}
+.project-associations>summary span{margin-left:auto;font-size:11px;color:var(--muted)}
+.project-associations>label:last-child{margin-bottom:10px}
+.start-method{display:flex;gap:6px;margin:22px 0 18px;padding:5px;border:1px solid var(--line);border-radius:13px;background:var(--input-surface);min-width:0}
+.start-method legend{float:left;width:100%;padding:0;position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:nowrap}
+.start-method button{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;min-width:0;min-height:44px;padding:9px 8px;border-radius:9px;font:inherit;font-size:13px;line-height:1.4;color:var(--muted)}
+.start-method button[aria-pressed=true]{background:var(--paper);color:var(--ink);box-shadow:var(--surface-shadow)}
+.project-form .start-hint{font-size:12px;line-height:1.65;color:var(--muted);margin:12px 0 0}
+.project-list{border-color:var(--line-soft);border-radius:20px;box-shadow:var(--content-shadow)}
+.project-list>a{padding:16px 23px}
+.project-list>a:last-of-type{border-bottom:0}
+.project-icon{width:40px;height:40px;border-radius:12px}
+.studio-workspace{gap:10px;padding:10px;background:var(--workspace-surface)}
+.canvas-panel{border-radius:18px;border:1px solid var(--line-soft);background:var(--paper);box-shadow:var(--content-shadow)}
+.studio-root.workbench .studio-heading{padding:8px 16px;background:var(--glass-surface);border-bottom-color:var(--line-soft)}
+.workbench .studio-breadcrumb{display:none}
+.workbench .heading-actions .btn{min-height:42px;border-radius:12px}
+.workbench .studio-title-row h1{font-size:19px}
+.floating-toolbar{margin:10px 10px 0}
+.floating-toolbar .main-tools{gap:3px;background:var(--glass-surface);border-color:var(--glass-border);border-radius:15px;box-shadow:var(--glass-shadow);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur)}
+.floating-toolbar small{display:none}
+.floating-toolbar .panel-tools{margin-left:auto}
+.floating-toolbar button{min-height:42px;font-size:12px}
+.tool-hint{min-height:32px;padding-inline:7px}
+.drawing-area>svg{background:#f7f8fa}
+.view-dock{background:var(--glass-surface);border-color:var(--glass-border);border-radius:15px;box-shadow:var(--glass-shadow);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);margin:6px 10px;padding:4px 9px}
+.view-dock .view-toggle{padding:2px}
+.workbench .view-toggle button{min-height:40px;border-radius:10px}
+.workbench-popover{border:1px solid var(--glass-border);border-radius:20px;background:var(--glass-surface);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);box-shadow:var(--overlay-shadow)}
+.workbench .workbench-status{background:var(--workspace-surface);border-color:var(--line-soft)}
+.inspector>nav{background:var(--input-surface);border-color:var(--line-soft);padding:5px}
+.inspector>nav button.active{background:var(--paper);color:var(--forest);box-shadow:var(--surface-shadow)}
+.inspector-body{padding:20px 18px 26px}
+.inspector-body fieldset>details>summary{border-radius:12px}
+@media(min-width:1281px){.studio-entry{grid-template-columns:minmax(0,.85fr) minmax(0,1fr)}}
+@media(max-width:760px){
+  .entry-intro,.project-form{padding:22px}
+  .entry-types{grid-template-columns:minmax(0,1fr)}
+  .entry-types button{min-height:72px}
+  .studio-workspace{padding:5px;gap:6px}
+  .canvas-panel{border-radius:13px}
+  .studio-root.workbench .studio-heading{padding:9px 10px}
+  .floating-toolbar{margin:7px 6px 0}
+  .floating-toolbar button,.workbench .view-toggle button{min-height:44px}
+  .floating-toolbar .panel-tools{margin-left:0}
+  .floating-toolbar .main-tools{gap:3px;padding:4px}
+  .view-dock{margin:5px 6px 7px}
+}
 </style>
