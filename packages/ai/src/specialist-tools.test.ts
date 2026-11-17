@@ -4,7 +4,7 @@ import {ASSISTANT_READ_RESULT_BYTES,ASSISTANT_READ_TOOL_VERSION,type AssistantRe
 import {createDesign,applyOperations} from '@schubert/geometry';
 import {availableSkills} from './skills.js';
 import {respondWithOptionalSkills,estimatedSkillResponseCost,affordableSkillResponse} from './skill-response.js';
-import {parseReadToolCall} from './specialist-tools.js';
+import {parseReadToolCall,requiredAssistantRead} from './specialist-tools.js';
 import {planningWorkflowFacts,inspectPlanningSnapshot} from './planning-facts.js';
 import {qualityCases,qualityReplayOutput} from './quality-cases.js';
 import {bindPlanningDraft} from './planning-draft.js';
@@ -20,6 +20,25 @@ function access(execute=vi.fn().mockResolvedValue({items:[{id:'actual-reference'
 const lookup=()=>call('lookup_planning_catalog',{kind:'materials',query:'Granit'});
 
 describe('Bounded specialist reads',()=>{
+  it('routes explicit factual requests within the granted tools while leaving help and mixed requests open',()=>{
+    const names=access().available;
+    expect(requiredAssistantRead('Bitte suche Material Impala in der Steinbibliothek.',names)).toBe('lookup_planning_catalog');
+    expect(requiredAssistantRead('Prüfe den aktuellen Plan und nenne das berechnete Volumen.',names)).toBe('inspect_current_plan');
+    expect(requiredAssistantRead('Wie suche ich in der Materialbibliothek?',names)).toBeUndefined();
+    expect(requiredAssistantRead('Bitte nicht suchen, erkläre nur die Materialwahl.',names)).toBeUndefined();
+    expect(requiredAssistantRead('Suche Material und berechne das Volumen des Plans.',names)).toBeUndefined();
+    expect(requiredAssistantRead('Suche Material Impala.',[])).toBeUndefined();
+  });
+  it('requires an explicitly requested factual tool instead of letting optional guidance replace the read',async()=>{
+    const create=vi.fn().mockResolvedValueOnce(response([lookup()])).mockResolvedValueOnce(response());
+    const result=await respondWithOptionalSkills({parameters,skills:availableSkills(context),readTools:access(),requiredRead:'lookup_planning_catalog',create});
+    expect(create.mock.calls[0][0].tool_choice).toEqual({type:'function',name:'lookup_planning_catalog'});
+    expect(create.mock.calls[0][0].tools.some((tool:any)=>tool.name==='load_schubert_skills')).toBe(false);
+    expect(result.toolsUsed).toHaveLength(1);
+    const missing=vi.fn().mockResolvedValue(response());
+    await expect(respondWithOptionalSkills({parameters,skills:[],readTools:access(),requiredRead:'lookup_planning_catalog',create:missing})).rejects.toMatchObject({code:'AI_TOOL_SCOPE'});
+    expect(missing).toHaveBeenCalledTimes(1);
+  });
   it('answers simple help in one provider call without any database tool',async()=>{
     const readTools=access(),create=vi.fn().mockResolvedValue(response());
     const result=await respondWithOptionalSkills({parameters,skills:availableSkills(context),readTools,create});
@@ -59,12 +78,29 @@ describe('Bounded specialist reads',()=>{
     await expect(respondWithOptionalSkills({parameters,skills:[],readTools:access(vi.fn().mockRejectedValue(new Error('unavailable'))),create,onResponse,onReadToolRequest})).rejects.toThrow('unavailable');
     expect(create).toHaveBeenCalledTimes(1);expect(onResponse).toHaveBeenCalledTimes(1);expect(onReadToolRequest).toHaveBeenCalledTimes(1);
   });
-  it('reserves both call ceilings, then drops optional reads when only a direct answer fits',()=>{
+  it('keeps authoritative reads and removes optional guidance first when its budget is tight',()=>{
+    const profile=routeModel({},'standard',context),readTools=access(),skills=availableSkills(context);
+    const withoutSkills=estimatedSkillResponseCost(profile,{},0,[],{},readTools);
+    const full=estimatedSkillResponseCost(profile,{},0,skills,{},readTools);
+    expect(full.cost).toBeGreaterThan(withoutSkills.cost);
+    const estimate=affordableSkillResponse({...profile,maxRequestCost:String(withoutSkills.cost)},{},0,skills,{},readTools);
+    expect(estimate.skills).toEqual([]);expect(estimate.readTools).toBe(readTools);expect(estimate.cost).toBe(withoutSkills.cost);
+  });
+  it('rejects an unaffordable factual response before a provider call instead of silently disabling data access',()=>{
     const profile=routeModel({},'standard',{}),direct=estimatedSkillResponseCost(profile,{},0,[],{}),withReads=estimatedSkillResponseCost(profile,{},0,[],{},access());
     expect(withReads.cost).toBeGreaterThan(direct.cost);
-    const estimate=affordableSkillResponse({...profile,maxRequestCost:String(direct.cost+0.00001)},{},0,[],{},access());
-    expect(estimate.readTools).toBeUndefined();expect(estimate.cost).toBe(direct.cost);
+    expect(()=>affordableSkillResponse({...profile,maxRequestCost:String(direct.cost+0.00001)},{},0,[],{},access())).toThrow(/Kostenreservierung/);
+    const estimate=affordableSkillResponse({...profile,maxRequestCost:String(direct.cost+0.00001)},{},0,[],{});
+    expect(estimate.cost).toBe(direct.cost);
     expect(()=>parseReadToolCall('lookup_planning_catalog','{'.repeat(1001),access().available)).toThrow();
+  });
+  it('stops remaining database reads after cancellation and retains completed-call billing evidence',async()=>{
+    const controller=new AbortController(),onResponse=vi.fn(),onReadToolsUsed=vi.fn();
+    const readTools=access(vi.fn().mockImplementation(async()=>{controller.abort();return{items:[{id:'actual-reference'}]};}));
+    const create=vi.fn().mockResolvedValue(response([lookup(),call('inspect_current_plan',{})]));
+    await expect(respondWithOptionalSkills({parameters,skills:[],readTools,create,signal:controller.signal,onResponse,onReadToolsUsed})).rejects.toMatchObject({name:'AbortError'});
+    expect(readTools.execute).toHaveBeenCalledTimes(1);expect(create).toHaveBeenCalledTimes(1);expect(onResponse).toHaveBeenCalledTimes(1);
+    expect(onReadToolsUsed).toHaveBeenLastCalledWith([expect.objectContaining({name:'lookup_planning_catalog',resultItems:1})]);
   });
 });
 

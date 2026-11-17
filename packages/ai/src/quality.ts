@@ -8,7 +8,7 @@ export type QualityExpectation={
   intent:'answer'|'clarify'|'draft'|'edit'; exactText?:string;
   roomMm?:{width:string;depth:string}; stoneMm?:{thickness:string};
   minimumMissing?:number; forbiddenCommands?:string[];
-  requiredTool?:AssistantReadToolName;answerPattern?:string;
+  requiredTool?:AssistantReadToolName;answerPattern?:string;forbiddenAnswerPattern?:string;
 };
 export type QualityCase={id:string;category:string;message:string;context:Record<string,any>;expect:QualityExpectation};
 export type QualityCheck={rule:string;passed:boolean};
@@ -25,6 +25,7 @@ export function evaluateAssistantQuality(test:QualityCase, raw:unknown,metadata:
   const answer=parsed.data, context=test.context;
   if(test.expect.requiredTool)check('required_factual_read',!!metadata.toolsUsed?.some(t=>t.name===test.expect.requiredTool));
   if(test.expect.answerPattern)check('correct_factual_answer',new RegExp(test.expect.answerPattern,'i').test(answer.text));
+  if(test.expect.forbiddenAnswerPattern)check('no_unproven_total',!new RegExp(test.expect.forbiddenAnswerPattern,'i').test(answer.text));
   check('permitted_actions',answer.commands.every(c=>(context.allowedCommands??[]).includes(c.name)&&!test.expect.forbiddenCommands?.includes(c.name)));
   check('bounded_questions',answer.missingInputs.length<=3);
   check('honest_visualization',!answer.visualization||context.entityType==='planning');

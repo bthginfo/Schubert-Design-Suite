@@ -11,7 +11,7 @@ import {
   skillUsage,
   type AssistantSkill,
 } from "./skills.js";
-import {ASSISTANT_READ_CALLS,ASSISTANT_READ_RESULT_BYTES,type AssistantReadToolAccess,type AssistantReadToolUsage} from '@schubert/contracts';
+import {ASSISTANT_READ_CALLS,ASSISTANT_READ_RESULT_BYTES,type AssistantReadToolAccess,type AssistantReadToolName,type AssistantReadToolUsage} from '@schubert/contracts';
 import {parseReadToolCall,readToolLabels,specialistToolDefinitions} from './specialist-tools.js';
 import {planningEditInstructions} from './planning-edits.js';
 
@@ -24,14 +24,16 @@ type Options = {
   onResponse?: (response: Response) => void;
   onSkillsLoaded?: (skills: readonly AssistantSkill[]) => void;
   readTools?: AssistantReadToolAccess;
+  requiredRead?: AssistantReadToolName;
   onReadToolsUsed?: (tools:readonly AssistantReadToolUsage[])=>void;
   onReadToolRequest?:()=>void;
 };
 
 /** At most one model-selected load and one final answer. No general agent loop. */
 export async function respondWithOptionalSkills(options: Options) {
-  const { parameters, skills, signal, readTools } = options;
-  const toolDefinitions=specialistToolDefinitions(readTools?.available??[],readTools?.suite?.areas);
+  const { parameters, skills, signal, readTools, requiredRead } = options;
+  if(requiredRead&&!readTools?.available.includes(requiredRead))throw new DomainError('AI_TOOL_SCOPE','Die benötigte Datenabfrage ist für diesen Zugang nicht verfügbar.',403);
+  const toolDefinitions=specialistToolDefinitions(requiredRead?[requiredRead]:readTools?.available??[],readTools?.suite?.areas);
   const toolsUsed:AssistantReadToolUsage[]=[],toolEvidence:{name:string;result:unknown}[]=[];
   const request = async (input: ResponseCreateParamsNonStreaming) => {
     signal?.throwIfAborted();
@@ -49,11 +51,12 @@ export async function respondWithOptionalSkills(options: Options) {
   };
   const first = await request({
     ...parameters,
-    tools: [...(skills.length?[skillTool(skills)]:[]),...toolDefinitions],
-    tool_choice: skills.length||toolDefinitions.length ? "auto" : "none",
-    parallel_tool_calls: toolDefinitions.length>0,
+    tools: [...(skills.length&&!requiredRead?[skillTool(skills)]:[]),...toolDefinitions],
+    tool_choice: requiredRead ? {type:'function',name:requiredRead} : skills.length||toolDefinitions.length ? "auto" : "none",
+    parallel_tool_calls: !requiredRead&&toolDefinitions.length>0,
   });
   const calls = first.output.filter((item) => item.type === "function_call");
+  if(requiredRead&&(calls.length!==1||calls[0].name!==requiredRead))throw new DomainError('AI_TOOL_SCOPE','Die beauftragte Datenabfrage wurde nicht ausgeführt. Es wurde nichts geändert und kein weiterer Modellaufruf gestartet.',422);
   if (!calls.length) return { response: first, skillsUsed: [],toolsUsed,toolEvidence };
   if (calls.length > (toolDefinitions.length?ASSISTANT_READ_CALLS+1:1))
     throw new DomainError(
@@ -70,6 +73,7 @@ export async function respondWithOptionalSkills(options: Options) {
   options.onSkillsLoaded?.(loaded);
   const cache=new Map<string,unknown>();
   for(const parsed of parsedReads){
+    signal?.throwIfAborted();
     const key=JSON.stringify([parsed.name,parsed.args]),cached=cache.has(key),started=Date.now();
     if(!cached)options.onReadToolRequest?.();
     const result=cached?cache.get(key):await readTools!.execute(parsed.name,parsed.args);
@@ -79,6 +83,7 @@ export async function respondWithOptionalSkills(options: Options) {
     const data=result as {items?:unknown[];lines?:unknown[]};
     toolsUsed.push({name:parsed.name,label:readToolLabels[parsed.name],cached,elapsedMs:Date.now()-started,resultItems:data?.items?.length??data?.lines?.length??0});
     options.onReadToolsUsed?.([...toolsUsed]);
+    signal?.throwIfAborted();
   }
   // A fresh, stateless final request receives the identical authorized input.
   // We deliberately do not replay model reasoning, partial proposals or an
@@ -148,16 +153,14 @@ export function affordableSkillResponse(
   readTools?:AssistantReadToolAccess,
 ) {
   let selected = skills;
-  let selectedReadTools=readTools;
-  let estimate = estimatedSkillResponseCost(profile, input, imageCount, selected, responseSchema,selectedReadTools);
-  if ((selected.length||selectedReadTools?.available.length) && dec(estimate.cost).gt(profile.maxRequestCost)) {
+  let estimate = estimatedSkillResponseCost(profile, input, imageCount, selected, responseSchema,readTools);
+  if (selected.length && dec(estimate.cost).gt(profile.maxRequestCost)) {
     selected = [];
-    selectedReadTools=undefined;
-    estimate = estimatedSkillResponseCost(profile, input, imageCount, selected, responseSchema);
+    estimate = estimatedSkillResponseCost(profile, input, imageCount, selected, responseSchema,readTools);
   }
   if (dec(estimate.cost).gt(profile.maxRequestCost)) {
     const dollars = (value: string | number) => new Intl.NumberFormat('de-DE', {maximumFractionDigits: 6}).format(Number(value)) + ' USD';
     throw new DomainError('AI_REQUEST_LIMIT', `Diese Anfrage benötigt eine Kostenreservierung von ${dollars(estimate.cost)}. Freigegeben sind ${dollars(profile.maxRequestCost)} je Anfrage. Es wurde kein KI-Aufruf gestartet. Wählen Sie weniger Unterlagen oder bitten Sie die Administration, das Anfragelimit zu prüfen. Ihre Eingaben bleiben erhalten.`);
   }
-  return {...estimate, skills: selected,readTools:selectedReadTools};
+  return {...estimate, skills: selected,readTools};
 }

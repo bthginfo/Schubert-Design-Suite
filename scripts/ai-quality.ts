@@ -14,7 +14,7 @@ import {respondWithOptionalSkills,affordableSkillResponse} from '../packages/ai/
 import {normalizeUsage,aggregateTextResponses,usageCost} from '../packages/ai/src/usage.js';
 import {evaluationBudget} from './ai-quality-budget.js';
 import {qualityToolCases,qualityReadTools,qualityToolReplay} from '../packages/ai/src/quality-tools.js';
-import {specialistToolInstructions,readToolLabels} from '../packages/ai/src/specialist-tools.js';
+import {requiredAssistantRead,specialistToolInstructions,readToolLabels} from '../packages/ai/src/specialist-tools.js';
 
 config({path:'.env.ai-eval.local',quiet:true});
 const args=process.argv.slice(2),live=args.includes('--live');
@@ -38,11 +38,12 @@ try{for(const test of cases){
   const instructionHash=createHash('sha256').update(parameters.instructions).digest('hex');
   if(!live){const toolsUsed=test.expect.requiredTool?[{name:test.expect.requiredTool,label:readToolLabels[test.expect.requiredTool],cached:false,elapsedMs:0,resultItems:1}]:[];report.cases.push({...evaluateAssistantQuality(test,toolSuite?qualityToolReplay(test):qualityReplayOutput(test),{toolsUsed}),model:null,instructionHash,providerCalls:0});continue;}
   const profileWithInstructions={...profile,instructions:parameters.instructions};
-  const estimate=affordableSkillResponse(profileWithInstructions,{context:test.context,message:test.message},0,availableSkills(test.context),format,readTools);
+  const requiredRead=requiredAssistantRead(test.message,readTools.available),selectedSkills=requiredRead?[]:availableSkills(test.context);
+  const estimate=affordableSkillResponse(profileWithInstructions,{context:test.context,message:test.message},0,selectedSkills,format,readTools);
   if(!await budget!.reserve(String(estimate.cost))){report.stopped='shared_test_cost_ceiling';break;}
   const responses:any[]=[],started=Date.now();let calls=0;
   try{
-    const result=await respondWithOptionalSkills({parameters,skills:estimate.skills,readTools:estimate.readTools,create:p=>api!.responses.create(p),onRequest:()=>{calls++;report.providerCalls++;},onResponse:r=>responses.push(r)});
+    const result=await respondWithOptionalSkills({parameters,skills:estimate.skills,readTools:estimate.readTools,requiredRead,create:p=>api!.responses.create(p),onRequest:()=>{calls++;report.providerCalls++;},onResponse:r=>responses.push(r)});
     const aggregate=aggregateTextResponses(responses),usage=normalizeUsage(aggregate.usage);
     const cost=usageCost(usage,{kind:'tokens',input:profile.inputCostPerMillion,output:profile.outputCostPerMillion,cachedInput:profile.cachedInputCostPerMillion,cacheWrite:profile.cacheWriteCostPerMillion});
     await budget!.settle(String(estimate.cost),cost,true);

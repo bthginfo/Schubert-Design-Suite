@@ -6,6 +6,17 @@ import {assistantSuiteAreas,dispatchLookupSchema,suiteLookupSchema,type Assistan
 export const catalogLookupSchema=z.strictObject({kind:z.enum(['products','materials','fonts']),query:z.string().trim().min(2).max(100)});
 const inspectSchema=z.strictObject({});
 export const readToolLabels:Record<AssistantReadToolName,string>={lookup_planning_catalog:'Produkt- und Materialbibliothek',inspect_current_plan:'Aktuellen Planstand prüfen',find_suite_records:'Vorgänge in der Suite',resolve_dispatch_assignment:'Einsatzbezüge prüfen'};
+/** Narrow an explicit factual request. This never grants a tool or performs a read itself. */
+export function requiredAssistantRead(message:string,available:readonly AssistantReadToolName[]):AssistantReadToolName|undefined{
+  const text=message.trim().replace(/^test:\s*/i,'');
+  if(/^(?:wie|wo)\b/i.test(text)||/\b(?:nicht suchen|keine suche|ohne (?:suche|datenabfrage))\b/i.test(text))return;
+  const search=/\b(?:suche|such|suchen|finde|durchsuche|recherchiere)\b/i.test(text);
+  const catalog=search&&/\b(?:material\w*|steinbibliothek|materialbibliothek|produkt\w*|katalog\w*|hersteller\w*|schrift\w*|granit|schiefer|marmor|naturstein\w*)\b/i.test(text);
+  const plan=/\b(?:berechne|berechnen|pr[üu]fe|planpr[üu]fung|berechnete[nsr]?)\b/i.test(text)&&/\b(?:plan\w*|volumen|fl[äa]che\w*|menge\w*|ma[ßs]e)\b/i.test(text);
+  const records=search&&/\b(?:kunde\w*|auftrag\w*|auftr[äa]ge|rechnung\w*|angebot\w*|lieferant\w*|beleg\w*|vorg[äa]ng\w*)\b/i.test(text);
+  const candidates=[...(catalog?['lookup_planning_catalog' as const]:[]),...(plan?['inspect_current_plan' as const]:[]),...(records?['find_suite_records' as const]:[])];
+  return candidates.length===1&&available.includes(candidates[0])?candidates[0]:undefined;
+}
 const definitions:Record<AssistantReadToolName,FunctionTool>={
   lookup_planning_catalog:{type:'function',name:'lookup_planning_catalog',description:'Suche höchstens sechs tatsächliche Produkte, Materialfassungen oder Schriftausführungen in der berechtigten Bibliothek. Nur bei einer konkreten Auswahlfrage verwenden, wenn passende Referenzen im Kontext fehlen. Keine Preise, Bestandsreservierung oder technische Freigabe.',strict:true,parameters:{type:'object',properties:{kind:{type:'string',enum:['products','materials','fonts']},query:{type:'string',minLength:2,maxLength:100}},required:['kind','query'],additionalProperties:false}},
   inspect_current_plan:{type:'function',name:'inspect_current_plan',description:'Lies deterministisch berechnete Mengen, Maße und offene Prüfgrundlagen der aktuellen gespeicherten Planrevision. Verwende dies für Mengen-, Maß- oder Prüfungsfragen, die der vorhandene Kontext nicht beantwortet. Ändert nichts und erteilt keine Fertigungsfreigabe.',strict:true,parameters:{type:'object',properties:{},required:[],additionalProperties:false}},
@@ -31,6 +42,7 @@ export const specialistToolInstructions='Verwende Fachabfragen nur, wenn benöti
 
 export const suiteToolInstructions = `
 Die geöffnete Seite ist ein möglicher Ausgangspunkt. Fachabfragen und Entwürfe sind über alle verfügbaren Arbeitsbereiche möglich.
+Trefferlisten sind begrenzte Ausschnitte. Die Anzahl der items ist keine Gesamtzahl. Bei possiblyMore, moreLines oder truncated keine vollständige Liste, Gesamtsumme oder lückenlose Übernahme behaupten. Für einen aktuellen Geschäftswert die passende Fachabfrage verwenden; ältere Gesprächsantworten sind kein aktueller Datenstand.
 Fragt der Nutzer nach einem anderen Kunden, Auftrag, Beleg, Einsatz oder Plan, verwende find_suite_records im passenden Bereich. Auch bei einer Folgefrage einen benötigten Datensatz erneut gezielt auflösen. Bei mehrdeutigem Treffer die Bezeichnung oder Nummer erfragen und keinen Änderungsbefehl vorschlagen. IDs nur aus currentReferences, eindeutigen Funden oder $created-Referenzen übernehmen.
 Für Rechnungsentwurf aus Auftrag: Auftrag nach Nummer/Titel mit details=true suchen. Verwende seine customer_id, id, Währung und ausdrücklich gewünschte belegte Positionen. Fehlt ein eindeutiger Auftrag oder eine nötige Angabe, gezielt fragen. Auftragsdaten aus dem geöffneten Plan nur verwenden, wenn der Nutzer genau diesen Bezug meint.
 Für Entwürfe mit Positionen: inputJson enthält lines:[{description,quantity,unit,unit_price,tax_rate}]. Mengen, Preise und Steuersätze nur aus Angaben oder belegten Positionen übernehmen. Bei ausgelassenen Positionen keine vollständige Übernahme behaupten. Die Anwendung berechnet Beträge. Eine Rechnung als normaler Entwurf hat kind:"normal".

@@ -1,4 +1,12 @@
 import type {AppData,Row} from './types.ts';
+/** A bounded transcript keeps each answer's original record distinct from the live screen. */
+export function assistantHistory(messages:Row[]){
+ return messages.filter(row=>['user','assistant'].includes(row.role)&&typeof row.text==='string'&&!['pending','failed','cancelled'].includes(row.status)).slice(-6).map(row=>{
+  const origin=typeof row.origin?.label==='string'?`[Bezug ${JSON.stringify(row.origin.label.slice(0,120))}${typeof row.origin.href==='string'&&/^\/(?!\/)/.test(row.origin.href)?' '+row.origin.href.slice(0,400):''}]\n`:'';
+  const applied=row.applied&&!row.undone&&row.records?.length?'\nÜbernommen: '+row.records.map((item:Row)=>item.record.number??item.record.title??item.record.name??item.module).join(', '):'';
+  return{role:row.role as 'user'|'assistant',text:(origin+row.text+applied).slice(0,1800)};
+ });
+}
 /** Page data has already been resolved by the server; never infer upload targets from URL text. */
 export function assistantUploadTarget(data:AppData){
  const has=(permission:string)=>data.context?.permissions.some(value=>value==='*'||value===permission||value===permission.split('.')[0]+'.*');

@@ -364,6 +364,12 @@ Aktiviertes Testfeedback steht als regulärer Eintrag im Fuß der linken Leiste 
 
 Der Begleiter trennt **Hilfe für diese Seite** und **Chat** mit beschrifteten Auswahlflächen. Vorschläge gelangen zuerst in das Eingabefeld; **Senden** startet die Anfrage. Unterlagen und Modelloptionen bleiben aufklappbar. Der Desktopbegleiter ist eine begrenzte rechte Überlagerung; mobil begrenzt er den Fokus und stellt ihn beim Schließen wieder her. Dialoginhalte dürfen scrollen; Aktionsfüße bleiben erreichbar.
 
+Der Chat beginnt im Modus **Begleiter**. Sein Gespräch bleibt beim Seitenwechsel erhalten und kann den jeweils aktuellen Vorgang einbeziehen. Eine beschriftete Auswahl zeigt, ob die aktuelle Seite verwendet wird. Persönliche und administrative Ansichten bleiben davon ausgenommen. **Separater Seitenchat** bietet weiterhin eine unabhängige Unterhaltung pro Vorgang und Studioschritt. Antworten aus einem anderen Bildschirm behalten einen sichtbaren Rückverweis auf ihren Ursprung. Tatsächlich verwendete Datenwerkzeuge erscheinen bei der Antwort unter **Datenabfragen**; Trefferzahlen bezeichnen ausdrücklich einen Auszug. Diese Hinweise starten selbst keine neue KI- oder Datenbankanfrage.
+
+Seitenbezug und Planstand teilen sich eine begrenzte, bei Platzmangel scrollbar erreichbare Fläche. Sie dürfen den Nachrichtenverlauf und den Eingabefuß auf kurzen Bildschirmen nicht aus dem sichtbaren Bereich verdrängen.
+
+Der Produktionsbuild erhält die native `light-dark()`-Funktion. Das persönliche Farbschema wird zur Laufzeit gesetzt; daraus abgeleitete Flächen, Verläufe und Schatten müssen auch nach vollständigem Neuladen korrekt bemalt sein. Ein transparenter Rahmen mit dunklen Texttokens auf dem hellen Dokumentgrund ist ein Darstellungsfehler.
+
 Die Einführung hebt reale Seitenbereiche mit Akzentkontur und abgedunkeltem Umfeld hervor. Schrittzahl, Erklärung und Zurück/Weiter bleiben an der Karte zusammen; die Karte richtet sich am sichtbaren Fenster aus. Die persönliche Darstellung bildet den letzten Schritt. Fehlerrückmeldungen erscheinen innerhalb der betroffenen Oberfläche und werden dort sichtbar fokussiert.
 
 ### Kontext und nächste Schritte

@@ -17,6 +17,6 @@ export type AssistantReadToolAccess={
     plans:()=>readonly {binding:AssistantPlanBinding;context:Record<string,any>}[];
   };
 };
-export const ASSISTANT_READ_TOOL_VERSION='schubert-read-tools-3';
+export const ASSISTANT_READ_TOOL_VERSION='schubert-read-tools-4';
 export const ASSISTANT_READ_RESULT_BYTES=5000;
 export const ASSISTANT_READ_CALLS=2;

@@ -22,6 +22,7 @@
   import ProposalPreview from "./ProposalPreview.svelte";
   import AssistantSources from "./AssistantSources.svelte";
   import {
+    assistantHistory,
     selectedPlanningElements,
     sourceReady,
     sourceReferences,
@@ -117,7 +118,7 @@
     section = "chat";
   }
   async function choosePagePrompt(prompt: string) {
-    if (!sensitiveContext) await switchChatScope("page");
+    if (!sensitiveContext) includeCurrentPage = true;
     await choosePrompt(prompt);
   }
   function studioAction(action: string) {
@@ -233,7 +234,7 @@
   const phaseLabel = $derived(
     (
       {
-        preparing: "Planstand speichern und prüfen …",
+        preparing: "Anfrage wird vorbereitet …",
         requesting: "KI-Anfrage läuft …",
         applying: "Vorschlag wird übernommen …",
         undoing: "Änderung wird zurückgenommen …",
@@ -290,7 +291,7 @@
     );
     if (showNotice) {
       contextNotice =
-        "Anfrage beendet. Der Plan wurde nicht durch die KI verändert. Bereits begonnene Verarbeitung kann Kosten verursachen.";
+        "Anfrage beendet. Dadurch wurden keine Änderungen angewendet. Bereits begonnene KI-Verarbeitung kann Kosten verursachen.";
       void tick().then(() =>
         document.getElementById("assistant-message")?.focus(),
       );
@@ -349,9 +350,12 @@
   let selectedElementIds: string[] = $state([]);
   let contextNotice = $state("");
   let lastContext = "";
-  let scope = $state<"page" | "suite">("page");
+  let scope = $state<"page" | "suite">("suite");
+  let includeCurrentPage = $state(true);
   const sensitiveContext = $derived(assistantPrivateScreen((data.path || "").split("/")[0]));
   const suiteChat = $derived(scope === "suite" || sensitiveContext);
+  const usePageContext = $derived(!sensitiveContext && (!suiteChat || includeCurrentPage));
+  const currentHref = $derived(page.url.pathname + page.url.search);
   $effect(() => { if (open && sensitiveContext) scope = "suite"; });
   const variantId = $derived(
     page.url.searchParams.get("variant") ||
@@ -364,7 +368,7 @@
       ? $studioAssistantContext
       : null,
   );
-  const studioLoading=$derived(!suiteChat&&data.view==='studio'&&!!data.detail&&!studioWork);
+  const studioLoading=$derived(usePageContext&&data.view==='studio'&&!!data.detail&&!studioWork);
   const guardrails = $derived({
     preserveMeasurements,
     preserveWording,
@@ -383,7 +387,7 @@
   const screenLabel = $derived(data.detail?.title ?? data.detail?.name ?? data.module?.label ??
     (data.view === "studio" ? "Planungsstudio" : data.view === "reports" ? "Auswertungen" : data.view === "help" ? "Hilfe" : "Arbeitsbereich"));
   const designContext = $derived(
-    !suiteChat && (data.path === "studio" ||
+    usePageContext && (data.path === "studio" ||
       data.path?.startsWith("studio/") ||
       data.module?.permission === "planning" ||
       ["planning", "design", "surveys"].some((section) =>
@@ -439,7 +443,7 @@
           previous?.preserveMeasurements ?? false;
         preserveWording = previous?.preserveWording ?? false;
         selectionOnly = previous?.selectionOnly ?? false;
-        section = previous?.messages.length || suiteChat ? "chat" : "help";
+        section = previous?.messages.length || sensitiveContext ? "chat" : "help";
         error = "";
         retryAudio = null;
         if (recording || recordingStarting) stopRecording(true);
@@ -462,14 +466,10 @@
     if (!input.trim() || busy || !available || sourcePending || studioLoading || recording || recordingStarting || transcribing) return false;
     const message = input.trim(),
       sendingContext = contextKey,
-      history = messages
-        .filter((m) => !["pending", "failed", "cancelled"].includes(m.status))
-        .slice(-6)
-        .map(({ role, text, applied, undone, records }) => ({
-          role,
-          text: (text + (applied && !undone && records?.length ?
-            "\nÜbernommen: " + records.map((item: Row) => item.record.number ?? item.record.title ?? item.record.name ?? item.module).join(", ") : "")).slice(0, 1800),
-        }));
+      history = assistantHistory(messages),
+      origin = usePageContext ? {label:String(screenLabel),href:currentHref} : null,
+      requestPage = {path:data.path,variantId,search:page.url.search,include:usePageContext,design:designContext};
+    const sendingSources = sources.map(source => ({...source}));
     const run = {
       id: ++runId,
       controller: new AbortController(),
@@ -484,8 +484,8 @@
     chatPinned = true;
     const boundaries = { ...guardrails };
     try {
-      const references = sourceReferences(sources),
-        work = studioWork && !suiteChat ? await prepareStudioAssistant() : null;
+      const references = sourceReferences(sendingSources),
+        work = studioWork && requestPage.include ? await prepareStudioAssistant() : null;
       if (
         run.id !== runId ||
         sendingContext !== contextKey ||
@@ -498,8 +498,9 @@
           id: run.messageId,
           role: "user",
           text: message,
+          origin,
           status: "pending",
-          sources: sources.map((source) =>
+          sources: sendingSources.map((source) =>
             [
               source.name || "Ausgewählte Unterlage",
               "Seite " + source.pageNumber,
@@ -516,10 +517,10 @@
         {
           message,
           history,
-          mode: designContext && deepReview ? "design_review" : "standard",
+          mode: requestPage.design && deepReview ? "design_review" : "standard",
           context: {
-            path: data.path,
-            ...(suiteChat ? { scope: "suite" } : { variantId: work?.variantId ?? variantId, search: page.url.search }),
+            path: requestPage.path,
+            ...(requestPage.include ? { variantId: work?.variantId ?? requestPage.variantId, search: requestPage.search } : { scope: "suite" }),
             ...(work
               ? {
                   planning_work: {
@@ -532,7 +533,7 @@
                   },
                   selected_element_ids: work.selectedElementIds,
                 }
-              : designContext && selectedElementIds.length
+              : requestPage.design && selectedElementIds.length
                 ? { selected_element_ids: selectedElementIds }
                 : {}),
           },
@@ -552,16 +553,18 @@
           id: crypto.randomUUID(),
           role: "assistant",
           text: result.text,
+          origin,
           proposal: result.proposal,
           assumptions: result.assumptions ?? result.proposal?.assumptions ?? [],
           missingInputs:
             result.missingInputs ?? result.proposal?.missing_inputs ?? [],
           skillsUsed: result.skillsUsed ?? [],
+          toolsUsed: result.toolsUsed ?? [],
           recordLinks: result.recordLinks ?? [],
           clarifications: result.clarifications ?? [],
           visualization: result.visualization ?? null,
           visualizationTarget: result.visualizationTarget ?? null,
-          visualizationSources: sources.filter(source=>sourceReady(source)).map(source=>({...source})),
+          visualizationSources: sendingSources.filter(source=>sourceReady(source)),
           work: work ? { ...work } : null,
           boundaries,
         },
@@ -798,7 +801,7 @@
       open = true;
       const detail = (event as CustomEvent).detail;
       if ((detail?.prompt || detail?.source) && studioWork && suiteChat) {
-        scope = "page";
+        includeCurrentPage = true;
         await tick();
       }
       if (detail?.prompt)
@@ -923,11 +926,14 @@
           </button>
         {/if}
       </div>
+      {#if section === "chat" || studioWork && usePageContext && section !== "products"}
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex (Keyboard users must be able to scroll this bounded region while its controls are disabled during a request.) -->
+      <section class="assistant-context-area" aria-label="Seitenbezug und Planstand" tabindex="0">
       {#if section === "chat"}
         <div class="chat-scope">
           {#if !sensitiveContext}<div class="chat-scope-options" role="group" aria-label="Gesprächsbezug">
-            <button type="button" aria-pressed={!suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("page")}>Mit Seitenbezug</button>
-            <button type="button" aria-pressed={suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("suite")}>Suite-Chat</button>
+            <button type="button" aria-pressed={suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("suite")}>Begleiter</button>
+            <button type="button" aria-pressed={!suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("page")}>Separater Seitenchat</button>
           </div>{/if}
           <p class="chat-scope-status">
             <Icon name={suiteChat ? "grid" : "link"} size={15} />
@@ -937,9 +943,10 @@
                 ? "Dieses Gespräch bleibt beim Seitenwechsel geöffnet."
                 : screenLabel + " · Suche in der gesamten Suite"}</span>
           </p>
+          {#if suiteChat && !sensitiveContext}<label class="companion-page-context"><input type="checkbox" bind:checked={includeCurrentPage} disabled={busy || recording || transcribing}/><span>Aktuelle Seite einbeziehen<small title={includeCurrentPage ? String(screenLabel) : undefined}>{includeCurrentPage ? screenLabel : 'Ohne Daten der geöffneten Seite'}</small></span></label>{/if}
         </div>
       {/if}
-      {#if studioWork && !suiteChat && section !== "products"}<div class="assistant-context">
+      {#if studioWork && usePageContext}<div class="assistant-context">
           <div>
             <Icon name="link" size={15} /><strong
               >{planningStepLabel(studioWork.kind, studioWork.step, studioWork.presetId)}</strong
@@ -973,7 +980,10 @@
                 ? " · Wortlaut geschützt"
                 : ""}<Icon name="settings" size={14} /></button
             >
-        </div>{/if}{#if section === "help"}<div class="companion-density">
+        </div>{/if}
+      </section>
+      {/if}
+      {#if section === "help"}<div class="companion-density">
           <button type="button" aria-pressed={compactHelp} onclick={toggleHelp}
             >{compactHelp
               ? "Mehr Erklärung anzeigen"
@@ -1047,10 +1057,12 @@
                   displayUnit={message.work?.displayUnit??'mm'}
                   allowMaterials={data.context?.permissions?.some(p=>['planning','planning.read','*'].includes(p))??false}
                   skillsUsed={message.skillsUsed ?? []}
+                  toolsUsed={message.toolsUsed ?? []}
                   disabled={busy}
                   onfollowup={appendPrompt}
                   onanswersubmit={sendAnswers}
                 />
+                {#if message.origin && message.origin.href !== currentHref}<p class="reply-origin">Bezug dieser Antwort <a href={message.origin.href} onclick={close}>{message.origin.label}</a></p>{/if}
                 {#if message.recordLinks?.length}<nav class="assistant-record-links" aria-label="Gefundene Vorgänge">
                   {#each message.recordLinks as link (link.href)}{@const source = link as AssistantRecordLink}
                     <a href={source.href} onclick={close}><Icon name={source.area === "studio" ? "grid" : "file"} size={15} />
@@ -1215,7 +1227,7 @@
                   {data}
                   bind:rows={sources}
                   disabled={busy || studioLoading}
-                />{#if studioWork && !suiteChat}<fieldset
+                />{#if studioWork && usePageContext}<fieldset
                   class="assistant-boundaries"
                   id="assistant-boundaries"
                 >
@@ -1344,12 +1356,17 @@
   .companion-tabs button { display: flex; justify-content: center; align-items: center; gap: 8px; flex: 1; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 13px; min-height: 44px; padding: 10px; }
   .companion-tabs button[aria-pressed="true"] { background: var(--wash); color: var(--ink); font-weight: 550; }
   .companion-products { padding: 14px 24px 24px; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .assistant-context-area { flex: 0 1 auto; min-height: 0; max-height: 35dvh; overflow-y: auto; overscroll-behavior: contain; }
   .chat-scope { padding: 2px 18px 11px; border-bottom: 1px solid var(--line-soft,var(--line)); flex: none; }
   .chat-scope-options { display:flex; flex-wrap:wrap; gap:4px; }
   .chat-scope-options button { font:inherit; font-size:12px; min-height:44px; padding:0 10px; border:0; border-radius:9px; color:var(--muted); background:transparent; }
   .chat-scope-options button[aria-pressed="true"] { color:var(--forest); background:var(--accent-soft,var(--wash)); font-weight:600; }
   .chat-scope-options button:hover:not(:disabled) { background:var(--wash); color:var(--ink); }
   .chat-scope-status { margin:5px 0 0; display:flex; gap:8px; align-items:flex-start; color:var(--muted); font-size:12px; line-height:1.5; }
+  .companion-page-context { display:flex; align-items:center; gap:10px; min-height:44px; padding-top:7px; color:var(--ink); font-size:12px; cursor:pointer; }
+  .companion-page-context input { flex:none; width:17px; height:17px; accent-color:var(--forest); }
+  .companion-page-context span { min-width:0; }
+  .companion-page-context small { display:block; margin-top:2px; color:var(--muted); font-size:11px; line-height:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .chat-scope-status :global(svg) { flex:none; margin-top:1px; }
   .chat-scope-status span { overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; }
   .chat-start { padding:14px 2px 8px; }

@@ -46,7 +46,9 @@ test("The floating chat finds a customer and saves a real invoice draft inside s
   await expect(fab).toBeInViewport();
   await fab.click();
   const panel = page.locator("#assistant-drawer");
-  await expect(panel.getByRole("button", { name: "Mit Seitenbezug" })).toHaveAttribute("aria-pressed", "true");
+  await panel.getByRole("button", { name: /^Chat(?: · \d+)?$/ }).click();
+  await expect(panel.getByRole("button", { name: "Begleiter",exact:true })).toHaveAttribute("aria-pressed", "true");
+  await expect(panel.getByRole("checkbox", { name: /Aktuelle Seite einbeziehen/ })).toBeChecked();
   const found = await chat(page, "TEST Suite Kunde " + customer.id);
   expect(found.recordLinks).toContainEqual(expect.objectContaining({ href: "/customers/" + customer.id }));
   await expect(panel.getByText("suite-qa@example.invalid", { exact: false })).toBeVisible();

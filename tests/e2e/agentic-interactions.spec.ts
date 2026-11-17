@@ -171,6 +171,11 @@ async function persistProposal(
       assumptions: [],
       validation: {
         blocking: [],
+        planningTarget: {
+          variantId: body.context.variantId,
+          revisionId: body.context.planning_work.revision_id,
+          baseVersion: body.context.planning_work.base_version,
+        },
         guardrails: body.context.planning_work.guardrails,
         selectedElementIds: body.context.selected_element_ids,
         serverGeneratedPlanningDraft: generated,
@@ -802,6 +807,14 @@ test("Design consistency: real dark preference, compact help, reduced motion and
       await expect(panel.locator(".assistant-messages")).toBeInViewport();
       await shot(page, "ai-dark-mobile-" + size.width);
       await audit(page, "#assistant-drawer");
+      if (size.width === 320) {
+        const context = panel.getByRole("region", { name: "Seitenbezug und Planstand" });
+        await context.focus();
+        await page.keyboard.press("End");
+        await expect.poll(() => context.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+        await page.keyboard.press("Home");
+        await expect(panel.getByRole("button", { name: "Senden", exact: true })).toBeInViewport();
+      }
     }
     await panel
       .getByRole("button", { name: "Bearbeitungsgrenzen ändern", exact: true })
@@ -823,7 +836,7 @@ test("Design consistency: real dark preference, compact help, reduced motion and
     await page.keyboard.press("Escape");
     await expect(panel).toBeHidden();
     await expect(
-      page.locator(".tool-hint .selection-properties"),
+      page.getByRole("group", { name: "Aktionen für die aktuelle Auswahl" }).locator(".selection-label"),
     ).toHaveText("Natursteinbauteil");
   } finally {
     await page.setViewportSize({ width: 1440, height: 1000 });

@@ -5,7 +5,7 @@ import {mkdir} from 'node:fs/promises';
 import {accentNames,darkAccentNames} from '@schubert/contracts';
 import {login} from './login.js';
 
-async function capture(page:Page,name:string,scope='.page-content'){
+async function capture(page:Page,name:string,scope='.app-shell'){
  await mkdir('.impeccable/review',{recursive:true});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.impeccable/review/appearance-'+name+'.png',animations:'disabled'});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  const audit=await new AxeBuilder({page}).include(scope).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact??''))).toEqual([]);
@@ -24,6 +24,8 @@ test('Each user can preview palettes, save appearance, follow the device',async(
  await page.route('**/api/v1/commands',async route=>route.request().postDataJSON()?.name==='account.appearance.update'?route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Test: Verbindung unterbrochen. Erneut versuchen.',code:'TEST_UNAVAILABLE'}})}):route.continue());
  await settings.getByRole('button',{name:'Darstellung speichern',exact:true}).click();await expect(settings.getByRole('alert')).toContainText('Verbindung');await expect(settings.getByRole('radio',{name:'Hellblau',exact:true})).toBeChecked();await page.unroute('**/api/v1/commands');
  await settings.getByRole('button',{name:'Darstellung speichern',exact:true}).click();await expect(settings.getByRole('status')).toContainText('gespeichert');await expect(page.locator('.app-shell')).toHaveAttribute('data-appearance-mode','dark');await page.reload();await expect(settings.getByRole('radio',{name:'Hellblau',exact:true})).toBeChecked();await expect(page.locator('.app-shell')).toHaveCSS('background-color','rgb(13, 20, 34)');
+ await expect(page.locator('.app-shell')).not.toHaveCSS('background-image','none');
+ for(const surface of ['.sidebar','.topbar'])await expect(page.locator(surface)).not.toHaveCSS('background-color','rgba(0, 0, 0, 0)');
  // An independent device, and the server HTML before hydration, see the saved preference.
  const html=await(await page.request.get('/account')).text();expect(html).toContain('data-appearance-mode="dark"');expect(html).toContain('data-appearance-accent="ocean"');
  const device=await browser.newContext({storageState:await page.context().storageState()});try{const second=await device.newPage();await second.goto(new URL('/account',page.url()).href);await expect(second.locator('.app-shell')).toHaveAttribute('data-appearance-accent','ocean');}finally{await device.close();}

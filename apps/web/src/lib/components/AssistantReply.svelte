@@ -1,12 +1,13 @@
 <script lang="ts">
   import ClarificationField from './ClarificationField.svelte';
   import {clarificationControls} from '@schubert/contracts';
-  import type { AssistantSkillUsage } from "@schubert/contracts";
+  import type { AssistantSkillUsage, AssistantReadToolUsage } from "@schubert/contracts";
   let {
     text,
     assumptions = [],
     missingInputs = [],
     skillsUsed = [],
+    toolsUsed = [],
     clarifications=[],displayUnit='mm',allowMaterials=false,
     disabled = false,
     onfollowup,
@@ -16,6 +17,7 @@
     assumptions?: string[];
     missingInputs?: string[];
     skillsUsed?: AssistantSkillUsage[];
+    toolsUsed?: AssistantReadToolUsage[];
     clarifications?:unknown;displayUnit?:string;allowMaterials?:boolean;
     disabled?: boolean;
     onfollowup: (text: string) => void;
@@ -103,6 +105,11 @@
             >
           </li>{/each}
       </ul>
+    </details>{/if}
+  {#if toolsUsed.length}<details class="reply-skills reply-data">
+      <summary>Datenabfragen ({toolsUsed.length})</summary>
+      <ul>{#each toolsUsed as tool}<li><span>{tool.label}</span><small>{tool.cached ? 'Vorhandenes Ergebnis derselben Anfrage wiederverwendet' : tool.name === 'inspect_current_plan' ? 'Gespeicherten Planstand berechnet' : tool.resultItems + ' Treffer im Auszug'}</small></li>{/each}</ul>
+      <p class="reply-hint">Die Treffer sind begrenzte Ausschnitte aus den für Sie freigegebenen Daten.</p>
     </details>{/if}
   {#if skillsUsed.length}<details class="reply-skills">
       <summary>Verwendete Fachhilfe</summary>
