@@ -86,6 +86,19 @@ describe('Bounded specialist reads',()=>{
     const estimate=affordableSkillResponse({...profile,maxRequestCost:String(withoutSkills.cost)},{},0,skills,{},readTools);
     expect(estimate.skills).toEqual([]);expect(estimate.readTools).toBe(readTools);expect(estimate.cost).toBe(withoutSkills.cost);
   });
+  it('fits a Sol review into its budget while keeping the authorized tools',()=>{
+    const profile=routeModel({},'design_review',context),readTools=access();
+    const full=estimatedSkillResponseCost(profile,{},0,[],{},readTools);
+    const required=estimatedSkillResponseCost(profile,{},0,[],{},readTools,'inspect_current_plan');
+    expect(required.cost).toBeLessThan(full.cost);
+
+    const maxRequestCost=(full.cost-0.01).toFixed(6);
+    const fitted=affordableSkillResponse({...profile,maxRequestCost},{},0,[],{},readTools);
+    expect(fitted.cost).toBeLessThanOrEqual(Number(maxRequestCost));
+    expect(fitted.readTools).toBe(readTools);
+    expect(fitted.maxOutputTokens).toBeLessThan(profile.maxOutputTokens);
+    expect(fitted.maxOutputTokens).toBeGreaterThanOrEqual(2000);
+  });
   it('rejects an unaffordable factual response before a provider call instead of silently disabling data access',()=>{
     const profile=routeModel({},'standard',{}),direct=estimatedSkillResponseCost(profile,{},0,[],{}),withReads=estimatedSkillResponseCost(profile,{},0,[],{},access());
     expect(withReads.cost).toBeGreaterThan(direct.cost);

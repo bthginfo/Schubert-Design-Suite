@@ -35,7 +35,11 @@ Suchanfragen verwenden den zwischengespeicherten Stand im Anwendungsspeicher. He
 
 ## OpenAI und Kosten
 
-Günstige Standardaufgaben verwenden `gpt-6-luna`; vertiefte Planprüfung wählt der Nutzer ausdrücklich mit `gpt-6.1-sol`. Wiederholte identische Anfragen können kurzfristig wiederverwendet werden. Kontext, Bildausschnitte und Ausgabetokens sind begrenzt. Die Schubert-Designanweisungen liegen versioniert in `skills/schubert-design/SKILL.md` und den Modellprofilen. Fachliche Rechen- und Geometrieprüfungen bleiben deterministisch.
+GPT-6 Luna (`gpt-6-luna`) übernimmt normale Assistenz, Unterlagenanalyse und Planungsentwürfe. Wer im Planungsstudio „Vertieft prüfen“ auswählt, verwendet GPT-6.2 Sol (`gpt-6.2-sol`). Gespeicherte Standardeinstellungen mit `gpt-6.1-sol` werden beim Aufruf auf Sol 6.2 aufgelöst. Im Integrationsformular kann der Superadmin ein konkretes Modell speichern. Wiederholte identische Anfragen können kurzfristig wiederverwendet werden. Kontext, Bildausschnitte und Ausgabetokens sind begrenzt. Die Schubert-Designanweisungen liegen versioniert in `skills/schubert-design/SKILL.md` und den Modellprofilen. Fachliche Rechen- und Geometrieprüfungen bleiben deterministisch.
+
+Für kurze Standardanfragen berechnet OpenAI je Million Eingabe- und Ausgabetokens 0,10 und 0,50 USD für Luna sowie 2 und 10 USD für Sol 6.2. Gelesene Cache-Tokens kosten 0,01 USD für Luna und 0,10 USD für Sol 6.2. [Luna-Preise](https://developers.openai.com/api/docs/models/gpt-6-luna) · [Sol-6.2-Preise](https://developers.openai.com/api/docs/models/gpt-6.2-sol)
+
+Wenn ein Sol-Aufruf mit seinen möglichen Fachabfragen an die Anfragegrenze stößt, begrenzt die Suite die Ausgabetokens vor dem Aufruf. Für eine Prüfung des geöffneten Plans kann sie die Planfakten serverseitig berechnen und gemeinsam mit dem Plan an einen einzigen Sol-Aufruf übergeben.
 
 Bilder bevorzugen `gpt-image-2.5-flare`, ersatzweise `gpt-image-2`, sofern das konkrete Projekt sie zulässt. Ein Ersatz erfolgt nur nach einer ausdrücklich abgewiesenen Anfrage; unbekannter Ausgang führt nicht zu einem zweiten bezahlten Versuch. Kosten werden vorab reserviert und anhand der Anbieternutzung abgerechnet. Unklare Nutzung bleibt reserviert und ist mit Nachweis abzugleichen.
 

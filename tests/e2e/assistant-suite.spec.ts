@@ -28,6 +28,30 @@ test.beforeEach(async ({ page }) => {
   await login(page);
 });
 
+test("Ordinary planning uses Luna and an explicitly selected review uses Sol 6.2", async ({ page }) => {
+  const plan = await command(page, "planning.project.create", { name: "TEST Modellwahl Raum", kind: "room_plan" });
+  const operations = planningDraftOperations(
+    { snapshot: plan.revision.snapshot },
+    { kind: "rectangular_room", label: "Prüfraum", clearWidthMm: "4200", clearDepthMm: "3200", heightMm: "2500", wallThicknessMm: "200" },
+  );
+  await command(page, "planning.design.change", { base_revision_id: plan.revision.id, operations }, plan.variant);
+  await page.goto("/studio/" + plan.project.id + "?variant=" + plan.variant.id);
+  await page.getByRole("button", { name: "Assistent", exact: true }).click();
+  const panel = page.locator("#assistant-drawer");
+  await panel.getByLabel("Unterlagen und Modelloptionen").click();
+  await expect(panel.getByText("gpt-6-luna", { exact: false })).toBeVisible();
+  await panel.getByRole("button", { name: "Optionen schließen" }).click();
+  expect((await chat(page, "TEST · Fasse die bekannte Planung kurz zusammen.")).model).toBe("gpt-6-luna");
+
+  await panel.getByLabel("Unterlagen und Modelloptionen").click();
+  await panel.getByRole("checkbox", { name: "Vertieft prüfen" }).check();
+  await expect(panel.getByText("gpt-6.2-sol", { exact: false })).toBeVisible();
+  await panel.getByRole("button", { name: "Optionen schließen" }).click();
+  const review = await chat(page, "TEST · Prüfe die gespeicherte Raumplanung auf offene Maße und Materialangaben.");
+  expect(review.model).toBe("gpt-6.2-sol");
+  expect(review.toolsUsed).toEqual([expect.objectContaining({ name: "inspect_current_plan" })]);
+});
+
 test("The floating chat finds a customer and saves a real invoice draft inside studio fullscreen", async ({ page }) => {
   const customer = await command(page, "crm.customer.create", {
     name: "TEST Kunde " + randomUUID().slice(0, 8), email: "suite-qa@example.invalid",

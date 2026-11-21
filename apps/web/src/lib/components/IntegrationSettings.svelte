@@ -10,16 +10,23 @@
 
   let {data}:{data:AppData}=$props();
   let smtp:Row=$state({host:'',port:'',user:'',from:'',replyTo:''});
-  let ai:Row=$state({textModel:'gpt-6-luna',transcriptionModel:'gpt-4o-mini-transcribe-2025-12-15',imageModel:'gpt-image-2.5-flare',imageFallbackModel:'gpt-image-2',imageTextCostPerMillion:'5',imageInputCostPerMillion:'8',imageOutputCostPerMillion:'30',imageMaxRequestCost:'0.5',transcriptionInputCostPerMillion:'1.25',transcriptionOutputCostPerMillion:'5',transcriptionMaxRequestCost:'0.031',inputCostPerMillion:'0.10',outputCostPerMillion:'0.50',maxRequestCost:'0.10',monthlyBudget:'5',designModel:'gpt-6.1-sol',designInputCostPerMillion:'2',designOutputCostPerMillion:'10',designMaxRequestCost:'0.25'});let modelPolicyConfirmed=$state(false);
+  let ai:Row=$state({textModel:'',transcriptionModel:'gpt-4o-mini-transcribe-2025-12-15',imageModel:'gpt-image-2.5-flare',imageFallbackModel:'gpt-image-2',imageTextCostPerMillion:'5',imageInputCostPerMillion:'8',imageOutputCostPerMillion:'30',imageMaxRequestCost:'0.5',transcriptionInputCostPerMillion:'1.25',transcriptionOutputCostPerMillion:'5',transcriptionMaxRequestCost:'0.031',inputCostPerMillion:'0.10',outputCostPerMillion:'0.50',maxRequestCost:'0.10',monthlyBudget:'5',designModel:'',designInputCostPerMillion:'2',designOutputCostPerMillion:'10',designMaxRequestCost:'0.25'});let modelPolicyConfirmed=$state(false);
   let smtpSecret=$state('');let apiKey=$state('');let ownPassword=$state('');
   let recipient=$state('');let busy=$state('');let error=$state('');let notice=$state('');
   let fieldErrors:Record<string,string>=$state({});
   const allowed=$derived(permitted(data,'admin.integrations'));
   const config=$derived((data.related?.integration_settings as unknown as Row)||{});
   onMount(()=>{
-    ai.maxRequestCost=data.summary?.assistantModelProfile?.standard?.maxRequestCost??ai.maxRequestCost;
     for(const key of Object.keys(smtp))smtp[key]=config.smtp?.[key]??'';
     for(const key of Object.keys(ai))ai[key]=config.openai?.[key]??ai[key];
+    const models=data.summary?.assistantModelProfile;
+    if(models){
+      ai.textModel=models.standard.model;
+      ai.designModel=models.design.model;
+      ai.maxRequestCost=models.standard.maxRequestCost;
+      ai.designMaxRequestCost=models.design.maxRequestCost;
+      ai.monthlyBudget=models.monthlyBudget;
+    }
     recipient=data.user?.email||'';
   });
   async function save(kind:'smtp'|'openai',event:SubmitEvent){
@@ -80,7 +87,7 @@
         <div class="field"><label for="openai-monthly-budget">Monatsbudget der Suite *</label><input id="openai-monthly-budget" inputmode="decimal" bind:value={ai.monthlyBudget} required/><span class="field-help">Budget in USD für KI-Aufrufe dieser Suite. Die Abrechnung des Anbieters bleibt maßgeblich.</span></div>
         <details class="integration-advanced"><summary>Erweiterte Modelle & Kostenlimits</summary><div class="field-grid mt">
         <div class="field full integration-model-policy"><h3>Vertiefte Designprüfung · nur auf Wunsch</h3><p class="small">Der Standardassistent arbeitet mit dem günstigeren Textmodell. Für komplexe Planungen kann die Person im Studio ausdrücklich „Vertieft prüfen“ wählen. Es gibt keinen automatischen Wechsel zum teureren Modell.</p></div>
-        <div class="field"><label for="openai-design-model">Modell für vertiefte Designprüfung *</label><input id="openai-design-model" bind:value={ai.designModel} required spellcheck="false"/><span class="field-help">Standardmäßig gpt-6.1-sol. Nur für eine ausdrücklich gewählte vertiefte Prüfung.</span></div>
+        <div class="field"><label for="openai-design-model">Modell für vertiefte Designprüfung *</label><input id="openai-design-model" bind:value={ai.designModel} required spellcheck="false"/><span class="field-help">Wird verwendet, wenn jemand im Planungsstudio „Vertieft prüfen“ auswählt.</span></div>
         <div class="field"><label for="openai-design-input">Design-Eingabepreis pro 1 Mio. Tokens *</label><input id="openai-design-input" inputmode="decimal" bind:value={ai.designInputCostPerMillion} required/><span class="field-help">USD für das gewählte Designmodell.</span></div>
         <div class="field"><label for="openai-design-output">Design-Ausgabepreis pro 1 Mio. Tokens *</label><input id="openai-design-output" inputmode="decimal" bind:value={ai.designOutputCostPerMillion} required/><span class="field-help">USD für das gewählte Designmodell.</span></div>
         <div class="field"><label for="openai-design-limit">Kostenlimit je vertiefter Prüfung *</label><input id="openai-design-limit" inputmode="decimal" bind:value={ai.designMaxRequestCost} required/><span class="field-help">Höchster kalkulierter Betrag in USD je ausdrücklich ausgelöster Designprüfung.</span></div>

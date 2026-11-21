@@ -19,7 +19,23 @@ describe('Cost-aware task routing',()=>{
   expect(routeModel(configuration,'standard',{}).maxRequestCost).toBe(shown.standard.maxRequestCost);
  });
  it('uses Luna for ordinary and structured design tasks without automatic escalation',()=>{expect(routeModel({},'standard',{entityType:'planning'}).model).toBe('gpt-6-luna');expect(routeModel({},'standard',{entityType:'customers'}).model).toBe('gpt-6-luna');});
- it('uses Sol only for the explicit design review and keeps independent prices',()=>{const routed=routeModel({},'design_review',{entityType:'planning'});expect(routed.model).toBe('gpt-6.1-sol');expect(routed.inputCostPerMillion).toBe('2');expect(()=>routeModel({},'design_review',{entityType:'customers'})).toThrow();});
+ it('uses GPT-6.2 Sol for explicit plan reviews with the matching token rates',()=>{
+  const routed=routeModel({},'design_review',{entityType:'planning'});
+  expect(routed).toMatchObject({model:'gpt-6.2-sol',inputCostPerMillion:'2',outputCostPerMillion:'10',cachedInputCostPerMillion:'0.1',cacheWriteCostPerMillion:'2.5',review:true});
+  expect(()=>routeModel({},'design_review',{entityType:'customers'})).toThrow();
+ });
+ it('upgrades the saved Sol 6.1 default without changing configured prices or budgets',()=>{
+  const config=Object.freeze({textModel:'gpt-6-luna',designModel:'gpt-6.1-sol',designInputCostPerMillion:'2.20',designMaxRequestCost:'0.18',monthlyBudget:'3'});
+  const profiles=assistantModelProfiles(config);
+  expect(profiles.standard.model).toBe('gpt-6-luna');
+  expect(profiles.design).toMatchObject({model:'gpt-6.2-sol',inputCostPerMillion:'2.20',maxRequestCost:'0.18'});
+  expect(profiles.monthlyBudget).toBe('3');
+  expect(routeModel(config,'design_review',{entityType:'planning'}).model).toBe(profiles.design.model);
+ });
+ it('honors other saved models and an explicitly selected Sol 6.1 override',()=>{
+  expect(assistantModelProfiles({designModel:'gpt-6.1-terra'}).design.model).toBe('gpt-6.1-terra');
+  expect(assistantModelProfiles({designModel:'gpt-6.1-sol',designModelPinned:true}).design.model).toBe('gpt-6.1-sol');
+ });
  it('loads only the relevant skill and preserves literal inscriptions',()=>{const context=compactContext({snapshot:{kind:'memorial',elements:[{id:'a',kind:'inscription',exactText:'Müller · * 12.03.1947 † 01.01.2025',secret:'omit'}]}});expect(context.snapshot.elements[0].exactText).toContain('Müller');expect(context.snapshot.elements[0].secret).toBeUndefined();expect(routeModel({},'standard',{entityType:'planning',designKind:'room_plan'}).instructions).not.toContain('Grabmal:');});
 });
 

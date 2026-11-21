@@ -18,6 +18,8 @@ Dieser Offline-Lauf prüft den Bewertungsvertrag. Er misst **keine Modellqualit�
 
 Ein echter synthetischer Modellvergleich startet mit `pnpm ai:quality --live --label <laufname>`. Der Testschlüssel wird über OpenAI Developers sicher in der ignorierten `.env.ai-eval.local` eingerichtet. Keine echten Kundenunterlagen verwenden. Der Bericht enthält Regeln, Modell, Token, Aufrufanzahl, Laufzeit und konfigurierte Kostenschätzung; keine Zugangsschlüssel oder Kundeninhalte. Die Berichte liegen unter `work/ai-quality-*.json`.
 
+Die Option `--design-review` führt geeignete Planungsfälle mit dem Modell und der Reasoning-Stufe für „Vertieft prüfen“ aus. Mit `--case` lässt sich ein einzelner Fall auswählen.
+
 `--tools` wählt zwei zusätzliche kontrollierte Fälle für tatsächliche Werkzeugwahl und Faktennutzung. `--case <fall-id>` begrenzt eine gezielte Nachprüfung auf einen bekannten Fall. Die synthetischen Antworttexte können für die fachliche Sichtprüfung im Bericht stehen. Das gemeinsame Kostenbuch gilt für alle Varianten und Wiederholungen.
 
 Das gemeinsame lokale Kostenbuch `work/ai-quality-cost-ledger.json` begrenzt **alle** echten Testläufe zusammen auf zunächst 0,50 USD. Es reserviert vor einem Aufruf dessen konservative Obergrenze. Teilweise abgeschlossene Aufrufe werden erfasst; unklare Ergebnisse behalten ihre Reservierung. Ein exklusiver Lock verhindert parallele Testläufe. Kostenbuch oder verwaiste Locks niemals automatisch löschen, um einen weiteren Lauf zu ermöglichen. Die Preise bleiben Konfigurationsschätzungen und sind keine Anbieterrechnung.
