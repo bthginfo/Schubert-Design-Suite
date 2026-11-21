@@ -139,9 +139,6 @@ test("Window-sill preset creates an explicitly measured sill without a room and 
   await page
     .getByRole("button", { name: "Planung beginnen", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Steinbauteil anlegen", exact: true })
-    .click();
   const dialog = page.getByRole("dialog");
   await expect(
     await nativeSelect(page, dialog.getByLabel("Bauteilart", { exact: true })),

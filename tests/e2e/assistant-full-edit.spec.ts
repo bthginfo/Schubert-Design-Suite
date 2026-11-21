@@ -83,7 +83,7 @@ async function call(
 async function chat(page: Page) {
   await page.getByRole("button", { name: "Assistent", exact: true }).click();
   const panel = page.locator("#assistant-drawer");
-  await panel.getByRole("button", { name: /^Chat/ }).click();
+  await panel.getByRole("button", { name: /^Chat(?: · \d+)?$/ }).click();
   return panel;
 }
 async function saved(

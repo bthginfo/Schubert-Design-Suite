@@ -4,6 +4,7 @@ import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { randomUUID } from 'node:crypto';
 import { PDFDocument } from 'pdf-lib';
+import {planningDraftOperations} from '@schubert/ai';
 import { mkdir,writeFile } from 'node:fs/promises';
 
 const unique='UAT '+new Date().toISOString().slice(0,10)+' '+randomUUID().slice(0,8);
@@ -151,8 +152,17 @@ test('Employee mobile: offline work, pause and finish sync once connection retur
 
 for(const kind of ['Raum','Stele'])test('Studio '+kind+': saved geometry, views, readable controls, real PDF and BOM',async({page,context})=>{
   test.setTimeout(180000);
-  await login(page,'PLANNER');await navigate(page,'/studio?q=Synthetische%20Studio-QA');
-  await page.getByRole('link',{name:new RegExp('Synthetische Studio-QA '+kind+' ')}).click();
+  await login(page,'PLANNER');
+  const memorial=kind==='Stele',headers={origin:new URL(page.url()).origin};
+  const created=await page.request.post('/api/v1/commands',{headers,data:{name:'planning.project.create',idempotencyKey:randomUUID(),payload:{kind:memorial?'memorial':'room_plan',name:unique+' '+kind}}});
+  expect(created.ok()).toBe(true);
+  const {project,variant,revision:initialRevision}=(await created.json()).result;
+  const operations=planningDraftOperations({snapshot:initialRevision.snapshot},memorial
+    ?{kind:'memorial_assembly',label:'Stele',shape:'round_arch',widthMm:'800',heightMm:'1200',thicknessMm:'160',base:null,materialWish:null,inscription:'Anna Muster'}
+    :{kind:'rectangular_room',label:'Bad',clearWidthMm:'4600',clearDepthMm:'3400',heightMm:'2600',wallThicknessMm:'180'});
+  const saved=await page.request.post('/api/v1/designs/'+variant.id+'/commands',{headers,data:{base_revision_id:initialRevision.id,expected_version:variant.version,operations,idempotency_key:randomUUID()}});
+  expect(saved.ok()).toBe(true);
+  await navigate(page,'/studio/'+project.id+'?variant='+variant.id);
   await expect(page.locator('.studio-workspace')).toBeVisible();
   const svg=page.locator('svg[role="application"]');await expect(svg).toBeVisible();
   const revision=await page.locator('.revision-chip').innerText();const original=await svg.getAttribute('viewBox');

@@ -10,7 +10,12 @@ export async function request(path:string, body?:unknown, method='POST', signal?
   if(trace)recordFeedbackStep(trace.kind,trace.action,'started');
   try {
   let response:Response;
-  try { response=await fetch(path,{method,signal,credentials:'same-origin',headers:body instanceof FormData ? {} : {'Content-Type':'application/json'},body:body===undefined?undefined:body instanceof FormData?body:JSON.stringify(body)}); }
+  const headers=new Headers(body instanceof FormData ? undefined : {'Content-Type':'application/json'});
+  if(path.startsWith('/api/v1/portal/') && typeof location!=='undefined'){
+    const currentAccess=/^\/portal\/([\da-f-]{36})\./i.exec(location.pathname)?.[1];
+    if(currentAccess)headers.set('X-Schubert-Portal-Access',currentAccess);
+  }
+  try { response=await fetch(path,{method,signal,credentials:'same-origin',headers,body:body===undefined?undefined:body instanceof FormData?body:JSON.stringify(body)}); }
   catch (cause) { if(signal?.aborted)throw new DOMException('Anfrage beendet','AbortError');throw new RequestError('Der Server ist nicht erreichbar. Ihre Eingaben bleiben erhalten. Bitte prüfen Sie die Verbindung.'); }
   const result=await response.json().catch(()=>null);
   if (!response.ok || result?.ok===false || result?.error) {

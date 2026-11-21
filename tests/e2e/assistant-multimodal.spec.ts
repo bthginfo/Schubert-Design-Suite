@@ -42,6 +42,7 @@ test('Image, typed text and real browser dictation share one composer, survive r
   await panel.getByRole('button',{name:'Spracherkennung erneut versuchen',exact:true}).click();
   await expect(panel.locator('#assistant-message')).toHaveValue('Bitte diese Skizze verwenden. Oberfläche matt.\nDie Breite beträgt 600 Millimeter.');
   expect(audioCalls).toBe(2);
+  await panel.getByRole('button',{name:'Chat vergrößern',exact:true}).click();
   const desktop=await panel.evaluate(node=>({width:node.clientWidth,messages:node.querySelector('.assistant-messages')!.clientHeight,composer:node.querySelector('.assistant-input')!.clientHeight}));
   expect(desktop.width).toBeGreaterThan(900);expect(desktop.messages).toBeGreaterThan(desktop.composer);
   await page.screenshot({path:'work/multimodal-chat-2026-10-28/combined-desktop.png'});

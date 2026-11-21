@@ -789,7 +789,7 @@ test("Design consistency: real dark preference, compact help, reduced motion and
         exact: true,
       }),
     ).toHaveAttribute("aria-pressed", "true");
-    await panel.getByRole("button", { name: /^Chat/ }).click();
+    await panel.getByRole("button", { name: /^Chat(?: · \d+)?$/ }).click();
     await expect
       .poll(() =>
         panel.locator(".assistant-messages").evaluate((node) => node.scrollTop),

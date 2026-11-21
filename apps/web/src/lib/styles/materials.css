@@ -47,6 +47,36 @@
 }
 @media (max-width: 760px) {
   .topbar { top: 0; border-radius: 0; }
+
+  /* Give the companion its own space beside navigation and keep zoom controls tappable. */
+  .app-shell:has(.studio-root.workbench:not(.is-fullscreen)) .mobile-nav { padding-inline-end: 64px; }
+  .app-shell:has(.studio-root.workbench:not(.is-fullscreen)) .assistant-trigger {
+    right: 10px;
+    bottom: calc(9px + env(safe-area-inset-bottom));
+    width: 46px;
+    height: 46px;
+    min-height: 46px;
+    padding: 0;
+    justify-content: center;
+  }
+  .studio-root.workbench.is-fullscreen .workbench-status {
+    flex-shrink: 0;
+    min-height: calc(52px + env(safe-area-inset-bottom));
+    padding-inline-end: 64px;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .studio-root.workbench.is-fullscreen .assistant-trigger {
+    position: absolute;
+    right: 8px;
+    bottom: calc(4px + env(safe-area-inset-bottom));
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .app-shell:has(.studio-root.workbench:not(.is-fullscreen)) .assistant-trigger-label,
+  .studio-root.workbench.is-fullscreen .assistant-trigger-label { display: none; }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .app-shell {

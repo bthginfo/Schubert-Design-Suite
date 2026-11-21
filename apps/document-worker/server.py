@@ -87,9 +87,18 @@ def scan(value):
             path = Path(directory) / "original.bin"
             path.write_bytes(value)
             result = subprocess.run(["clamscan", "--database=" + str(database), "--no-summary", "--max-filesize=40M", "--max-scansize=100M", "--max-files=2000", "--max-recursion=12", "--alert-exceeds-max=yes", str(path)], capture_output=True, timeout=90)
+            report = "ClamAV: OK" if result.returncode == 0 else "ClamAV: blockiert"
             if result.returncode not in (0, 1):
-                raise WorkerError("SCANNER_UNAVAILABLE", 503)
-        return {"clean": result.returncode == 0, "report": "ClamAV: OK" if result.returncode == 0 else "ClamAV: blockiert", "engine": subprocess.run(["clamscan", "--version"], capture_output=True, timeout=10).stdout.decode().strip(), "definitionsCheckedAt": dt.datetime.now(dt.timezone.utc).isoformat()}
+                # Windows can quarantine the original before ClamAV opens it. Its explicit
+                # malware codes are conclusive only for the exact file given to the scanner.
+                diagnostic = result.stderr.decode(errors="replace").splitlines()
+                host_blocks = {
+                    f"LibClamAV Warning: Can't open file {path}: {code}" for code in (225, 226)
+                }
+                if os.name != "nt" or result.returncode != 2 or host_blocks.isdisjoint(diagnostic):
+                    raise WorkerError("SCANNER_UNAVAILABLE", 503)
+                report = "Windows-Dateischutz: blockiert (von ClamAV gemeldet)"
+        return {"clean": result.returncode == 0, "report": report, "engine": subprocess.run(["clamscan", "--version"], capture_output=True, timeout=10).stdout.decode().strip(), "definitionsCheckedAt": dt.datetime.now(dt.timezone.utc).isoformat()}
 
 
 def extract_document(value, mime, page_start=0, page_limit=50):

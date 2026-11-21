@@ -31,6 +31,7 @@
   let { data }: { data: AppData } = $props();
   let section = $state<"help" | "chat" | "products">("help"),
     mobile = $state(false),
+    headerHeight = $state(72), composerHeight = $state(180),
     optionsOpen = $state(false),
     expanded = $state(false);
   const expandedChat = $derived(expanded && section === "chat");
@@ -864,7 +865,8 @@
       aria-expanded="false"
       aria-haspopup="dialog"
       aria-controls="assistant-drawer"
-      title="Assistent öffnen"><Icon name="spark" size={19} />Assistent</button
+      aria-label="Assistent"
+      title="Assistent öffnen"><Icon name="spark" size={19} /><span class="assistant-trigger-label">Assistent</span></button
     >{:else}<div
       class="assistant-overlay"
       class:expanded={expandedChat}
@@ -873,6 +875,8 @@
     ></div>
     <div
       use:companionFocus={expandedChat}
+      style:--header-height={headerHeight+'px'}
+      style:--composer-height={composerHeight+'px'}
       id="assistant-drawer"
       class="assistant-drawer"
       class:chat={section === "chat"}
@@ -889,7 +893,7 @@
         }
       }}
     >
-      <header class="assistant-header">
+      <header class="assistant-header" bind:clientHeight={headerHeight}>
         <div class="empty-icon" style="width:35px;height:35px;margin:0">
           <Icon name="spark" size={18} />
         </div>
@@ -1179,7 +1183,7 @@
               <div>{error}</div>
             </div>{/if}
         </div>
-        <form class="assistant-input" onsubmit={send} onpaste={pasteAttachment} ondragover={event=>{if(event.dataTransfer?.types.includes("Files"))event.preventDefault();}} ondrop={dropAttachment}>
+        <form bind:clientHeight={composerHeight} class="assistant-input" onsubmit={send} onpaste={pasteAttachment} ondragover={event=>{if(event.dataTransfer?.types.includes("Files"))event.preventDefault();}} ondrop={dropAttachment}>
           <div class="assistant-compose-fields">
             {#if sources.length}<div class="assistant-attachments" aria-label="Anhänge dieser Nachricht">
               {#each sources as source, index (source.key)}<div class="assistant-attachment">
@@ -1390,7 +1394,7 @@
   .assistant-messages :global(.chat-message.assistant) { padding-right: 0; }
   .assistant-messages :global(.chat-role) { font-size: 12px; text-transform: none; letter-spacing: 0; color: var(--muted); margin-bottom: 6px; }
   .assistant-messages :global(.assistant-proposal) { border-radius: 10px; background: var(--paper); padding: 16px; border: 1px solid var(--line); }
-  .assistant-input { position: relative; display: flex; flex-direction: column; flex: none; padding: 12px 20px 16px; min-height: 0; max-height: none; overflow: visible; }
+  .assistant-input { position: static; display: flex; flex-direction: column; flex: none; padding: 12px 20px 16px; min-height: 0; max-height: none; overflow: visible; }
   .assistant-compose-fields { min-height: 0; }
   .assistant-input textarea#assistant-message { min-height: 64px; max-height: 150px; field-sizing: content; resize: vertical; overflow-y: auto; border-radius: 10px; font-size: 15px; line-height: 1.6; }
   .assistant-input-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-start; gap: 8px; margin-top: 8px; padding: 0; }
@@ -1409,7 +1413,7 @@
   .companion-options > summary { display: flex; align-items: center; gap: 6px; padding: 8px 10px; cursor: pointer; color: var(--muted); border-radius: 8px; list-style: none; }
   .companion-options > summary::-webkit-details-marker { display: none; }
   .companion-options[open] > summary { background: var(--wash); color: var(--ink); }
-  .companion-options-body { position: absolute; bottom: calc(100% + 8px); left: 12px; right: 12px; z-index: 5; max-height: min(56dvh, 560px); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 35px #0003; padding: 16px; background: var(--paper); }
+  .companion-options-body { position: absolute; bottom: calc(var(--composer-height) + 8px); left: 12px; right: 12px; z-index: 5; max-height: min(560px, calc(100% - var(--composer-height) - var(--header-height) - 18px)); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 35px #0003; padding: 16px; background: var(--paper); }
   .options-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
   .options-heading strong { font-size: 14px; }
   .companion-options :global(.assistant-sources) { border-top: 0; margin: 0; }
@@ -1435,6 +1439,7 @@
   .proposal-actions > .btn { min-height: 44px; }
   .companion-density { padding: 0 24px; flex: none; }
   .companion-density button { font: inherit; font-size: 13px; color: var(--muted); min-height: 40px; text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-height:650px) { .companion-options-body { bottom:8px; max-height:calc(100% - var(--header-height) - 16px); } }
   @media (min-width:761px) {
     .assistant-overlay { display: none; }
     .assistant-overlay.expanded { display: block; }

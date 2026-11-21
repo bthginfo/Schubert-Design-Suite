@@ -7,8 +7,8 @@ export const handle:Handle=async({event,resolve})=>{event.locals.correlationId=r
 if(!building&&['POST','PUT','PATCH','DELETE'].includes(event.request.method)){const origin=event.request.headers.get('origin');if(origin!==event.url.origin&&!['/api/v1/render-assets/read','/api/v1/backup/source'].includes(event.url.pathname))return Response.json({ok:false,error:{code:'ORIGIN',message:'Anfrage bitte direkt aus der Anwendung erneut ausführen.',correlationId:event.locals.correlationId}},{status:403});}
 if(!building&&!event.url.pathname.startsWith('/_app/')&&!event.url.pathname.endsWith('/service-worker.js')&&process.env.DATABASE_URL&&process.env.BETTER_AUTH_SECRET){try{const session=await auth().api.getSession({headers:event.request.headers});if(session){event.locals.user={id:session.user.id,name:session.user.name,email:session.user.email};event.locals.session=session.session;event.locals.context=await contextFor(session.user.id,event.locals.correlationId,session.session.id);}if(event.url.pathname.startsWith('/api/auth/'))return auth().handler(event.request);}catch(e){console.error(JSON.stringify({code:'AUTH_UNAVAILABLE',correlationId:event.locals.correlationId}));if(event.url.pathname.startsWith('/api/auth/'))return Response.json({error:{message:'Anmeldung derzeit nicht verfügbar. Verbindung und Einrichtung prüfen.'}},{status:503});}}
 let response:Response;
-if(event.url.pathname.startsWith('/api/v1/')){
- // Native download navigation must keep the API route even with Accept:text/html.
+if(event.url.pathname.startsWith('/api/v1/') && ['GET','HEAD'].includes(event.request.method) && event.request.headers.get('accept')?.includes('text/html')){
+ // Native file navigation must return the API resource. Other requests use Kit's normal cookie lifecycle.
  const handlers=await import('./routes/api/v1/[...endpoint]/+server.ts');
  const method=event.request.method==='HEAD'?'GET':event.request.method;
  const handler=handlers[method as keyof typeof handlers];

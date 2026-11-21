@@ -2,23 +2,27 @@
 export function workbenchViewport(node: HTMLElement, active: boolean) {
   let enabled = active;
   let frame = 0;
-  let previousWidth = 0;
+  let paper: Element | null = null;
   const measure = () => {
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => {
       if (!enabled || !node.isConnected || node.classList.contains('is-fullscreen')) return;
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
       const bottom = window.matchMedia('(max-width:760px)').matches ? 88 : 20;
-      const available = Math.max(320, viewportHeight - Math.max(0, node.getBoundingClientRect().top) - bottom);
-      node.style.setProperty('--workbench-height', `${Math.round(available)}px`);
+      const bounds = node.getBoundingClientRect();
+      const nextPaper = node.querySelector('.drawing-area');
+      if (nextPaper !== paper) {
+        if (paper) observer.unobserve(paper);
+        paper = nextPaper;
+        if (paper) observer.observe(paper);
+      }
+      const controlsHeight = paper ? bounds.height - paper.getBoundingClientRect().height : 0;
+      const available = Math.max(320, controlsHeight + 240, viewportHeight - Math.max(0, bounds.top) - bottom);
+      const height = Math.ceil(available) + 'px';
+      if (node.style.getPropertyValue('--workbench-height') !== height) node.style.setProperty('--workbench-height', height);
     });
   };
-  const observer = new ResizeObserver(entries => {
-    const width = entries[0]?.contentRect.width ?? 0;
-    if (width === previousWidth) return;
-    previousWidth = width;
-    measure();
-  });
+  const observer = new ResizeObserver(measure);
   observer.observe(node);
   window.addEventListener('resize', measure);
   window.visualViewport?.addEventListener('resize', measure);

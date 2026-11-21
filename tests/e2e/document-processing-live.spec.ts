@@ -16,13 +16,14 @@ test('real customer chat upload is scanned, readable at full size and remains in
   await page.goto('/customers/' + customer.id);
   await page.getByRole('button', { name: 'Assistent', exact: true }).click();
   const panel = page.locator('#assistant-drawer');
-  await panel.getByRole('button', { name: /^Chat/ }).click();
+  await panel.getByRole('button', { name: /^Chat(?: · \d+)?$/ }).click();
   const upload = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/uploads' && response.request().method() === 'POST');
   await panel.locator('input[type=file]').setInputFiles({ name: 'TEST-Kundenskizze-80x120.png', mimeType: 'image/png', buffer: png });
   const original = (await (await upload).json()).result;
   expect(original.entity_type).toBe('customers'); expect(original.entity_id).toBe(customer.id);
   await expect(panel).toContainText('Neue Uploads werden bei „' + customer.name + '“ abgelegt');
   await expect(panel).toContainText('Bereit für die KI', { timeout: 100000 });
+  await panel.getByLabel('Unterlagen und Modelloptionen').click();
   const popup = page.waitForEvent('popup');
   await panel.getByRole('link', { name: 'Bildvorlage groß ansehen – öffnet einen neuen Tab', exact: true }).click();
   const enlarged = await popup;

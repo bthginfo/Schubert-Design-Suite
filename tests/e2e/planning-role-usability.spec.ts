@@ -15,7 +15,6 @@ for (const role of ['OFFICE','EMPLOYEE']) for (const kind of ['memorial','room_p
     await page.getByRole('textbox',{name:'Projektname',exact:true}).fill(name);
     await page.getByRole('button',{name:'Planung beginnen',exact:true}).click();
     await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
-    await page.getByRole('button',{name:'Grundmaße erfassen',exact:true}).click();
     const dialog=page.getByRole('dialog');
     const fields=kind==='memorial'?[['Breite (mm)','600'],['Höhe (mm)','900'],['Materialstärke (mm)','120']]:[['Lichte Raumbreite (mm)','3000'],['Lichte Raumtiefe (mm)','2400'],['Raumhöhe (mm)','2500'],['Wandstärke ohne Belag (mm)','115']];
     for(const [label,value]of fields)await dialog.getByRole('textbox',{name:label,exact:true}).fill(value);
