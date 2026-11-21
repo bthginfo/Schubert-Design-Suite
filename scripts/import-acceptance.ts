@@ -9,7 +9,7 @@ import {rolePermissions} from '@schubert/domain';
 import {privateBytes,contentHash} from '@schubert/adapters';
 import type {ActorContext} from '@schubert/contracts';
 if(process.env.APP_ENV==='production')throw new Error('Synthetic development tenant only.');
-process.env.DOCUMENT_WORKER_URL='https://schubert-suite-files.vercel.app';
+process.env.DOCUMENT_WORKER_URL='https://schubert-suite-documents.vercel.app';
 const saved=JSON.parse(await readFile('../../work/qa-full-finance/context.json','utf8'));
 const ctx:ActorContext={...saved,employeeId:null,role:'SuperAdmin',permissions:rolePermissions.SuperAdmin,permissionVersion:1,actorType:'employee',identityAssurance:'individual_session',correlationId:randomUUID(),reauthenticatedAt:new Date()};
 const path='../../work/qa-import';await mkdir(path,{recursive:true});const checks:string[]=[];

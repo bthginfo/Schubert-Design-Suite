@@ -6,7 +6,7 @@ import {rolePermissions} from '@schubert/domain';
 import {randomUUID} from 'node:crypto';
 import type {ActorContext} from '@schubert/contracts';
 if(process.env.APP_ENV==='production'||!process.env.TEST_TENANT_ID)throw new Error('Development test jobs only.');
-process.env.DOCUMENT_WORKER_URL='https://schubert-suite-files.vercel.app';
+process.env.DOCUMENT_WORKER_URL='https://schubert-suite-documents.vercel.app';
 const type=process.argv[2];if(!['business.pdf','document.preview','document.ingest','document.extract','migration.stage','migration.drive.extract'].includes(type))throw new Error('Explicit bounded test job type required.');
 const member=(await getPool().query('SELECT lookup_request_context($1,NULL) context',[process.env.TEST_OWNER_ID])).rows[0].context;
 const ctx:ActorContext={tenantId:member.tenant_id,legalEntityId:member.legal_entity_id,actorId:member.user_id,employeeId:member.employee_id,role:member.role,permissions:[...rolePermissions[member.role],...member.permissions],permissionVersion:member.permission_version,actorType:'employee',identityAssurance:'individual_session',correlationId:randomUUID()};

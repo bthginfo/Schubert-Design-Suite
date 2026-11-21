@@ -89,6 +89,7 @@ test('The office opens real draft forms from its main actions and stays readable
   await appearance.getByRole('radio', { name: /^Dunkel / }).check();
   await appearance.getByRole('radio', { name: 'Hellblau', exact: true }).check();
   await appearance.getByRole('button', { name: 'Darstellung speichern', exact: true }).click();
+  await expect(appearance.getByRole('status')).toContainText('gespeichert');
   try {
     await page.goto('/office');
     await expect(page.locator('.app-shell')).toHaveAttribute('data-appearance-mode', 'dark');
@@ -101,5 +102,6 @@ test('The office opens real draft forms from its main actions and stays readable
     await page.goto('/account');
     await appearance.getByRole('button', { name: 'Schubert-Standard auswählen' }).click();
     await appearance.getByRole('button', { name: 'Darstellung speichern', exact: true }).click();
+    await expect(appearance.getByRole('status')).toContainText('gespeichert');
   }
 });

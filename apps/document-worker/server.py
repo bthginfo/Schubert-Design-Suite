@@ -14,6 +14,7 @@ import threading
 import time
 import traceback
 import urllib.request
+from urllib.parse import urlsplit
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -299,7 +300,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self):
-        self.respond(200 if self.path == "/health" else 404, {"available": self.path == "/health", "generatorVersion": VERSION})
+        available = urlsplit(self.path).path == "/health"
+        self.respond(200 if available else 404, {"available": available, "generatorVersion": VERSION})
 
     def do_POST(self):
         secret = os.environ.get("DOCUMENT_WORKER_SECRET", "")

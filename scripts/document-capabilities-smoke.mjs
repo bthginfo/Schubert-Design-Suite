@@ -2,7 +2,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import {parse} from 'dotenv';
-const secrets=parse(await readFile('.env.workers.local')),base='https://schubert-suite-files.vercel.app',sha=b=>createHash('sha256').update(b).digest('hex');
+const secrets=parse(await readFile('.env.workers.local')),base='https://schubert-suite-documents.vercel.app',sha=b=>createHash('sha256').update(b).digest('hex');
 async function call(path,body,expected=200){const r=await fetch(base+path,{method:'POST',headers:{Authorization:'Bearer '+secrets.DOCUMENT_WORKER_SECRET,'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(180000)}),result=await r.json();assert.equal(r.status,expected,path+' '+JSON.stringify(r.ok?{}:result));return result;}
 function wav(seconds){const size=seconds*8000*2,b=Buffer.alloc(44+size);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(8000,24);b.writeUInt32LE(16000,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(size,40);return b;}
 await mkdir('../../work/qa-document-capabilities',{recursive:true});

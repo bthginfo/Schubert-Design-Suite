@@ -1,7 +1,7 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {parse} from 'dotenv';
 const secrets=parse(await readFile('.env.workers.local'));
-const base=process.env.TEST_DOCUMENT_WORKER_URL??'https://schubert-suite-files.vercel.app';
+const base=process.env.TEST_DOCUMENT_WORKER_URL??'https://schubert-suite-documents.vercel.app';
 async function call(path,body){const response=await fetch(base+path,{method:'POST',headers:{Authorization:'Bearer '+secrets.DOCUMENT_WORKER_SECRET,'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(180000)});const result=await response.json();if(!response.ok)throw new Error('Document worker '+response.status+' '+JSON.stringify(result));return result;}
 const invoice={number:'TEST-2026-001',title:'Synthetischer Prüffall – keine ausgestellte Rechnung',kind:'normal',currency:'EUR',service_date:'2026-10-17',due_date:'2026-10-31',issued_at:'2026-10-17T10:00:00Z',terms:'Nur Softwareprüfung.'};
 const issuer={name:'Synthetischer Prüfbetrieb',street:'Teststraße 1',postal_code:'85051',city:'Ingolstadt',country:'DE',vat_id:'DE123456789',tax_number:'123/456/78901',iban:'DE89370400440532013000',bank_holder:'Synthetischer Prüfbetrieb'};

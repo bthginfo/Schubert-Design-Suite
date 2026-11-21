@@ -10,7 +10,7 @@ import {privateBytes,contentHash} from '@schubert/adapters';
 import {unzipSync} from 'fflate';
 import type {ActorContext} from '@schubert/contracts';
 if(process.env.APP_ENV==='production'||process.env.VERCEL_ENV==='production')throw new Error('Synthetic separate development tenant only.');
-process.env.DOCUMENT_WORKER_URL='https://schubert-suite-files.vercel.app';
+process.env.DOCUMENT_WORKER_URL='https://schubert-suite-documents.vercel.app';
 const ctx:ActorContext={tenantId:randomUUID(),legalEntityId:randomUUID(),actorId:randomUUID(),employeeId:null,role:'SuperAdmin',permissions:rolePermissions.SuperAdmin,permissionVersion:1,actorType:'employee',identityAssurance:'individual_session',correlationId:randomUUID(),reauthenticatedAt:new Date()};
 const admin=new pg.Client({connectionString:process.env.DATABASE_MIGRATION_URL,ssl:{rejectUnauthorized:true}});await admin.connect();
 try{await admin.query('BEGIN');await admin.query('INSERT INTO tenants(id,name)VALUES($1,$2)',[ctx.tenantId,'Testbetrieb · isolierte vollständige Finanzabnahme']);await admin.query("INSERT INTO \"user\"(id,name,email,tenant_id)VALUES($1,'Synthetische Finanzprüfung',$2,$3)",[ctx.actorId,'finance-'+ctx.actorId+'@example.invalid',ctx.tenantId]);await admin.query('COMMIT');}finally{await admin.end();}

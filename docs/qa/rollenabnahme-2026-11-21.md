@@ -13,6 +13,8 @@ Die Prüfung verwendet synthetische Betriebsdaten, getrennte Anmeldungen und ein
 | Finanzen, Personal, Steuerberatung und Administration | Rollenspezifische Einstiege und erlaubte Seiten öffnen, nicht freigegebene Funktionen ausschließen | Der Einstieg führt zur jeweiligen Hauptaufgabe. Offene Forderungen sind nach Währung getrennt. Die technische Administration liest keine persönlichen Zeiten oder Aufgaben über ihr Dashboard. |
 | Kundenportal | Mit einem eigenen Zugang anmelden, Nachricht senden und nach erneutem Öffnen sehen, zwischen Zugängen wechseln und abmelden | Die Browsersitzung wird nach der Anmeldung gesetzt. Ein anderer Portal-Link öffnet die richtige Anmeldung. Ein bereits geöffneter Tab erkennt den Wechsel des Zugangs, bevor er eine Nachricht für das falsche Vorhaben senden kann. |
 
+Der Dokumentendienst ist über die Standarddomain seines Vercel-Projekts angebunden. Ein Aufruf mit Prüfparametern liefert denselben Gesundheitsstatus wie ein direkter Aufruf. Unbekannte Pfade und unberechtigte Verarbeitungsanfragen werden zurückgewiesen.
+
 Die Bereichsübersichten ermitteln ihre berechtigten Karten in einer Datenbankabfrage. Die Auswertungsseite lädt die ungenutzten Startseitenaggregate nicht mehr. Die Prüfung liefert keine Hochrechnung für den monatlichen Vercel- oder Neon-Verbrauch.
 
 ## Prüfumfang
@@ -23,7 +25,7 @@ Die Bereichsübersichten ermitteln ihre berechtigten Karten in einer Datenbankab
 | PostgreSQL-Integration | 120 Prüfungen bestanden, einschließlich Rollenmatrix, Berechtigungen und Auftrags-Export |
 | Serverseitige Seitenaufrufe | 401 Kombinationen aus Rolle und berechtigter Seite erfolgreich geladen |
 | KI-Prüfung mit echten OpenAI-Aufrufen | 10 Planungsfälle und 3 Fachwerkzeugfälle bestanden. 25 Provideraufrufe, 137.272 Eingabetokens, 2.801 Ausgabetokens, geschätzte 0,01234484 USD |
-| Browserabnahme | 102 unterschiedliche Szenarien abgedeckt. Die zusätzlichen Wiederholungen für mobiles Studio-Vollbild, Zoom und Begleiter wurden auf der korrigierten Fassung bestanden. |
+| Browserabnahme | 102 unterschiedliche Szenarien abgedeckt. Die zusätzlichen Wiederholungen für mobiles Studio-Vollbild, Zoom, Begleiter und die gespeicherte Bürodarstellung wurden auf der korrigierten Fassung bestanden. |
 | Privater Dateispeicher | Kundenskizze hochgeladen, tatsächlich gescannt, mit OCR aufbereitet, groß geöffnet und nach erneutem Öffnen in der Kundenakte gefunden. Die EICAR-Prüfdatei wurde gesperrt. Erneute Verarbeitung und Download wurden abgewiesen. |
 | Planexport | Für Grabmal und Raum jeweils eine fünfseitige PDF erzeugt und die dargestellten Seiten geprüft |
 
