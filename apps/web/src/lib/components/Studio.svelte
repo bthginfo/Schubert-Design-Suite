@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PlanningPdfReview from "./studio/PlanningPdfReview.svelte";
   import {planningPresets,planningPreset,type PlanningPreset} from '@schubert/contracts';
   import LengthInput from './studio/LengthInput.svelte';
   import {providePlanningUnits} from '#lib/client/planning-units.svelte.ts';
@@ -362,6 +363,17 @@
   async function replaceCatalog(versionId:string,assetId:string|null=null){if(selected?.kind!=='catalog_object'||!versionId)return;const elementId=selected.id,variantId=snapshot?.variantId;try{const product=await frozenProductVersion(versionId);if(snapshot?.variantId!==variantId||selected?.id!==elementId)return;resolvedProducts=[...resolvedProducts.filter(p=>p.id!==product.id),product];edit([{type:'replace_product_variant',elementId,productVariantVersionId:versionId,assetVersionId:assetId,accuracy:'verified_envelope',footprint:rectangleContour(String(product.width_mm),String(product.depth_mm))}]);if(!error)notice=`Produktstand als Entwurf gewählt: ${product.width_mm} × ${product.depth_mm} × ${product.height_mm??'Höhe offen'} mm. ${selected.connectionElementIds.length} Anschlussbezug / ${selected.clearanceElementIds.length} Freiraumbezug: Lage, Montage, benachbarte Ausschnitte und zugehörige Preisfassung prüfen. Der Produktwechsel bestätigt keine Ausführung.`;}catch(problem){error=(problem as Error).message;}}
   async function repairIssue(raw:string){const issue=describeStudioIssue(activeSnapshot,raw);if(!issue.elementId)return;selectedIds=[issue.elementId];openInspector('properties');const binding=activeSnapshot?.constraints.find(c=>raw.includes(c.id)||c.measureId===issue.measureId);if(binding)constraintOpen=true;await tick();const target=issue.measureId?document.querySelector<HTMLElement>(`[data-measure-id="${CSS.escape(issue.measureId)}"]`):binding?document.querySelector<HTMLElement>(`[data-constraint-id="${CSS.escape(binding.id)}"]`):document.querySelector<HTMLElement>('.inspector-body');if(target){let ancestor=target.parentElement;while(ancestor){if(ancestor instanceof HTMLDetailsElement)ancestor.open=true;ancestor=ancestor.parentElement;}await tick();}target?.scrollIntoView({block:'center',behavior:'smooth'});target?.querySelector<HTMLElement>('input:not(:disabled),select:not(:disabled),textarea:not(:disabled),button:not(:disabled)')?.focus();}
   let exporting=$state(false);
+  let pdfReview=$state<{variantId:string;revisionId:string}|null>(null);
+  async function openPdfReview(){
+    if(!snapshot||pdfReview||saving||conflict)return;
+    if(pending.length&&!(await save()))return;
+    const revisionId=activeSnapshot?.revisionId??baseRevisionId;
+    if(revisionId)pdfReview={variantId:snapshot.variantId,revisionId};
+  }
+  function closePdfReview(){
+    pdfReview=null;
+    void tick().then(()=>{if(document.activeElement===document.body)document.getElementById('studio-project-actions')?.focus();});
+  }
   async function exportPlan(kind:string){
     if(!snapshot||exporting)return;if(pending.length&&!(await save()))return;
     exporting=true;error='';
@@ -415,6 +427,7 @@
     <button type="button" onclick={()=>projectAction(()=>manufacturerOpen=true)}><Icon name="file" size={17}/><span>Herstellerdaten<small>Maßzeichnungen und Referenzbilder</small></span></button>
     <button onclick={()=>projectAction(()=>openInspector('text'))}><Icon name="pen" size={17}/><span>Inschriften prüfen<small>Namen und Daten im Wortlaut lesen</small></span></button>
     <button onclick={()=>projectAction(()=>openInspector('bom'))}><Icon name="file" size={17}/><span>Stückliste<small>Bauteile, Mengen und Bearbeitungen</small></span></button>
+    <button onclick={()=>projectAction(()=>void openPdfReview())} disabled={saving||!!conflict}><Icon name="search" size={17}/><span>PDF-Vorschau prüfen<small>Maßtexte im gespeicherten Plan ansehen</small></span></button>
     <button onclick={()=>projectAction(()=>void exportPlan('pdf'))} disabled={saving||exporting||!!conflict}><Icon name="download" size={17}/><span>Planungs-PDF<small>Ansichten, Maße in mm und Stückliste</small></span></button>
     <div class="popover-divider"></div>
     <button onclick={()=>projectAction(()=>openInspector('compare'))}><Icon name="box" size={17}/><span>Varianten vergleichen</span></button>
@@ -533,6 +546,7 @@
 {#if constraintOpen&&activeSnapshot}<ConstraintDialog snapshot={activeSnapshot} selectedId={selectedIds[0]??''} rules={data.related?.rules??[]} disabled={!canEdit||isHistoric} onapply={ops=>applyBatch(ops)} onclose={()=>constraintOpen=false}/>{/if}
 {#if manufacturerOpen}<ManufacturerPicker studio={snapshot?.kind??'both'} canImportContour={!!selected&&['stone_piece','surface','clearance','grave_border'].includes(selected.kind)&&!selected.locked&&canEdit&&!isHistoric} canManageAssets={data.context?.permissions?.some(permission=>['*','manufacturer_assets','manufacturer_assets.*'].includes(permission))??false} canSaveCatalog={data.context?.permissions?.some(permission=>['*','catalog','catalog.*'].includes(permission))??false} onchoose={useManufacturer} onclose={()=>manufacturerOpen=false}/>{/if}
 {#if libraryOutlineOpen&&activeSnapshot}<OutlineImportDialog documents={planningDocuments} planningProjectId={activeSnapshot.planningProjectId} initialSourceVersion={librarySourceVersion} initialUnit={librarySourceUnit} onapply={contour=>{applyBatch([{type:'set_contour',elementId:libraryTargetId,contour}]);}} onclose={()=>libraryOutlineOpen=false}/>{/if}
+{#if pdfReview}<PlanningPdfReview variantId={pdfReview.variantId} revisionId={pdfReview.revisionId} onclose={closePdfReview}/>{/if}
 {#if visualizationOpen}<VisualizationDialog {data} revisionId={baseRevisionId} intent={visualizationMode} initialPrompt={visualizationPrompt} initialSources={visualizationSources} designKind={snapshot?.kind??'memorial'} jobs={data.related?.ai_visualizations??[]} onclose={()=>visualizationOpen=false}/>{/if}
 {#if compositeOpen}<CompositeDialog revisionId={baseRevisionId} jobs={renderJobs} documents={planningDocuments} onclose={()=>compositeOpen=false}/>{/if}
 <dialog class="studio-leave-dialog" bind:this={leaveDialog!} aria-labelledby="studio-leave-title" aria-describedby="studio-leave-description" oncancel={(event)=>{event.preventDefault();continueEditing();}} onclose={()=>{if(leaveOpen&&!navigationBusy)continueEditing();}}>

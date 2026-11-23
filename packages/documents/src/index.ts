@@ -4,7 +4,7 @@ import fontkit from '@pdf-lib/fontkit';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {htmlEscape,requireRule,escapeCsv} from '@schubert/domain';
-export {createPlanningPdf} from './planning.js';
+export { createPlanningPdf, reviewPlanningPdf, type PlanningPdfMeta, type PlanningPdfReview } from './planning.js';
 export type BusinessSnapshot={invoice?:Record<string,any>;quote?:Record<string,any>;issuer:Record<string,any>;customer:Record<string,any>;lines:Record<string,any>[];net_total:string;tax_total:string;gross_total:string;payable_total?:string;prepaid_total?:string;tax_summaries?:Record<string,any>[];currency?:string};
 const quantity=(value:unknown)=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:6}).format(Number(value??0));
 const unitName=(unit:string)=>({piece:'Stück',m2:'m²',m3:'m³',h:'Std.',day:'Tage',package:'Pakete'} as Record<string,string>)[unit]??unit;

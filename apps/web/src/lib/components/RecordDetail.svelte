@@ -265,6 +265,7 @@
     permitted(data, module.permission || `${module.commandPrefix}.update`) &&
       !module.readOnly &&
       !module.readonly &&
+      !(isOrder && ["Employee", "Workshop", "Dispatcher"].includes(data.context?.role ?? "")) &&
       !protectedStand,
   );
   const statusKeys = $derived(
@@ -290,7 +291,7 @@
   const actionList = $derived(
     module.actions.filter(
       (a) =>
-        (a.permission
+        (!(isOrder && ["Employee", "Workshop", "Dispatcher"].includes(data.context?.role ?? ""))) && (a.permission
           ? permitted(data, a.permission)
           : permitted(data, module.permission || "")) &&
         !["catalog.price_import.approve", "migration.import.commit"].includes(
@@ -474,6 +475,68 @@
     staging_records: "Prüfdatensätze",
     portal_publications: "Portalveröffentlichungen",
   };
+
+  type OrderStep = { title: string; detail: string; label?: string; href?: string; action?: Action; owner?: string };
+  const orderStep = $derived.by((): OrderStep | null => {
+    if (!isOrder) return null;
+    const briefing = data.summary?.orderHandoff;
+    const owner = briefing?.owner_name;
+    const plans = briefing?.plans || [];
+    const canPlan = orderAreas.some(area => area.slug === "studio");
+    const planHref = plans.length === 1 ? "/studio/" + plans[0].id : orderAreaHref("studio");
+    const work = (data.related.work_packages || []).filter(item => ["open","in_progress"].includes(item.status));
+    const current = work.find(item => item.status === "in_progress") ?? work[0];
+    const assignment = briefing?.assignment;
+    const confirm = actionList.find(item => item.name === "sales.order.confirm");
+    const complete = actionList.find(item => item.name === "sales.order.complete");
+    if (record.status === "draft") {
+      return { title: "Auftrag bestätigen", detail: "Der Auftrag steht noch als Entwurf.", owner,
+        ...(confirm ? { action: confirm, label: confirm.label } : {}) };
+    }
+    if (["cancelled","deleted","archived","closed"].includes(record.status)) {
+      return { title: "Auftragsverlauf ansehen", detail: "Die bisherigen Schritte stehen in der Akte.", owner,
+        label: "Verlauf öffnen" };
+    }
+    if (record.status === "completed") {
+      const billing = orderAreas.some(area => area.slug === "invoices");
+      return { title: billing ? "Abrechnung prüfen" : "Auftrag abgeschlossen",
+        detail: billing ? "Rechnungsstände und offene Entwürfe zum Auftrag prüfen." : "Die zugehörigen Unterlagen stehen in der Akte.", owner,
+        ...(billing ? { label: "Abrechnung öffnen", href: orderAreaHref("invoices") } : {}) };
+    }
+    if (current && canPlan && ["survey","planning"].includes(current.kind)) {
+      return { title: current.kind === "survey" ? (current.status === "in_progress" ? "Aufmaß in Arbeit" : "Aufmaß offen") : "Planung bearbeiten",
+        detail: current.kind === "survey" ? "Die Aufmaßangaben zum Arbeitspaket ergänzen." : "Den Entwurf zum Arbeitspaket weiterführen.",
+        owner: current.assigned_name || owner, label: plans.length === 1 ? "Plan öffnen" : "Auftragsplanung öffnen", href: planHref };
+    }
+    if (assignment && (!current || !assignment.work_package_id || assignment.work_package_id === current.id)) {
+      return { title: "Einsatz vorbereiten", detail: assignment.title + " · " + display(assignment.starts_at, "starts_at"),
+        owner: assignment.employee_name, label: "Einsatz öffnen", href: "/assignments/" + assignment.id };
+    }
+    if (current) {
+      const canDispatch = permitted(data, "dispatch") && orderAreas.some(area => area.slug === "dispatch");
+      if (!assignment && canDispatch && ["confirmed","in_progress"].includes(record.status) &&
+        ["survey","cutting","workshop","transport","assembly","rework","service"].includes(current.kind)) {
+        return { title: "Einsatz einteilen", detail: "Für „" + current.name + "“ einen Termin und die Person festlegen.",
+          owner: current.assigned_name || owner, label: "Einsatz anlegen", href: createHref("dispatch", downstreamContext) };
+      }
+      return { title: current.name, detail: current.status === "in_progress" ? "Das Arbeitspaket ist in Arbeit." : "Das Arbeitspaket ist offen.",
+        owner: current.assigned_name || owner, ...(areaAllowed("work-packages") ? { label: "Arbeitspaket öffnen", href: "/work-packages/" + current.id } : {}) };
+    }
+    if (complete && data.related.work_packages?.length && data.related.work_packages.every(item => item.status === 'done')) {
+      return { title: "Abschluss prüfen", detail: "Die angezeigten Arbeitspakete sind erledigt.", owner, action: complete, label: complete.label };
+    }
+    if (canPlan && plans.length && record.planning_status === "survey_open") {
+      return { title: "Aufmaß prüfen", detail: "Beim Auftrag ist der Aufmaßstand noch offen.", owner,
+        label: plans.length === 1 ? "Plan öffnen" : "Auftragsplanung öffnen", href: planHref };
+    }
+    return { title: "Nächsten Schritt abstimmen", detail: "Legen Sie die nächste Leistung für diesen Auftrag fest.", owner,
+      ...(areaAllowed("work-packages") && permitted(data, "orders")
+        ? { label: "Arbeitspaket anlegen", href: createHref("work-packages", downstreamContext) }
+        : { label: "Übersicht prüfen", href: "#order-details" }) };
+  });
+  const secondaryActions = $derived(isOrder && tab === "overview"
+    ? actionList.filter(action => action.name !== orderStep?.action?.name)
+    : actionList.slice(1));
 </script>
 
 <a class="text-link mb" href={`/${module.slug}`}
@@ -488,9 +551,10 @@
     </p>
   </div>
   <div class="page-heading-actions">
+    {#if module.slug === "dispatch" && tab === "overview"}<a class="btn" href={"/assignments/" + record.id}><Icon name="eye" size={16}/>Einsatzansicht öffnen</a>{/if}
     {#if editable}<button class="btn" onclick={() => (editor = true)}
         ><Icon name="edit" size={15} />Bearbeiten</button
-      >{/if}{#if actionList.length}<button
+      >{/if}{#if actionList.length && (!isOrder || tab !== "overview")}<button
         class="btn primary"
         disabled={actionBusy || actionBlocked(actionList[0])}
         title={actionBlocked(actionList[0])
@@ -519,6 +583,19 @@
   </div>{/if}{#if actionNotice}<div class="notice info" role="status">
     {actionNotice}
   </div>{/if}
+{#if isOrder && tab === "overview" && orderStep}
+  <section class="panel order-next" aria-labelledby="order-next-heading">
+    <div>
+      <div class="order-next-kicker"><span>Nächster Schritt</span><Status value={record.status}/></div>
+      <h2 id="order-next-heading">{orderStep.title}</h2>
+      <p>{orderStep.detail}</p>
+      <p class="order-next-owner"><Icon name="user" size={15}/>{orderStep.owner ? "Zuständig: " + orderStep.owner : "Zuständigkeit offen"}</p>
+    </div>
+    {#if orderStep.action}<button class="btn primary" disabled={actionBusy} onclick={() => orderStep?.action && perform(orderStep.action)}>{orderStep.label}<Icon name="arrow" size={16}/></button>
+    {:else if orderStep.href}<a class="btn primary" href={orderStep.href}>{orderStep.label}<Icon name="arrow" size={16}/></a>
+    {:else if orderStep.label}<button class="btn" onclick={() => tab = "timeline"}>{orderStep.label}<Icon name="arrow" size={16}/></button>{/if}
+  </section>
+{/if}
 <nav class="tabs" aria-label="Bereiche der Akte">
   {#each tabs as item}<button
       class="tab"
@@ -530,7 +607,9 @@
         >{/if}</button
     >{/each}
 </nav>
-{#if tab === "overview" && isOrder && orderAreas.length}<nav
+{#if tab === "overview" && isOrder && orderAreas.length}<details class="order-more">
+  <summary>Weitere Wege zu diesem Auftrag</summary>
+  <nav
     class="record-context-actions inline-actions mb"
     aria-label="Mit diesem Auftrag weiterarbeiten"
   >
@@ -542,7 +621,7 @@
           size={13}
         /></a
       >{/each}
-  </nav>{:else if tab === "overview" && contextActions.length}<nav
+  </nav></details>{:else if tab === "overview" && contextActions.length}<nav
     class="record-context-actions inline-actions mb"
     aria-label="Mit diesem Vorgang weiterarbeiten"
   >
@@ -553,7 +632,7 @@
       >{/each}
   </nav>{/if}
 {#if tab==='linked'&&['customers','suppliers'].includes(module.slug)&&(!areaAllowed('orders')||!areaAllowed('quotes'))}<div class="notice info"><div>Hier erscheinen nur Vorgänge Ihrer freigegebenen Fachbereiche. Für weitere Angebots- oder Auftragsakten benötigen Sie entsprechende Leserechte.{#if permitted(data,'reports')||permitted(data,'reports.read')} <a class="text-link" href="/reports">Berechtigte Finanznachweise in der Auswertung prüfen</a>{/if}</div></div>{/if}
-<div class="detail-grid">
+<div class="detail-grid" id={isOrder ? "order-details" : undefined}>
   <div class="main-column stack">
     {#if selectedOrderArea}<section class="panel">
         <header class="panel-header">
@@ -908,10 +987,10 @@
         </dl>
       </div>
     </section>
-    {#if actionList.length > 1}<section class="panel">
+    {#if secondaryActions.length}<section class="panel">
         <header class="panel-header"><h2>Weitere Schritte</h2></header>
         <div class="panel-body stack action-menu" style="gap:10px">
-          {#each actionList.slice(1) as action}<button
+          {#each secondaryActions as action}<button
               class="btn"
               disabled={actionBusy || actionBlocked(action)}
               onclick={() => perform(action)}
@@ -957,3 +1036,16 @@
     onclose={() => (activeAction = null)}
     onsaved={actionSaved}
   />{/if}
+
+<style>
+  .order-next { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.15rem 1.3rem; margin-bottom: 1.1rem; }
+  .order-next > div { min-width: 0; }
+  .order-more { margin: 0 0 1rem; padding: 0 .85rem; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+  .order-more nav { padding: .15rem 0 .5rem; }
+  .order-next-kicker { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; color: var(--muted); font-size: .85rem; }
+  .order-next h2 { font-size: 1.2rem; margin: .3rem 0; overflow-wrap: anywhere; }
+  .order-next p { color: var(--muted); overflow-wrap: anywhere; }
+  .order-next-owner { display: flex; align-items: center; gap: .4rem; margin-top: .5rem; font-size: .88rem; }
+  .order-next .btn { min-height: 44px; }
+  @media(max-width: 560px) { .order-next { flex-direction: column; align-items: stretch; } }
+</style>

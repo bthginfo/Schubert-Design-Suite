@@ -34,6 +34,7 @@ export * from './core.js';
 export * from './ai-proposals.js';
 export * from './time-sync-errors.js';
 export * from './queries.js';
+export { approvedAssignmentPlan } from './assignment-workspace.js';
 export * from './jobs.js';
 export * from './portal.js';
 export * from './render-request.js';

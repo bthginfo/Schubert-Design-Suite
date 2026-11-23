@@ -5,18 +5,18 @@ import {inputErrorDetails} from '@schubert/application';
 import {assistantAttachmentStatus} from '@schubert/application';
 import {applyAIProposal,assistantProposalPlan} from '@schubert/application';
 import {feedbackReport,feedbackPacket,feedbackMarkdown,timeSyncFailure,assistantInputSchema,redactAssistantText,prepareAssistantContext,createAssistantReadTools,searchPlanningProducts,searchPlanningReference,searchManufacturerAssets} from '@schubert/application';
-import {personnelDocumentTypes,reconcileWork,readBackupChunk,exportRecords,referenceSearch} from '@schubert/application';
+import {personnelDocumentTypes,reconcileWork,readBackupChunk,exportRecords,referenceSearch,approvedAssignmentPlan} from '@schubert/application';
 import {z} from 'zod';
 import {randomUUID,timingSafeEqual} from 'node:crypto';
 import {waitUntil} from '@vercel/functions';
 import {hashPassword,verifyPassword} from 'better-auth/crypto';
-import {getPool,withTenant,one,rows,insert,update} from '@schubert/db';
-import {modules,type ActorContext} from '@schubert/contracts';
+import {getPool,withTenant,one,rows,insert,update,type DbClient} from '@schubert/db';
+import {modules,type ActorContext,type DesignSnapshot} from '@schubert/contracts';
 import {DomainError,requireRule,assertPermission,assertFreshAuth,rolePermissions} from '@schubert/domain';
 import {executeCommand,auditEvent,hash,getRecord,baseData,assertOrderScope,loadPage,invalidateReads,processPending,portalLogin,portalContext,portalPage,portalMessage,portalDeclaration,portalToken,portalLogout,ingestUpload,readRenderAssetChunk,assertDocumentAccess,documentReadPredicate,portalUpload,publicIntakeContext,receiveWithdrawal,verifyWithdrawalReceipt,sourcePreviewStatus,enqueuePending,uploadIntentTicket,completeUpload} from '@schubert/application';
 import {readPrivate} from '@schubert/adapters';
 import {assistant,transcribe} from '@schubert/ai';
-import {createPlanningPdf,csvExport} from '@schubert/documents';
+import {createPlanningPdf,reviewPlanningPdf,csvExport,type PlanningPdfMeta} from '@schubert/documents';
 import {validateDesign,renderTechnicalSvg,calculateBOM} from '@schubert/geometry';
 import QRCode from 'qrcode';
 
@@ -24,6 +24,22 @@ function context(e:any):ActorContext{requireRule(e.locals.context,'AUTH_REQUIRED
 function assertCronAuthorization(e:any){const secret=process.env.CRON_SECRET;requireRule(secret&&timingSafeEqual(Buffer.from(hash(e.request.headers.get('authorization')??'')),Buffer.from(hash('Bearer '+secret))),'SERVICE_AUTH','Dienstzugriff ist nicht freigegeben.',401);}
 async function body(e:any){requireRule(Number(e.request.headers.get('content-length')??0)<=1024*1024,'REQUEST_SIZE','Anfrage überschreitet die zulässige Größe.',413);const text=await e.request.text();requireRule(text.length<=1024*1024,'REQUEST_SIZE','Anfrage überschreitet die zulässige Größe.',413);try{return JSON.parse(text);}catch{throw new DomainError('JSON','Die Anfrage enthält kein gültiges JSON.',400);}}
 function success(result:unknown,status=200){return Response.json({ok:true,result},{status});}
+async function planningPdfReferences(db: DbClient, ctx: ActorContext, snapshot: DesignSnapshot) {
+  const fontIds = [...new Set(snapshot.elements.filter(e=>e.kind==='inscription')
+    .map(e=>e.fontVariantVersionId).filter(id=>z.uuid().safeParse(id).success))];
+  const materialIds = [...new Set(calculateBOM(snapshot).lines.map(line=>line.materialSpecVersionId)
+    .filter(id=>z.uuid().safeParse(id).success))];
+  const [fonts,materials]=await Promise.all([
+    fontIds.length?rows<any>(db,'SELECT id,name,selection_ref,source_url FROM font_variants WHERE id=ANY($1::uuid[])',[fontIds]):[],
+    materialIds.length?rows<any>(db,'SELECT v.id,COALESCE(v.name,m.name) name,v.revision,v.properties FROM material_spec_versions v JOIN material_specs m ON m.id=v.material_spec_id WHERE v.id=ANY($1::uuid[]) AND (v.legal_entity_id=$2 OR v.legal_entity_id IS NULL)',[materialIds,ctx.legalEntityId]):[],
+  ]);
+  return {
+    materials:Object.fromEntries(materials.map(m=>[m.id,{name:m.name,revision:m.revision,sourceUrl:m.properties?.sourceUrl,checkedOn:m.properties?.checkedOn,sourceCatalog:m.properties?.sourceCatalog}])),
+    fontLabels:Object.fromEntries(fonts.map(f=>[f.id,f.name])),
+    fontReferences:Object.fromEntries(fonts.map(f=>[f.id,{selectionRef:f.selection_ref,sourceUrl:f.source_url}])),
+  };
+}
+
 function failure(e:any,error:any){if(process.env.APP_ENV==='development'&&error instanceof Error)console.error(JSON.stringify({code:'DEV_API_ERROR',message:error.message,stack:error.stack}));let status=error instanceof DomainError?error.status:error instanceof z.ZodError?422:500;let code=error instanceof DomainError?error.code:error instanceof z.ZodError?'INPUT_INVALID':'REQUEST_FAILED';const validation=error instanceof z.ZodError?inputErrorDetails(error):null;let message=error instanceof DomainError?error.message:validation?.message??'Der Vorgang konnte nicht abgeschlossen werden. Bitte erneut versuchen.';if(error.code==='23505'){status=409;code='DUPLICATE';message='Dieser eindeutige Wert oder Vorgang besteht bereits.';}if(error.code==='23503'){status=422;code='REFERENCE';message='Eine Verknüpfung ist nicht mehr verfügbar. Daten erneut öffnen.';}console.error(JSON.stringify({code,status,correlationId:e.locals.correlationId}));return Response.json({ok:false,error:{code,message,fields:error.fields??validation?.fields??{},correlationId:e.locals.correlationId}},{status});}
 function kickoff(ctx:ActorContext,jobId?:string){waitUntil((process.env.VERCEL==='1'?enqueuePending(ctx,jobId):processPending({...ctx,permissions:[...ctx.permissions]},jobId?1:2,jobId)).catch(()=>console.error(JSON.stringify({code:'BACKGROUND_JOB_FAILED',correlationId:ctx.correlationId}))));}
 async function limit(e:any,key:string,max=8){const id=hash(key+':'+(e.getClientAddress?.()??'unknown')),now=Date.now();const result=await getPool().query('INSERT INTO "rateLimit"(id,key,count,"lastRequest")VALUES($1,$1,1,$2)ON CONFLICT(key) DO UPDATE SET count=CASE WHEN "rateLimit"."lastRequest"<$2-60000 THEN 1 ELSE "rateLimit".count+1 END,"lastRequest"=CASE WHEN "rateLimit"."lastRequest"<$2-60000 THEN $2 ELSE "rateLimit"."lastRequest" END RETURNING count',[id,now]);requireRule(result.rows[0].count<=max,'RATE_LIMIT','Bitte eine Minute warten und erneut versuchen.',429);}
@@ -95,7 +111,47 @@ const lookup=path.match(/^lookups\/([a-z-]+)$/);if(lookup)return success(await r
 const reportDownload=path.match(/^reports\/([\w-]+)\/download$/);if(reportDownload){const ctx=e.locals.context;requireRule(ctx&&(ctx.permissions.includes('reports')||ctx.permissions.includes('reports.read')),'FORBIDDEN','Auswertungszugriff fehlt.',403);const file=await withTenant(ctx,async db=>{const snapshot=await getRecord(db,'report_snapshots',reportDownload[1]);const financial=ctx.permissions.some((p:string)=>['finance','finance.read'].includes(p));requireRule(financial||snapshot.created_by===ctx.actorId&&snapshot.snapshot?.context?.financial===false,'NOT_FOUND','Bericht ist für diesen Zugang nicht freigegeben.',404);requireRule(snapshot.document_id,'REPORT_PENDING','Das eingefrorene Exportpaket wird noch erstellt.',409);const doc=await getRecord(db,'documents',snapshot.document_id),version=await getRecord(db,'document_versions',doc.current_version_id);requireRule(doc.status==='available'&&doc.entity_type==='report_snapshot'&&doc.entity_id===snapshot.id,'REPORT_ARTIFACT','Das private Berichtspaket ist nicht verfügbar.');return{doc,blob:await getRecord(db,'blob_objects',version.blob_object_id)};});const stored=await readPrivate(file.blob.storage_key,undefined,ctx);return new Response(stored.stream,{headers:{'Content-Type':'application/zip','Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(file.doc.name)}`,'Cache-Control':'private, no-store'}});}
 const download=path.match(/^documents\/([\w-]+)\/download$/);if(download){const ctx=e.locals.context??await portalContext(e.cookies.get('schubert_portal'),e.locals.correlationId);const file=await withTenant(ctx,async db=>{const doc=await getRecord(db,'documents',download[1]);requireRule(doc.status==='available','DOCUMENT_QUARANTINE','Original ist noch nicht zur Ausgabe freigegeben.',409);const version=await getRecord(db,'document_versions',e.url.searchParams.get('version')||doc.current_version_id);requireRule(version.document_id===doc.id,'NOT_FOUND','Dateiversion ist nicht verfügbar.',404);if(ctx.portalAccessId){const pub=await one(db,'SELECT id FROM portal_publications WHERE portal_access_id=$1 AND document_version_id=$2 AND revoked_at IS NULL',[ctx.portalAccessId,version.id]);requireRule(pub&&doc.visibility==='customer','NOT_FOUND','Unterlage ist nicht freigegeben.',404);}else{await assertDocumentAccess(db,ctx,doc,version.id);requireRule(!doc.legal_entity_id||doc.legal_entity_id===ctx.legalEntityId,'NOT_FOUND','Unterlage ist nicht verfügbar.',404);if(['order','orders','operations.order'].includes(doc.entity_type))await assertOrderScope(db,ctx,doc.entity_id);}const blob=await getRecord(db,'blob_objects',version.blob_object_id);return {doc,blob};});const range=e.request.headers.get('range');requireRule(!range||/^bytes=\d+-\d*$/.test(range),'RANGE','Ungültiger Dateibereich.',416);const stored=await readPrivate(file.blob.storage_key,range??undefined,ctx);const headers=new Headers({'Content-Type':file.doc.mime_type??'application/octet-stream','Content-Disposition':`${e.url.searchParams.get('inline')==='1'&&['application/pdf','image/png','image/jpeg','image/webp'].includes(file.doc.mime_type)?'inline':'attachment'}; filename*=UTF-8''${encodeURIComponent(file.doc.name??file.doc.original_name??'Dokument')}`,'Cache-Control':'private, no-store','Accept-Ranges':'bytes'});const contentRange=stored.headers.get('Content-Range');if(contentRange)headers.set('Content-Range',contentRange);return new Response(stored.stream,{status:contentRange?206:200,headers});}
 const ctx=context(e);
-const design=path.match(/^designs\/([\w-]+)\/(validate|export)$/);if(design){assertPermission(ctx.permissions,'planning');const data=await withTenant(ctx,async db=>{const variant=await getRecord(db,'design_variants',design[1]);const project=await getRecord(db,'planning_projects',variant.planning_project_id);if(project.order_id)await assertOrderScope(db,ctx,project.order_id);const rev=await getRecord(db,'design_revisions',e.url.searchParams.get('revision_id')??variant.head_revision_id);requireRule(rev.variant_id===variant.id,'NOT_FOUND','Planrevision ist nicht verfügbar.',404);const fonts=await rows<any>(db,'SELECT id,name,selection_ref,source_url FROM font_variants WHERE id=ANY($1::uuid[])',[(rev.snapshot.elements??[]).filter((e:any)=>e.kind==='inscription'&&z.uuid().safeParse(e.fontVariantVersionId).success).map((e:any)=>e.fontVariantVersionId)]);const materialIds=[...new Set(calculateBOM(rev.snapshot).lines.map((line:any)=>line.materialSpecVersionId).filter((id:any)=>z.uuid().safeParse(id).success))];const materials=await rows<any>(db,'SELECT v.id,COALESCE(v.name,m.name) name,v.revision,v.properties FROM material_spec_versions v JOIN material_specs m ON m.id=v.material_spec_id WHERE v.id=ANY($1::uuid[]) AND (v.legal_entity_id=$2 OR v.legal_entity_id IS NULL)',[materialIds,ctx.legalEntityId]);return {variant,project,rev,fonts,materials};});if(design[2]==='validate')return success(validateDesign(data.rev.snapshot));const kind=e.url.searchParams.get('kind')??'pdf';if(kind==='bom')return new Response(JSON.stringify(calculateBOM(data.rev.snapshot),null,2),{headers:{'Content-Type':'application/json','Content-Disposition':'attachment; filename="Stueckliste.json"'}});if(kind==='svg'){const view=e.url.searchParams.get('view')??'top';return new Response(renderTechnicalSvg(data.rev.snapshot,view as any),{headers:{'Content-Type':'image/svg+xml','Content-Disposition':'attachment; filename="Plan.svg"'}});}const bytes=await createPlanningPdf(data.rev.snapshot,{title:data.project.name??data.project.title??'Planung',revision:String(data.rev.revision_number),status:data.variant.status,audience:'internal',contentHash:data.rev.content_hash,materials:Object.fromEntries(data.materials.map((m:any)=>[m.id,{name:m.name,revision:m.revision,sourceUrl:m.properties?.sourceUrl,checkedOn:m.properties?.checkedOn,sourceCatalog:m.properties?.sourceCatalog}])),fontLabels:Object.fromEntries(data.fonts.map((f:any)=>[f.id,f.name])),fontReferences:Object.fromEntries(data.fonts.map((f:any)=>[f.id,{selectionRef:f.selection_ref,sourceUrl:f.source_url}])),generatedAt:new Date(data.rev.created_at).toISOString()});return new Response(Buffer.from(bytes),{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="Planung.pdf"'}});}
+const assignmentPlan=path.match(/^assignments\/([\w-]+)\/plans\/([\w-]+)$/);
+if(assignmentPlan){
+  const data=await withTenant(ctx,async db=>{
+    const plan=await approvedAssignmentPlan(db,ctx,assignmentPlan[1],assignmentPlan[2]);
+    return {plan,refs:await planningPdfReferences(db,ctx,plan.snapshot)};
+  });
+  const {plan,refs}=data;
+  const bytes=await createPlanningPdf(plan.snapshot,{
+    title:plan.project_name||'Planung',revision:String(plan.revision_number),status:'Gestaltung freigegeben',
+    audience:'internal',contentHash:plan.content_hash,generatedAt:new Date(plan.created_at).toISOString(),...refs,
+  });
+  return new Response(Buffer.from(bytes),{headers:{'Content-Type':'application/pdf',
+    'Content-Disposition':'inline; filename="Freigegebener-Plan.pdf"','Cache-Control':'private, no-store'}});
+}
+const design=path.match(/^designs\/([\w-]+)\/(validate|export)$/);
+if(design){
+  assertPermission(ctx.permissions,'planning');
+  const kind=e.url.searchParams.get('kind')??'pdf';
+  const needsPdfReferences=design[2]==='export'&&!['bom','svg','pdf-check'].includes(kind);
+  const {variant,project,rev,refs}=await withTenant(ctx,async db=>{
+    const variant=await getRecord(db,'design_variants',design[1]);
+    const project=await getRecord(db,'planning_projects',variant.planning_project_id);
+    if(project.order_id)await assertOrderScope(db,ctx,project.order_id);
+    const rev=await getRecord(db,'design_revisions',e.url.searchParams.get('revision_id')??variant.head_revision_id);
+    requireRule(rev.variant_id===variant.id,'NOT_FOUND','Planrevision ist nicht verfügbar.',404);
+    const refs=needsPdfReferences?await planningPdfReferences(db,ctx,rev.snapshot):{};
+    return {variant,project,rev,refs};
+  });
+  if(design[2]==='validate')return success(validateDesign(rev.snapshot));
+  if(kind==='bom')return new Response(JSON.stringify(calculateBOM(rev.snapshot),null,2),{headers:{'Content-Type':'application/json','Content-Disposition':'attachment; filename="Stueckliste.json"'}});
+  if(kind==='svg'){
+    const view=e.url.searchParams.get('view')??'top';
+    return new Response(renderTechnicalSvg(rev.snapshot,view as any),{headers:{'Content-Type':'image/svg+xml','Content-Disposition':'attachment; filename="Plan.svg"'}});
+  }
+  const meta:PlanningPdfMeta={title:project.name??project.title??'Planung',revision:String(rev.revision_number),
+    status:variant.status,audience:'internal',contentHash:rev.content_hash,generatedAt:new Date(rev.created_at).toISOString(),...refs};
+  if(kind==='pdf-check')return Response.json({ok:true,result:await reviewPlanningPdf(rev.snapshot,meta)},
+    {headers:{'Cache-Control':'private, no-store'}});
+  const bytes=await createPlanningPdf(rev.snapshot,meta);
+  return new Response(Buffer.from(bytes),{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="Planung.pdf"'}});
+}
 const qr=path.match(/^stock\/([\w-]+)\/label$/);if(qr){assertPermission(ctx.permissions,'inventory');await withTenant(ctx,db=>getRecord(db,'stock_items',qr[1]));const svg=await QRCode.toString(e.url.origin+'/stock/'+qr[1],{type:'svg',errorCorrectionLevel:'M',margin:3,width:256});return new Response(svg,{headers:{'Content-Type':'image/svg+xml','Content-Disposition':'attachment; filename="Lageretikett.svg"'}});}
 if(path==='exports'){requireRule(ctx.permissions.includes('finance')||ctx.permissions.includes('finance.read'),'FORBIDDEN','Exportberechtigung fehlt.',403);assertFreshAuth(ctx.reauthenticatedAt);const kind=e.url.searchParams.get('kind')??'';const m=modules.find(m=>m.slug===kind);requireRule(m,'EXPORT_KIND','Exportart ist nicht verfügbar.');requireRule(ctx.permissions.includes(m.permission)||ctx.permissions.includes(m.permission+'.read'),'FORBIDDEN','Exportbereich ist nicht freigegeben.',403);const records=await exportRecords(ctx,kind,e.url);const fields=m.columns.filter(k=>!['password_hash','token_hash','snapshot'].includes(k));return new Response(csvExport(records,fields,Object.fromEntries(fields.map(key=>[key,m.fields.find(field=>field.key===key)?.label??({number:'Nummer',status:'Status',updated_at:'Zuletzt geändert',created_at:'Erstellt am',invoice_number:'Belegnummer',party_name:'Geschäftspartner',open_amount:'Offener Betrag',original_amount:'Ursprünglicher Betrag',currency:'Währung'} as Record<string,string>)[key]??key]))),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="Export.csv"'}});}
 if(path==='search'){const q=String(e.url.searchParams.get('q')??'').trim();requireRule(q.length>=2&&q.length<=200,'SEARCH_QUERY','Zwischen 2 und 200 Zeichen eingeben.');assertPermission(ctx.permissions,'documents');return success(await withTenant(ctx,db=>rows(db,`SELECT d.id,d.name,d.status,d.entity_type,d.entity_id,ts_headline('german',s.content,plainto_tsquery('german',$1),'MaxFragments=1,MaxWords=24,MinWords=8') snippet FROM search_documents s JOIN documents d ON d.id=s.document_id WHERE d.legal_entity_id=$2 AND d.status='available' AND ${documentReadPredicate(ctx,'d')} AND s.search_vector@@plainto_tsquery('german',$1) ORDER BY ts_rank(s.search_vector,plainto_tsquery('german',$1)) DESC LIMIT 25`,[q,ctx.legalEntityId])));}
