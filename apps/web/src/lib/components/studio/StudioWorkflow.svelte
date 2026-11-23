@@ -24,15 +24,13 @@
 
 <div class="planning-flow">
   <nav class="planning-steps" aria-label={memorial?'Arbeitsschritte im Grabmalstudio':'Arbeitsschritte im Raumstudio'}>
-    {#each steps as item,index}
-      <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={hints[item]} onclick={()=>onstep(item)}>
-        <span class="step-number">{index+1}</span>{' '}<span class="step-long">{planningStepLabel(snapshot.kind,item,presetId)}</span><span class="step-short">{{geometry:'Maße',design:memorial?'Text':'Material',review:'Prüfen',output:'Zeigen'}[item]}</span>
-        {#if index<3}<Icon name="chevron" size={13}/>{/if}
+    {#each steps as item}
+      <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={hints[item]} aria-label={planningStepLabel(snapshot.kind,item,presetId)} onclick={()=>onstep(item)}>
+        <span class="step-long">{planningStepLabel(snapshot.kind,item,presetId)}</span><span class="step-short" aria-hidden="true">{{geometry:'Maße',design:memorial?'Inschrift':'Material',review:'Prüfen',output:'Ausgabe'}[item]}</span>
       </button>
     {/each}
   </nav>
   <div class="step-task">
-    <p>{hints[step]}</p>
     <div class="step-actions">
       {#if step==='geometry'}
         {#if hasBase}<button type="button" class="flow-action" onclick={nextDesign}><Icon name="arrow" size={15}/>{memorial?'Inschrift gestalten':'Bauteile gestalten'}</button>{:else}<button type="button" class="flow-action" disabled={readonly} onclick={()=>onadd(progress.preset.firstElement)}><Icon name="plus" size={15}/>Grundmaße erfassen</button>{/if}
@@ -49,37 +47,43 @@
 </div>
 
 <style>
-  .planning-flow{flex:none;background:var(--paper);border-bottom:1px solid var(--line);padding:0 16px}
-  .planning-steps{display:flex;gap:6px;padding:10px 0 7px;min-width:0}
-  .planning-steps button{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex:1;min-width:0;min-height:40px;padding:7px 10px;border:1px solid transparent;border-radius:11px;color:var(--muted);font:inherit;font-size:12px;line-height:1.45;text-align:left;transition:background .18s ease,color .18s ease,box-shadow .18s ease}
-  .planning-steps button>span:nth-child(2){flex:1}
-  .planning-steps button:hover{background:var(--wash);color:var(--ink)}
-  .planning-steps button.current{background:var(--accent-wash);color:var(--forest);border-color:color-mix(in srgb,var(--forest) 16%,transparent)}
-  .step-number{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:8px;background:var(--wash);color:var(--muted);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
-  .current .step-number{background:var(--forest);color:var(--on-accent)}
-  .step-task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 3px 10px}
-  .step-task p{font-size:12px;line-height:1.6;color:var(--muted)}
-  .step-actions{display:flex;flex:none;align-items:center;gap:8px}
-  .step-actions button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;border-radius:9px;padding:7px 10px;font:inherit;font-size:12px;line-height:1.5;transition:background .18s ease}
-  .flow-action{background:var(--wash);color:var(--ink)}.flow-action:hover{background:var(--accent-wash);color:var(--forest)}
-  .flow-ai{color:var(--forest);border:1px solid var(--line)}.flow-ai:hover{background:var(--accent-wash)}
-  @media(max-width:1100px){.step-task{flex-wrap:wrap}.step-task p{flex:1;min-width:180px}.planning-steps{gap:3px}.planning-steps button{gap:5px;padding:6px}.planning-steps button :global(svg){display:none}}
-  @media(max-width:600px){.planning-flow{padding:0 8px}.planning-steps{padding:6px 0;gap:2px}.planning-steps button{flex-direction:column;justify-content:flex-start;gap:4px;padding:5px 3px;font-size:10px;text-align:center;border-radius:9px;min-height:61px}.step-number{width:22px;height:22px;border-radius:7px}.planning-steps button>span:nth-child(2){flex:none}.step-task{gap:3px;padding:0 2px 5px}.step-task p{display:none}.step-actions{width:100%;gap:6px;justify-content:space-between}.step-actions button{min-height:44px;font-size:11px}.flow-action{flex:1}.flow-ai{min-width:44px}.flow-ai span{display:none}}
-  @media(prefers-reduced-motion:reduce){.planning-steps button,.step-actions button{transition:none}}
-
-/* One row carries steps and the action for the current task. */
-.planning-flow{display:flex;align-items:center;gap:12px;padding:7px 12px;border-bottom:1px solid var(--line)}.planning-steps{flex:1;min-width:0;margin:0;padding:0;border:0;gap:5px}.planning-steps button{min-height:38px;padding:6px 10px;font-size:12px}.planning-steps button>span:nth-child(2){flex:1}.step-task{padding:0;flex:none}.step-task>p{display:none}.step-actions button{min-height:36px;font-size:11px;padding:7px 9px}.step-number{width:23px;height:23px;font-size:11px}.flow-action{white-space:nowrap}
-@media(max-width:1150px){.planning-flow{gap:7px}.planning-steps button{padding:6px;font-size:11px}.step-actions .flow-ai span{display:none}.planning-steps button :global(svg){display:none}}
-@media(max-width:760px){.planning-flow{display:block;padding:5px 8px}.planning-steps{gap:3px;margin-bottom:4px}.planning-steps button{min-height:46px;font-size:10px;padding:4px 3px;gap:3px}.step-number{width:20px;height:20px}.step-task{padding:0}.step-actions{width:100%;justify-content:space-between;gap:6px}.step-actions button{min-height:40px;font-size:11px}.flow-action{flex:1}.flow-ai{min-width:44px}.step-actions .flow-ai span{display:inline}}
-.step-short{display:none}@media(max-width:760px){.planning-steps{padding-block:6px;gap:4px}.planning-steps button{min-height:40px;flex-direction:row;gap:5px;padding:5px;font-size:12px;align-items:center;justify-content:center}.planning-steps .step-number{width:18px;height:18px;min-width:18px;font-size:10px}.planning-steps .step-long{display:none}.planning-steps .step-short{display:block;font-size:12px;line-height:1.35}.step-task{padding-bottom:6px}.step-actions button{min-height:40px}}
-.planning-flow{padding:4px 12px;background:var(--glass-surface);gap:12px;border-color:var(--line-soft)}
-.planning-steps{display:flex;padding:2px;border:1px solid var(--line-soft);border-radius:14px;background:var(--input-surface);gap:3px}
-.planning-steps button{min-height:40px;border:0;border-radius:10px;color:var(--muted);padding:8px;font-size:12px}
-.planning-steps button.current{background:var(--paper);color:var(--forest);box-shadow:var(--surface-shadow)}
-.step-number{border-radius:50%;width:21px;height:21px;font-size:10px;background:transparent}
-.current .step-number{background:var(--accent-wash);color:var(--forest)}
-.step-actions button{min-height:44px;border-radius:12px}
-.flow-action{background:var(--paper);box-shadow:var(--surface-shadow)}
-.flow-ai{background:transparent}
-@media(max-width:760px){.planning-flow{padding:6px}.planning-steps button{min-height:44px;padding:5px 3px}.planning-steps .step-number{display:none}.step-task{padding-bottom:0}.step-actions{padding-top:4px}.step-actions button{min-height:44px}.planning-steps{margin-bottom:4px}}
+  .planning-flow {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex: none; padding: 7px 12px; background: var(--workspace-surface); border-bottom: 1px solid var(--line-soft);
+  }
+  .planning-steps {
+    display: flex; align-items: stretch; gap: 3px; min-width: 0; padding: 3px;
+    border-radius: 12px; background: var(--wash);
+  }
+  .planning-steps button {
+    display: grid; place-items: center; flex: 1; min-width: 0; min-height: 38px; padding: 6px 13px;
+    border-radius: 9px; color: var(--muted); font-size: .83rem; line-height: 1.35; white-space: nowrap;
+  }
+  .planning-steps button:hover { color: var(--ink); }
+  .planning-steps button.current { background: var(--paper); color: var(--forest); font-weight: 650; box-shadow: var(--surface-shadow); }
+  .step-short { display: none; }
+  .step-actions { display: flex; align-items: center; gap: 6px; }
+  .step-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; border-radius: 10px; padding: 6px 10px; font-size: .82rem; white-space: nowrap; }
+  .flow-action { color: var(--forest); font-weight: 600; }
+  .flow-action:hover, .flow-ai:hover { background: var(--accent-wash); }
+  .flow-ai { color: var(--forest); }
+  @media (max-width: 1150px) {
+    .planning-steps button { padding-inline: 9px; }
+    .flow-ai span { display: none; }
+  }
+  @media (max-width: 870px) {
+    .step-long { display: none; }
+    .step-short { display: inline; }
+  }
+  @media (max-width: 760px) {
+    .planning-flow { flex-direction: column; align-items: stretch; gap: 0; padding: 5px 8px 2px; }
+    .planning-steps button { min-height: 44px; padding-inline: 4px; }
+    .step-actions { justify-content: space-between; }
+    .step-actions button { min-height: 44px; }
+    .flow-ai { min-width: 44px; }
+    .flow-ai span { display: inline; }
+  }
+  @media (max-width: 360px) {
+    .flow-ai span { display: none; }
+  }
 </style>

@@ -76,7 +76,8 @@ test("the manufacturer catalog supports article adoption, live lookup and offici
   expect(created.status()).toBe(200);
   const { project, variant } = (await created.json()).result;
   await page.goto("/studio/" + project.id + "?variant=" + variant.id);
-  await page.getByRole("button", { name: /Herstellerdaten/ }).first().click({ timeout: 45_000 });
+  await page.locator("#studio-project-actions").click({ timeout: 45_000 });
+  await page.locator("#studio-project-menu").getByRole("button", { name: /^Herstellerdaten/ }).click();
   const studio = page.getByRole("dialog", { name: "Herstellerdaten auswählen" });
   await studio.getByRole("button", { name: "Produktkatalog", exact: true }).click();
   await expect(studio.getByRole("button", { name: "Im Katalog" })).toHaveAttribute("aria-pressed", "true");

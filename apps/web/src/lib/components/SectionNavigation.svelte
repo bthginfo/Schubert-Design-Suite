@@ -5,14 +5,14 @@
   let {items,active,label}:{items:{slug:string;label:string}[];active:string;label:string}=$props();
   let expanded=$state(false),search=$state('');
   let trigger=$state<HTMLButtonElement>();
-  const primary=$derived(items.filter(item=>['customers','orders','quotes','invoices','payments','suppliers','purchase-orders','stock','dispatch','time','team','reports','settings','documents','studio'].includes(item.slug)).slice(0,4));
+  const primary=$derived(items.filter(item=>['customers','orders','quotes','invoices','payments','suppliers','purchase-orders','stock','dispatch','time','team','reports','settings','documents','studio'].includes(item.slug)).slice(0,3));
   const current=$derived(items.find(item=>item.slug===active));
-  const visible=$derived(current&&!primary.some(item=>item.slug===active)?[...primary.slice(0,3),current]:primary);
+  const visible=$derived(current&&!primary.some(item=>item.slug===active)?[...primary.slice(0,2),current]:primary);
   const filtered=$derived(items.filter(item=>item.label.toLocaleLowerCase('de').includes(search.trim().toLocaleLowerCase('de'))));
   $effect(()=>{active;expanded=false;search='';});
 </script>
 <svelte:window onkeydown={(event)=>{if(expanded&&event.key==='Escape'){expanded=false;trigger?.focus();}}}/>
-<nav class="section-navigation" aria-label={`${label}: Bereiche`}>
+<nav class="section-navigation" aria-label={`Bereiche in ${label}`}>
   <div class="section-bar">
     <div class="section-links">{#each visible as item}<a href={`/${item.slug}`} aria-current={active===item.slug?'page':undefined} class:active={active===item.slug}>{item.label}</a>{/each}</div>
     <div class="section-mobile"><label class="sr-only" for="section-location">Bereich in {label}</label><select use:searchableSelect={active} id="section-location" value={active} onchange={(event)=>goto('/'+event.currentTarget.value)}>{#each items as item}<option value={item.slug}>{item.label}</option>{/each}</select></div>

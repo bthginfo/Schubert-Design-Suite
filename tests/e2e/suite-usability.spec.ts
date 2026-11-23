@@ -8,6 +8,84 @@ import {login} from './login.js';
 async function open(page:Page,path:string){await page.goto(path);await page.waitForLoadState('networkidle');}
 async function room(page:Page){await open(page,'/studio?q=Synthetische%20Studio-QA');await page.getByRole('link',{name:/Synthetische Studio-QA Raum /}).click();await expect(page.locator('.studio-workspace')).toBeVisible();}
 
+test('Suite search opens a real draft without writing and returns keyboard focus', async ({ page }) => {
+  await login(page, 'OWNER');
+  await open(page, '/customers');
+  const requests: string[] = [];
+  const observe = (request: import('@playwright/test').Request) => {
+    if (request.url().includes('/api/') || request.isNavigationRequest()) requests.push(request.url());
+  };
+  const trigger = page.getByRole('button', { name: 'Suite durchsuchen', exact: true });
+  const search = page.getByRole('dialog', { name: 'Suite durchsuchen', exact: true });
+  const input = search.getByRole('searchbox', { name: 'Bereich oder Aufgabe suchen' });
+  await trigger.focus();
+  await page.keyboard.press('Control+k');
+  await expect(input).toBeFocused();
+  page.on('request', observe);
+  await input.pressSequentially('angebot anlegen');
+  await expect(search.getByRole('link', { name: 'Angebot anlegen', exact: true })).toBeVisible();
+  await expect(search.getByRole('link', { name: /in Dokumenten suchen/ })).toHaveAttribute('href', '/documents?q=angebot%20anlegen');
+  await input.press('ArrowDown');
+  await expect(search.getByRole('link', { name: 'Angebot anlegen', exact: true })).toBeFocused();
+  expect(requests).toEqual([]);
+  page.off('request', observe);
+  await page.keyboard.press('Escape');
+  await expect(search).toBeHidden();
+  await expect(trigger).toBeFocused();
+  let writes = 0;
+  page.on('request', request => {
+    if (request.method() === 'POST' && request.url().endsWith('/api/v1/commands')) writes++;
+  });
+  await trigger.click();
+  await input.fill('angebot anlegen');
+  await input.press('Enter');
+  const editor = page.locator('.modal[role=dialog]');
+  await expect(page).toHaveURL(/\/quotes(?:\?|$)/);
+  await expect(editor.getByRole('combobox', { name: /^Kunde/ })).toBeVisible();
+  await editor.getByRole('button', { name: 'Abbrechen', exact: true }).click();
+  await page.reload();
+  await expect(editor).toBeHidden();
+  expect(writes).toBe(0);
+});
+
+test('List controls reveal options on demand and mobile search stays within role and viewport', async ({ page }) => {
+  await login(page, 'OWNER');
+  await open(page, '/customers');
+  const filter = page.locator('.record-filter-toggle');
+  await expect(filter).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('combobox', { name: 'Status filtern' })).toBeHidden();
+  await filter.click();
+  await expect(page.getByRole('combobox', { name: 'Status filtern' })).toBeVisible();
+  await filter.click();
+  await page.getByRole('button', { name: 'Auswählen', exact: true }).click();
+  const bulk = page.getByRole('checkbox', { name: 'Alle sichtbaren Einträge auswählen', exact: true });
+  await bulk.check();
+  await expect(bulk).toBeChecked();
+  await page.getByRole('button', { name: 'Fertig', exact: true }).click();
+  await expect(bulk).toHaveCount(0);
+
+  await page.setViewportSize({ width: 320, height: 720 });
+  await login(page, 'EMPLOYEE');
+  await open(page, '/');
+  const menu = page.locator('.mobile-nav').getByRole('button', { name: 'Mehr', exact: true });
+  await menu.click();
+  await expect(page.locator('#workspace-sidebar')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeFocused();
+  await page.getByRole('button', { name: 'Suite durchsuchen', exact: true }).click();
+  const search = page.getByRole('dialog', { name: 'Suite durchsuchen', exact: true });
+  const input = search.getByRole('searchbox');
+  await input.fill('rechnung');
+  await expect(search.getByRole('link', { name: /Rechnungsentwurf/ })).toHaveCount(0);
+  await input.fill('arbeitszeit');
+  await expect(search.getByRole('link', { name: 'Arbeitszeit erfassen', exact: true })).toBeVisible();
+  const box = await search.boundingBox();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+  await page.keyboard.press('Escape');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(321);
+});
+
 test('Collapsible navigation persists per user, keeps keyboard labels and leaves mobile independent without requests',async({page})=>{
  test.setTimeout(150000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await login(page,'OWNER');await open(page,'/customers');
  const shell=page.locator('.app-shell'),sidebar=page.locator('#workspace-sidebar');
@@ -16,7 +94,7 @@ test('Collapsible navigation persists per user, keeps keyboard labels and leaves
  await page.getByRole('button',{name:'Seitenleiste einklappen',exact:true}).click();await expect(shell).toHaveAttribute('data-sidebar-collapsed','true');await expect(sidebar).toHaveCSS('width','68px');expect(requests).toEqual([]);page.off('request',observe);
  const office=sidebar.getByRole('link',{name:'Büro',exact:true});await office.focus();await expect(page.locator('.rail-tooltip')).toContainText('Büro');await office.click();await expect(page).toHaveURL(/\/office$/);await expect(shell).toHaveAttribute('data-sidebar-collapsed','true');
  await page.reload();await expect(shell).toHaveAttribute('data-sidebar-collapsed','true');await expect(sidebar.getByRole('button',{name:'Feedback',exact:true})).toBeVisible();await expect(sidebar.getByRole('button',{name:'Abmelden',exact:true})).toBeVisible();
- await page.setViewportSize({width:375,height:812});await page.getByRole('button',{name:'Navigation öffnen',exact:true}).click();await expect(sidebar).toHaveCSS('width','280px');await expect(sidebar.getByRole('link',{name:'Kunden & Projekte',exact:true})).toBeVisible();await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.activeElement?.closest('#workspace-sidebar'))).toBe(true);await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Navigation öffnen',exact:true})).toBeFocused();await expect(sidebar).toHaveAttribute('inert','');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ await page.setViewportSize({width:375,height:812});await page.locator('.mobile-nav').getByRole('button',{name:'Mehr',exact:true}).click();await expect(sidebar).toHaveCSS('width','280px');await expect(sidebar.getByRole('link',{name:'Kunden & Projekte',exact:true})).toBeVisible();await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.activeElement?.closest('#workspace-sidebar'))).toBe(true);await page.keyboard.press('Escape');await expect(page.locator('.mobile-nav').getByRole('button',{name:'Mehr',exact:true})).toBeFocused();await expect(sidebar).toHaveAttribute('inert','');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.setViewportSize({width:1440,height:1000});await expect(sidebar).toHaveCSS('width','68px');
  await login(page,'EMPLOYEE');await expect(shell).toHaveAttribute('data-sidebar-collapsed','false');await expect(sidebar.getByRole('link',{name:'Büro',exact:true})).toHaveCount(0);
  await login(page,'OWNER');await expect(shell).toHaveAttribute('data-sidebar-collapsed','true');await page.getByRole('button',{name:'Seitenleiste ausklappen',exact:true}).click();await expect(shell).toHaveAttribute('data-sidebar-collapsed','false');expect(errors).toEqual([]);

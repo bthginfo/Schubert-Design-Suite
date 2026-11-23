@@ -298,7 +298,7 @@ Natives Vollbild und das vergrößerte Browserfenster verwenden dieselbe Werkban
 
 ## Elevation & Depth
 
-Das Produkt verbindet abgestufte neutrale Flächen mit weichen Kontaktschatten und diffuser Tiefe. Der äußere Rahmen besitzt statische, sehr schwache kühle Aufhellungen. Die eingesetzte Seitenleiste, die Kopfzeile, der Assistenteneinstieg und schwebende Studioleisten verwenden eine gemeinsame Glasfläche mit heller Innenkante und Hintergrundunschärfe. Inhaltspanels, Formulare und Datentabellen bleiben deckend. Aktive Segmente erhalten eine kleine Erhebung; durchsuchbare Trefferlisten, Dialoge und Begleiter eine klar begrenzte stärkere Überlagerung. Die gemeinsamen Glas- und Schattenwerte stehen in app.css und lib/styles/materials.css.
+Das Produkt verbindet abgestufte neutrale Flächen mit weichen Kontaktschatten und diffuser Tiefe. Der äußere Rahmen besitzt statische, sehr schwache kühle Aufhellungen. Die eingesetzte Seitenleiste, die Kopfzeile, die untere Mobilnavigation, der Assistenteneinstieg und schwebende Studioleisten verwenden eine gemeinsame Glasfläche mit heller Innenkante und Hintergrundunschärfe. Inhaltspanels, Formulare und Datentabellen bleiben deckend. Aktive Segmente erhalten eine kleine Erhebung; durchsuchbare Trefferlisten, Dialoge und Begleiter eine klar begrenzte stärkere Überlagerung. Die gemeinsamen Glas- und Schattenwerte stehen in app.css und lib/styles/materials.css.
 
 **The Gezielte Tiefe Rule.** Tonwert, leise Trennlinien und weiche Schatten unterscheiden Hintergrund, Arbeitsraum, Panels und Überlagerungen. Die räumliche Abstufung unterstützt die verständliche Hierarchie und lässt Eingaben sowie Inhalte deckend und lesbar.
 
@@ -338,7 +338,9 @@ Die lokale Suche erzeugt keine Server- oder KI-Anfrage. Eine breitere Suche im b
 
 Die aktuelle Position erscheint in der linken Leiste als sanfte Akzentfläche mit Akzenttext, gleichfarbigem Symbol und zugänglicher Positionsangabe. Inaktive Einträge bleiben auf dem getönten Navigationsgrund zurückgenommen. In der kompakten Desktopansicht bleiben die vollständigen zugänglichen Namen erhalten; sichtbare Hinweise erscheinen bei Zeigerkontakt und Tastaturfokus neben der Leiste außerhalb ihres scrollbaren Bereichs. Ein- und Ausklappen, Feedback, Profil und Abmelden bleiben erreichbar. Der Navigationsinhalt scrollt getrennt vom Fußbereich.
 
-Die Bereichsnavigation zeigt bis zu vier Kernbereiche und hält den geöffneten Bereich sichtbar; das aktive Segment sitzt auf `paper` mit kleinem Schatten. **Alle Bereiche** öffnet ein durchsuchbares Verzeichnis. Escape schließt es und führt den Fokus zum Auslöser zurück.
+Die Bereichsnavigation zeigt bis zu drei Kernbereiche und hält den geöffneten Bereich sichtbar; das aktive Segment sitzt auf `paper` mit kleinem Schatten. **Alle Bereiche** öffnet ein durchsuchbares Verzeichnis. Escape schließt es und führt den Fokus zum Auslöser zurück.
+
+Die Suche in der Kopfzeile öffnet freigegebene Bereiche und häufige Tätigkeiten, etwa einen Angebotsentwurf. Treffer entstehen lokal beim Tippen. Eine Dokumentensuche startet erst mit der entsprechenden Auswahl. Mobil führt **Mehr** zu den übrigen Arbeitsbereichen und zum Feedback.
 
 Reguläre Tabs folgen derselben Segmentform: ruhiger Gruppenhintergrund, heller beziehungsweise erhöhter aktiver Eintrag. Einstellungen verwenden stattdessen eine vertikale, sanft akzentuierte Liste. Mobile durchsuchbare Auswahlen bieten jeweils die vollständige Bereichsliste und erhalten die native Formular- und Navigationslogik.
 
@@ -360,11 +362,11 @@ Ergänzende Hilfen verwenden native `details`/`summary` mit sichtbarer Richtungs
 
 Der Assistent besitzt genau einen schwebenden, beschrifteten Einstieg unten rechts. Er verwendet den gewählten Akzent, eine kompakte rechteckige Rundung (14px) und einen weichen Schatten. Mobil sitzt er mit sicherem Abstand über der unteren Navigation und berücksichtigt den Gerätesicherheitsabstand. Beim Öffnen ersetzt ihn der Begleiter. Der gesamte Begleiter folgt im Studio in das native oder vergrößerte Vollbild und kehrt danach an seinen ursprünglichen Platz zurück. Modale Dialoge, Einführung und die offene mobile Navigation halten den Einstieg verborgen.
 
-Aktiviertes Testfeedback steht als regulärer Eintrag im Fuß der linken Leiste über dem Profil; in der kompakten Leiste behält es sein Symbol, seinen zugänglichen Namen und den Fokus-/Zeigerhinweis. Mobil ist es zusätzlich in der unteren Navigation erreichbar. Es öffnet einen nativen Dialog; der gemeinsame Rückmeldedialog erzeugt keinen zweiten schwebenden Einstieg.
+Aktiviertes Testfeedback steht als regulärer Eintrag im Fuß der linken Leiste über dem Profil; in der kompakten Leiste behält es sein Symbol, seinen zugänglichen Namen und den Fokus-/Zeigerhinweis. Mobil öffnet **Mehr** die Seitenleiste mit dem Feedback-Eintrag. Es öffnet einen nativen Dialog; der gemeinsame Rückmeldedialog erzeugt keinen zweiten schwebenden Einstieg.
 
 Der Begleiter trennt **Hilfe für diese Seite** und **Chat** mit beschrifteten Auswahlflächen. Vorschläge gelangen zuerst in das Eingabefeld; **Senden** startet die Anfrage. Unterlagen und Modelloptionen bleiben aufklappbar. Der Desktopbegleiter ist eine begrenzte rechte Überlagerung; mobil begrenzt er den Fokus und stellt ihn beim Schließen wieder her. Dialoginhalte dürfen scrollen; Aktionsfüße bleiben erreichbar.
 
-Der Chat beginnt im Modus **Begleiter**. Sein Gespräch bleibt beim Seitenwechsel erhalten und kann den jeweils aktuellen Vorgang einbeziehen. Eine beschriftete Auswahl zeigt, ob die aktuelle Seite verwendet wird. Persönliche und administrative Ansichten bleiben davon ausgenommen. **Separater Seitenchat** bietet weiterhin eine unabhängige Unterhaltung pro Vorgang und Studioschritt. Antworten aus einem anderen Bildschirm behalten einen sichtbaren Rückverweis auf ihren Ursprung. Tatsächlich verwendete Datenwerkzeuge erscheinen bei der Antwort unter **Datenabfragen**; Trefferzahlen bezeichnen ausdrücklich einen Auszug. Diese Hinweise starten selbst keine neue KI- oder Datenbankanfrage.
+Der Chat beginnt im **Suite-Chat**. Sein Gespräch bleibt beim Seitenwechsel erhalten und kann den jeweils aktuellen Vorgang einbeziehen. Eine beschriftete Auswahl zeigt, ob die aktuelle Seite verwendet wird. Persönliche und administrative Ansichten bleiben davon ausgenommen. Die Gesprächsauswahl öffnet den **Separaten Seitenchat** mit einer unabhängigen Unterhaltung pro Vorgang und Studioschritt. Antworten aus einem anderen Bildschirm behalten einen sichtbaren Rückverweis auf ihren Ursprung. Tatsächlich verwendete Datenwerkzeuge erscheinen bei der Antwort unter **Datenabfragen**; Trefferzahlen bezeichnen ausdrücklich einen Auszug. Diese Hinweise starten selbst keine neue KI- oder Datenbankanfrage.
 
 Seitenbezug und Planstand teilen sich eine begrenzte, bei Platzmangel scrollbar erreichbare Fläche. Sie dürfen den Nachrichtenverlauf und den Eingabefuß auf kurzen Bildschirmen nicht aus dem sichtbaren Bereich verdrängen.
 
@@ -378,7 +380,7 @@ Auftragsakten führen über klar benannte, berechtigungsabhängige Links in die 
 
 Kundenakten bieten passende Einstiege zu Anfrage, Angebot und Auftrag; Lieferantenakten zu Bestellung und Eingangsrechnung. Aus einer Bestellung lässt sich eine Eingangsrechnung mit diesem Bezug vorbereiten. Ein neues Formular zeigt die übernommenen Beziehungen mit Namen. Es übernimmt nur passende, verfügbare Referenzoptionen und zulässige Datumswerte; vorhandene Datensätze werden durch einen Einstiegslink nicht verändert. Der Einstieg öffnet das Formular einmal. Erst ausdrückliches Speichern übernimmt einen neuen Datensatz.
 
-Suche, Zurücksetzen der Suchfelder und Weiterblättern erhalten die übrigen Filterbezüge. **Anwenden** beziehungsweise Enter übermittelt Suchtext und Status gemeinsam; eine Statusauswahl allein startet keine zweite Filterung. Der sichtbare Kontext nennt die aktive Beziehung.
+Suche, Zurücksetzen der Suchfelder und Weiterblättern erhalten die übrigen Filterbezüge. **Filter** legt Statusauswahl und gespeicherte Ansichten frei. **Auswählen** blendet die Kontrollkästchen für mehrere Einträge ein. **Suchen**, **Anwenden** und Enter übermitteln Suchtext und Status gemeinsam. Der sichtbare Kontext nennt die aktive Beziehung.
 
 ### Einsatzkalender
 

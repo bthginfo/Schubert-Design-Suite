@@ -71,7 +71,8 @@ test("The floating chat finds a customer and saves a real invoice draft inside s
   await fab.click();
   const panel = page.locator("#assistant-drawer");
   await panel.getByRole("button", { name: /^Chat(?: · \d+)?$/ }).click();
-  await expect(panel.getByRole("button", { name: "Begleiter",exact:true })).toHaveAttribute("aria-pressed", "true");
+  await panel.locator(".conversation-picker > summary").click();
+  await expect(panel.getByRole("button", { name: "Suite-Chat",exact:true })).toHaveAttribute("aria-pressed", "true");
   await expect(panel.getByRole("checkbox", { name: /Aktuelle Seite einbeziehen/ })).toBeChecked();
   const found = await chat(page, "TEST Suite Kunde " + customer.id);
   expect(found.recordLinks).toContainEqual(expect.objectContaining({ href: "/customers/" + customer.id }));
@@ -94,13 +95,13 @@ test("The same conversation follows navigation and previews a remote plan before
   await page.goto("/settings");
   await page.getByRole("button", { name: "Assistent", exact: true }).click();
   const panel = page.locator("#assistant-drawer");
-  await expect(panel.getByText("Suite-Chat · Daten dieser Seite sind ausgeblendet.")).toBeVisible();
+  await expect(panel.getByText("Daten dieser Seite bleiben privat.")).toBeVisible();
   await chat(page, "TEST Suite Angebot " + customer.id);
   await panel.getByRole("button", { name: "Geprüften Vorschlag anwenden" }).click();
   await expect(panel.getByRole("link", { name: /öffnen$/ }).last()).toHaveAttribute("href", /\/quotes\//);
   await page.getByRole("link", { name: "SCHUBERT Design Suite · Heute", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(panel.getByText("Dieses Gespräch bleibt beim Seitenwechsel geöffnet.")).toBeVisible();
+  await expect(panel.locator(".conversation-picker > summary")).toHaveText("Suite-Chat");
   await expect(panel.getByText("TEST Angebot aus dem Chat", { exact: true })).toBeVisible();
   await chat(page, "TEST Suite Plan " + saved.variant.id);
   const proposal = panel.locator(".assistant-proposal").last();

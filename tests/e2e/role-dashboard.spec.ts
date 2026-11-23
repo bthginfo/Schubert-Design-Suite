@@ -10,7 +10,7 @@ for(const [role,label,pathname] of [
 ]){
   test(role+' opens the actual primary workspace from the daily overview',async({page})=>{
     await login(page,role);
-    const action=page.locator('.dashboard-heading-actions').getByRole('link',{name:label,exact:true});
+    const action=page.locator('.dashboard-heading').getByRole('link',{name:label,exact:true});
     await action.click();
     await expect(page).toHaveURL(url=>url.pathname===pathname);
     await expect(page.locator('main h1').first()).toBeVisible();
@@ -23,6 +23,7 @@ test('saved order views use the applied customer filter and remain distinct whil
   const [first,second]=[randomUUID(),randomUUID()];
   for(const [id,name] of [[first,'Auswahl Eins'],[second,'Auswahl Zwei']]){
     await page.goto('/orders?customer_id='+id);
+    await page.locator('.record-filter-toggle').click();
     await page.getByText('Aktuelle Filter als Ansicht speichern',{exact:true}).click();
     await page.getByLabel('Name der Ansicht').fill(name!);
     await page.getByRole('button',{name:'Ansicht speichern',exact:true}).click();

@@ -31,7 +31,8 @@ test('Stubbed companion UI keeps one conversation, labels its origins and retain
       toolsUsed:[{name:'find_suite_records',label:'Vorgänge in der Suite',cached:false,elapsedMs:2,resultItems:2}]}}});
   });
   const panel=await openChat(page);
-  await expect(panel.getByRole('button',{name:'Begleiter',exact:true})).toHaveAttribute('aria-pressed','true');
+  const scope = panel.locator('.conversation-picker > summary');
+  await expect(scope).toHaveText('Suite-Chat');
   await expect(panel.getByRole('checkbox',{name:/Aktuelle Seite einbeziehen/})).toBeChecked();
   await send(page,'Was ist hier als Nächstes zu tun?');
   await expect(panel.getByText('Kontrollierte Begleiterantwort 1',{exact:true})).toBeVisible();
@@ -46,12 +47,17 @@ test('Stubbed companion UI keeps one conversation, labels its origins and retain
   await expect(panel.getByText('Kontrollierte Begleiterantwort 2',{exact:true})).toBeVisible();
   expect(calls[1].context.path).toBe('office');expect(calls[1].context.scope).toBeUndefined();
   expect(calls[1].history[0].text).toContain('/customers/'+customer.id);
+  await scope.click();
   await panel.getByRole('button',{name:'Separater Seitenchat',exact:true}).click();
+  await expect(scope).toHaveText('Seitenchat');
   await panel.getByRole('button',{name:/^Chat(?: · \d+)?$/}).click();
   await send(page,'Eine unabhängige Frage nur für diese Seite.');
   await expect(panel.getByText('Kontrollierte Begleiterantwort 3',{exact:true})).toBeVisible();
   expect(calls[2].history).toEqual([]);
-  await panel.getByRole('button',{name:'Begleiter',exact:true}).click();
+  const scopeOptions=panel.getByRole('group',{name:'Gesprächsbezug',exact:true});
+  if(!await scopeOptions.isVisible())await scope.click();
+  await scopeOptions.getByRole('button',{name:'Suite-Chat',exact:true}).click();
+  await expect(scope).toHaveText('Suite-Chat');
   await expect(panel.getByText('Kontrollierte Begleiterantwort 2',{exact:true})).toBeVisible();
   await expect(panel.getByText('Kontrollierte Begleiterantwort 3',{exact:true})).toHaveCount(0);
   await mkdir('work/companion-reliability',{recursive:true});

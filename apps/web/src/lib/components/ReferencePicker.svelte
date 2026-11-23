@@ -3,7 +3,7 @@
   import {onMount,onDestroy,untrack} from 'svelte';
   import {request} from '#lib/client/api.ts';
   type Choice={id:string;name:string};
-  let {id,value=$bindable(),reference,initial=[],required=false,invalid=false,describedBy,parentId,emptyText,asOf,kind,onchange}:{id:string;value?:string;reference:string;initial?:Choice[];required?:boolean;invalid?:boolean;describedBy?:string;parentId?:string;emptyText?:string;asOf?:string;kind?:string;onchange?:(value:string,choice?:Choice)=>void}=$props();
+  let {id,value=$bindable(),reference,initial=[],required=false,invalid=false,describedBy,parentId,emptyText,placeholder='Bitte auswählen',hint='Name oder Belegnummer eingeben · durchsucht den gesamten freigegebenen Bestand.',asOf,kind,onchange}:{id:string;value?:string;reference:string;initial?:Choice[];required?:boolean;invalid?:boolean;describedBy?:string;parentId?:string;emptyText?:string;placeholder?:string;hint?:string;asOf?:string;kind?:string;onchange?:(value:string,choice?:Choice)=>void}=$props();
   let found:Choice[]|null=$state(null),known:Choice[]=$state([]),busy=$state(false),error=$state('');
   let timer:ReturnType<typeof setTimeout>|undefined,generation=0;
   const options=$derived.by(()=>{
@@ -28,6 +28,6 @@
   $effect(()=>{const next=[reference,parentId,asOf,kind].join('|');if(mounted&&next!==scope){scope=next;found=null;untrack(()=>search(''));}});
   onDestroy(()=>{clearTimeout(timer);generation++;});
 </script>
-<select use:searchableSelect={{value,search,busy,error}} {id} bind:value {required} onchange={(event)=>{const selectedId=event.currentTarget.value;onchange?.(selectedId,options.find(item=>item.id===selectedId));}} aria-invalid={invalid} aria-describedby={[describedBy,`${id}-search-help`].filter(Boolean).join(' ')}><option value="">Bitte auswählen</option>{#each options as item}<option value={item.id}>{item.name}</option>{/each}</select>
-<p id={`${id}-search-help`} class="field-help">{emptyText&&found?.length===0?emptyText:'Name oder Belegnummer eingeben · durchsucht den gesamten freigegebenen Bestand.'}</p>
+<select use:searchableSelect={{value,search,busy,error}} {id} bind:value {required} onchange={(event)=>{const selectedId=event.currentTarget.value;onchange?.(selectedId,options.find(item=>item.id===selectedId));}} aria-invalid={invalid} aria-describedby={[describedBy,`${id}-search-help`].filter(Boolean).join(' ')}><option value="">{placeholder}</option>{#each options as item}<option value={item.id}>{item.name}</option>{/each}</select>
+<p id={`${id}-search-help`} class="field-help">{emptyText&&found?.length===0?emptyText:hint}</p>
 {#if error}<p class="field-error" role="alert">{error}<button type="button" class="text-link" onclick={()=>search('')}>Erneut laden</button></p>{/if}

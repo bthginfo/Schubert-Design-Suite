@@ -899,7 +899,6 @@
         </div>
         <div>
           <h2>Schubert Begleiter</h2>
-          <p>Vorgänge finden und bearbeiten</p>
         </div>
         <button
           class="icon-button"
@@ -916,13 +915,11 @@
         <button
           aria-pressed={section === "help"}
           onclick={() => (section = "help")}
-          ><Icon name="help" size={16} />Hilfe für diese Seite</button
+          aria-label="Hilfe für diese Seite"><Icon name="help" size={16} />Hilfe</button
         ><button
           aria-pressed={section === "chat"}
           onclick={() => (section = "chat")}
-          ><Icon name="chat" size={16} />Chat{messages.length
-            ? " · " + messages.length
-            : ""}</button
+          ><Icon name="chat" size={16} />Chat</button
         >
         {#if canLookupProducts}
           <button type="button" aria-pressed={section === "products"} onclick={() => (section = "products")}>
@@ -935,18 +932,18 @@
       <section class="assistant-context-area" aria-label="Seitenbezug und Planstand" tabindex="0">
       {#if section === "chat"}
         <div class="chat-scope">
-          {#if !sensitiveContext}<div class="chat-scope-options" role="group" aria-label="Gesprächsbezug">
-            <button type="button" aria-pressed={suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("suite")}>Begleiter</button>
-            <button type="button" aria-pressed={!suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("page")}>Separater Seitenchat</button>
-          </div>{/if}
-          <p class="chat-scope-status">
-            <Icon name={suiteChat ? "grid" : "link"} size={15} />
-            <span>{sensitiveContext
-              ? "Suite-Chat · Daten dieser Seite sind ausgeblendet."
-              : suiteChat
-                ? "Dieses Gespräch bleibt beim Seitenwechsel geöffnet."
-                : screenLabel + " · Suche in der gesamten Suite"}</span>
-          </p>
+          {#if !sensitiveContext}
+            <details class="conversation-picker">
+              <summary>{suiteChat ? 'Suite-Chat' : 'Seitenchat'}</summary>
+              <p class="chat-scope-hint">Der Suite-Chat bleibt beim Seitenwechsel geöffnet.</p>
+              <div class="chat-scope-options" role="group" aria-label="Gesprächsbezug">
+                <button type="button" aria-pressed={suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("suite")}>Suite-Chat</button>
+                <button type="button" aria-pressed={!suiteChat} disabled={busy || recording || transcribing} onclick={() => switchChatScope("page")}>Separater Seitenchat</button>
+              </div>
+            </details>
+          {:else}
+            <p class="chat-scope-status"><Icon name="lock" size={15}/>Daten dieser Seite bleiben privat.</p>
+          {/if}
           {#if suiteChat && !sensitiveContext}<label class="companion-page-context"><input type="checkbox" bind:checked={includeCurrentPage} disabled={busy || recording || transcribing}/><span>Aktuelle Seite einbeziehen<small title={includeCurrentPage ? String(screenLabel) : undefined}>{includeCurrentPage ? screenLabel : 'Ohne Daten der geöffneten Seite'}</small></span></label>{/if}
         </div>
       {/if}
@@ -968,7 +965,7 @@
               ? " + " + (studioWork.selectedLabels.length - 2) + " weitere"
               : ""}
           </p>
-          <small>Die KI kann den ganzen Entwurf bearbeiten. Änderungen werden mit Vorschau übernommen.</small><button
+          <small>Sie prüfen vorgeschlagene Änderungen vor dem Übernehmen.</small><button
               type="button"
               class="assistant-scope-link"
               aria-label="Bearbeitungsgrenzen ändern"
@@ -1464,5 +1461,22 @@
     .assistant-messages { padding: 14px 16px; min-height: 80px; }
     .assistant-attachments { max-height: 116px; }
     .companion-options-body { left: 6px; right: 6px; padding: 12px; }
+  }
+
+  .assistant-header { background: var(--glass-surface); }
+  .chat-scope { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 4px 10px; align-items: start; }
+  .conversation-picker { min-width: 0; }
+  .chat-scope-hint { color: var(--muted); font-size: .79rem; margin: 0 0 6px; }
+  #assistant-drawer .conversation-picker > summary {
+    min-height: 44px; padding: 6px 9px; border: 0; border-radius: 9px;
+    background: var(--wash); color: var(--ink); font-size: .82rem;
+  }
+  #assistant-drawer .conversation-picker[open] { grid-column: 1/-1; }
+  #assistant-drawer .conversation-picker[open] > summary { margin-bottom: 4px; }
+  .chat-scope .companion-page-context { min-height: 44px; margin: 0; display: flex; align-items: center; padding-block: 4px; }
+  .chat-scope .chat-scope-status { grid-column: 1/-1; }
+  @media (max-width: 360px) {
+    .chat-scope { gap: 4px; }
+    .chat-scope .companion-page-context { font-size: 11px; }
   }
 </style>

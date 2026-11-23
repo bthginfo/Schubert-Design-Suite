@@ -678,7 +678,7 @@ a { text-underline-offset: 4px; }
 .assistant-trigger:hover { background: var(--forest-dark); }
 .app-shell:has(dialog[open]) .assistant-trigger, .app-shell:has(.modal-backdrop) .assistant-trigger, .app-shell:has([role="dialog"][aria-modal="true"]) .assistant-trigger { visibility: hidden; pointer-events: none; }
 .app-shell:has(dialog[open]) .sidebar-feedback, .app-shell:has([role="dialog"][aria-modal="true"]:not(.sidebar)) .sidebar-feedback { visibility: hidden; pointer-events: none; }
-.mobile-nav, .mobile-menu-button, .mobile-only { display: none; }
+.mobile-nav, .mobile-only { display: none; }
 
 @media (max-width: 1200px) {
   :root { --sidebar: 214px; }
@@ -727,7 +727,6 @@ a { text-underline-offset: 4px; }
   .sidebar-close { display: flex !important; position: absolute; top: 22px; right: 9px; }
   .main-wrap { margin: 0; min-height: 100dvh; border-radius: 0; box-shadow: none; }
   .topbar { min-height: 66px; padding: 0 12px; gap: 5px; border-radius: 0; }
-  .mobile-menu-button { display: flex; }
   .mobile-menu-backdrop { position: fixed; inset: 0; z-index: 29; background: rgb(8 18 34 / .45); }
   .breadcrumbs { flex: 1; gap: 6px; font-size: 12px; }
   .breadcrumbs > span:first-child, .breadcrumbs > svg:first-of-type { display: none; }
@@ -849,7 +848,6 @@ a { text-underline-offset: 4px; }
   .empty-state h3 { font-size: 18px; }
   .empty-state p { font-size: 14px; }
   .mobile-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); position: fixed; inset: auto 0 0; z-index: 45; padding: 7px 7px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--paper); box-shadow: 0 -6px 20px light-dark(#1d344007, #00000014); }
-  .mobile-nav.with-feedback { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .mobile-nav a, .mobile-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 48px; border-radius: 8px; color: var(--muted); font-size: 10px; }
   .mobile-nav .active { color: var(--forest); background: var(--accent-wash); font-weight: 600; }
   .desktop-only { display: none !important; }
