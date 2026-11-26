@@ -62,7 +62,7 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
     }
     await page.reload();
     const svg=page.locator('svg[role="application"]');await expect(svg).toBeVisible();
-    for(const label of ['Front','Seite',kind==='memorial'?'Drauf':'Grundriss']){
+    for(const label of ['Front','Seite',kind==='memorial'?'Draufsicht':'Grundriss']){
       await page.getByRole('button',{name:label,exact:true}).click();
       const strokes=await svg.locator('.plan-shape path').evaluateAll(paths=>paths.map(path=>Number(path.getAttribute('stroke-width'))*Math.abs((path as SVGGraphicsElement).getScreenCTM()!.a)));
       expect(strokes.length).toBeGreaterThan(0);expect(Math.min(...strokes)).toBeGreaterThanOrEqual(1);
