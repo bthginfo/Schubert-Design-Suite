@@ -1,5 +1,5 @@
 import {describe,it,expect}from'vitest';import{routeModel,compactContext,estimatedTextCost}from'./model-routing.js';
-import {assistantModelProfiles,planningVisualizationContext} from './model-routing.js';
+import {assistantModelProfiles,planningVisualizationContext,isQuickQuestion} from './model-routing.js';
 import {planningOperationAllowed} from '@schubert/contracts';
 describe('Cost-aware task routing',()=>{
  it('keeps office draft actions alongside evidence rules when a paper sketch is attached',()=>{
@@ -19,9 +19,20 @@ describe('Cost-aware task routing',()=>{
   expect(shown.standard.maxRequestCost).toBe('0.02');expect(shown.design.maxRequestCost).toBe('0.09');expect(shown.monthlyBudget).toBe('3');
   expect(routeModel(configuration,'standard',{}).maxRequestCost).toBe(shown.standard.maxRequestCost);
  });
- it('uses Claude Opus 5.5 with effort matched to the task instead of a second model',()=>{
-  expect(routeModel({},'standard',{entityType:'customers'})).toMatchObject({model:'claude-opus-5-5',effort:'low',maxOutputTokens:8000});
-  expect(routeModel({},'standard',{entityType:'planning'})).toMatchObject({model:'claude-opus-5-5',effort:'medium',maxOutputTokens:12000});
+ it('routes each task to the most economical suitable model',()=>{
+  // How-to questions: Haiku. Office work and every document or photo: Sonnet. Studios and deep review: Opus.
+  expect(routeModel({},'standard',{entityType:'customers'},{message:'Wie lege ich einen neuen Kunden an?'})).toMatchObject({tier:'quick',model:'claude-haiku-5-5',effort:'low',maxOutputTokens:4000,inputCostPerMillion:'0.1'});
+  expect(routeModel({},'standard',{entityType:'customers'},{message:'Wie lege ich einen Kunden an?',imageCount:1})).toMatchObject({tier:'office',model:'claude-sonnet-5-5',effort:'medium'});
+  expect(routeModel({},'standard',{entityType:'quotes'},{message:'Erstelle ein Angebot für Familie Lenz.'})).toMatchObject({tier:'office',model:'claude-sonnet-5-5',effort:'low',maxOutputTokens:8000,inputCostPerMillion:'2',cachedInputCostPerMillion:'0.1'});
+  expect(routeModel({},'standard',{entityType:'documents',sources:[{documentId:'a'}]},{message:'Was bedeutet diese Position?'})).toMatchObject({tier:'office',effort:'medium'});
+  expect(routeModel({},'standard',{entityType:'planning'},{message:'Wie lege ich eine Inschrift an?'})).toMatchObject({tier:'planning',model:'claude-opus-5-5',effort:'medium',maxOutputTokens:12000});
+  expect(routeModel({},'standard',{entityType:'probe'})).toMatchObject({tier:'quick',model:'claude-haiku-5-5'});
+  expect(routeModel({officeModel:'claude-unpriced'},'standard',{entityType:'quotes'},{message:'Erstelle ein Angebot'}).model).toBe('claude-opus-5-5');
+  expect(routeModel({officeModel:'claude-opus-5-5',quickModel:'claude-sonnet-5-5'},'standard',{entityType:'customers'},{message:'Wo finde ich offene Rechnungen?'}).model).toBe('claude-sonnet-5-5');
+ });
+ it('recognises how-to questions but not requests phrased as questions',()=>{
+  for(const message of ['Wie lege ich einen neuen Kunden an?','Wie kann ich eine Rechnung anlegen?','Wo finde ich offene Rechnungen?','Was bedeutet Abnahme?'])expect(isQuickQuestion(message),message).toBe(true);
+  for(const message of ['Erstelle eine Rechnung für Auftrag 12','Lege den Kunden Müller an','Wie wäre es, wenn du ein Angebot entwirfst?','Fasse die Unterlage zusammen','Wie viel?\nBitte Rechnung erstellen',''])expect(isQuickQuestion(message),message).toBe(false);
  });
  it('uses high effort for explicit plan reviews with the published Claude token rates',()=>{
   const routed=routeModel({},'design_review',{entityType:'planning'});
@@ -29,16 +40,17 @@ describe('Cost-aware task routing',()=>{
   expect(()=>routeModel({},'design_review',{entityType:'customers'})).toThrow();
  });
  it('honors saved models, prices and effort without inventing rates for unknown models',()=>{
-  const config=Object.freeze({textModel:'claude-sonnet-5-5',designModel:'claude-opus-5-5',designInputCostPerMillion:'4.40',designMaxRequestCost:'0.80',monthlyBudget:'30',effort:'medium',designEffort:'xhigh'});
+  const config=Object.freeze({textModel:'claude-sonnet-5-5',designModel:'claude-opus-5-5',designInputCostPerMillion:'4.40',designMaxRequestCost:'0.80',monthlyBudget:'30',effort:'medium',planningEffort:'high',designEffort:'xhigh'});
   const profiles=assistantModelProfiles(config);
-  expect(profiles.standard).toMatchObject({model:'claude-sonnet-5-5',effort:'medium',inputCostPerMillion:'2',outputCostPerMillion:'10'});
+  expect(profiles.planning).toMatchObject({model:'claude-sonnet-5-5',effort:'high',inputCostPerMillion:'2',outputCostPerMillion:'10'});
+  expect(profiles.office).toMatchObject({model:'claude-sonnet-5-5',effort:'medium'});expect(profiles.quick.model).toBe('claude-haiku-5-5');
   expect(profiles.design).toMatchObject({model:'claude-opus-5-5',effort:'xhigh',inputCostPerMillion:'4.40',maxRequestCost:'0.80'});
   // A saved own input rate derives its cache rates from that rate rather than from the published table.
   expect(routeModel(config,'design_review',{entityType:'planning'})).toMatchObject({cachedInputCostPerMillion:'0.44',cacheWriteCostPerMillion:'5.5'});
   expect(profiles.monthlyBudget).toBe('30');
   expect(routeModel({effort:'turbo'},'standard',{}).effort).toBe('low');
-  expect(routeModel({textModel:'claude-custom'},'standard',{}).inputCostPerMillion).toBeUndefined();
-  expect(()=>estimatedTextCost(routeModel({textModel:'claude-custom'},'standard',{}),{})).toThrow(/Preise/);
+  expect(routeModel({textModel:'claude-custom'},'standard',{entityType:'planning'}).inputCostPerMillion).toBeUndefined();
+  expect(()=>estimatedTextCost(routeModel({textModel:'claude-custom'},'standard',{entityType:'planning'}),{})).toThrow(/Preise/);
  });
  it('separates cacheable instructions from per-request workflow facts',()=>{
   const routed=routeModel({},'standard',{entityType:'planning',designKind:'memorial',workflow:{step:'review',label:'Prüfen'}});

@@ -5,48 +5,90 @@ import {availableSkills,skillDiscoveryInstructions} from './skills.js';
 import {planningWorkflowFacts} from './planning-facts.js';
 export type AIMode='standard'|'design_review';
 import {CLAUDE_DEFAULT_MODEL,claudeModelPrices,claudeEfforts,type ClaudeEffort} from './claude.js';
+/** Planning studios: geometry, measurements and inscriptions need the most capable model. */
 export const DEFAULT_TEXT_MODEL = CLAUDE_DEFAULT_MODEL;
+/** Explicit deep review in a studio. */
 export const DEFAULT_DESIGN_MODEL = CLAUDE_DEFAULT_MODEL;
+/** Office, suite search, drafts and documents/photos: strong tool use and vision at half the price. */
+export const DEFAULT_OFFICE_MODEL = 'claude-sonnet-5-5';
+/** Short how-to questions and the connection check. */
+export const DEFAULT_QUICK_MODEL = 'claude-haiku-5-5';
 /** Default reservation ceilings. They bound conservative estimates; actual usage is settled per call. */
 export const DEFAULT_MAX_REQUEST_COST='1.00';
 export const DEFAULT_DESIGN_MAX_REQUEST_COST='2.00';
 export const DEFAULT_MONTHLY_BUDGET='50';
 /** Output ceilings include adaptive thinking. They stay below the SDK's non-streaming timeout bound. */
-export const OUTPUT_TOKENS={office:8000,planning:12000,review:16000} as const;
+export const OUTPUT_TOKENS={quick:4000,office:8000,planning:12000,review:16000} as const;
+export type ModelTier=keyof typeof OUTPUT_TOKENS;
+export type AIRequest={message?:string;imageCount?:number};
 const effort=(value:unknown,fallback:ClaudeEffort):ClaudeEffort=>claudeEfforts.includes(value as ClaudeEffort)?value as ClaudeEffort:fallback;
+const designContext=(context:Record<string,any>)=>['planning','studio','memorial','room_plan'].includes(String(context.entityType));
+// A how-to question without an action verb: "Wie lege ich einen Kunden an?", "Wo finde ich offene Rechnungen?"
+const quickQuestion=/^(?:wie|wo|wann|warum|wozu|wofür|was (?:bedeutet|heißt|ist|sind|kann|muss)|welche[rsnm]? (?:bereich|seite|funktion|taste|ansicht|schritt)|erklär\w*|kannst du (?:mir )?(?:erklären|zeigen|sagen)|hilfe\b)/i;
+const actionVerb=/\b(?:erstell\w*|entwirf\w*|entwerf\w*|bereite\w* .*vor|vorbereite\w*|änder\w*|ersetz\w*|schreib\w*|buch\w*|eintrag\w*|trag\w* .*ein|anlegen|leg\w* .*an\b(?!\?)|übernimm\w*|zuordn\w*|verschieb\w*|lösch\w*|berechne\w*|prüfe\w*|vergleich\w*|zusammenfass\w*|fasse\w*|analysier\w*|ausles\w*)\b/i;
+// "How do I …" asks for guidance about the person's own next step, whatever the verb.
+const howTo=/^(?:wie (?:kann|muss|soll|darf) (?:ich|man|wir)|wie (?:lege|finde|erstelle|ändere|trage|buche|komme|mache|starte|öffne|lösche|drucke|sende|exportiere) ich|wie funktioniert|wie geht|wo (?:finde|sehe|kann|ist|sind|steht|stehen)|was (?:bedeutet|heißt)|wofür|wozu|erklär\w*|hilfe\b)/i;
+export function isQuickQuestion(message?:string){
+ if(!message)return false;
+ const text=message.trim().replace(/^test:\s*/i,'');
+ if(text.length>300||text.includes('\n'))return false;
+ return howTo.test(text)||quickQuestion.test(text)&&!actionVerb.test(text);
+}
+/** Which model class a request needs. Documents and images always use at least the office model. */
+export function routeTier(mode:AIMode,context:Record<string,any>,request:AIRequest={}):ModelTier{
+ if(mode==='design_review')return 'review';
+ if(designContext(context))return 'planning';
+ if(context.entityType==='probe')return 'quick';
+ const documents=!!context.sourceKind||(Array.isArray(context.sources)&&context.sources.length>0)||(request.imageCount??0)>0;
+ return !documents&&isQuickQuestion(request.message)?'quick':'office';
+}
 /** Display the same models, prices and limits that reserve() actually enforces. */
 export function assistantModelProfiles(config:Record<string,any>){
- const standard=routeModel(config,'standard',{}),design=routeModel(config,'design_review',{entityType:'planning'});
  const display=(profile:ReturnType<typeof routeModel>)=>({model:profile.model,effort:profile.effort,inputCostPerMillion:profile.inputCostPerMillion,outputCostPerMillion:profile.outputCostPerMillion,maxRequestCost:profile.maxRequestCost});
- return{provider:'anthropic',standard:display(standard),design:display(design),currency:'USD',monthlyBudget:standard.monthlyBudget};
+ const quick=display(routeModel(config,'standard',{entityType:'probe'})),office=display(routeModel(config,'standard',{}));
+ const planning=display(routeModel(config,'standard',{entityType:'planning'})),design=display(routeModel(config,'design_review',{entityType:'planning'}));
+ return{provider:'anthropic',quick,office,planning,design,standard:office,currency:'USD',monthlyBudget:routeModel(config,'standard',{}).monthlyBudget};
 }
 /** Prices come from the saved profile; known Claude models fall back to their published rates. */
-function prices(config:Record<string,any>,model:string,review:boolean){
+function prices(config:Record<string,any>,model:string,tier:ModelTier){
  const known=claudeModelPrices[model];
- const input=(review?config.designInputCostPerMillion:config.inputCostPerMillion)??known?.input;
- const output=(review?config.designOutputCostPerMillion:config.outputCostPerMillion)??known?.output;
- const ownRates=review?config.designInputCostPerMillion!==undefined:config.inputCostPerMillion!==undefined;
- const cached=(review?config.designCachedInputCostPerMillion:config.cachedInputCostPerMillion)??(!ownRates&&known?known.cachedInput:input?dec(input).mul('0.1').toString():undefined);
- const write=(review?config.designCacheWriteCostPerMillion:config.cacheWriteCostPerMillion)??(!ownRates&&known?known.cacheWrite:input?dec(input).mul('1.25').toString():undefined);
+ // Own rates apply to the configurable planning and review models; office and quick models are published models.
+ const own=tier==='review'?'design':tier==='planning'?'':null;
+ const read=(key:string)=>own===null?undefined:config[own?own+key[0].toUpperCase()+key.slice(1):key];
+ const input=read('inputCostPerMillion')??known?.input;
+ const output=read('outputCostPerMillion')??known?.output;
+ const ownRates=read('inputCostPerMillion')!==undefined;
+ const cached=read('cachedInputCostPerMillion')??(!ownRates&&known?known.cachedInput:input?dec(input).mul('0.1').toString():undefined);
+ const write=read('cacheWriteCostPerMillion')??(!ownRates&&known?known.cacheWrite:input?dec(input).mul('1.25').toString():undefined);
  return {inputCostPerMillion:input as string,outputCostPerMillion:output as string,...(cached?{cachedInputCostPerMillion:String(cached)}:{}),...(write?{cacheWriteCostPerMillion:String(write)}:{})};
 }
-export function routeModel(config:Record<string,any>,mode:AIMode,context:Record<string,any>){
- const design=['planning','studio','memorial','room_plan'].includes(String(context.entityType));
+function tierModel(config:Record<string,any>,tier:ModelTier){
+ const planningModel=config.textModel||process.env.ANTHROPIC_TEXT_MODEL||DEFAULT_TEXT_MODEL;
+ if(tier==='review')return config.designModel||process.env.ANTHROPIC_DESIGN_MODEL||DEFAULT_DESIGN_MODEL;
+ if(tier==='planning')return planningModel;
+ const chosen=tier==='office'?config.officeModel||process.env.ANTHROPIC_OFFICE_MODEL||DEFAULT_OFFICE_MODEL:config.quickModel||process.env.ANTHROPIC_QUICK_MODEL||DEFAULT_QUICK_MODEL;
+ // Without published rates the office/quick tier falls back to the priced planning model instead of guessing.
+ return claudeModelPrices[chosen]?chosen:planningModel;
+}
+export function routeModel(config:Record<string,any>,mode:AIMode,context:Record<string,any>,request:AIRequest={}){
+ const design=designContext(context);
  const review=mode==='design_review';
  if(review&&!design)throw new Error('Vertiefte Designprüfung ist nur für einen konkreten Planungsstand möglich.');
- const model=review?config.designModel||process.env.ANTHROPIC_DESIGN_MODEL||DEFAULT_DESIGN_MODEL:config.textModel||process.env.ANTHROPIC_TEXT_MODEL||DEFAULT_TEXT_MODEL;
+ const tier=routeTier(mode,context,request);
+ const model=tierModel(config,tier);
+ const priceTier:ModelTier=(tier==='office'||tier==='quick')&&!claudeModelPrices[model]?'planning':tier;
  const domainPrompt=!design?prompts.office:context.designKind==='room_plan'?prompts.room:context.designKind==='memorial'?prompts.memorial:prompts.office;
  // Stable instructions form a cacheable prefix shared by every request of the same kind.
  const stableInstructions=[clarificationInstructions,prompts.base,domainPrompt,...(context.sourceKind?[prompts.document]:[])].join('\n');
  const volatileInstructions=workflowInstructions(context)+skillDiscoveryInstructions(availableSkills(context));
  const instructions=stableInstructions+'\n'+volatileInstructions;
- const planning=context.entityType==='planning';
+ const documents=!!context.sourceKind||(Array.isArray(context.sources)&&context.sources.length>0)||(request.imageCount??0)>0;
  return {
-  ...prices(config,model,review),model,instructions,stableInstructions,volatileInstructions,review,
-  effort:review?effort(config.designEffort,'high'):planning?effort(config.planningEffort,'medium'):effort(config.effort,'low'),
+  ...prices(config,model,priceTier),model,tier,instructions,stableInstructions,volatileInstructions,review,
+  effort:tier==='review'?effort(config.designEffort,'high'):tier==='planning'?effort(config.planningEffort,'medium'):tier==='quick'?effort(config.quickEffort,'low'):documents?effort(config.documentEffort,'medium'):effort(config.effort,'low'),
   maxRequestCost:review?(config.designMaxRequestCost??DEFAULT_DESIGN_MAX_REQUEST_COST):(config.maxRequestCost??DEFAULT_MAX_REQUEST_COST),
   monthlyBudget:config.monthlyBudget??process.env.AI_MONTHLY_BUDGET_USD??DEFAULT_MONTHLY_BUDGET,
-  maxOutputTokens:review?OUTPUT_TOKENS.review:planning?OUTPUT_TOKENS.planning:OUTPUT_TOKENS.office,
+  maxOutputTokens:OUTPUT_TOKENS[tier],
   promptVersion:prompts.version+':clarifications-1:task-presets-1:source-task-context-1:read-tools-1:planning-stages-1:claude-1'
  };
 }

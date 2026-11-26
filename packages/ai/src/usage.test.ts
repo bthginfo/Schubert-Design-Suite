@@ -27,12 +27,12 @@ describe('Provider usage and task attribution',()=>{
   expect(taskType({entityType:'probe'})).toBe('connection_test');
  });
  it('reserves the cache-write ceiling and freezes the documented cache rates',()=>{
-  const profile=routeModel({},'standard',{});
+  const profile=routeModel({},'standard',{entityType:'planning'});
   expect(profile.cachedInputCostPerMillion).toBe('0.2');
   expect(profile.cacheWriteCostPerMillion).toBe('5');
   const estimate=estimatedTextCost(profile,{});
   expect(estimate.cost).toBeGreaterThanOrEqual((estimate.inputTokenCeiling*5+profile.maxOutputTokens*20)/1e6);
-  expect(routeModel({textModel:'custom-model'},'standard',{}).cachedInputCostPerMillion).toBeUndefined();
+  expect(routeModel({textModel:'custom-model'},'standard',{entityType:'planning'}).cachedInputCostPerMillion).toBeUndefined();
  });
  it('counts Claude cache writes and reads once and keeps thinking inside output',()=>{
   const usage=normalizeUsage({input_tokens:200,cache_creation_input_tokens:300,cache_read_input_tokens:500,output_tokens:400,output_tokens_details:{thinking_tokens:250}});

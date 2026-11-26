@@ -3,7 +3,7 @@ import {requireRule,assertFreshAuth,dec} from '@schubert/domain';
 import {one} from '@schubert/db';
 import {sealConfiguration,openConfiguration,connectionIn} from '@schubert/adapters';
 import {register,hash,type Runtime} from './core.js';
-import {DEFAULT_TEXT_MODEL,DEFAULT_DESIGN_MODEL,DEFAULT_MAX_REQUEST_COST,DEFAULT_DESIGN_MAX_REQUEST_COST,DEFAULT_MONTHLY_BUDGET} from '../../ai/src/model-routing.js';
+import {DEFAULT_TEXT_MODEL,DEFAULT_DESIGN_MODEL,DEFAULT_OFFICE_MODEL,DEFAULT_QUICK_MODEL,DEFAULT_MAX_REQUEST_COST,DEFAULT_DESIGN_MAX_REQUEST_COST,DEFAULT_MONTHLY_BUDGET} from '../../ai/src/model-routing.js';
 import {AI_PROVIDER,MEDIA_PROVIDER,claudeEfforts,claudeModelPrices,workspaceIdPattern} from '../../ai/src/claude.js';
 const positive=z.string().refine(value=>{try{return dec(value).gt(0);}catch{return false;}},'Positiven Betrag angeben.');
 async function saveConnection(r:Runtime,provider:string,configuration:Record<string,unknown>,secretReference:string|null){
@@ -23,7 +23,9 @@ const effort=z.enum(claudeEfforts as unknown as [string,...string[]]);
 const claudeModel=z.string().trim().min(1).max(150).regex(/^claude-[a-z0-9.-]+$/,'Eine Claude-Modellkennung wie claude-opus-5-5 angeben.');
 const anthropicSettings=z.object({apiKey:z.string().trim().min(20).max(500).regex(/^sk-ant-/,'Claude-API-Schlüssel beginnen mit sk-ant-.').optional(),
  textModel:claudeModel.default(DEFAULT_TEXT_MODEL),designModel:claudeModel.default(DEFAULT_DESIGN_MODEL),
- effort:effort.default('low'),planningEffort:effort.default('medium'),designEffort:effort.default('high'),
+ effort:effort.default('low'),planningEffort:effort.default('medium'),designEffort:effort.default('high'),documentEffort:effort.default('medium'),quickEffort:effort.default('low'),
+ // Office and quick models are published models so their rates are known; planning and review accept own model ids.
+ officeModel:z.string().refine(id=>id in claudeModelPrices,'Ein veröffentlichtes Claude-Modell auswählen.').default(DEFAULT_OFFICE_MODEL),quickModel:z.string().refine(id=>id in claudeModelPrices,'Ein veröffentlichtes Claude-Modell auswählen.').default(DEFAULT_QUICK_MODEL),
  inputCostPerMillion:positive.optional(),outputCostPerMillion:positive.optional(),designInputCostPerMillion:positive.optional(),designOutputCostPerMillion:positive.optional(),
  maxRequestCost:positive.default(DEFAULT_MAX_REQUEST_COST),designMaxRequestCost:positive.default(DEFAULT_DESIGN_MAX_REQUEST_COST),monthlyBudget:positive.default(DEFAULT_MONTHLY_BUDGET),
  workspaceId:z.union([z.literal(''),z.string().trim().regex(workspaceIdPattern,'Workspace-ID im Format wrkspc_… angeben.')]).optional()});

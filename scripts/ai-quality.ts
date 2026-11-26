@@ -34,7 +34,7 @@ const budget=live?await evaluationBudget('work/ai-quality-cost-ledger.json',maxC
 const report:any={suite:qualitySuiteVersion+(toolSuite?':read-tools-1':''),mode:live?'real_model':'synthetic_contract_controls',assistantMode,started:new Date().toISOString(),currency:'USD',maxCost,priceBasis:'configured_estimate',providerCalls:0,inputTokens:0,outputTokens:0,cost:'0',cases:[]};
 await mkdir('work',{recursive:true});
 try{for(const test of cases){
-  const profile=routeModel({},assistantMode,test.context),format=assistantResponseFormat(test.context);
+  const profile=routeModel({},assistantMode,test.context,{message:test.message}),format=assistantResponseFormat(test.context);
   const readTools=qualityReadTools(test);
   const stableInstructions=profile.stableInstructions+(test.context.entityType==='planning'?'\n'+planningDraftInstructions+'\n'+planningEditInstructions:'')+(readTools.available.length?'\n'+specialistToolInstructions:'');
   const volatileInstructions=profile.volatileInstructions+'\nErlaubte Commands: '+(test.context.allowedCommands??[]).join(', ')+'. Befehle sind ausschließlich Vorschläge.';

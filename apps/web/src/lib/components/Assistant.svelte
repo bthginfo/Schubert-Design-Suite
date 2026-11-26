@@ -408,8 +408,9 @@
       )),
   );
   const modelProfile = $derived(data.summary?.assistantModelProfile || {});
+  // Office requests may be answered by a smaller model; the shown limits are the office tier's.
   const chosenProfile = $derived(
-    designContext && deepReview ? modelProfile.design : modelProfile.standard,
+    designContext ? (deepReview ? modelProfile.design : (modelProfile.planning ?? modelProfile.standard)) : (modelProfile.office ?? modelProfile.standard),
   );
   function dollars(value: unknown) {
     return value === undefined ||

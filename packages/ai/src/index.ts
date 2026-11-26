@@ -10,14 +10,14 @@ import OpenAI,{toFile} from 'openai';
 import {AI_PROVIDER,MEDIA_PROVIDER,claudeCall,claudeClient,messageText,providerFailure} from './claude.js';
 import {assistantRequest,assistantUserContent} from './request.js';
 export {AI_PROVIDER,MEDIA_PROVIDER,CLAUDE_DEFAULT_MODEL,claudeModelPrices,claudeEfforts} from './claude.js';
-export {DEFAULT_TEXT_MODEL,DEFAULT_DESIGN_MODEL,DEFAULT_MAX_REQUEST_COST,DEFAULT_DESIGN_MAX_REQUEST_COST,DEFAULT_MONTHLY_BUDGET} from './model-routing.js';
+export {DEFAULT_TEXT_MODEL,DEFAULT_DESIGN_MODEL,DEFAULT_OFFICE_MODEL,DEFAULT_QUICK_MODEL,DEFAULT_MAX_REQUEST_COST,DEFAULT_DESIGN_MAX_REQUEST_COST,DEFAULT_MONTHLY_BUDGET} from './model-routing.js';
 import {z} from 'zod';
 import {withTenant,one,insert,update} from '@schubert/db';
 import {dec,requireRule,DomainError} from '@schubert/domain';
 import {integrationConfiguration,IntegrationUnavailable,callWorker} from '@schubert/adapters';
 import type {ActorContext} from '@schubert/contracts';
 import {createHash} from 'node:crypto';
-import {routeModel,compactContext,type AIMode} from './model-routing.js';
+import {routeModel,compactContext,assistantModelProfiles,type AIMode} from './model-routing.js';
 import {normalizeUsage,usageCost,taskType,aggregateTextResponses} from './usage.js';
 import {availableSkills,skillRegistryVersion,skillUsage,type AssistantSkill} from './skills.js';
 import {respondWithOptionalSkills,affordableSkillResponse,inputWithToolEvidence,firstToolRequest,countInputTokens,type AssistantProgress} from './skill-response.js';
@@ -54,7 +54,7 @@ export async function assistant(ctx:ActorContext,message:string,inputContext:Rec
  requireRule(message.length>0&&message.length<=6000,'AI_MESSAGE','Nachricht auf 6.000 Zeichen begrenzen.');
  const config=await integrationConfiguration(ctx,AI_PROVIDER);let context=compactContext(inputContext);
  for(const count of [25,15,8,3,1]){if(JSON.stringify(context).length<=32000)break;context=compactContext(inputContext,count);}
- let profile;try{profile=routeModel(config,mode,context);}catch{throw new DomainError('AI_REVIEW_CONTEXT','Vertiefte Prüfung benötigt einen konkreten Planungsstand.',422);}
+ let profile;try{profile=routeModel(config,mode,context,{message,imageCount:images.length});}catch{throw new DomainError('AI_REVIEW_CONTEXT','Vertiefte Prüfung benötigt einen konkreten Planungsstand.',422);}
  const minimal=JSON.stringify(context);requireRule(minimal.length<=32000,'AI_CONTEXT','Kontext ist zu groß. Konkreten Vorgang auswählen.');
  const allowedCommands=(Array.isArray(context.allowedCommands)?context.allowedCommands:[]).filter((name:string)=>assistantCommandAllowed(name));requireRule(images.length<=2&&images.every(image=>/^data:image\/png;base64,/.test(image.dataUrl)&&image.dataUrl.length<=3600000),'AI_IMAGE_CONTEXT','Höchstens zwei vorbereitete kleine Bildseiten auswählen.');
  const requiredRead=requiredAssistantRead(message,readTools?.available??[]);
@@ -239,10 +239,14 @@ export async function generateVisualization(ctx:ActorContext,prompt:string,refer
 /** A small paid check with synthetic text: the key, the model and the complete structured-answer path. */
 export async function probeClaude(ctx:ActorContext){
  const config=await integrationConfiguration(ctx,AI_PROVIDER),profile=routeModel(config,'standard',{entityType:'probe'}),api=claudeClient(config.apiKey,30000,config.workspaceId);
- let model;try{model=await api.models.retrieve(profile.model);}catch(error){const failure=providerFailure(error);if(failure)throw new DomainError(failure.code,failure.message+' Es wurde nichts berechnet.',failure.status);throw error;}
- requireRule(model.id===profile.model||model.id.startsWith(profile.model+'-'),'AI_MODEL_UNAVAILABLE','Das eingestellte Claude-Modell ist für diese Organisation nicht verfügbar.');
+ // Model lookups are free: confirm every configured model before one small paid call on the quick model.
+ const profiles=assistantModelProfiles(config),models=[...new Set([profiles.quick.model,profiles.office.model,profiles.planning.model,profiles.design.model])];
+ for(const id of models){
+  let model;try{model=await api.models.retrieve(id);}catch(error){const failure=providerFailure(error);if(failure)throw new DomainError(failure.code,failure.message+' ('+id+') Es wurde nichts berechnet.',failure.status);throw error;}
+  requireRule(model.id===id||model.id.startsWith(id+'-'),'AI_MODEL_UNAVAILABLE','Das eingestellte Claude-Modell '+id+' ist für diese Organisation nicht verfügbar.');
+ }
  const result=await assistant(ctx,'Dies ist ein synthetischer Verbindungstest ohne Kundendaten. Antworte kurz auf Deutsch, dass die Verbindung funktioniert. Schlage keine Befehle vor.',{entityType:'probe'});
- return{available:true,provider:AI_PROVIDER,model:result.model,promptVersion:result.promptVersion,cached:result.cached,actualCost:result.actualCost,connectionVersionId:config.connectionVersionId??null};
+ return{available:true,provider:AI_PROVIDER,model:result.model,checkedModels:models,promptVersion:result.promptVersion,cached:result.cached,actualCost:result.actualCost,connectionVersionId:config.connectionVersionId??null};
 }
 
 export {compactContext,planningVisualizationContext} from './model-routing.js';

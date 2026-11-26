@@ -35,7 +35,17 @@ Suchanfragen verwenden den zwischengespeicherten Stand im Anwendungsspeicher. He
 
 ## Claude (Anthropic) und Kosten
 
-Assistent, Unterlagenanalyse, Büroentwürfe und beide Planungsstudios arbeiten mit Claude über das offizielle Anthropic-SDK (`@anthropic-ai/sdk`, Messages API). Standardmodell ist Claude Opus 5.5 (`claude-opus-5-5`). Statt eines zweiten, günstigeren Modells steuert der Aufwand (`effort`) die Tiefe: niedrig im Büro und Chat, mittel in den Planungsstudios, hoch bei der ausdrücklich gewählten „Vertieften Prüfung“. Adaptives Nachdenken ist immer aktiv und zählt zu den Ausgabetokens. Im Integrationsformular kann der Superadmin Modell und Aufwand je Bereich ändern; bekannte Modelle erhalten ihre veröffentlichten Preise automatisch, eigene Modellkennungen benötigen ausdrücklich gespeicherte Preise.
+Assistent, Unterlagenanalyse, Büroentwürfe und beide Planungsstudios arbeiten mit Claude über das offizielle Anthropic-SDK (`@anthropic-ai/sdk`, Messages API). Die Suite wählt je Aufgabe das passende Modell:
+
+| Aufgabe | Standardmodell | Aufwand |
+|---|---|---|
+| Einfache Bedienfragen („Wie lege ich …?“, „Wo finde ich …?“) und Verbindungsprüfung | Claude Haiku 5.5 | niedrig |
+| Büro, Suite-Suche, Entwürfe, Rechnungen, Einsätze | Claude Sonnet 5.5 | niedrig |
+| Unterlagen, Fotos und Skizzen (nie das kleinste Modell) | Claude Sonnet 5.5 | mittel |
+| Planungsstudios (Maße, Geometrie, Inschriften) | Claude Opus 5.5 | mittel |
+| Ausdrücklich gewählte „Vertiefte Prüfung“ | Claude Opus 5.5 | hoch |
+
+Im Integrationsformular sind Modell und Aufwand je Bereich änderbar. Gemessen mit synthetischen Testfällen: eine Bedienfrage kostet mit Haiku etwa 0,05 Cent, eine Suche mit Datenabfrage mit Sonnet etwa 2 Cent, eine Planungsaufgabe mit Opus etwa 7–10 Cent. Adaptives Nachdenken ist immer aktiv und zählt zu den Ausgabetokens. Im Integrationsformular kann der Superadmin Modell und Aufwand je Bereich ändern; bekannte Modelle erhalten ihre veröffentlichten Preise automatisch, eigene Modellkennungen benötigen ausdrücklich gespeicherte Preise.
 
 Veröffentlichte Preise je 1 Mio. Tokens: Opus 5.5 4 / 20 USD (Cache-Lesen 0,20 USD), Sonnet 5.5 2 / 10 USD, Haiku 5.5 0,10 / 0,50 USD, Fable 5.2 8 / 40 USD. Die stabilen Arbeitsanweisungen werden als Cache-Präfix gesendet; der Folgeaufruf nach einer Fachabfrage liest Werkzeuge und Anweisungen aus dem Cache. Vor jedem Aufruf zählt die kostenlose Token-Zählung der API die tatsächliche Eingabe; nur wenn sie nicht erreichbar ist, gilt die vorsichtige Byte-Obergrenze. Die Reservierung wird nach dem Aufruf auf den gemeldeten Verbrauch abgerechnet.
 
