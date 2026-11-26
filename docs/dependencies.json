@@ -2,6 +2,12 @@
   "checkedAt": "2026-10-17",
   "packages": [
     {
+      "name": "@anthropic-ai/sdk",
+      "version": "1.8.0",
+      "license": "Apache-2.0",
+      "repository": "github:anthropics/anthropic-sdk-typescript"
+    },
+    {
       "name": "@aws-sdk/client-s3",
       "version": "3.1152.0",
       "license": "Apache-2.0",

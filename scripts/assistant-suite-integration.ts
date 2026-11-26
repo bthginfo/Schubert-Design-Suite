@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { claudeFetch, claudeMessage, jsonResponse, toolUse, answerText } from "./lib/claude-transport.js";
 import { randomUUID } from "node:crypto";
 import type { ActorContext, AssistantSuiteArea } from "@schubert/contracts";
 import {
@@ -76,29 +77,20 @@ export async function assistantSuiteIntegration(
     assert(!JSON.stringify(ambiguous).includes("@example.invalid"));
   });
 
-  const originalFetch = globalThis.fetch, originalKey = process.env.OPENAI_API_KEY, prefix = "resp_suite_" + randomUUID();
+  const originalFetch = globalThis.fetch, originalKey = process.env.ANTHROPIC_API_KEY, prefix = "msg_suite_" + randomUUID();
   let lookups: ReturnType<typeof lookup>[] = [], answer: Record<string, unknown> = {}, requests = 0;
   const reply = (name: string, input: Record<string, unknown>, row?: { id: string; version: number }) => ({
     commands: [{ name, inputJson: JSON.stringify(input), targetId: row?.id ?? null, baseVersion: row?.version ?? null }],
   });
   try {
-    process.env.OPENAI_API_KEY = "synthetic-offline-suite-transport";
-    globalThis.fetch = async (input, init) => {
-      const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
-      assert.equal(url.origin, "https://api.openai.com");
-      const body = JSON.parse(String(init?.body ?? (input instanceof Request ? await input.text() : "")));
-      const first = body.tools.some((tool: any) => tool.name === "find_suite_records");
-      const output = first ? lookups.map((args, i) => ({ type: "function_call", name: "find_suite_records",
-        call_id: "suite_" + i, id: "fc_suite_" + i, status: "completed", arguments: JSON.stringify(args) })) :
-        [{ type: "message", id: "msg_suite", role: "assistant", status: "completed", content: [{
-          type: "output_text", annotations: [], text: JSON.stringify({ text: "Synthetische Antwort", targetId: null, baseVersion: null,
-            commands: [], missingInputs: [], assumptions: [], clarifications: [], visualization: null, ...answer }),
-        }] }];
-      return new Response(JSON.stringify({ id: prefix + "_" + (++requests), object: "response", status: "completed",
-        created_at: Math.floor(Date.now() / 1000), model: body.model, output,
-        usage: { input_tokens: 1000, output_tokens: 100, total_tokens: 1100, input_tokens_details: { cached_tokens: 0 }, output_tokens_details: { reasoning_tokens: 0 } },
-      }), { headers: { "content-type": "application/json" } });
-    };
+    process.env.ANTHROPIC_API_KEY = "synthetic-offline-suite-transport";
+    globalThis.fetch = claudeFetch((body) => {
+      // The first call offers the suite search; the follow-up answers after the tool results.
+      const first = body.tool_choice?.type !== "none" && (body.tools ?? []).some((tool: any) => tool.name === "find_suite_records");
+      const content = first ? lookups.map((args, i) => toolUse("find_suite_records", args, "toolu_suite_" + i)) :
+        [answerText({ text: "Synthetische Antwort", ...answer })];
+      return jsonResponse(claudeMessage({ id: prefix + "_" + (++requests), model: body.model, content }));
+    });
     const chat = (message: string, context = suiteContext) =>
       assistant(owner, tag + " " + message, context, "standard", [], undefined, createAssistantReadTools(owner, context));
 
@@ -166,7 +158,7 @@ export async function assistantSuiteIntegration(
     });
   } finally {
     globalThis.fetch = originalFetch;
-    if (originalKey === undefined) delete process.env.OPENAI_API_KEY;
-    else process.env.OPENAI_API_KEY = originalKey;
+    if (originalKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = originalKey;
   }
 }

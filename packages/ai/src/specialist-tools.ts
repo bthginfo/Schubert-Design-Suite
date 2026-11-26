@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import type {FunctionTool} from 'openai/resources/responses/responses';
+import {claudeTool,type ClaudeTool,type FunctionDefinition} from './claude.js';
 import {DomainError} from '@schubert/domain';
 import {assistantSuiteAreas,dispatchLookupSchema,suiteLookupSchema,type AssistantReadToolName,type AssistantSuiteArea} from '@schubert/contracts';
 
@@ -17,20 +17,21 @@ export function requiredAssistantRead(message:string,available:readonly Assistan
   const candidates=[...(catalog?['lookup_planning_catalog' as const]:[]),...(plan?['inspect_current_plan' as const]:[]),...(records?['find_suite_records' as const]:[])];
   return candidates.length===1&&available.includes(candidates[0])?candidates[0]:undefined;
 }
-const definitions:Record<AssistantReadToolName,FunctionTool>={
-  lookup_planning_catalog:{type:'function',name:'lookup_planning_catalog',description:'Suche höchstens sechs tatsächliche Produkte, Materialfassungen oder Schriftausführungen in der berechtigten Bibliothek. Nur bei einer konkreten Auswahlfrage verwenden, wenn passende Referenzen im Kontext fehlen. Keine Preise, Bestandsreservierung oder technische Freigabe.',strict:true,parameters:{type:'object',properties:{kind:{type:'string',enum:['products','materials','fonts']},query:{type:'string',minLength:2,maxLength:100}},required:['kind','query'],additionalProperties:false}},
-  inspect_current_plan:{type:'function',name:'inspect_current_plan',description:'Lies deterministisch berechnete Mengen, Maße und offene Prüfgrundlagen der aktuellen gespeicherten Planrevision. Verwende dies für Mengen-, Maß- oder Prüfungsfragen, die der vorhandene Kontext nicht beantwortet. Ändert nichts und erteilt keine Fertigungsfreigabe.',strict:true,parameters:{type:'object',properties:{},required:[],additionalProperties:false}},
-  find_suite_records:{type:'function',name:'find_suite_records',description:'Durchsuche einen berechtigten Arbeitsbereich, unabhängig von der Seite. query ist ein konkreter Name, Titel, eine Nummer oder ID, für Übersichten null. details=true für Kontaktdaten, Belegpositionen oder Bearbeitung einer eindeutigen Planvariante. from/to sind Kalendertage, inklusiv. status ist der technische Status oder null.',strict:true,parameters:{type:'object',properties:{area:{type:'string',enum:assistantSuiteAreas},query:{type:['string','null']},status:{type:['string','null']},from:{type:['string','null'],description:'YYYY-MM-DD'},to:{type:['string','null'],description:'YYYY-MM-DD'},details:{type:'boolean'}},required:['area','query','status','from','to','details'],additionalProperties:false}},
-  resolve_dispatch_assignment:{type:'function',name:'resolve_dispatch_assignment',description:'Für einen Einsatzentwurf mit einer Person und einem Auftrag beide Referenzen in EINER Abfrage auflösen. person ist der genannte Mitarbeitername, order die genannte Auftragsnummer oder der Titel. Bei eindeutigen Treffern liefert es employee_id und order_id.',strict:true,parameters:{type:'object',properties:{person:{type:'string'},order:{type:'string'}},required:['person','order'],additionalProperties:false}},
+const definitions:Record<AssistantReadToolName,FunctionDefinition>={
+  lookup_planning_catalog:{name:'lookup_planning_catalog',description:'Suche höchstens sechs tatsächliche Produkte, Materialfassungen oder Schriftausführungen in der berechtigten Bibliothek. Nur bei einer konkreten Auswahlfrage verwenden, wenn passende Referenzen im Kontext fehlen. Keine Preise, Bestandsreservierung oder technische Freigabe.',parameters:{type:'object',properties:{kind:{type:'string',enum:['products','materials','fonts']},query:{type:'string',minLength:2,maxLength:100}},required:['kind','query'],additionalProperties:false}},
+  inspect_current_plan:{name:'inspect_current_plan',description:'Lies deterministisch berechnete Mengen, Maße und offene Prüfgrundlagen der aktuellen gespeicherten Planrevision. Verwende dies für Mengen-, Maß- oder Prüfungsfragen, die der vorhandene Kontext nicht beantwortet. Ändert nichts und erteilt keine Fertigungsfreigabe.',parameters:{type:'object',properties:{},required:[],additionalProperties:false}},
+  find_suite_records:{name:'find_suite_records',description:'Durchsuche einen berechtigten Arbeitsbereich, unabhängig von der Seite. query ist ein konkreter Name, Titel, eine Nummer oder ID, für Übersichten null. details=true für Kontaktdaten, Belegpositionen oder Bearbeitung einer eindeutigen Planvariante. from/to sind Kalendertage, inklusiv. status ist der technische Status oder null.',parameters:{type:'object',properties:{area:{type:'string',enum:assistantSuiteAreas},query:{type:['string','null']},status:{type:['string','null']},from:{type:['string','null'],description:'YYYY-MM-DD'},to:{type:['string','null'],description:'YYYY-MM-DD'},details:{type:'boolean'}},required:['area','query','status','from','to','details'],additionalProperties:false}},
+  resolve_dispatch_assignment:{name:'resolve_dispatch_assignment',description:'Für einen Einsatzentwurf mit einer Person und einem Auftrag beide Referenzen in EINER Abfrage auflösen. person ist der genannte Mitarbeitername, order die genannte Auftragsnummer oder der Titel. Bei eindeutigen Treffern liefert es employee_id und order_id.',parameters:{type:'object',properties:{person:{type:'string'},order:{type:'string'}},required:['person','order'],additionalProperties:false}},
 };
-export function specialistToolDefinitions(names:readonly AssistantReadToolName[],areas?:readonly AssistantSuiteArea[]){
-  return names.map(name=>name==='find_suite_records'&&areas?.length?{
+export function specialistToolDefinitions(names:readonly AssistantReadToolName[],areas?:readonly AssistantSuiteArea[]):ClaudeTool[]{
+  return names.map(name=>claudeTool(name==='find_suite_records'&&areas?.length?{
     ...definitions.find_suite_records,
-    parameters:{...definitions.find_suite_records.parameters,properties:{...(definitions.find_suite_records.parameters!.properties as object),area:{type:'string',enum:areas}}},
-  }:definitions[name]);
+    parameters:{...definitions.find_suite_records.parameters,properties:{...(definitions.find_suite_records.parameters.properties as object),area:{type:'string',enum:areas}}},
+  }:definitions[name]));
 }
-export function parseReadToolCall(name:string,raw:string,allowed:readonly AssistantReadToolName[]){
+export function parseReadToolCall(name:string,input:unknown,allowed:readonly AssistantReadToolName[]){
   try{
+    const raw=typeof input==='string'?input:JSON.stringify(input??null);
     if(!allowed.includes(name as AssistantReadToolName)||raw.length>1000)throw Error('scope');
     const parsed=JSON.parse(raw);
     const args=name==='lookup_planning_catalog'?catalogLookupSchema.parse(parsed):name==='find_suite_records'?suiteLookupSchema.parse(parsed):

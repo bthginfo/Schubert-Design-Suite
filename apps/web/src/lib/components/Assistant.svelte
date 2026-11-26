@@ -452,7 +452,7 @@
     });
   });
   const integration = $derived(
-    data.integrations?.ai || data.integrations?.openai,
+    data.integrations?.ai,
   );
   const available = $derived(integration?.available ?? false);
   const quickPrompts = $derived([
@@ -1018,7 +1018,7 @@
                 </div>
                 <p>
                   {integration?.message ||
-                      "Die OpenAI-Verbindung und das Modellprofil sind noch nicht eingerichtet."}
+                      "Die Claude-Verbindung ist noch nicht eingerichtet. Der Superadmin kann sie unter Administration → Integrationen herstellen."}
                 </p>
                 {#if permitted(data, "admin")}<a
                     class="text-link mt"

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {claudeFetch,claudeMessage,claudeError,jsonResponse,toolUse,answerText,toolResults} from './lib/claude-transport.js';
 import {randomUUID} from 'node:crypto';
 import type {ActorContext} from '@schubert/contracts';
 import {ASSISTANT_READ_RESULT_BYTES} from '@schubert/contracts';
@@ -8,7 +9,7 @@ import {assistant} from '@schubert/ai';
 import {compactToolEvidence} from '../packages/application/src/assistant-tools.js';
 import {planningDraftOperations} from '../packages/ai/src/planning-draft.js';
 
-/** Actual restricted PostgreSQL + actual SDK; OpenAI transport alone is synthetic. */
+/** Actual restricted PostgreSQL + actual Anthropic SDK; the Claude transport alone is synthetic. */
 export async function aiToolsIntegration(actor:(role:string)=>ActorContext,test:(label:string,run:()=>Promise<void>)=>Promise<void>){
   const owner=actor('Owner'),unique='TEST-AI-TOOLS-'+randomUUID(),call=(name:string,payload:any,record?:any)=>executeCommand(owner,{name,payload,id:record?.id,expectedVersion:record?.version,idempotencyKey:randomUUID()});
   const plan=await call('planning.project.create',{name:unique,kind:'memorial'});
@@ -64,22 +65,25 @@ export async function aiToolsIntegration(actor:(role:string)=>ActorContext,test:
     const result=compactToolEvidence({items:Array.from({length:100},()=>({name:'ä'.repeat(100)})),meaning:'actual source references'});
     assert(result.truncated&&result.omittedForContext>0);assert(Buffer.byteLength(JSON.stringify(result))<=ASSISTANT_READ_RESULT_BYTES);assert(Array.isArray(JSON.parse(JSON.stringify(result)).items));
   });
-  const nativeFetch=globalThis.fetch,priorKey=process.env.OPENAI_API_KEY;let requests:any[]=[],mode='read',attempts=0;
-  const prefix='resp_tools_'+randomUUID().replaceAll('-','');
+  const nativeFetch=globalThis.fetch,priorKey=process.env.ANTHROPIC_API_KEY;let requests:any[]=[],mode='read',attempts=0;const counted:any[]=[];
+  const prefix='msg_tools_'+randomUUID().replaceAll('-','');
   try{
-    process.env.OPENAI_API_KEY='synthetic-offline-read-tools-transport';
-    globalThis.fetch=async(input,init)=>{
-      const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url);
-      assert.equal(url.origin,'https://api.openai.com');assert.equal(url.pathname,'/v1/responses');
-      const body=JSON.parse(String(init?.body??(input instanceof Request?await input.text():'')));requests.push(body);
-      if(mode==='failure'&&requests.length===2)return new Response(JSON.stringify({error:{type:'rate_limit_error',message:'synthetic'}}),{status:429,headers:{'content-type':'application/json'}});
-      const item=requests.length===1&&mode!=='direct'?{type:'function_call',name:'lookup_planning_catalog',call_id:'synthetic_read',id:'fc_synthetic',arguments:JSON.stringify({kind:'materials',query:unique}),status:'completed'}:{type:'message',id:'msg_synthetic',role:'assistant',status:'completed',content:[{type:'output_text',annotations:[],text:JSON.stringify({text:'TEST: tatsächliche Quellenreferenzen ohne technische Freigabe.',targetId:null,baseVersion:null,commands:[],missingInputs:[],assumptions:[],clarifications:[],planningDraft:null,visualization:null})}]};
-      return new Response(JSON.stringify({id:prefix+'_'+(++attempts),object:'response',status:'completed',created_at:Math.floor(Date.now()/1000),model:body.model,output:[item],usage:{input_tokens:1000,output_tokens:100,total_tokens:1100,input_tokens_details:{cached_tokens:0},output_tokens_details:{reasoning_tokens:0}}}),{status:200,headers:{'content-type':'application/json'}});
-    };
+    process.env.ANTHROPIC_API_KEY='synthetic-offline-read-tools-transport';
+    globalThis.fetch=claudeFetch(body=>{
+      requests.push(body);
+      if(mode==='failure'&&requests.length===2)return claudeError(429,'rate_limit_error');
+      const content=requests.length===1&&mode!=='direct'?[toolUse('lookup_planning_catalog',{kind:'materials',query:unique},'toolu_synthetic_read')]:[answerText({text:'TEST: tatsächliche Quellenreferenzen ohne technische Freigabe.'})];
+      return jsonResponse(claudeMessage({id:prefix+'_'+(++attempts),model:body.model,content}));
+    },counted);
     await test('Actual SDK and PostgreSQL account for two calls, one specialist read and a free repeat answer',async()=>{
       const message=unique+' sdk',result=await assistant(owner,message,prepared.context,'standard',[],undefined,tools);
-      assert.equal(requests.length,2);assert.equal(result.toolsUsed.length,1);assert.equal(requests[1].tools.length,0);assert(!JSON.stringify(requests[1].input).includes('PRIVATE-NOTES'));
-      const evidence=JSON.parse(requests[1].input[1].content).readOnlyEvidence[0];assert.equal(evidence.result.items.length,6);
+      assert.equal(requests.length,2);assert.equal(result.toolsUsed.length,1);assert.deepEqual(requests[1].tool_choice,{type:'none'});assert(!JSON.stringify(requests[1].messages).includes('PRIVATE-NOTES'));
+      // The follow-up repeats the cached prefix unchanged and appends the read result.
+      assert.deepEqual(requests[1].system,requests[0].system);assert.deepEqual(requests[1].tools,requests[0].tools);assert.deepEqual(requests[1].messages[0],requests[0].messages[0]);
+      assert.equal(requests[0].system[0].cache_control.type,'ephemeral');assert.equal(requests[0].output_config.format.type,'json_schema');
+      const evidence=toolResults(requests[1])[0];assert.equal(evidence.result.items.length,6);
+      // The reservation used the exact token count of the very request that was then sent.
+      assert.equal(counted.length,1);assert.deepEqual(counted[0].tools,requests[0].tools);assert.deepEqual(counted[0].messages,requests[0].messages);assert.equal(counted[0].max_tokens,undefined);
       const run=await withTenant(owner,db=>one<any>(db,"SELECT * FROM ai_runs WHERE actor_id=$1 AND provider_id LIKE $2 ORDER BY created_at DESC LIMIT 1",[owner.actorId,prefix+'%']));
       assert.equal(run.input_tokens,2000);assert.equal(run.output_tokens,200);assert.equal(run.usage_details.read_tool_attempts,1);assert.equal(run.usage_details.read_tools[0].name,'lookup_planning_catalog');
       assert(!JSON.stringify(run.usage_details).includes(unique));
@@ -98,7 +102,7 @@ export async function aiToolsIntegration(actor:(role:string)=>ActorContext,test:
     });
   }finally{
     globalThis.fetch=nativeFetch;
-    if(priorKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=priorKey;
+    if(priorKey===undefined)delete process.env.ANTHROPIC_API_KEY;else process.env.ANTHROPIC_API_KEY=priorKey;
     await withTenant(owner,async db=>{
       const runs=await db.query("SELECT a.id,a.status,a.cost_actual,r.id reservation_id,r.budget_id,r.amount,r.settled FROM ai_runs a JOIN ai_budget_reservations r ON r.run_id=a.id WHERE a.actor_id=$1 AND a.provider_id LIKE $2 FOR UPDATE OF a,r",[owner.actorId,prefix+'%']);
       for(const run of runs.rows){

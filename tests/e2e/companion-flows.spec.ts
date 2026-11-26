@@ -15,7 +15,7 @@ let transportConnection:string|null=null;
 // explicit instead of depending on another file leaving a connection behind.
 test.beforeAll(async()=>{
  if(!transportActor.tenantId)throw Error('Isolated synthetic tenant required.');
- await withTenant(transportActor,async db=>{if(!await one(db,"SELECT id FROM integration_connections WHERE provider='openai' AND status='configured'"))transportConnection=(await insert(db,'integration_connections',{tenant_id:transportActor.tenantId,legal_entity_id:transportActor.legalEntityId,provider:'openai',name:'TEST · companion model transport stub',configuration:{},status:'configured'})).id;});
+ await withTenant(transportActor,async db=>{if(!await one(db,"SELECT id FROM integration_connections WHERE provider='anthropic' AND status='configured'"))transportConnection=(await insert(db,'integration_connections',{tenant_id:transportActor.tenantId,legal_entity_id:transportActor.legalEntityId,provider:'anthropic',name:'TEST · companion model transport stub',configuration:{},status:'configured'})).id;});
 });
 test.afterAll(async()=>{try{if(transportConnection)await withTenant(transportActor,db=>db.query('DELETE FROM integration_connections WHERE id=$1',[transportConnection]));}finally{await closePools();}});
 

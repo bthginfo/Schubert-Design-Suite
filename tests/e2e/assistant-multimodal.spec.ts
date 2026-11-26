@@ -12,7 +12,7 @@ const actor:ActorContext={tenantId:process.env.TEST_TENANT_ID!,legalEntityId:pro
 let connection:string|undefined;
 test.beforeAll(async()=>{
   if(!actor.tenantId)throw Error('Isolated synthetic tenant required.');
-  await withTenant(actor,async db=>{if(!await one(db,"SELECT id FROM integration_connections WHERE provider='openai' AND status='configured'"))connection=(await insert(db,'integration_connections',{tenant_id:actor.tenantId,legal_entity_id:actor.legalEntityId,provider:'openai',name:'TEST multimodal transport only',configuration:{},status:'configured'})).id;});
+  await withTenant(actor,async db=>{if(!await one(db,"SELECT id FROM integration_connections WHERE provider='anthropic' AND status='configured'"))connection=(await insert(db,'integration_connections',{tenant_id:actor.tenantId,legal_entity_id:actor.legalEntityId,provider:'anthropic',name:'TEST multimodal transport only',configuration:{},status:'configured'})).id;});
   await mkdir('work/multimodal-chat-2026-10-28',{recursive:true});
 });
 test.afterAll(async()=>{try{if(connection)await withTenant(actor,db=>db.query('DELETE FROM integration_connections WHERE id=$1',[connection]));}finally{await closePools();}});

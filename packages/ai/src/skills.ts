@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { FunctionTool } from "openai/resources/responses/responses";
+import { claudeTool, type ClaudeTool } from "./claude.js";
 import { DomainError } from "@schubert/domain";
 import {
   assistantDraftModules,
@@ -42,13 +42,11 @@ export function skillDiscoveryInstructions(skills: readonly AssistantSkill[]) {
   );
 }
 
-export function skillTool(skills: readonly AssistantSkill[]): FunctionTool {
-  return {
-    type: "function",
+export function skillTool(skills: readonly AssistantSkill[]): ClaudeTool {
+  return claudeTool({
     name: "load_schubert_skills",
     description:
       "Lade bei Bedarf ein bis zwei passende, geprüfte Schubert-Fachhilfen für die aktuelle Anfrage in Deutschland. Für einfache Fragen ohne Fachhilfe direkt antworten. Nur diese benannten Anweisungen werden gelesen; keine weiteren Daten oder Aktionen.",
-    strict: true,
     parameters: {
       type: "object",
       properties: {
@@ -62,7 +60,7 @@ export function skillTool(skills: readonly AssistantSkill[]): FunctionTool {
       required: ["skill_ids"],
       additionalProperties: false,
     },
-  };
+  });
 }
 
 const selectionSchema = z.strictObject({
@@ -70,13 +68,14 @@ const selectionSchema = z.strictObject({
 });
 export function loadRequestedSkills(
   name: string,
-  args: string,
+  input: unknown,
   available: readonly AssistantSkill[],
 ): AssistantSkill[] {
   try {
-    if (name !== "load_schubert_skills" || args.length > 1000)
+    const raw = typeof input === "string" ? input : JSON.stringify(input ?? null);
+    if (name !== "load_schubert_skills" || raw.length > 1000)
       throw new Error("Unsupported tool");
-    const { skill_ids: ids } = selectionSchema.parse(JSON.parse(args));
+    const { skill_ids: ids } = selectionSchema.parse(JSON.parse(raw));
     if (new Set(ids).size !== ids.length) throw new Error("Duplicate skill");
     return ids.map((id) => {
       const skill = available.find((candidate) => candidate.id === id);

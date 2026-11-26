@@ -13,28 +13,38 @@ describe('Cost-aware task routing',()=>{
   expect(plan.instructions).toContain('OCR-Kandidaten bleiben ungeprüft');
  });
  it('shows the enforced default cost ceiling and preserves a lower configured limit',()=>{
-  expect(assistantModelProfiles({}).standard.maxRequestCost).toBe('0.10');
+  expect(assistantModelProfiles({}).standard.maxRequestCost).toBe('1.00');
+  expect(assistantModelProfiles({}).provider).toBe('anthropic');
   const configuration=Object.freeze({maxRequestCost:'0.02',designMaxRequestCost:'0.09',monthlyBudget:'3'}),shown=assistantModelProfiles(configuration);
   expect(shown.standard.maxRequestCost).toBe('0.02');expect(shown.design.maxRequestCost).toBe('0.09');expect(shown.monthlyBudget).toBe('3');
   expect(routeModel(configuration,'standard',{}).maxRequestCost).toBe(shown.standard.maxRequestCost);
  });
- it('uses Luna for ordinary and structured design tasks without automatic escalation',()=>{expect(routeModel({},'standard',{entityType:'planning'}).model).toBe('gpt-6-luna');expect(routeModel({},'standard',{entityType:'customers'}).model).toBe('gpt-6-luna');});
- it('uses GPT-6.2 Sol for explicit plan reviews with the matching token rates',()=>{
+ it('uses Claude Opus 5.5 with effort matched to the task instead of a second model',()=>{
+  expect(routeModel({},'standard',{entityType:'customers'})).toMatchObject({model:'claude-opus-5-5',effort:'low',maxOutputTokens:8000});
+  expect(routeModel({},'standard',{entityType:'planning'})).toMatchObject({model:'claude-opus-5-5',effort:'medium',maxOutputTokens:12000});
+ });
+ it('uses high effort for explicit plan reviews with the published Claude token rates',()=>{
   const routed=routeModel({},'design_review',{entityType:'planning'});
-  expect(routed).toMatchObject({model:'gpt-6.2-sol',inputCostPerMillion:'2',outputCostPerMillion:'10',cachedInputCostPerMillion:'0.1',cacheWriteCostPerMillion:'2.5',review:true});
+  expect(routed).toMatchObject({model:'claude-opus-5-5',effort:'high',inputCostPerMillion:'4',outputCostPerMillion:'20',cachedInputCostPerMillion:'0.2',cacheWriteCostPerMillion:'5',review:true,maxOutputTokens:16000});
   expect(()=>routeModel({},'design_review',{entityType:'customers'})).toThrow();
  });
- it('upgrades the saved Sol 6.1 default without changing configured prices or budgets',()=>{
-  const config=Object.freeze({textModel:'gpt-6-luna',designModel:'gpt-6.1-sol',designInputCostPerMillion:'2.20',designMaxRequestCost:'0.18',monthlyBudget:'3'});
+ it('honors saved models, prices and effort without inventing rates for unknown models',()=>{
+  const config=Object.freeze({textModel:'claude-sonnet-5-5',designModel:'claude-opus-5-5',designInputCostPerMillion:'4.40',designMaxRequestCost:'0.80',monthlyBudget:'30',effort:'medium',designEffort:'xhigh'});
   const profiles=assistantModelProfiles(config);
-  expect(profiles.standard.model).toBe('gpt-6-luna');
-  expect(profiles.design).toMatchObject({model:'gpt-6.2-sol',inputCostPerMillion:'2.20',maxRequestCost:'0.18'});
-  expect(profiles.monthlyBudget).toBe('3');
-  expect(routeModel(config,'design_review',{entityType:'planning'}).model).toBe(profiles.design.model);
+  expect(profiles.standard).toMatchObject({model:'claude-sonnet-5-5',effort:'medium',inputCostPerMillion:'2',outputCostPerMillion:'10'});
+  expect(profiles.design).toMatchObject({model:'claude-opus-5-5',effort:'xhigh',inputCostPerMillion:'4.40',maxRequestCost:'0.80'});
+  // A saved own input rate derives its cache rates from that rate rather than from the published table.
+  expect(routeModel(config,'design_review',{entityType:'planning'})).toMatchObject({cachedInputCostPerMillion:'0.44',cacheWriteCostPerMillion:'5.5'});
+  expect(profiles.monthlyBudget).toBe('30');
+  expect(routeModel({effort:'turbo'},'standard',{}).effort).toBe('low');
+  expect(routeModel({textModel:'claude-custom'},'standard',{}).inputCostPerMillion).toBeUndefined();
+  expect(()=>estimatedTextCost(routeModel({textModel:'claude-custom'},'standard',{}),{})).toThrow(/Preise/);
  });
- it('honors other saved models and an explicitly selected Sol 6.1 override',()=>{
-  expect(assistantModelProfiles({designModel:'gpt-6.1-terra'}).design.model).toBe('gpt-6.1-terra');
-  expect(assistantModelProfiles({designModel:'gpt-6.1-sol',designModelPinned:true}).design.model).toBe('gpt-6.1-sol');
+ it('separates cacheable instructions from per-request workflow facts',()=>{
+  const routed=routeModel({},'standard',{entityType:'planning',designKind:'memorial',workflow:{step:'review',label:'Prüfen'}});
+  expect(routed.stableInstructions).toContain('Grabmal:');expect(routed.stableInstructions).not.toContain('Aktueller Arbeitsschritt');
+  expect(routed.volatileInstructions).toContain('Aktueller Arbeitsschritt');
+  expect(routeModel({},'standard',{entityType:'planning',designKind:'memorial',workflow:{step:'design',label:'Gestalten'}}).stableInstructions).toBe(routed.stableInstructions);
  });
  it('loads only the relevant skill and preserves literal inscriptions',()=>{const context=compactContext({snapshot:{kind:'memorial',elements:[{id:'a',kind:'inscription',exactText:'Müller · * 12.03.1947 † 01.01.2025',secret:'omit'}]}});expect(context.snapshot.elements[0].exactText).toContain('Müller');expect(context.snapshot.elements[0].secret).toBeUndefined();expect(routeModel({},'standard',{entityType:'planning',designKind:'room_plan'}).instructions).not.toContain('Grabmal:');});
 });

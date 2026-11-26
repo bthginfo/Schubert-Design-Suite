@@ -233,7 +233,7 @@ export const guides = [
     steps: [
       "Auf dem Dashboard „Verbrauch im Detail“ wählen und den Monat einstellen. Aufgabenarten und Modelle lassen sich direkt vergleichen.",
       "Geschätzte Kosten beruhen auf dem gespeicherten Preisprofil. Offene Kosten sind keine Nullbeträge; die Anbieterabrechnung bleibt maßgeblich.",
-      "Unter „Integrationen“ können Sie später den OpenAI-Schlüssel und SMTP-Zugang ersetzen. Ein Verbindungstest startet ausdrücklich einen kleinen kostenpflichtigen Aufruf.",
+      "Unter „Integrationen“ verbinden Sie Claude (Anthropic) für Assistent und Planung, optional einen Bild- und Sprachdienst sowie den SMTP-Zugang. Ein Verbindungstest startet ausdrücklich einen kleinen kostenpflichtigen Aufruf.",
     ],
   },
 ];
@@ -303,7 +303,7 @@ export const faqs = [
   },
   {
     q: "Sind 3D-Renderings und KI-Bilder dasselbe?",
-    a: "Die technische 3D-Ansicht folgt dem gespeicherten Plan. Generative KI-Bilder dienen der visuellen Vorstellung und können von den technischen Maßen abweichen. Nur OpenAI-Aufrufe erscheinen im KI-Verbrauch.",
+    a: "Die technische 3D-Ansicht folgt dem gespeicherten Plan. Generative KI-Bilder dienen der visuellen Vorstellung und können von den technischen Maßen abweichen. Nur Aufrufe an KI-Anbieter erscheinen im KI-Verbrauch.",
   },
   {
     q: "Was tun, wenn Speichern fehlschlägt?",

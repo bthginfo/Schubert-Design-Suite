@@ -1,47 +1,53 @@
 import prompts from './prompts.json' with {type:'json'};
-import {dec} from '@schubert/domain';
+import {dec,DomainError} from '@schubert/domain';
 import {clarificationInstructions,planningStepSchema,planningStepInstructions} from '@schubert/contracts';
 import {availableSkills,skillDiscoveryInstructions} from './skills.js';
 import {planningWorkflowFacts} from './planning-facts.js';
 export type AIMode='standard'|'design_review';
-export const DEFAULT_TEXT_MODEL = 'gpt-6-luna';
-export const DEFAULT_DESIGN_MODEL = 'gpt-6.2-sol';
-const PREVIOUS_DESIGN_MODEL = 'gpt-6.1-sol';
+import {CLAUDE_DEFAULT_MODEL,claudeModelPrices,claudeEfforts,type ClaudeEffort} from './claude.js';
+export const DEFAULT_TEXT_MODEL = CLAUDE_DEFAULT_MODEL;
+export const DEFAULT_DESIGN_MODEL = CLAUDE_DEFAULT_MODEL;
+/** Default reservation ceilings. They bound conservative estimates; actual usage is settled per call. */
+export const DEFAULT_MAX_REQUEST_COST='1.00';
+export const DEFAULT_DESIGN_MAX_REQUEST_COST='2.00';
+export const DEFAULT_MONTHLY_BUDGET='50';
+/** Output ceilings include adaptive thinking. They stay below the SDK's non-streaming timeout bound. */
+export const OUTPUT_TOKENS={office:8000,planning:12000,review:16000} as const;
+const effort=(value:unknown,fallback:ClaudeEffort):ClaudeEffort=>claudeEfforts.includes(value as ClaudeEffort)?value as ClaudeEffort:fallback;
 /** Display the same models, prices and limits that reserve() actually enforces. */
 export function assistantModelProfiles(config:Record<string,any>){
  const standard=routeModel(config,'standard',{}),design=routeModel(config,'design_review',{entityType:'planning'});
- const display=(profile:ReturnType<typeof routeModel>)=>({model:profile.model,inputCostPerMillion:profile.inputCostPerMillion,outputCostPerMillion:profile.outputCostPerMillion,maxRequestCost:profile.maxRequestCost});
- return{standard:display(standard),design:display(design),currency:'USD',monthlyBudget:standard.monthlyBudget};
+ const display=(profile:ReturnType<typeof routeModel>)=>({model:profile.model,effort:profile.effort,inputCostPerMillion:profile.inputCostPerMillion,outputCostPerMillion:profile.outputCostPerMillion,maxRequestCost:profile.maxRequestCost});
+ return{provider:'anthropic',standard:display(standard),design:display(design),currency:'USD',monthlyBudget:standard.monthlyBudget};
+}
+/** Prices come from the saved profile; known Claude models fall back to their published rates. */
+function prices(config:Record<string,any>,model:string,review:boolean){
+ const known=claudeModelPrices[model];
+ const input=(review?config.designInputCostPerMillion:config.inputCostPerMillion)??known?.input;
+ const output=(review?config.designOutputCostPerMillion:config.outputCostPerMillion)??known?.output;
+ const ownRates=review?config.designInputCostPerMillion!==undefined:config.inputCostPerMillion!==undefined;
+ const cached=(review?config.designCachedInputCostPerMillion:config.cachedInputCostPerMillion)??(!ownRates&&known?known.cachedInput:input?dec(input).mul('0.1').toString():undefined);
+ const write=(review?config.designCacheWriteCostPerMillion:config.cacheWriteCostPerMillion)??(!ownRates&&known?known.cacheWrite:input?dec(input).mul('1.25').toString():undefined);
+ return {inputCostPerMillion:input as string,outputCostPerMillion:output as string,...(cached?{cachedInputCostPerMillion:String(cached)}:{}),...(write?{cacheWriteCostPerMillion:String(write)}:{})};
 }
 export function routeModel(config:Record<string,any>,mode:AIMode,context:Record<string,any>){
  const design=['planning','studio','memorial','room_plan'].includes(String(context.entityType));
  const review=mode==='design_review';
  if(review&&!design)throw new Error('Vertiefte Designprüfung ist nur für einen konkreten Planungsstand möglich.');
-
- // Upgrade the former saved default. An administrator can explicitly pin a model after this update.
- const designModel=config.designModel===PREVIOUS_DESIGN_MODEL&&config.designModelPinned!==true
-  ?DEFAULT_DESIGN_MODEL
-  :config.designModel||process.env.OPENAI_DESIGN_MODEL||DEFAULT_DESIGN_MODEL;
- const model=review?designModel:config.textModel||process.env.OPENAI_TEXT_MODEL||DEFAULT_TEXT_MODEL;
- const inputCostPerMillion=review?(config.designInputCostPerMillion??'2'):(config.inputCostPerMillion??'0.10');
- const cachedInputMultiplier=[PREVIOUS_DESIGN_MODEL,DEFAULT_DESIGN_MODEL].includes(model)?'0.05':'0.10';
- const cachePricing=/^gpt-(?:6(?:[.-]|$)|5\.6(?:[.-]|$))/.test(model)?{
-  cachedInputCostPerMillion:dec(inputCostPerMillion).mul(cachedInputMultiplier).toString(),
-  cacheWriteCostPerMillion:dec(inputCostPerMillion).mul('1.25').toString()
- }:{};
+ const model=review?config.designModel||process.env.ANTHROPIC_DESIGN_MODEL||DEFAULT_DESIGN_MODEL:config.textModel||process.env.ANTHROPIC_TEXT_MODEL||DEFAULT_TEXT_MODEL;
  const domainPrompt=!design?prompts.office:context.designKind==='room_plan'?prompts.room:context.designKind==='memorial'?prompts.memorial:prompts.office;
- const instructions=[
-  clarificationInstructions, prompts.base, domainPrompt,
-  ...(context.sourceKind?[prompts.document]:[]),
-  workflowInstructions(context)+skillDiscoveryInstructions(availableSkills(context))
- ].join('\n');
+ // Stable instructions form a cacheable prefix shared by every request of the same kind.
+ const stableInstructions=[clarificationInstructions,prompts.base,domainPrompt,...(context.sourceKind?[prompts.document]:[])].join('\n');
+ const volatileInstructions=workflowInstructions(context)+skillDiscoveryInstructions(availableSkills(context));
+ const instructions=stableInstructions+'\n'+volatileInstructions;
+ const planning=context.entityType==='planning';
  return {
-  ...cachePricing,model,inputCostPerMillion,instructions,review,
-  outputCostPerMillion:review?(config.designOutputCostPerMillion??'10'):(config.outputCostPerMillion??'0.50'),
-  maxRequestCost:review?(config.designMaxRequestCost??'0.25'):(config.maxRequestCost??'0.10'),
-  monthlyBudget:config.monthlyBudget??process.env.OPENAI_MONTHLY_BUDGET_USD??'5',
-  maxOutputTokens:review?3500:3000,
-  promptVersion:prompts.version+':clarifications-1:task-presets-1:source-task-context-1:read-tools-1:planning-stages-1'
+  ...prices(config,model,review),model,instructions,stableInstructions,volatileInstructions,review,
+  effort:review?effort(config.designEffort,'high'):planning?effort(config.planningEffort,'medium'):effort(config.effort,'low'),
+  maxRequestCost:review?(config.designMaxRequestCost??DEFAULT_DESIGN_MAX_REQUEST_COST):(config.maxRequestCost??DEFAULT_MAX_REQUEST_COST),
+  monthlyBudget:config.monthlyBudget??process.env.AI_MONTHLY_BUDGET_USD??DEFAULT_MONTHLY_BUDGET,
+  maxOutputTokens:review?OUTPUT_TOKENS.review:planning?OUTPUT_TOKENS.planning:OUTPUT_TOKENS.office,
+  promptVersion:prompts.version+':clarifications-1:task-presets-1:source-task-context-1:read-tools-1:planning-stages-1:claude-1'
  };
 }
 function workflowInstructions(context:Record<string,any>){
@@ -79,10 +85,17 @@ export function compactContext(input:Record<string,any>,maximumElements=40){
  return context;
 }
 
-export function estimatedTextCost(profile:{inputCostPerMillion:string;cacheWriteCostPerMillion?:string;outputCostPerMillion:string;maxOutputTokens:number;instructions:string},input:unknown,imageCount=0){
- const inputTokenCeiling=new TextEncoder().encode(JSON.stringify(input)+profile.instructions).length+8192+imageCount*16384;
+/** Cost ceiling for a known input size: every input token at the higher of the input and cache-write rates. */
+export function tokenCost(profile:{inputCostPerMillion:string;cacheWriteCostPerMillion?:string;outputCostPerMillion:string;maxOutputTokens:number},inputTokenCeiling:number){
  const cost=(inputTokenCeiling*Math.max(Number(profile.inputCostPerMillion),Number(profile.cacheWriteCostPerMillion??profile.inputCostPerMillion))+profile.maxOutputTokens*Number(profile.outputCostPerMillion))/1000000;
- if(!Number.isFinite(cost)||cost<=0)throw new Error('Invalid model price profile');return{inputTokenCeiling,cost:Math.ceil(cost*1000000)/1000000};
+ if(!Number.isFinite(cost)||cost<=0)throw new DomainError('AI_PRICE_PROFILE','Für das eingestellte Claude-Modell sind noch keine Preise hinterlegt. Der Superadmin kann sie unter Administration → Integrationen ergänzen. Es wurde kein KI-Aufruf gestartet.',503);
+ return{inputTokenCeiling,cost:Math.ceil(cost*1000000)/1000000};
+}
+export function estimatedTextCost(profile:{inputCostPerMillion:string;cacheWriteCostPerMillion?:string;outputCostPerMillion:string;maxOutputTokens:number;instructions:string},input:unknown,imageCount=0){
+ // One token never covers less than one UTF-8 byte; images are bounded by the largest accepted page size.
+ const inputTokenCeiling=new TextEncoder().encode(JSON.stringify(input)+profile.instructions).length+8192+imageCount*8000;
+ const cost=(inputTokenCeiling*Math.max(Number(profile.inputCostPerMillion),Number(profile.cacheWriteCostPerMillion??profile.inputCostPerMillion))+profile.maxOutputTokens*Number(profile.outputCostPerMillion))/1000000;
+ if(!Number.isFinite(cost)||cost<=0)throw new DomainError('AI_PRICE_PROFILE','Für das eingestellte Claude-Modell sind noch keine Preise hinterlegt. Der Superadmin kann sie unter Administration → Integrationen ergänzen. Es wurde kein KI-Aufruf gestartet.',503);return{inputTokenCeiling,cost:Math.ceil(cost*1000000)/1000000};
 }
 
 /** Never split JSON, Unicode names, or a contour mid-value for an image prompt. */

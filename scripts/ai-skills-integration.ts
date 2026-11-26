@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { claudeFetch, claudeMessage, claudeError, jsonResponse, toolUse, instructionsOf } from "./lib/claude-transport.js";
 import { randomUUID, createHash } from "node:crypto";
 import type { ActorContext } from "@schubert/contracts";
 import { withTenant, one, rows } from "@schubert/db";
@@ -19,9 +20,9 @@ export async function aiSkillsIntegration(
 ) {
   const owner = actor("Owner"),
     nativeFetch = globalThis.fetch,
-    priorKey = process.env.OPENAI_API_KEY;
+    priorKey = process.env.ANTHROPIC_API_KEY;
   const providerPrefix =
-    "resp_schubert_skills_" + randomUUID().replaceAll("-", "") + "_";
+    "msg_schubert_skills_" + randomUUID().replaceAll("-", "") + "_";
   const testRunScope =
     "a.actor_id=$1 AND a.legal_entity_id=$3 AND EXISTS(SELECT 1 FROM jsonb_array_elements(COALESCE(a.usage_details->'provider_calls','[]'::jsonb)) AS calls(item) WHERE left(item->>'id',length($2::text))=$2)";
   const testRunParameters = [
@@ -39,91 +40,20 @@ export async function aiSkillsIntegration(
     missingInputs: ["Welche Oberfläche wurde vereinbart?"],
     assumptions: [],
   };
-  const syntheticFetch: typeof fetch = async (input, init) => {
-    const url =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.href
-          : input.url;
-    assert.equal(
-      new URL(url).origin,
-      "https://api.openai.com",
-      "Synthetic transport must never send a real request",
-    );
-    assert.equal(new URL(url).pathname, "/v1/responses");
-    const body = JSON.parse(
-      String(
-        init?.body ?? (input instanceof Request ? await input.text() : ""),
-      ),
-    );
+  // Synthetic transport only: the official endpoint is asserted and never contacted.
+  const syntheticFetch: typeof fetch = claudeFetch((body) => {
     requests.push(body);
-    if (requests.length === 2 && mode === "reject")
-      return new Response(
-        JSON.stringify({
-          error: {
-            message: "Synthetic provider limit",
-            type: "rate_limit_error",
-          },
-        }),
-        { status: 429, headers: { "content-type": "application/json" } },
-      );
+    if (requests.length === 2 && mode === "reject") return claudeError(429, "rate_limit_error");
     if (requests.length === 2 && mode === "timeout")
       throw new Error("Synthetic provider outcome unknown");
     const load = requests.length === 1 && mode !== "direct";
-    const item = load
-      ? {
-          type: "function_call",
-          id: "fc_" + randomUUID(),
-          call_id: "call_" + randomUUID(),
-          status: "completed",
-          name: "load_schubert_skills",
-          arguments: JSON.stringify({
-            skill_ids: [
-              mode === "wrong"
-                ? "schubert-room-de"
-                : "schubert-office-drafts-de",
-            ],
-          }),
-        }
-      : {
-          type: "message",
-          id: "msg_" + randomUUID(),
-          status: "completed",
-          role: "assistant",
-          content: [
-            {
-              type: "output_text",
-              text:
-                mode === "missing-usage-invalid"
-                  ? "invalid-json"
-                  : JSON.stringify(output),
-              annotations: [],
-            },
-          ],
-        };
-    return new Response(
-      JSON.stringify({
-        id: providerPrefix + randomUUID(),
-        object: "response",
-        status: "completed",
-        created_at: Math.floor(Date.now() / 1000),
-        model: body.model,
-        output: [item],
-        usage:
-          mode === "missing-usage-invalid" && !load
-            ? undefined
-            : {
-                input_tokens: 1000,
-                output_tokens: 100,
-                total_tokens: 1100,
-                input_tokens_details: { cached_tokens: 0 },
-                output_tokens_details: { reasoning_tokens: 0 },
-              },
-      }),
-      { status: 200, headers: { "content-type": "application/json" } },
-    );
-  };
+    const content = load
+      ? [toolUse("load_schubert_skills", { skill_ids: [mode === "wrong" ? "schubert-room-de" : "schubert-office-drafts-de"] })]
+      : [{ type: "text", text: mode === "missing-usage-invalid" ? "invalid-json" : JSON.stringify(output) }];
+    const message: any = claudeMessage({ id: providerPrefix + randomUUID(), model: body.model, content });
+    if (mode === "missing-usage-invalid" && !load) delete message.usage;
+    return jsonResponse(message);
+  });
   const prepared = await prepareAssistantContext(
     owner,
     assistantInputSchema.parse({
@@ -162,11 +92,11 @@ export async function aiSkillsIntegration(
   };
   try {
     globalThis.fetch = syntheticFetch;
-    process.env.OPENAI_API_KEY = "synthetic-offline-skills-transport";
+    process.env.ANTHROPIC_API_KEY = "synthetic-offline-skills-transport";
     await test("A previous response contract cannot shadow a new request; current answers still reuse their cache", async () => {
       reset("direct");
       const message = "TEST SKILLS legacy contract " + randomUUID();
-      const config = await integrationConfiguration(owner, "openai");
+      const config = await integrationConfiguration(owner, "anthropic");
       const context = compactContext(prepared.context);
       const profile = routeModel(config, "standard", context);
       const legacyInput = {message,context,references:[],promptVersion:profile.promptVersion,skillRegistryVersion,connectionVersionId:config.connectionVersionId??null};
@@ -180,18 +110,18 @@ export async function aiSkillsIntegration(
       assert.equal(cached.cached,true);
       assert.equal(requests.length,1);
     });
-    await test("Skill load uses the real OpenAI SDK, unchanged authorized draft and summed PostgreSQL billing", async () => {
+    await test("Skill load uses the real Anthropic SDK, the unchanged cached prefix and summed PostgreSQL billing", async () => {
       reset("load");
       const message = "TEST SKILLS " + randomUUID(),
         result = await assistant(owner, message, prepared.context),
         run = await latest();
       assert.equal(requests.length, 2);
-      assert.equal(requests[0].tool_choice, "auto");
-      assert.equal(requests[1].tool_choice, "none");
-      assert.equal(requests[1].input, requests[0].input);
-      assert.equal(requests[1].store, false);
-      assert(!requests[0].instructions.includes("# Büro & Entwürfe"));
-      assert(requests[1].instructions.includes("# Büro & Entwürfe"));
+      assert.deepEqual(requests[0].tool_choice, { type: "auto", disable_parallel_tool_use: true });
+      assert.deepEqual(requests[1].tool_choice, { type: "none" });
+      assert.deepEqual(requests[1].messages[0], requests[0].messages[0]);
+      assert.deepEqual(requests[1].system, requests[0].system);
+      assert(!instructionsOf(requests[0]).includes("# Büro & Entwürfe"));
+      assert(instructionsOf(requests[1]).includes("# Büro & Entwürfe"));
       assert.deepEqual(
         result.skillsUsed.map((skill: any) => skill.id),
         ["schubert-office-drafts-de"],
@@ -313,8 +243,8 @@ export async function aiSkillsIntegration(
     });
   } finally {
     globalThis.fetch = nativeFetch;
-    if (priorKey === undefined) delete process.env.OPENAI_API_KEY;
-    else process.env.OPENAI_API_KEY = priorKey;
+    if (priorKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = priorKey;
     // Keep every synthetic evidence row, but undo only this transport test's
     // simulated spend/holds. There were no provider requests or real charges.
     await withTenant(owner, async (db) => {

@@ -16,7 +16,7 @@ test.beforeAll(async()=>{
  await mkdir('work/ux-review',{recursive:true});
  // Only the model transport is stubbed below. Commands and persistence are real.
  // No provider credential is installed and no model request leaves the browser.
- await withTenant(fixtureActor,async db=>{if(!await one(db,"SELECT id FROM integration_connections WHERE provider='openai' AND status='configured'")){const row=await insert(db,'integration_connections',{tenant_id:fixtureActor.tenantId,legal_entity_id:fixtureActor.legalEntityId,provider:'openai',name:'TEST · mocked model transport',configuration:{},status:'configured'});syntheticConnection=row.id;}});
+ await withTenant(fixtureActor,async db=>{if(!await one(db,"SELECT id FROM integration_connections WHERE provider='anthropic' AND status='configured'")){const row=await insert(db,'integration_connections',{tenant_id:fixtureActor.tenantId,legal_entity_id:fixtureActor.legalEntityId,provider:'anthropic',name:'TEST · mocked model transport',configuration:{},status:'configured'});syntheticConnection=row.id;}});
 });
 test.afterAll(async()=>{try{if(syntheticConnection)await withTenant(fixtureActor,db=>db.query('DELETE FROM integration_connections WHERE id=$1',[syntheticConnection]));}finally{await closePools();}});
 

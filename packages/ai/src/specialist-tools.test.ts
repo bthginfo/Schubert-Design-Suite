@@ -1,5 +1,4 @@
 import {describe,it,expect,vi} from 'vitest';
-import type {Response,ResponseCreateParamsNonStreaming} from 'openai/resources/responses/responses';
 import {ASSISTANT_READ_RESULT_BYTES,ASSISTANT_READ_TOOL_VERSION,type AssistantReadToolAccess} from '@schubert/contracts';
 import {createDesign,applyOperations} from '@schubert/geometry';
 import {availableSkills} from './skills.js';
@@ -9,11 +8,13 @@ import {planningWorkflowFacts,inspectPlanningSnapshot} from './planning-facts.js
 import {qualityCases,qualityReplayOutput} from './quality-cases.js';
 import {bindPlanningDraft} from './planning-draft.js';
 import {routeModel,compactContext} from './model-routing.js';
+import type {ClaudeMessage,ClaudeRequest} from './claude.js';
 
 const context={entityType:'planning',designKind:'memorial',allowedCommands:['planning.design.change']};
-const parameters:ResponseCreateParamsNonStreaming={model:'synthetic-test',store:false,input:'authorized context',instructions:'authorized instructions',max_output_tokens:200};
-const call=(name:string,args:unknown)=>({type:'function_call',name,arguments:JSON.stringify(args),call_id:'synthetic-'+name});
-const response=(output:unknown[]=[]):Response=>({id:'synthetic',status:'completed',output,output_text:'{}'}) as Response;
+const parameters:ClaudeRequest={model:'claude-opus-5-5',max_tokens:200,system:[{type:'text',text:'authorized instructions'}],messages:[{role:'user',content:[{type:'text',text:'authorized context'}]}]};
+let sequence=0;
+const call=(name:string,input:unknown)=>({type:'tool_use',id:'toolu_'+name+'_'+(sequence++),name,input});
+const response=(content:unknown[]=[]):ClaudeMessage=>({id:'msg_synthetic',type:'message',role:'assistant',model:'claude-opus-5-5',stop_reason:content.some((block:any)=>block.type==='tool_use')?'tool_use':'end_turn',content:content.length?content:[{type:'text',text:'{}'}],usage:{input_tokens:10,output_tokens:5,cache_creation_input_tokens:0,cache_read_input_tokens:0}}) as unknown as ClaudeMessage;
 function access(execute=vi.fn().mockResolvedValue({items:[{id:'actual-reference',technicalApproval:false}]})):AssistantReadToolAccess{
   return{version:ASSISTANT_READ_TOOL_VERSION,available:['lookup_planning_catalog','inspect_current_plan'],execute};
 }
@@ -32,8 +33,10 @@ describe('Bounded specialist reads',()=>{
   it('requires an explicitly requested factual tool instead of letting optional guidance replace the read',async()=>{
     const create=vi.fn().mockResolvedValueOnce(response([lookup()])).mockResolvedValueOnce(response());
     const result=await respondWithOptionalSkills({parameters,skills:availableSkills(context),readTools:access(),requiredRead:'lookup_planning_catalog',create});
-    expect(create.mock.calls[0][0].tool_choice).toEqual({type:'function',name:'lookup_planning_catalog'});
-    expect(create.mock.calls[0][0].tools.some((tool:any)=>tool.name==='load_schubert_skills')).toBe(false);
+    // Current Claude models reject forced tool choice: the required read is the only offered tool and is named in the system tail.
+    expect(create.mock.calls[0][0].tool_choice).toEqual({type:'auto',disable_parallel_tool_use:true});
+    expect(create.mock.calls[0][0].tools.map((tool:any)=>tool.name)).toEqual(['lookup_planning_catalog']);
+    expect(JSON.stringify(create.mock.calls[0][0].system)).toContain('Rufe lookup_planning_catalog im ersten Schritt auf');
     expect(result.toolsUsed).toHaveLength(1);
     const missing=vi.fn().mockResolvedValue(response());
     await expect(respondWithOptionalSkills({parameters,skills:[],readTools:access(),requiredRead:'lookup_planning_catalog',create:missing})).rejects.toMatchObject({code:'AI_TOOL_SCOPE'});
@@ -48,9 +51,13 @@ describe('Bounded specialist reads',()=>{
     const create=vi.fn().mockResolvedValueOnce(response([lookup(),call('load_schubert_skills',{skill_ids:['schubert-memorial-de']})])).mockResolvedValueOnce(response());
     const result=await respondWithOptionalSkills({parameters,skills:availableSkills(context),readTools:access(),create});
     expect(create).toHaveBeenCalledTimes(2);expect(result.skillsUsed).toHaveLength(1);expect(result.toolsUsed[0]).toMatchObject({name:'lookup_planning_catalog',cached:false,resultItems:1});
-    const final=create.mock.calls[1][0];expect(final.store).toBe(false);expect(final.tools).toEqual([]);expect(final.tool_choice).toBe('none');
-    expect(final.input[0].content).toBe(parameters.input);expect(JSON.parse(final.input[1].content).readOnlyEvidence[0].result.items[0].id).toBe('actual-reference');
-    expect(JSON.stringify(final.input)).not.toContain('function_call');
+    const first=create.mock.calls[0][0],final=create.mock.calls[1][0];
+    // The final call repeats the identical cached prefix and only appends the tool step.
+    expect(final.tools).toEqual(first.tools);expect(final.system).toEqual(first.system);expect(final.tool_choice).toEqual({type:'none'});
+    expect(final.messages[0]).toEqual(parameters.messages[0]);expect(final.messages[1].role).toBe('assistant');
+    const results=final.messages[2].content;expect(results).toHaveLength(2);expect(results.every((block:any)=>block.type==='tool_result')).toBe(true);
+    expect(JSON.parse(results[0].content).result.items[0].id).toBe('actual-reference');
+    expect(final.messages[3]).toMatchObject({role:'system'});expect(final.messages[3].content).toContain('Fachhilfen');
   });
   it('deduplicates identical reads inside one response and records the saved round trip',async()=>{
     const readTools=access(),onReadToolRequest=vi.fn(),create=vi.fn().mockResolvedValueOnce(response([lookup(),lookup()])).mockResolvedValueOnce(response());
@@ -86,7 +93,7 @@ describe('Bounded specialist reads',()=>{
     const estimate=affordableSkillResponse({...profile,maxRequestCost:String(withoutSkills.cost)},{},0,skills,{},readTools);
     expect(estimate.skills).toEqual([]);expect(estimate.readTools).toBe(readTools);expect(estimate.cost).toBe(withoutSkills.cost);
   });
-  it('fits a Sol review into its budget while keeping the authorized tools',()=>{
+  it('fits a deep review into its budget while keeping the authorized tools',()=>{
     const profile=routeModel({},'design_review',context),readTools=access();
     const full=estimatedSkillResponseCost(profile,{},0,[],{},readTools);
     const required=estimatedSkillResponseCost(profile,{},0,[],{},readTools,'inspect_current_plan');
@@ -97,7 +104,7 @@ describe('Bounded specialist reads',()=>{
     expect(fitted.cost).toBeLessThanOrEqual(Number(maxRequestCost));
     expect(fitted.readTools).toBe(readTools);
     expect(fitted.maxOutputTokens).toBeLessThan(profile.maxOutputTokens);
-    expect(fitted.maxOutputTokens).toBeGreaterThanOrEqual(2000);
+    expect(fitted.maxOutputTokens).toBeGreaterThanOrEqual(6000);
   });
   it('rejects an unaffordable factual response before a provider call instead of silently disabling data access',()=>{
     const profile=routeModel({},'standard',{}),direct=estimatedSkillResponseCost(profile,{},0,[],{}),withReads=estimatedSkillResponseCost(profile,{},0,[],{},access());
@@ -106,6 +113,7 @@ describe('Bounded specialist reads',()=>{
     const estimate=affordableSkillResponse({...profile,maxRequestCost:String(direct.cost+0.00001)},{},0,[],{});
     expect(estimate.cost).toBe(direct.cost);
     expect(()=>parseReadToolCall('lookup_planning_catalog','{'.repeat(1001),access().available)).toThrow();
+    expect(()=>parseReadToolCall('lookup_planning_catalog',{kind:'materials',query:'x'.repeat(1001)},access().available)).toThrow();
   });
   it('stops remaining database reads after cancellation and retains completed-call billing evidence',async()=>{
     const controller=new AbortController(),onResponse=vi.fn(),onReadToolsUsed=vi.fn();

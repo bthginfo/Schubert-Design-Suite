@@ -3,7 +3,7 @@ import {createServer} from 'node:http';
 // Local synthetic browser UAT against the real built application. The Node
 // adapter defaults to HTTPS; this loopback wrapper supplies the actual scheme.
 if(process.env.APP_ENV==='production'||process.env.VERCEL_ENV||process.env.VERCEL)throw Error('Synthetic browser server is local-only.');
-const database=new URL(process.env.DATABASE_URL??''),provider=new URL(process.env.OPENAI_BASE_URL??'');
+const database=new URL(process.env.DATABASE_URL??''),provider=new URL(process.env.ANTHROPIC_BASE_URL??'');
 if(!['localhost','127.0.0.1'].includes(database.hostname)||!['localhost','127.0.0.1'].includes(provider.hostname)||provider.protocol!=='http:')throw Error('Browser UAT requires a local synthetic database and local provider fixture.');
 const port=Number(process.env.TEST_SERVER_PORT??5186);
 if(!Number.isInteger(port)||port<1024||port>65535)throw Error('Invalid local test port.');

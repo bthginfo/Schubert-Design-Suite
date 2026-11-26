@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { claudeFetch, claudeMessage, jsonResponse, instructionsOf } from "./lib/claude-transport.js";
 import { randomUUID } from "node:crypto";
 import type { ActorContext } from "@schubert/contracts";
 import { assistantActionCatalog } from "@schubert/contracts";
@@ -584,9 +585,9 @@ export async function assistantFullEditIntegration(
       );
     }
   });
-  await test("Real OpenAI SDK accepts high-detail paper imagery and normalizes customer/order commands with server action scope", async () => {
+  await test("Real Anthropic SDK sends paper imagery as image blocks and normalizes customer/order commands with server action scope", async () => {
     const nativeFetch = globalThis.fetch,
-      priorKey = process.env.OPENAI_API_KEY,
+      priorKey = process.env.ANTHROPIC_API_KEY,
       requests: any[] = [];
     const context = await prepareAssistantContext(
       owner,
@@ -620,54 +621,18 @@ export async function assistantFullEditIntegration(
       visualization: null,
     };
     try {
-      process.env.OPENAI_API_KEY = "synthetic-offline-full-edit";
-      globalThis.fetch = async (input, init) => {
-        const url =
-          typeof input === "string"
-            ? input
-            : input instanceof URL
-              ? input.href
-              : input.url;
-        assert.equal(new URL(url).origin, "https://api.openai.com");
-        const body = JSON.parse(
-          String(
-            init?.body ?? (input instanceof Request ? await input.text() : ""),
-          ),
-        );
+      process.env.ANTHROPIC_API_KEY = "synthetic-offline-full-edit";
+      globalThis.fetch = claudeFetch((body) => {
         requests.push(body);
-        return new Response(
-          JSON.stringify({
-            id: "resp_full_edit_" + randomUUID(),
-            object: "response",
-            status: "completed",
-            created_at: Math.floor(Date.now() / 1000),
+        return jsonResponse(
+          claudeMessage({
+            id: "msg_full_edit_" + randomUUID(),
             model: body.model,
-            output: [
-              {
-                type: "message",
-                id: "msg_" + randomUUID(),
-                status: "completed",
-                role: "assistant",
-                content: [
-                  {
-                    type: "output_text",
-                    text: JSON.stringify(output),
-                    annotations: [],
-                  },
-                ],
-              },
-            ],
-            usage: {
-              input_tokens: 1100,
-              output_tokens: 250,
-              total_tokens: 1350,
-              input_tokens_details: { cached_tokens: 0 },
-              output_tokens_details: { reasoning_tokens: 0 },
-            },
+            content: [{ type: "text", text: JSON.stringify(output) }],
+            usage: { input_tokens: 1100, output_tokens: 250, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
           }),
-          { status: 200, headers: { "content-type": "application/json" } },
         );
-      };
+      });
       const result = await assistant(
         owner,
         "TEST Bildauftrag " + randomUUID(),
@@ -686,8 +651,11 @@ export async function assistantFullEditIntegration(
         ],
       );
       assert.equal(requests.length, 1);
-      assert(JSON.stringify(requests[0].input).includes('"detail":"high"'));
-      assert(requests[0].instructions.includes("actionCatalog"));
+      // The page arrives as a base64 image block ahead of the authorized text payload.
+      const blocks = requests[0].messages[0].content;
+      assert.deepEqual(blocks[0], { type: "image", source: { type: "base64", media_type: "image/png", data: "aGVsbG8=" } });
+      assert.equal(blocks.at(-1).type, "text");
+      assert(instructionsOf(requests[0]).includes("actionCatalog"));
       assert.equal(result.proposal.commands[0].input.customer_id, customer.id);
       assert.equal(result.proposal.commands[0].input.currency, "EUR");
       const plan = await call("planning.project.create", {
@@ -780,8 +748,8 @@ export async function assistantFullEditIntegration(
       assert.notEqual(next.proposal.id, first.proposal.id);
     } finally {
       globalThis.fetch = nativeFetch;
-      if (priorKey === undefined) delete process.env.OPENAI_API_KEY;
-      else process.env.OPENAI_API_KEY = priorKey;
+      if (priorKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+      else process.env.ANTHROPIC_API_KEY = priorKey;
     }
   });
 }

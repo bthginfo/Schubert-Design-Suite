@@ -73,6 +73,7 @@ try{
    registry.push({table:'documents',id:document.id,label:document.name},{table:'document_versions',id:records['document-versions'].id,label:document.name});
    if(records['document-versions'].blob_object_id)registry.push({table:'blob_objects',id:records['document-versions'].blob_object_id,label:document.name});
    const defaults:Record<string,Record<string,any>>={
+    'manufacturer-assets':{name:'TEST · Herstellerunterlage',manufacturer_name:'TEST · Musterhersteller',kind:'reference',studio_scope:'both',status:'draft'},
     customers:{name:'TEST · Familie Lenz',is_customer:true,party_type:'person',street:'Beispielweg 12',postal_code:'85049',city:'Ingolstadt',country:'DE',email:'familie.lenz@example.invalid',status:'active'},
     suppliers:{name:'TEST · Musterstein Werkstatt',is_supplier:true,party_type:'organization',street:'Musterweg 8',postal_code:'85051',city:'Ingolstadt',country:'DE',email:'einkauf@example.invalid',status:'active'},
     inquiries:{title:'TEST · Familiengrab Lenz – Beratung und Entwurf',description:'Helle Gestaltung, ruhige Inschrift und pflegeleichte Einfassung. Erstgespräch vorbereiten.',status:'planning'},
@@ -109,7 +110,9 @@ try{
    };
    const excluded=new Set(['documents','document-versions','fonts','audit','jobs','notifications','receivables','payables','credit-offsets','dunning']);
    records.fonts=await one<any>(r.db,'SELECT * FROM font_variants ORDER BY selection_ref LIMIT 1');
-   const reference=(slug:string)=>slug==='users'?{id:r.ctx.actorId}:slug==='parties'?records.customers:slug==='employees'?records.team:slug==='stock-items'?records.stock:slug.endsWith('rules')?records.rules:records[slug];
+   const reference=(slug:string)=>slug==='users'?{id:r.ctx.actorId}:slug==='parties'?records.customers:slug==='employees'?records.team:slug==='stock-items'?records.stock:slug==='documents'?records.documents??document:slug.endsWith('rules')?records.rules:records[slug];
+   // Original glyphs require a manufacturer font. A tenant without a seeded font library skips them instead of inventing one.
+   if(!records.fonts)excluded.add('glyph-library');
    let queue=modules.filter(m=>!excluded.has(m.slug));
    for(let pass=0;queue.length&&pass<12;pass++){
     const deferred:typeof queue=[];
@@ -125,7 +128,7 @@ try{
      if(m.slug==='dispatch')data.employee_id=r.ctx.employeeId;
      // Names/titles are common fields. Other optional blueprint fields must exist in this schema.
      const known=Object.fromEntries(Object.entries(data).filter(([key])=>cols.has(key)));
-     if(!['invoices','supplier-invoices'].includes(m.slug))known.number='TEST-'+m.slug.toUpperCase().slice(0,12)+'-01';
+     if(cols.has('number')&&!['invoices','supplier-invoices'].includes(m.slug))known.number='TEST-'+m.slug.toUpperCase().slice(0,12)+'-01';
      records[m.slug]=await put(m.table,known,m.label);coverage[m.slug]='Testdatensatz angelegt';
     }queue=deferred;
    }

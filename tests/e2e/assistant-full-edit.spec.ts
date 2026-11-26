@@ -33,14 +33,14 @@ test.beforeAll(async () => {
     if (
       !(await one(
         db,
-        "SELECT 1 FROM integration_connections WHERE provider='openai' AND status='configured'",
+        "SELECT 1 FROM integration_connections WHERE provider='anthropic' AND status='configured'",
       ))
     )
       connection = (
         await insert(db, "integration_connections", {
           tenant_id: actor.tenantId,
           legal_entity_id: actor.legalEntityId,
-          provider: "openai",
+          provider: "anthropic",
           name: "TEST AI full edit browser transport",
           configuration: {},
           status: "configured",

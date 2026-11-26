@@ -30,7 +30,7 @@
   let skillsUsed: AssistantSkillUsage[] = $state([]);
   const uid = $props.id();
   const integration = $derived(
-    data.integrations?.ai ?? data.integrations?.openai,
+    data.integrations?.ai,
   );
   const available = $derived(!!integration?.available);
   const draft = $derived.by(

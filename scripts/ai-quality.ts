@@ -1,7 +1,8 @@
 import {config} from 'dotenv';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import OpenAI from 'openai';
+import {claudeClient,claudeCall,messageText,providerFailure} from '../packages/ai/src/claude.js';
+import {assistantRequest,assistantUserContent} from '../packages/ai/src/request.js';
 import {dec} from '@schubert/domain';
 import {qualityCases,qualityReplayOutput,qualitySuiteVersion} from '../packages/ai/src/quality-cases.js';
 import {evaluateAssistantQuality} from '../packages/ai/src/quality.js';
@@ -26,35 +27,37 @@ const caseId=option('--case','');
 const cases=allCases.filter(test=>(!caseId||test.id===caseId)&&(assistantMode==='standard'||test.context.entityType==='planning'));
 if(!cases.length)throw Error('No evaluation case matches the requested mode and case ID.');
 if(!/^[a-z0-9-]{1,60}$/.test(label)||!/^0(?:\.\d{1,4})?$/.test(maxCost)||!dec(maxCost).gt(0)||dec(maxCost).gt('0.50'))throw Error('Use a safe report label and a positive test ceiling no greater than 0.50 USD.');
-if(live&&!process.env.OPENAI_API_KEY)throw Error('Live evaluation needs OPENAI_API_KEY in the ignored .env.ai-eval.local. No provider call was made.');
-const api=live?new OpenAI({apiKey:process.env.OPENAI_API_KEY,maxRetries:0,timeout:40000}):null;
-if(api&&new URL(api.baseURL).origin!=='https://api.openai.com')throw Error('Real-model evaluation requires the official OpenAI endpoint; a local transport fixture is not a model-quality result.');
+if(live&&!process.env.ANTHROPIC_API_KEY)throw Error('Live evaluation needs ANTHROPIC_API_KEY in the ignored .env.ai-eval.local. No provider call was made.');
+const api=live?claudeClient(process.env.ANTHROPIC_API_KEY,120000):null;
+if(api&&new URL(api.baseURL).origin!=='https://api.anthropic.com')throw Error('Real-model evaluation requires the official Claude API endpoint; a local transport fixture is not a model-quality result.');
 const budget=live?await evaluationBudget('work/ai-quality-cost-ledger.json',maxCost):null;
 const report:any={suite:qualitySuiteVersion+(toolSuite?':read-tools-1':''),mode:live?'real_model':'synthetic_contract_controls',assistantMode,started:new Date().toISOString(),currency:'USD',maxCost,priceBasis:'configured_estimate',providerCalls:0,inputTokens:0,outputTokens:0,cost:'0',cases:[]};
 await mkdir('work',{recursive:true});
 try{for(const test of cases){
   const profile=routeModel({},assistantMode,test.context),format=assistantResponseFormat(test.context);
-  const parameters={model:profile.model,store:false,max_output_tokens:profile.maxOutputTokens,reasoning:{effort:profile.review?'medium' as const:'low' as const},instructions:profile.instructions+(test.context.entityType==='planning'?'\n'+planningDraftInstructions+'\n'+planningEditInstructions:'')+'\nErlaubte Commands: '+(test.context.allowedCommands??[]).join(', ')+'. Befehle sind ausschließlich Vorschläge.',input:JSON.stringify({context:test.context,message:test.message}),text:{format:{type:'json_schema' as const,name:'schubert_quality',strict:true,schema:format}}};
   const readTools=qualityReadTools(test);
-  if(readTools.available.length)parameters.instructions+='\n'+specialistToolInstructions;
-  const instructionHash=createHash('sha256').update(parameters.instructions).digest('hex');
+  const stableInstructions=profile.stableInstructions+(test.context.entityType==='planning'?'\n'+planningDraftInstructions+'\n'+planningEditInstructions:'')+(readTools.available.length?'\n'+specialistToolInstructions:'');
+  const volatileInstructions=profile.volatileInstructions+'\nErlaubte Commands: '+(test.context.allowedCommands??[]).join(', ')+'. Befehle sind ausschließlich Vorschläge.';
+  const instructions=stableInstructions+'\n'+volatileInstructions;
+  const instructionHash=createHash('sha256').update(instructions).digest('hex');
   if(!live){const toolsUsed=test.expect.requiredTool?[{name:test.expect.requiredTool,label:readToolLabels[test.expect.requiredTool],cached:false,elapsedMs:0,resultItems:1}]:[];report.cases.push({...evaluateAssistantQuality(test,toolSuite?qualityToolReplay(test):qualityReplayOutput(test),{toolsUsed}),model:null,instructionHash,providerCalls:0});continue;}
-  const profileWithInstructions={...profile,instructions:parameters.instructions};
+  const profileWithInstructions={...profile,instructions};
   const requiredRead=requiredAssistantRead(test.message,readTools.available),selectedSkills=requiredRead?[]:availableSkills(test.context);
   const estimate=affordableSkillResponse(profileWithInstructions,{context:test.context,message:test.message},0,selectedSkills,format,readTools,requiredRead);
   if(!await budget!.reserve(String(estimate.cost))){report.stopped='shared_test_cost_ceiling';break;}
   const responses:any[]=[],started=Date.now();let calls=0;
   try{
-    const result=await respondWithOptionalSkills({parameters:{...parameters,max_output_tokens:estimate.maxOutputTokens},skills:estimate.skills,readTools:estimate.readTools,requiredRead,create:p=>api!.responses.create(p),onRequest:()=>{calls++;report.providerCalls++;},onResponse:r=>responses.push(r)});
+    const parameters=assistantRequest({model:profile.model,effort:profile.effort,maxOutputTokens:estimate.maxOutputTokens,stableInstructions,volatileInstructions,schema:format,content:assistantUserContent({context:test.context,message:test.message})});
+    const result=await respondWithOptionalSkills({parameters,skills:estimate.skills,readTools:estimate.readTools,requiredRead,create:p=>claudeCall(()=>api!.beta.messages.create(p)),onRequest:()=>{calls++;report.providerCalls++;},onResponse:r=>responses.push(r)});
     const aggregate=aggregateTextResponses(responses),usage=normalizeUsage(aggregate.usage);
     const cost=usageCost(usage,{kind:'tokens',input:profile.inputCostPerMillion,output:profile.outputCostPerMillion,cachedInput:profile.cachedInputCostPerMillion,cacheWrite:profile.cacheWriteCostPerMillion});
     await budget!.settle(String(estimate.cost),cost,true);
     if(cost===null){report.stopped='provider_usage_unknown';report.cases.push({caseId:test.id,passed:false,error:'usage_unknown',providerCalls:calls});break;}
     report.cost=dec(report.cost).add(cost).toString();report.inputTokens+=usage.input??0;report.outputTokens+=usage.output??0;
-    report.cases.push({...evaluateAssistantQuality(test,result.response.output_text,{toolsUsed:result.toolsUsed,includeAnswerText:toolSuite}),model:profile.model,providerModel:result.response.model,instructionHash,providerCalls:calls,inputTokens:usage.input,outputTokens:usage.output,cost,elapsedMs:Date.now()-started,skillsUsed:result.skillsUsed,toolsUsed:result.toolsUsed});
+    report.cases.push({...evaluateAssistantQuality(test,messageText(result.response),{toolsUsed:result.toolsUsed,includeAnswerText:toolSuite}),model:profile.model,providerModel:result.response.model,instructionHash,providerCalls:calls,inputTokens:usage.input,outputTokens:usage.output,cost,elapsedMs:Date.now()-started,skillsUsed:result.skillsUsed,toolsUsed:result.toolsUsed});
   }catch(error:any){
     // Uncertain or partially completed paid work is never automatically retried.
-    const aggregate=aggregateTextResponses(responses),usage=normalizeUsage(aggregate.usage),rejected=[400,401,403,404,422,429].includes(error.status);
+    const aggregate=aggregateTextResponses(responses),usage=normalizeUsage(aggregate.usage),rejected=!!providerFailure(error);
     const cost=responses.length?usageCost(usage,{kind:'tokens',input:profile.inputCostPerMillion,output:profile.outputCostPerMillion,cachedInput:profile.cachedInputCostPerMillion,cacheWrite:profile.cacheWriteCostPerMillion}):rejected?'0':null;
     await budget!.settle(String(estimate.cost),cost,rejected||calls===responses.length);
     if(cost!==null)report.cost=dec(report.cost).add(cost).toString();report.inputTokens+=usage.input??0;report.outputTokens+=usage.output??0;

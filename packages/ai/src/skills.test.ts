@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import type {
-  Response,
-  ResponseCreateParamsNonStreaming,
-} from "openai/resources/responses/responses";
+import type { ClaudeMessage, ClaudeRequest } from "./claude.js";
+import { assistantRequest, assistantUserContent } from "./request.js";
 import {
   availableSkills,
   loadRequestedSkills,
@@ -46,55 +44,51 @@ const answer = {
   missingInputs: ["Bitte die aktuelle Friedhofssatzung auswählen."],
   assumptions: [],
 };
-const final = (id = "response:final"): Response =>
+const final = (id = "response:final"): ClaudeMessage =>
   ({
     id,
-    status: "completed",
-    output: [],
-    output_text: JSON.stringify(answer),
+    type: "message",
+    role: "assistant",
+    model: "claude-opus-5-5",
+    stop_reason: "end_turn",
+    content: [{ type: "text", text: JSON.stringify(answer) }],
     usage: {
       input_tokens: 1000,
       output_tokens: 100,
-      input_tokens_details: { cached_tokens: 0 },
-      output_tokens_details: { reasoning_tokens: 0 },
-      total_tokens: 1100,
+      cache_creation_input_tokens: 0,
+      cache_read_input_tokens: 0,
+      output_tokens_details: { thinking_tokens: 0 },
     },
-  }) as unknown as Response;
-const selection = (ids: string[], name = "load_schubert_skills"): Response =>
+  }) as unknown as ClaudeMessage;
+const selection = (ids: string[], name = "load_schubert_skills"): ClaudeMessage =>
   ({
     ...final("response:selection"),
-    output: [
-      {
-        type: "function_call",
-        name,
-        arguments: JSON.stringify({ skill_ids: ids }),
-        call_id: "call:one",
-      },
-    ],
-    output_text: "",
-  }) as Response;
+    stop_reason: "tool_use",
+    content: [{ type: "tool_use", id: "toolu_one", name, input: { skill_ids: ids } }],
+  }) as unknown as ClaudeMessage;
+/** Everything the model receives as operator instructions: system blocks and mid-conversation system messages. */
+const instructionsOf = (request: ClaudeRequest) =>
+  [
+    ...(Array.isArray(request.system) ? request.system.map((block) => block.text) : [String(request.system ?? "")]),
+    ...request.messages.filter((message: any) => message.role === "system").map((message: any) => String(message.content)),
+  ].join("\n");
+const userPayload = (request: ClaudeRequest) =>
+  JSON.parse((request.messages[0].content as any[]).find((block) => block.type === "text").text);
 function options(context: Record<string, any> = memorial) {
   const profile = routeModel({}, "standard", context);
+  const input = { context, message: "Bitte die Inschrift ordnen." };
   return {
     skills: availableSkills(context),
-    parameters: {
+    input,
+    parameters: assistantRequest({
       model: profile.model,
-      store: false,
-      instructions: profile.instructions,
-      input: JSON.stringify({
-        context,
-        message: "Bitte die Inschrift ordnen.",
-      }),
-      max_output_tokens: profile.maxOutputTokens,
-      text: {
-        format: {
-          type: "json_schema",
-          name: "test_answer",
-          strict: true,
-          schema: { type: "object" },
-        },
-      },
-    } as ResponseCreateParamsNonStreaming,
+      effort: profile.effort,
+      maxOutputTokens: profile.maxOutputTokens,
+      stableInstructions: profile.stableInstructions,
+      volatileInstructions: profile.volatileInstructions,
+      schema: { type: "object" },
+      content: assistantUserContent(input),
+    }),
   };
 }
 
@@ -145,11 +139,11 @@ describe("Reviewed, optional Schubert DE skills", () => {
     const result = await respondWithOptionalSkills({ ...options(), create });
     expect(result.skillsUsed).toEqual([]);
     expect(create).toHaveBeenCalledTimes(1);
-    expect(create.mock.calls[0][0].tool_choice).toBe("auto");
-    expect(create.mock.calls[0][0].instructions).not.toContain(
+    expect(create.mock.calls[0][0].tool_choice).toEqual({ type: "auto", disable_parallel_tool_use: true });
+    expect(instructionsOf(create.mock.calls[0][0])).not.toContain(
       "# Grabmal & Inschrift",
     );
-    expect(create.mock.calls[0][0].instructions).toContain(
+    expect(instructionsOf(create.mock.calls[0][0])).toContain(
       "auch ohne optionale Fachhilfe",
     );
   });
@@ -164,17 +158,18 @@ describe("Reviewed, optional Schubert DE skills", () => {
     expect(create).toHaveBeenCalledTimes(2);
     const first = create.mock.calls[0][0],
       last = create.mock.calls[1][0];
-    expect(first.tools[0].parameters.properties.skill_ids.items.enum).toEqual([
+    expect(first.tools[0].input_schema.properties.skill_ids.items.enum).toEqual([
       "schubert-memorial-de",
     ]);
-    expect(last.input).toBe(first.input);
+    // Identical cached prefix: same model, tools, system and user content; only the tool step is appended.
+    expect(last.messages[0]).toEqual(first.messages[0]);
     expect(last.model).toBe(first.model);
-    expect(last.store).toBe(false);
-    expect(last.instructions).toContain("# Grabmal & Inschrift");
-    expect(last.instructions).not.toContain("# Raum & Naturstein");
-    expect(last.tools).toEqual([]);
-    expect(last.tool_choice).toBe("none");
-    expect(last.previous_response_id).toBeUndefined();
+    expect(last.system).toEqual(first.system);
+    expect(instructionsOf(last)).toContain("# Grabmal & Inschrift");
+    expect(instructionsOf(last)).not.toContain("# Raum & Naturstein");
+    expect(last.tools).toEqual(first.tools);
+    expect(last.tool_choice).toEqual({ type: "none" });
+    expect(last.messages[2].content[0]).toMatchObject({ type: "tool_result", tool_use_id: "toolu_one" });
     expect(result.skillsUsed).toEqual([
       {
         id: "schubert-memorial-de",
@@ -210,13 +205,13 @@ describe("Reviewed, optional Schubert DE skills", () => {
       "schubert-source-review-de",
       "schubert-room-de",
     ]);
-    expect(create.mock.calls[1][0].instructions).toContain(
+    expect(instructionsOf(create.mock.calls[1][0])).toContain(
       "# Herstellerdaten & Unterlagen",
     );
-    expect(create.mock.calls[1][0].instructions).toContain(
+    expect(instructionsOf(create.mock.calls[1][0])).toContain(
       "# Raum & Naturstein",
     );
-    expect(create.mock.calls[1][0].instructions).not.toContain(
+    expect(instructionsOf(create.mock.calls[1][0])).not.toContain(
       "# Büro & Entwürfe",
     );
   });
@@ -270,7 +265,7 @@ describe("Reviewed, optional Schubert DE skills", () => {
 
   it("stops multiple tool calls and any attempted second round of loading", async () => {
     const multiple = selection(["schubert-memorial-de"]);
-    multiple.output.push(...multiple.output);
+    multiple.content.push(...multiple.content);
     const create = vi.fn().mockResolvedValue(multiple);
     await expect(
       respondWithOptionalSkills({ ...options(), create }),
@@ -289,8 +284,8 @@ describe("Reviewed, optional Schubert DE skills", () => {
       ...options({ entityType: "probe" }),
       create,
     });
-    expect(create.mock.calls[0][0].tools).toEqual([]);
-    expect(create.mock.calls[0][0].tool_choice).toBe("none");
+    expect(create.mock.calls[0][0].tools).toBeUndefined();
+    expect(create.mock.calls[0][0].tool_choice).toBeUndefined();
   });
 
   it("preserves explicit edit boundaries without adding a step restriction after skill selection", async () => {
@@ -305,13 +300,13 @@ describe("Reviewed, optional Schubert DE skills", () => {
       .mockResolvedValueOnce(final());
     await respondWithOptionalSkills({ ...options(context), create });
     const last = create.mock.calls[1][0];
-    expect(last.instructions).toContain("Auf ausdrücklichen Änderungswunsch auch hier Entwurfsänderungen vorbereiten");
-    expect(last.instructions).toContain("preserveWording");
-    expect(JSON.parse(last.input).context.allowedCommands).toEqual([]);
+    expect(instructionsOf(last)).toContain("Auf ausdrücklichen Änderungswunsch auch hier Entwurfsänderungen vorbereiten");
+    expect(instructionsOf(last)).toContain("preserveWording");
+    expect(userPayload(last).context.allowedCommands).toEqual([]);
   });
 
   it("accounts the first response when a later request fails, and never retries", async () => {
-    const responses: Response[] = [],
+    const responses: ClaudeMessage[] = [],
       onRequest = vi.fn();
     const create = vi
       .fn()
@@ -350,8 +345,8 @@ describe("Reviewed, optional Schubert DE skills", () => {
     expect(onRequest).toHaveBeenCalledTimes(1);
     const incomplete = {
       ...selection(["schubert-memorial-de"]),
-      status: "incomplete",
-    } as Response;
+      stop_reason: "max_tokens",
+    } as ClaudeMessage;
     create.mockReset().mockResolvedValue(incomplete);
     await expect(
       respondWithOptionalSkills({ ...options(), create }),
@@ -365,14 +360,14 @@ describe("Reviewed, optional Schubert DE skills", () => {
       profile = routeModel({}, "standard", context);
     const bare = estimatedSkillResponseCost(
       profile,
-      setup.parameters.input,
+      setup.input,
       2,
       [],
       { type: "object" },
     );
     const bound = estimatedSkillResponseCost(
       profile,
-      setup.parameters.input,
+      setup.input,
       2,
       setup.skills,
       { type: "object" },
@@ -380,7 +375,7 @@ describe("Reviewed, optional Schubert DE skills", () => {
     expect(bound.cost).toBeGreaterThan(bare.cost * 2);
     expect(bound.cost).toBeLessThan(Number(profile.maxRequestCost));
     expect(bound.inputTokenCeiling).toBeGreaterThan(bare.inputTokenCeiling * 2);
-    expect(skillTool(setup.skills).parameters).toMatchObject({
+    expect(skillTool(setup.skills).input_schema).toMatchObject({
       additionalProperties: false,
     });
   });
@@ -389,31 +384,32 @@ describe("Reviewed, optional Schubert DE skills", () => {
     const setup = options({...memorial, sources: [source]});
     const profile = routeModel({}, 'standard', memorial);
     const schema = {type: 'object'};
-    const oneCall = estimatedSkillResponseCost(profile, setup.parameters.input, 1, [], schema);
-    const twoCalls = estimatedSkillResponseCost(profile, setup.parameters.input, 1, setup.skills, schema);
+    const oneCall = estimatedSkillResponseCost(profile, setup.input, 1, [], schema);
+    const twoCalls = estimatedSkillResponseCost(profile, setup.input, 1, setup.skills, schema);
     const maxRequestCost = String((oneCall.cost + twoCalls.cost) / 2);
-    const plan = affordableSkillResponse({...profile, maxRequestCost}, setup.parameters.input, 1, setup.skills, schema);
+    const plan = affordableSkillResponse({...profile, maxRequestCost}, setup.input, 1, setup.skills, schema);
     const create = vi.fn().mockResolvedValue(final());
     const result = await respondWithOptionalSkills({...setup, skills: plan.skills, create});
     expect(plan.cost).toBeLessThan(Number(maxRequestCost));
     expect(create).toHaveBeenCalledTimes(1);
-    expect(create.mock.calls[0][0].tools).toEqual([]);
+    expect(create.mock.calls[0][0].tools).toBeUndefined();
     expect(create.mock.calls[0][0].model).toBe(profile.model);
-    expect(create.mock.calls[0][0].input).toBe(setup.parameters.input);
+    expect(create.mock.calls[0][0].messages).toEqual(setup.parameters.messages);
     expect(result.skillsUsed).toEqual([]);
   });
 
   it("keeps model-selected guidance when both calls fit and explains a genuine cost block", () => {
     const setup = options(), profile = routeModel({}, 'standard', memorial);
-    const plan = affordableSkillResponse(profile, setup.parameters.input, 1, setup.skills, {type:'object'});
+    const plan = affordableSkillResponse(profile, setup.input, 1, setup.skills, {type:'object'});
     expect(plan.skills).toEqual(setup.skills);
-    expect(() => affordableSkillResponse({...profile, maxRequestCost:'0.000001'}, setup.parameters.input, 1, setup.skills, {type:'object'})).toThrow(/0,000001 USD.*kein KI-Aufruf gestartet.*Eingaben bleiben erhalten/);
+    expect(() => affordableSkillResponse({...profile, maxRequestCost:'0.000001'}, setup.input, 1, setup.skills, {type:'object'})).toThrow(/0,000001 USD.*kein KI-Aufruf gestartet.*Eingaben bleiben erhalten/);
   });
 
   it("adds paid usage from both responses, including sparse cache details, and retains unknown usage", () => {
     const a = final("first"),
       b = final("second");
-    b.usage!.input_tokens_details.cached_tokens = 400;
+    // Claude reports cache reads in addition to uncached input.
+    Object.assign(b.usage, { input_tokens: 600, cache_read_input_tokens: 400 });
     const usage = aggregateTextResponses([a, b]).usage;
     expect(normalizeUsage(usage)).toMatchObject({
       input: 2000,
