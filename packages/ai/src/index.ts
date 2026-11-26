@@ -22,7 +22,7 @@ import {normalizeUsage,usageCost,taskType,aggregateTextResponses} from './usage.
 import {availableSkills,skillRegistryVersion,skillUsage,type AssistantSkill} from './skills.js';
 import {respondWithOptionalSkills,affordableSkillResponse,inputWithToolEvidence,firstToolRequest,countInputTokens,type AssistantProgress} from './skill-response.js';
 export type {AssistantProgress} from './skill-response.js';
-import {assistantOutputSchema as outputSchema,assistantResponseFormat} from './response-format.js';
+import {assistantOutputSchema as outputSchema,assistantResponseFormat,boundAssistantOutput} from './response-format.js';
 import {requiredAssistantRead,specialistToolInstructions,suiteToolInstructions,readToolLabels} from './specialist-tools.js';
 import {bindSuiteAction,suiteActionFor} from './suite-actions.js';
 const suiteEvidence=(name:string)=>['find_suite_records','resolve_dispatch_assignment'].includes(name);
@@ -140,7 +140,7 @@ export async function assistant(ctx:ActorContext,message:string,inputContext:Rec
  onProgress?.({stage:'checking',label:'Vorschlag wird gegen den aktuellen Stand geprüft'});
  const actualCost=await settle(ctx,reservation,aggregateTextResponses(reservation.providerResponses));
  let parsed:z.infer<typeof outputSchema>;
- try{parsed=outputSchema.parse(JSON.parse(messageText(response)));}catch(error){await withTenant(ctx,db=>update(db,'ai_runs',reservation.runId,{status:'invalid_response',result:{validationError:'AI_RESPONSE_INVALID',...(error instanceof z.ZodError?{invalidFields:error.issues.map(issue=>issue.path.join('.')).slice(0,20)}:{})}}));throw new DomainError('AI_RESPONSE_INVALID','Die Antwort hatte kein sicheres Vorschlagsformat. Es erfolgt kein automatischer kostenpflichtiger Wiederholungsaufruf.',502);}
+ try{parsed=outputSchema.parse(boundAssistantOutput(JSON.parse(messageText(response)),context));}catch(error){await withTenant(ctx,db=>update(db,'ai_runs',reservation.runId,{status:'invalid_response',result:{validationError:'AI_RESPONSE_INVALID',...(error instanceof z.ZodError?{invalidFields:error.issues.map(issue=>issue.path.join('.')).slice(0,20)}:{})}}));throw new DomainError('AI_RESPONSE_INVALID','Die Antwort hatte kein sicheres Vorschlagsformat. Es erfolgt kein automatischer kostenpflichtiger Wiederholungsaufruf.',502);}
  const structuredDraft=parsed.planningDraft!=null;
  const initialPlanPreviews:any[]=[];
  const actions=[...new Map<string,AssistantAction>([...(context.actionCatalog??[]),...(suite?.actions()??[])]

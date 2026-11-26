@@ -47,3 +47,17 @@ describe('Provider usage and task attribution',()=>{
   expect(normalizeUsage(aggregateTextResponses([{id:'a',usage:{input_tokens:1,cache_read_input_tokens:0,cache_creation_input_tokens:0,output_tokens:1,iterations:[{type:'fallback_message'}]}}]).usage).details).toMatchObject({fallback_served:true});
  });
 });
+
+import {boundAssistantOutput,assistantOutputSchema} from './response-format.js';
+describe('Claude structured-output bounds enforced by the application',()=>{
+ it('bounds advisory lists instead of discarding a paid answer and keeps first memorial drafts command-free',()=>{
+  const many=Array.from({length:30},(_,i)=>'Frage '+i);
+  const raw={text:'ok',targetId:null,baseVersion:null,commands:[{name:'planning.design.change',inputJson:'{}',targetId:null,baseVersion:null}],missingInputs:many,assumptions:many,clarifications:[{question:'Welche Form?',kind:'choice',options:['a','b','c','d','e','f','g','h']}],visualization:null};
+  const empty=boundAssistantOutput(raw,{entityType:'planning',designKind:'memorial',snapshot:{elements:[]}}) as any;
+  expect(empty.commands).toEqual([]);expect(empty.missingInputs).toHaveLength(20);expect(empty.clarifications[0].options).toHaveLength(6);
+  expect(()=>assistantOutputSchema.parse(empty)).not.toThrow();
+  const existing=boundAssistantOutput(raw,{entityType:'planning',designKind:'memorial',snapshot:{elements:[{id:'stone'}]}}) as any;
+  expect(existing.commands).toHaveLength(1);
+  expect(boundAssistantOutput('not-an-object',{})).toBe('not-an-object');
+ });
+});

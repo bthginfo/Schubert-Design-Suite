@@ -29,3 +29,17 @@ export function assistantResponseFormat(context:Record<string,any>) {
     planningDraft:initialMemorial?initialMemorialDraftFormat:planningDraftFormat,
   },required:[...baseFormat.required,'planningDraft']};
 }
+
+/**
+ * Structured outputs do not enforce array lengths. Advisory lists are bounded here instead of
+ * rejecting a paid answer; commands stay strictly validated by the schema above.
+ */
+export function boundAssistantOutput(raw:unknown,context:Record<string,any>){
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))return raw;
+  const output={...(raw as Record<string,any>)};
+  for(const key of ['missingInputs','assumptions','clarifications'] as const)if(Array.isArray(output[key]))output[key]=output[key].slice(0,20);
+  if(Array.isArray(output.clarifications))output.clarifications=output.clarifications.map((item:any)=>item&&Array.isArray(item.options)?{...item,options:item.options.slice(0,6)}:item);
+  // An empty memorial starts from the structured first draft only (formerly maxItems: 0 in the schema).
+  if(context.entityType==='planning'&&context.designKind==='memorial'&&context.snapshot?.elements?.length===0&&!context.suite&&Array.isArray(output.commands))output.commands=[];
+  return output;
+}
