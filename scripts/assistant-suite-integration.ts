@@ -142,6 +142,21 @@ export async function assistantSuiteIntegration(
       assert.equal(available.items[0].no_registered_conflict, false);
     });
 
+    await test("A confirmed assignment can be reopened for re-planning and cancelled, each with a documented reason", async () => {
+      const draft = await command("workforce.dispatch.create", { title: tag + " Umplanung", employee_id: worker.id, order_id: order.id,
+        starts_at: "2031-07-11T08:00", ends_at: "2031-07-11T10:00" });
+      const confirmed = await command("workforce.dispatch.confirmed", {}, draft);
+      assert.equal(confirmed.status, "confirmed");
+      await assert.rejects(() => command("workforce.dispatch.update", { location: "Friedhof Nord" }, confirmed), (error: any) => error.code === "DISPATCH_STATE");
+      await assert.rejects(() => command("workforce.dispatch.draft", {}, confirmed), (error: any) => error.code === "REASON_REQUIRED");
+      const reopened = await command("workforce.dispatch.draft", { reason: "Kunde verschiebt den Termin" }, confirmed);
+      assert.equal(reopened.status, "draft");
+      const moved = await command("workforce.dispatch.update", { starts_at: "2031-07-11T12:00", ends_at: "2031-07-11T14:00" }, reopened);
+      const cancelled = await command("workforce.dispatch.cancelled", { reason: "Auftrag ruht bis Frühjahr" }, moved);
+      assert.equal(cancelled.status, "cancelled");
+      await assert.rejects(() => command("workforce.dispatch.draft", { reason: "Erneut öffnen" }, cancelled), (error: any) => error.code === "INVALID_TRANSITION");
+    });
+
     await test("A remote plan preview and edit bind the exact saved variant and reject a stale preview", async () => {
       lookups = [lookup("studio", plan.project.name)];
       answer = reply("planning.design.change", { base_revision_id: savedPlan.revision.id, operations: [{
