@@ -2,12 +2,13 @@
   import {searchableSelect} from '#lib/client/searchable-select.ts';
   import {request,display} from '#lib/client/api.ts';
   import {currencyAmount} from '#lib/client/finance.ts';
+  import {canonicalNumber} from '#lib/client/number-input.ts';
   import type {Row} from '#lib/client/types.ts';
   import Icon from './Icon.svelte';
   let {productId,priceId,currency,quantity,prefix,onapply,onclear}:{productId?:string;priceId?:string;currency:string;quantity?:string;prefix:string;onapply:(row:Row)=>void;onclear:()=>void}=$props();
   let rows:Row[]=$state([]);let selected=$state('');let busy=$state(false);let loaded=$state(false);let error=$state('');let lastProduct=$state('');
   $effect(()=>{if((productId||'')!==lastProduct){lastProduct=productId||'';rows=[];selected='';loaded=false;error='';}});
-  function decimal(value:unknown){return Number(String(value??'').replace(',','.'));}
+  function decimal(value:unknown){const parsed=canonicalNumber(value,'decimal');return parsed===undefined?Number.NaN:Number(parsed);}
   const choice=$derived(rows.find(row=>row.id===selected));
   const eligible=$derived(!!choice&&choice.currency===currency&&Number.isFinite(decimal(quantity))&&Math.abs(decimal(quantity))>=Number(choice.min_quantity||0));
   async function load(){if(busy||!productId)return;error='';busy=true;try{const result=await request('/api/v1/lookups/sales-prices?'+new URLSearchParams({parent_id:productId}),undefined,'GET');rows=Array.isArray(result)?result:[];loaded=true;selected='';}catch(cause){error=cause instanceof Error?cause.message:'Freigegebene Verkaufspreise konnten nicht geladen werden.';}finally{busy=false;}}

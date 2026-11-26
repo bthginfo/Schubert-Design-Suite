@@ -13,7 +13,7 @@
   import { formSections } from "#lib/client/form-sections.ts";
   import { createContext } from "#lib/client/create-context.ts";
   import { focusTrap } from "#lib/client/focus-trap.ts";
-  import { onMount, onDestroy, tick } from "svelte";
+  import { onMount, onDestroy, tick, untrack } from "svelte";
   import { refreshAll, beforeNavigate, goto, preloadData } from "$app/navigation";
   import {
     canonicalNumber,
@@ -171,11 +171,16 @@
     );
     return data.module?.slug === "invoices" ? arrangeInvoiceSections(base) : base;
   });
-  // A disclosure keeps the state the person chose; it never closes while a value is cleared.
-  let disclosureOpen: Record<string, boolean> = $state({});
+  // Disclosures open for values and errors but never close while the person clears a value.
+  function openWhen(node: HTMLDetailsElement, open: boolean) {
+    if (open) node.open = true;
+    return {
+      update(next: boolean) {
+        if (next) node.open = true;
+      },
+    };
+  }
   function sectionOpen(section: EditorSection) {
-    if (Object.hasOwn(disclosureOpen, section.title))
-      return disclosureOpen[section.title];
     return section.fields.some(
       (field) =>
         !!fieldErrors[field.key] ||
@@ -202,6 +207,8 @@
     if (slug === "quotes") return quoteHelp[field.key];
     if (slug === "invoices" && field.key === "rule_version_id")
       return "Meist leer lassen. Ohne Auswahl verwendet die Prüfung automatisch die aktuell freigegebene Rechnungsregel.";
+    if (slug === "invoices" && field.key === "tax_category")
+      return "Für normale Rechnungen mit 19 % oder 7 % leer lassen. Einen besonderen Steuerfall wie Reverse Charge nur nach Rücksprache mit der Steuerberatung wählen.";
     if (slug === "leave" && field.key === "days")
       return "Vorgeschlagen aus den Tagen Montag bis Freitag im Zeitraum. Feiertage ggf. abziehen. Einen halben Urlaubstag als eigenen eintägigen Antrag mit 0,5 Tagen erfassen.";
     return undefined;
@@ -535,11 +542,15 @@
       unit_price: decimalInput(line.unit_price),
       tax_rate: decimalInput(line.tax_rate),
       discount_percent: decimalInput(line.discount_percent),
+      ...(line.cost_unit !== undefined && line.cost_unit !== null
+        ? { cost_unit: decimalInput(line.cost_unit) }
+        : {}),
     }));
     if (!record) {
       lines = [];
-      if (data.module?.fields.some((field) => field.key === "currency"))
-        values.currency = data.settings?.currency || "EUR";
+      const has = (key: string) =>
+        !!data.module?.fields.some((field) => field.key === key);
+      if (has("currency")) values.currency = data.settings?.currency || "EUR";
       const proposed = new URLSearchParams(page.url.search);
       if (data.module?.slug === "datev") {
         if (proposed.has("from"))
@@ -555,7 +566,16 @@
           initialValues,
         ),
       );
+      // Editable proposals for a new record; nothing is saved without "Speichern".
+      if (data.module?.slug === "quotes" && has("valid_until") && !values.valid_until)
+        values.valid_until = berlinDate(30);
+      if (data.module?.slug === "customers" && has("country") && !values.country)
+        values.country = "DE";
+      if (data.module?.slug === "leave" && has("kind") && !values.kind)
+        values.kind = "vacation";
     }
+    leaveRange = `${values.starts_on || ""}|${values.ends_on || ""}`;
+    leaveDaysManual = !!record && !!String(values.days ?? "").trim();
     localVersion = record?.version;
     lastSavedInput = cloneInputs(payload());
     savedFingerprint = JSON.stringify(lastSavedInput);
@@ -563,7 +583,97 @@
     visibleFieldControl(
       form?.querySelector<HTMLElement>("input,select,textarea"),
     )?.focus();
+    if (
+      !record &&
+      data.module?.slug === "invoices" &&
+      values.order_id &&
+      !lines.length
+    )
+      void prefillFromOrder(String(values.order_id), true);
   });
+  // Leave: propose Mon–Fri days for the chosen range until the person types their own value.
+  let leaveRange = "";
+  let leaveDaysManual = false;
+  $effect(() => {
+    if (data.module?.slug !== "leave" || !initialized) return;
+    const range = `${values.starts_on || ""}|${values.ends_on || ""}`;
+    if (range === leaveRange) return;
+    leaveRange = range;
+    if (leaveDaysManual) return;
+    const count = weekdaysBetween(values.starts_on, values.ends_on);
+    if (count !== null) values.days = count > 0 ? String(count) : "";
+  });
+  // Invoice from an order: copy title and positions from the order as an editable proposal.
+  let orderPrefill: {
+    number: string;
+    href: string;
+    count: number;
+  } | null = $state(null);
+  let orderPrefillBusy = $state(false);
+  let orderPrefillError = $state("");
+  async function prefillFromOrder(orderId: string, automatic = false) {
+    if (orderPrefillBusy || !/^[0-9a-f-]{36}$/i.test(orderId)) return;
+    orderPrefillBusy = true;
+    orderPrefillError = "";
+    const before = JSON.stringify(payload());
+    try {
+      // The order page is an existing read; it applies the same order scope as opening the order.
+      const result = await preloadData("/orders/" + orderId);
+      const page = result.type === "loaded" ? result.data : null;
+      const order =
+        page?.view === "detail" ? (page.detail as Row | null) : null;
+      if (!page || !order || order.id !== orderId)
+        throw new Error("Auftrag nicht lesbar");
+      // The person may have chosen another order or started positions meanwhile.
+      if (values.order_id !== orderId || lines.length) return;
+      const untouched =
+        before === savedFingerprint && JSON.stringify(payload()) === before;
+      const source = (page.related?.lines ?? []) as Row[];
+      if (!String(values.title ?? "").trim() && order.title)
+        values.title = String(order.title);
+      if (typeof order.currency === "string" && /^[A-Z]{3}$/.test(order.currency))
+        values.currency = order.currency;
+      if (
+        !values.customer_id &&
+        order.customer_id &&
+        editorLookups.customers?.some((item) => item.id === order.customer_id)
+      )
+        values.customer_id = order.customer_id;
+      lines = source.map((line) => ({
+        client_key: crypto.randomUUID(),
+        description: String(line.description ?? ""),
+        quantity: decimalInput(line.quantity),
+        unit: line.unit || "piece",
+        unit_price: decimalInput(line.unit_price),
+        tax_rate: decimalInput(line.tax_rate),
+        discount_percent: decimalInput(line.discount_percent) || "0",
+        line_type: line.line_type || "item",
+        optional: !!line.optional,
+        selected: line.selected !== false,
+        // The agreed order price is kept; a price-list binding is not carried over.
+        ...(line.product_id ? { product_id: line.product_id } : {}),
+        ...(line.tax_category ? { tax_category: line.tax_category } : {}),
+        ...(line.tax_exemption_reason
+          ? { tax_exemption_reason: line.tax_exemption_reason }
+          : {}),
+      }));
+      orderPrefill = {
+        number: String(order.number || order.title || "ohne Nummer"),
+        href: "/orders/" + order.id,
+        count: lines.length,
+      };
+      if (untouched) {
+        lastSavedInput = cloneInputs(payload());
+        savedFingerprint = JSON.stringify(lastSavedInput);
+      }
+    } catch {
+      orderPrefillError = automatic
+        ? "Die Positionen des Auftrags konnten nicht automatisch übernommen werden. Bitte die Leistungen selbst erfassen oder es über „Positionen aus Auftrag übernehmen“ erneut versuchen."
+        : "Die Positionen des Auftrags konnten nicht geladen werden. Bitte später erneut versuchen oder die Leistungen selbst erfassen.";
+    } finally {
+      orderPrefillBusy = false;
+    }
+  }
   beforeNavigate((navigation) => {
     if (
       leaving ||
@@ -593,7 +703,14 @@
       debounce = setTimeout(() => {
         if (form?.checkValidity()) persist(false);
       }, 1400);
-    }
+    } else if (
+      initialized &&
+      autosave &&
+      fingerprint === savedFingerprint &&
+      untrack(() => saveLabel.startsWith("Noch nicht gespeichert"))
+    )
+      // A corrected value equal to the saved draft leaves nothing to save.
+      saveLabel = "Vom Server bestätigt gespeichert";
     return () => clearTimeout(debounce);
   });
   function addLine() {
@@ -605,7 +722,7 @@
         quantity: "1",
         unit: "piece",
         unit_price: "",
-        tax_rate: "",
+        tax_rate: selling ? defaultTaxRate : "",
         discount_percent: "0",
         line_type: "item",
         optional: false,
@@ -638,6 +755,21 @@
         error = problem;
         return;
       }
+    }
+    const problems = inputProblems();
+    if (problems.length) {
+      const first = problems[0];
+      if (!close) {
+        // Autosave never interrupts typing; the status names the value to check.
+        saveLabel = `Noch nicht gespeichert · ${first.summary}`;
+        return;
+      }
+      for (const problem of problems) setClientError(problem.key, problem.message);
+      error =
+        `${first.summary}: ${first.message}` +
+        (problems.length > 1 ? " Weitere markierte Felder ebenfalls prüfen." : "");
+      await focusFirstInvalid();
+      return;
     }
     const input = payload();
     const submittedKeys = lines.map((line) => line.client_key);
@@ -687,22 +819,7 @@
     } finally {
       busy = false;
       closingSave = false;
-      await tick();
-      if (error) {
-        const invalid = form?.querySelector<HTMLElement>(
-          '[aria-invalid="true"]',
-        );
-        revealField(invalid || null);
-        await tick();
-        if (invalid) {
-          const visible = visibleFieldControl(invalid);
-          visible?.focus();
-          visible?.scrollIntoView({ block: "nearest" });
-        } else
-          form
-            ?.querySelector(".notice.error")
-            ?.scrollIntoView({ block: "nearest" });
-      }
+      if (error) await focusFirstInvalid();
     }
   }
   async function undoAutosave() {
@@ -738,17 +855,29 @@
         localVersion ?? record.version,
       );
       localVersion = result.version ?? localVersion;
+      // Canonical saved numbers are shown in German again and parse back to the same value.
+      const display = (value: unknown, kind: "money" | "decimal" | "percent") =>
+        typeof value === "string" && canonicalNumber(value, "decimal") === value
+          ? formatNumberInput(value, kind)
+          : value;
       values = Object.fromEntries(
         (data.module.fields || []).map((field) => [
           field.key,
           field.type === "datetime-local" && input[field.key]
             ? localDateTime(input[field.key])
-            : (input[field.key] ?? (field.type === "checkbox" ? false : "")),
+            : field.type === "money" || field.type === "number"
+              ? (display(input[field.key], numberKind(field)) ?? "")
+              : (input[field.key] ?? (field.type === "checkbox" ? false : "")),
         ]),
       );
       lines = (input.lines || []).map((line: Row) => ({
         ...line,
         client_key: crypto.randomUUID(),
+        ...Object.fromEntries(
+          (Object.keys(lineNumberKinds) as LineNumberKey[])
+            .filter((key) => line[key] !== undefined && line[key] !== null)
+            .map((key) => [key, display(line[key], lineNumberKinds[key])]),
+        ),
       }));
       lastSavedInput = serverIdentities(
         result,
@@ -886,13 +1015,17 @@
         const line=target.id?.match(/^line-(description|quantity|unit|price|tax|discount|cost|type)-(\d+)$/);
         const keys:Record<string,string>={price:'unit_price',tax:'tax_rate',discount:'discount_percent',cost:'cost_unit',type:'line_type'};
         const key = line?`lines.${line[2]}.${keys[line[1]]||line[1]}`:target.id?.replace(/^field-/, "");
+        if (target.id === "field-days" && data.module?.slug === "leave")
+          leaveDaysManual = !!(target as HTMLInputElement).value?.trim();
         if (key && fieldErrors[key]) {
+          clientErrorKeys.delete(key);
           const next = { ...fieldErrors };
           delete next[key];
           fieldErrors = next;
           if (!Object.keys(next).length) error = "";
         }
       }}
+      onfocusout={validateOnBlur}
       oninvalidcapture={(event) => revealField(event.target as HTMLElement)}
       style="display:contents"
     >
@@ -924,17 +1057,18 @@
             <div>{error}</div>
           </div>{/if}
         {#if !record&&data.module?.slug==='quotes'&&data.summary?.createSource}<div class="notice info"><Icon name="file"/><div><strong>Aus Anfrage übernommen</strong><p class="field-help"><a class="text-link" href={data.summary.createSource.href}>{data.summary.createSource.number?data.summary.createSource.number+' · ':''}{data.summary.createSource.title}</a></p><p class="field-help">Titel, Kunde und Kundenwunsch sind vorbelegt und bearbeitbar. Ergänzen Sie die tatsächlichen Leistungen und Preise.</p>{#if data.summary.createSource.truncated}<p class="field-help">Die lange Beschreibung ist im Entwurf gekürzt. Den vollständigen Text finden Sie in der verknüpften Anfrage.</p>{/if}</div></div>{/if}
+        {#if !record&&data.module?.slug==='invoices'&&(orderPrefill||orderPrefillBusy||orderPrefillError)}<div class="notice" class:info={!orderPrefillError} class:warning={!!orderPrefillError} role="status"><Icon name={orderPrefillError?'alert':'file'}/><div>{#if orderPrefillBusy}<strong>Positionen aus dem Auftrag werden geladen …</strong>{:else if orderPrefillError}<strong>Positionen nicht übernommen</strong><p class="field-help">{orderPrefillError}</p>{:else if orderPrefill}<strong>{orderPrefill.count?`Positionen aus Auftrag ${orderPrefill.number} übernommen – bitte prüfen`:`Auftrag ${orderPrefill.number} enthält noch keine Positionen`}</strong><p class="field-help"><a class="text-link" href={orderPrefill.href} target="_blank" rel="noreferrer">Auftrag {orderPrefill.number} öffnen</a></p><p class="field-help">{orderPrefill.count?`Titel und ${orderPrefill.count} Position${orderPrefill.count===1?'':'en'} sind vorbelegt und bearbeitbar. Für Anzahlungs-, Abschlags- oder Teilrechnungen Mengen und Preise anpassen.`:'Bitte die abzurechnenden Leistungen unter Positionen erfassen.'}</p>{/if}</div></div>{/if}
         {#snippet sectionFields(
           fields: import("#lib/client/types.ts").Field[],
         )}<div class="field-grid">
-            {#each fields as field}<FieldInput
+            {#each fields as field (field.key)}<FieldInput
                 field={field.key === "settlement_rule_version_id"
                   ? { ...field, required: values.kind === "final" }
                   : field}
                 bind:value={values[field.key]}
                 lookups={editorLookups}
                 error={fieldErrors[field.key]}
-                helpText={data.module?.slug==='quotes'?({order_id:'Optional mit einem bestehenden Auftrag dieses Kunden verbinden. Für ein neues Vorhaben leer lassen.',service_date:'Nur einen bereits vereinbarten Leistungstermin eintragen. Ist er noch offen, lassen Sie das Feld leer.',due_date:'Nur einen bereits vereinbarten Zahlungstermin eintragen. Für den ersten Entwurf kann er offen bleiben.'} as Record<string,string>)[field.key]:undefined}
+                helpText={editorHelp(field)}
                 referenceParentId={field.reference === "purchase-order-lines"
                   ? values.purchase_order_id || record?.purchase_order_id
                   : undefined}
@@ -960,16 +1094,14 @@
               />{#if field.key==='customer_id'&&data.module?.slug==='inquiries'&&permitted(data,'crm')}<QuickCustomer oncreated={customer=>{addedChoices={...addedChoices,customers:[...(addedChoices.customers??[]),{id:customer.id,name:customer.name}]};values.customer_id=customer.id;}}/>{/if}
               {#if field.key==='document_id'&&data.module?.slug==='supplier-invoices'&&permitted(data,'documents.upload')}<InlineOriginal onready={doc=>{addedChoices={...addedChoices,documents:[...(addedChoices.documents??[]),{id:doc.id,name:doc.name}]};values.document_id=doc.id;}}/>{/if}{/each}
           </div>{/snippet}
-        {#snippet lineError(index:number,key:string)}{#if lineFieldError(index,key)}<span class="field-error" id={`line-error-${index}-${key}`}>{lineFieldError(index,key)}</span>{/if}{/snippet}
+        {#snippet lineError(index:number,key:string)}{#if lineFieldError(index,key)}<span class="field-error" role="alert" id={`line-error-${index}-${key}`}>{lineFieldError(index,key)}</span>{/if}{/snippet}
         {#if data.module?.slug==='team'}<div class="notice info"><div>Für ein vorläufiges Beschäftigtenprofil genügen Name und gegebenenfalls der persönliche Zugang. Ein bestätigtes Arbeitsmodell benötigt zusätzlich Beginn, Wochenstunden, sieben Tagesstunden und Feiertagsregion. Angaben nur aus den tatsächlichen Personalgrundlagen übernehmen.</div></div>{/if}
         <div class="editor-sections">
-          {#each sections as section, index}
+          {#each sections as section, index (section.title + "|" + (section.fields[0]?.key || ""))}
             {#if section.optional}<details
                 data-editor-section={index}
                 class="form-disclosure"
-                open={section.fields.some(
-                  (field) => !!fieldErrors[field.key] || (!!values[field.key]&&!(data.module?.slug==='quotes'&&field.key==='currency'&&values.currency===(data.settings?.currency||'EUR'))),
-                )}
+                use:openWhen={sectionOpen(section)}
               >
                 <summary
                   ><span>{section.title}</span><span class="disclosure-hint"
@@ -1029,7 +1161,7 @@
               <h3>Positionen</h3>
               {#if data.module?.slug === "orders"}<p class="field-help mb">
                   Der vereinbarte Nettowert wird aus den ausgewählten Positionen
-                  berechnet. Der Server bestätigt den gespeicherten Betrag; ein
+                  berechnet und beim Speichern verbindlich festgehalten. Ein
                   davon abweichender Gesamtbetrag wird nicht zusätzlich
                   eingegeben.
                 </p>{/if}
@@ -1130,7 +1262,7 @@
                             inputmode="decimal"
                             bind:value={line.quantity}
                             required
-                          />{@render lineError(index,'quantity')}
+                          />{@render lineError(index,'quantity')}{#if !lineFieldError(index,'quantity')&&quantityHint(line.quantity)}<span class="field-help">{quantityHint(line.quantity)}</span>{/if}
                         </div>
                         <div class="field">
                           <label for={`line-unit-${index}`}>Einheit *</label
@@ -1174,11 +1306,22 @@
                             required
                           />{@render lineError(index,'tax_rate')}
                         </div>
-                        <details class="field description line-advanced">
+                        <details
+                          class="field description line-advanced"
+                          use:openWhen={!!line.tax_category ||
+                            !!lineFieldError(index, "discount_percent") ||
+                            !!lineFieldError(index, "cost_unit")}
+                        >
                           <summary
-                            >{permitted(data, "finance")
-                              ? "Rabatt & interne Kalkulation"
-                              : "Rabatt"}</summary
+                            >{[
+                              "Rabatt",
+                              ...(data.module?.slug === "invoices"
+                                ? ["besonderer Steuerfall"]
+                                : []),
+                              ...(permitted(data, "finance")
+                                ? ["interne Kalkulation"]
+                                : []),
+                            ].join(", ").replace(/, ([^,]*)$/, " & $1")}</summary
                           >
                           <div class="field-grid">
                             {#if permitted(data, "finance")}<div class="field">
@@ -1192,7 +1335,6 @@
                                   aria-describedby={lineFieldError(index,'cost_unit')?`line-error-${index}-cost_unit`:undefined}
                                   inputmode="decimal"
                                   bind:value={line.cost_unit}
-                                  pattern="[0-9]+([,.][0-9]+)?"
                                 />{@render lineError(index,'cost_unit')}<span class="field-help"
                                   >Interne Kalkulationsgrundlage je Einheit.
                                   Leer bedeutet unbekannt. Dies ist keine
@@ -1210,44 +1352,44 @@
                                 bind:value={line.discount_percent}
                               />{@render lineError(index,'discount_percent')}
                             </div>
+                            {#if data.module?.slug === "invoices"}<div
+                                class="field description"
+                              >
+                                <label for={`line-tax-category-${index}`}
+                                  >Besonderer Steuerfall dieser Position · optional</label
+                                ><select
+                                  use:searchableSelect={line.tax_category}
+                                  id={`line-tax-category-${index}`}
+                                  bind:value={line.tax_category}
+                                  ><option value=""
+                                    >Kein besonderer Steuerfall</option
+                                  ><option value="S">Steuerpflichtig</option><option
+                                    value="Z">Nullsatz</option
+                                  ><option value="E">Steuerbefreit</option><option
+                                    value="AE">Reverse Charge</option
+                                  ><option value="K"
+                                    >Innergemeinschaftliche Lieferung</option
+                                  ><option value="G">Ausfuhr</option><option
+                                    value="O">Nicht steuerbar</option
+                                  ></select
+                                ><span class="field-help"
+                                  >Für normale Leistungen mit 19 % oder 7 % leer
+                                  lassen. Einen besonderen Steuerfall nur nach
+                                  Rücksprache mit der Steuerberatung wählen.</span
+                                >
+                              </div>
+                              {#if line.tax_category && line.tax_category !== "S"}<div
+                                  class="field description"
+                                >
+                                  <label for={`line-tax-reason-${index}`}
+                                    >Begründung für die Rechnung (Rechtsgrundlage)</label
+                                  ><textarea
+                                    id={`line-tax-reason-${index}`}
+                                    bind:value={line.tax_exemption_reason}
+                                  ></textarea>
+                                </div>{/if}{/if}
                           </div>
-                        </details>
-                        {#if data.module?.slug === "invoices"}<div
-                            class="field description"
-                          >
-                            <label for={`line-tax-category-${index}`}
-                              >Bestätigter Steuerfall dieser Position · optional</label
-                            ><select
-                              use:searchableSelect={line.tax_category}
-                              id={`line-tax-category-${index}`}
-                              bind:value={line.tax_category}
-                              ><option value=""
-                                >Allgemeine Beleggrundlage</option
-                              ><option value="S">Steuerpflichtig</option><option
-                                value="Z">Nullsatz</option
-                              ><option value="E">Steuerbefreit</option><option
-                                value="AE">Reverse Charge</option
-                              ><option value="K"
-                                >Innergemeinschaftliche Lieferung</option
-                              ><option value="G">Ausfuhr</option><option
-                                value="O">Nicht steuerbar</option
-                              ></select
-                            ><span class="field-help"
-                              >Nur den von der Kanzlei bestätigten Steuerfall
-                              auswählen. Unterschiedliche Steuerfälle bleiben
-                              auch bei gleichem Prozentsatz getrennt.</span
-                            >
-                          </div>
-                          {#if line.tax_category && line.tax_category !== "S"}<div
-                              class="field description"
-                            >
-                              <label for={`line-tax-reason-${index}`}
-                                >Bestätigte Rechtsgrundlage der Position</label
-                              ><textarea
-                                id={`line-tax-reason-${index}`}
-                                bind:value={line.tax_exemption_reason}
-                              ></textarea>
-                            </div>{/if}{/if}{/if}
+                        </details>{/if}
                     </div>
                     {#if line.line_type === "item"}<div class="line-options">
                         <label class="check-field"
@@ -1264,16 +1406,26 @@
                       </div>{/if}
                   </div>{/each}
               </div>
-              <button class="btn mt" type="button" onclick={addLine}
-                ><Icon name="plus" size={16} />Position hinzufügen</button
-              >
+              <div class="inline-actions mt">
+                <button class="btn" type="button" onclick={addLine}
+                  ><Icon name="plus" size={16} />Position hinzufügen</button
+                >{#if !record && data.module?.slug === "invoices" && values.order_id && !lines.length}<button
+                    class="btn"
+                    type="button"
+                    disabled={orderPrefillBusy}
+                    onclick={() => prefillFromOrder(String(values.order_id))}
+                    ><Icon name="file" size={16} />Positionen aus Auftrag übernehmen</button
+                  >{/if}
+              </div>
               <p class="line-note">
                 Preise und Steuersätze werden bewusst eingegeben oder
                 ausdrücklich aus einem passenden freigegebenen
-                Verkaufspreisstand übernommen. Zwischensummen zeigen die
+                Verkaufspreisstand übernommen. Beträge wie 2.400,00 oder
+                2400,50 sind möglich. Zwischensummen zeigen die
                 ausgewählten Nettopositionen seit der letzten Überschrift oder
                 Zwischensumme. Sie werden nicht erneut zur Gesamtsumme addiert.
-                Verbindliche Beträge berechnet und prüft der Server.
+                Die verbindlichen Beträge werden beim Speichern berechnet und
+                geprüft.
               </p>
             </section>
           {/if}
