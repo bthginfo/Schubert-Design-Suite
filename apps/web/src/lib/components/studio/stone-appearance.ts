@@ -19,7 +19,8 @@ const tones:Array<[RegExp,string]>=[
   [/braun|brown|marrone|mocca|mokka/,'#7d6150'],
   [/bianco|branco|white|weiß|weiss|carrara|mont blanc|statuario|calacatta|thassos|sivec/,'#f1efea'],
   [/grau|grey|gray|grigio|silber|silver|argento/,'#a3a7a4'],
-  [/crema|marfil|cream|beige|gelb|giallo|yellow|travertin/,'#d9cbb1'],
+  // Botticino (Classico/Fiorito) is a cream-beige marble by its trade name.
+  [/crema|marfil|cream|beige|gelb|giallo|yellow|travertin|botticino/,'#d9cbb1'],
 ];
 const familyTones:Record<string,string>={travertin:'#d9cbb1',schiefer:'#626e70'};
 const hex=/^#[0-9a-f]{6}$/i;

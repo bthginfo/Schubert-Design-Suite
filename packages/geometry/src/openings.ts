@@ -22,3 +22,25 @@ export function doorSwingContour(snapshot:DesignSnapshot,door:OpeningElement):Co
  const ux=dx/length,uy=dy/length,r=Number(width),direction=door.hingeSide==='right'?-1:1,sign=door.openingDirection==='inward'?1:-1,h=Number(offset)+(direction<0?r:0),hinge={xMm:mm(Number(a.xMm)+ux*h),yMm:mm(Number(a.yMm)+uy*h)},closed={xMm:mm(Number(hinge.xMm)+ux*direction*r),yMm:mm(Number(hinge.yMm)+uy*direction*r)},opened={xMm:mm(Number(hinge.xMm)-uy*sign*r),yMm:mm(Number(hinge.yMm)+ux*sign*r)};
  return{outer:[{kind:'line',from:hinge,to:closed},{kind:'circular_arc',from:closed,to:opened,center:hinge,clockwise:direction*sign<0},{kind:'line',from:opened,to:hinge}],holes:[]};
 }
+
+/**
+ * Distance along the wall axis from axis point A to the inner room corner at A:
+ * half the core thickness of the wall that meets this one perpendicularly at A.
+ * Opening offsets stay canonical (measured from A on the axis); this only converts
+ * for display and input („Abstand von der Innenecke“). Null when A is a free wall
+ * end or the corner is not a right angle, so no inner corner can be stated exactly.
+ */
+export function innerCornerAllowance(snapshot:DesignSnapshot,wallId:string):number|null{
+  const wall=snapshot.elements.find(e=>e.id===wallId);if(wall?.kind!=='wall')return null;
+  try{
+    const a=worldPoint(snapshot,wall.startNodeId),b=worldPoint(snapshot,wall.endNodeId),dx=Number(b.xMm)-Number(a.xMm),dy=Number(b.yMm)-Number(a.yMm),length=Math.hypot(dx,dy);if(length<.01)return null;
+    for(const other of snapshot.elements){
+      if(other.kind!=='wall'||other.id===wall.id||other.phase==='demolition'||![other.startNodeId,other.endNodeId].includes(wall.startNodeId))continue;
+      const far=worldPoint(snapshot,other.startNodeId===wall.startNodeId?other.endNodeId:other.startNodeId),ox=Number(far.xMm)-Number(a.xMm),oy=Number(far.yMm)-Number(a.yMm),otherLength=Math.hypot(ox,oy);
+      if(otherLength<.01||Math.abs((dx*ox+dy*oy)/(length*otherLength))>1e-6)continue;
+      const thickness=Number(measureValue(snapshot,other.coreThicknessMeasureId));
+      return Number.isFinite(thickness)&&thickness>0?Number(mm(thickness/2)):null;
+    }
+  }catch{return null;}
+  return null;
+}

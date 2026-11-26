@@ -56,3 +56,20 @@ export function layoutDimension(d:ProjectedDimension,minimumOffsetMm:number){
 export function dimensionTextAnchor(d:ProjectedDimension):'start'|'middle'|'end'{
  return Math.abs(Number(d.b.yMm)-Number(d.a.yMm))>Math.abs(Number(d.b.xMm)-Number(d.a.xMm))?(d.outward.x<0?'end':'start'):'middle';
 }
+
+/**
+ * A rectangular room repeats every wall-axis measure on the opposite side. For a
+ * calm drawing only the lower (bottom) and left measure of each repeated pair is
+ * kept; unique walls and all other measures stay. Display only, no data change.
+ */
+export function withoutRepeatedWallAxes(dimensions:ProjectedDimension[]):ProjectedDimension[]{
+ const axis=dimensions.filter(d=>d.label.endsWith(' · Wandachse')),hidden=new Set<ProjectedDimension>();
+ const geometry=(d:ProjectedDimension)=>{const ax=Number(d.a.xMm),ay=Number(d.a.yMm),bx=Number(d.b.xMm),by=Number(d.b.yMm);return{horizontal:Math.abs(ay-by)<.01,vertical:Math.abs(ax-bx)<.01,lo:Math.min(ax,bx),hi:Math.max(ax,bx),loY:Math.min(ay,by),hiY:Math.max(ay,by),x:(ax+bx)/2,y:(ay+by)/2};};
+ for(const d of axis){
+  const g=geometry(d);if(!g.horizontal&&!g.vertical)continue;
+  const twin=axis.some(o=>{if(o===d||hidden.has(o)||Math.abs(Number(o.valueMm)-Number(d.valueMm))>.01)return false;const h=geometry(o);
+   return g.horizontal?h.horizontal&&Math.abs(h.lo-g.lo)<.5&&Math.abs(h.hi-g.hi)<.5&&h.y<g.y-.5:h.vertical&&Math.abs(h.loY-g.loY)<.5&&Math.abs(h.hiY-g.hiY)<.5&&h.x<g.x-.5;});
+  if(twin)hidden.add(d);
+ }
+ return dimensions.filter(d=>!hidden.has(d));
+}

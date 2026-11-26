@@ -4,7 +4,7 @@ import {planningFontBase64}from'./planning-fonts.js';
 import { inscriptionPreviewDefaults, type DesignSnapshot, type InscriptionElement } from '@schubert/contracts';
 import { placeSheetLabels, type PlacedSheetLabel, type SheetBox, type SheetLabel, type SheetLine } from './planning-dimensions.js';
 import { glyphOutline, loadPreviewFont, previewFontLabel, type PreviewFont } from './planning-lettering.js';
-import { applyMatrix, calculateBOM, mm, projectDesign, projectDimensions, projectPoint, dimensionTextAnchor, layoutDimension, measureValue, surfaceMatrix, validateDesign,contourParts, type DesignView, type ViewShape } from '@schubert/geometry';
+import { applyMatrix, calculateBOM, mm, projectDesign, projectDimensions, withoutRepeatedWallAxes, projectPoint, dimensionTextAnchor, layoutDimension, measureValue, surfaceMatrix, validateDesign,contourParts, type DesignView, type ViewShape } from '@schubert/geometry';
 
 export type PlanningPdfMeta = {
   title: string; revision: string; status: string; audience?: 'internal' | 'customer' | 'supplier';
@@ -180,7 +180,7 @@ async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMe
     // Parallel dimension lines get their own lane, so neighbouring measures (e.g. a
     // 600 stele on a 700 Sockel) never print their texts on top of one another.
     const laneGap = 16;
-    const laid = projectDimensions(snapshot, view).map((dimension, index) => {
+    const laid = withoutRepeatedWallAxes(projectDimensions(snapshot, view)).map((dimension, index) => {
       const d = layoutDimension(dimension, 14/factor), a = p(d.a.x,d.a.y), end = p(d.b.x,d.b.y), at = p(d.label.x,d.label.y);
       return {dimension, index, a, end, at, n: dimension.outward, s: a.x*dimension.outward.x + a.y*dimension.outward.y};
     }).filter(item => Math.hypot(item.end.x-item.a.x, item.end.y-item.a.y) >= 45).sort((x, y) => x.s - y.s);

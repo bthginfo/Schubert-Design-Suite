@@ -21,5 +21,7 @@ describe('stone appearance',()=>{
     expect(stoneAppearance(catalog('Bianco Carrara','marmor'))).toMatchObject({color:'#f1efea',texture:'Marble019'});
     expect(stoneAppearance(catalog('Jura gelb','kalkstein'))).toMatchObject({color:'#d9cbb1',texture:'Travertine009'});
     expect(stoneAppearance(catalog('Nero Assoluto Zimbabwe','granit','nero-assoluto-zimbawe')).color).toBe('#343b3a');
+    // A floor in Botticino shows its cream marble tone in plan and 3D.
+    expect(stoneAppearance(catalog('Botticino · Katalogreferenz','marmor'))).toMatchObject({known:true,color:'#d9cbb1',texture:'Marble012'});
   });
 });

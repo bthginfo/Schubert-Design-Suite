@@ -80,7 +80,8 @@ export async function assistantSuiteIntegration(
   });
 
   await test("An AI memorial with Sockel stands linked on its base and the server refuses lifting it off", async () => {
-    const stacked = await command("planning.project.create", { name: tag + " Grabmal mit Sockel", kind: "memorial", order_id: order.id });
+    // Own name: later Suite searches for the main plan name must still find exactly one plan.
+    const stacked = await command("planning.project.create", { name: "TEST Sockelprüfung " + randomUUID().slice(0, 10), kind: "memorial", order_id: order.id });
     const operations = planningDraftOperations({ snapshot: stacked.revision.snapshot }, { kind: "memorial_assembly", label: "Rundbogen", shape: "round_arch",
       widthMm: "600", heightMm: "900", thicknessMm: "120", base: { widthMm: "700", heightMm: "140", depthMm: "180" }, inscription: "", materialWish: null });
     const saved = await command("planning.design.change", { base_revision_id: stacked.revision.id, operations }, stacked.variant);

@@ -30,6 +30,11 @@ export async function fieldWorkerIntegration(actor:(role:string)=>ActorContext, 
       assert(home.related.work_packages.find((row:any)=>row.id===mine.id).mine===true);
       assert(visible.indexOf(mine.id)<visible.indexOf(open.id),'own packages come first');
       assert.deepEqual((await page(owner,'')).related.work_packages,[],'office roles keep their office overview');
+      const list=(await page(employee,'work-packages?q='+encodeURIComponent(label))).records.map((row:any)=>row.id);
+      assert(list.includes(mine.id)&&list.includes(open.id),'the work package list shows packages of dispatched orders');
+      assert(!list.includes(elsewhere.id),'the work package list hides packages of orders the person is not dispatched to');
+      await assert.rejects(()=>page(employee,'work-packages/'+elsewhere.id),(error:any)=>error.status===404);
+      assert((await page(owner,'work-packages?q='+encodeURIComponent(label))).records.some((row:any)=>row.id===elsewhere.id),'office roles keep the full list');
 
       const detail=await page(employee,'orders/'+assigned.id);
       const brief=detail.summary.fieldOrder;
