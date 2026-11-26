@@ -31,6 +31,8 @@ function suiteOutput(body){
 if(process.env.APP_ENV==='production'||process.env.VERCEL_ENV||process.env.VERCEL)throw Error('Synthetic provider is local-only.');
 const port=Number(process.env.TEST_AI_PROVIDER_PORT??8854);
 if(!Number.isInteger(port)||port<1024||port>65535)throw Error('Invalid local test port.');
+// Optional artificial latency to review progress states in the browser.
+const delay=Math.min(Math.max(Number(process.env.TEST_AI_PROVIDER_DELAY_MS??0),0),30000);
 const json=(res,status,body)=>res.writeHead(status,{'content-type':'application/json','request-id':'req_synthetic_'+randomUUID()}).end(JSON.stringify(body));
 createServer(async(req,res)=>{
   const modelProbe=/^\/v1\/models\/([a-z0-9.-]+)$/.exec(req.url??'');
@@ -38,6 +40,7 @@ createServer(async(req,res)=>{
   if(req.method!=='POST'||!['/v1/messages','/v1/messages/count_tokens'].includes(req.url??'')){res.writeHead(404).end();return;}
   let raw='';for await(const part of req){raw+=part;if(raw.length>400000){res.writeHead(413).end();return;}}
   if(req.url==='/v1/messages/count_tokens'){json(res,200,{input_tokens:Math.ceil(raw.length/3)});return;}
+  if(delay)await new Promise(resolve=>setTimeout(resolve,delay));
   try{
     const body=JSON.parse(raw);
     const content=suiteOutput(body)??(offered(body,'inspect_current_plan')?[toolUse('inspect_current_plan',{},'toolu_synthetic_current_plan')]:

@@ -26,6 +26,38 @@ export async function request(path:string, body?:unknown, method='POST', signal?
   return result?.result ?? result;
   }catch(error){if(trace)recordFeedbackStep(trace.kind,trace.action,'failed',error instanceof RequestError?error:{code:'REQUEST_FAILED'});throw error;}
 }
+export type ProgressEvent={stage:string;label:string};
+/**
+ * POST that accepts newline-delimited progress events. A plain JSON answer (older server, test stub) is handled like request().
+ */
+export async function progressRequest(path:string,body:unknown,onProgress:(event:ProgressEvent)=>void,signal?:AbortSignal):Promise<any>{
+  const trace=feedbackRequestAction(path,body);
+  if(trace)recordFeedbackStep(trace.kind,trace.action,'started');
+  try{
+  let response:Response;
+  try{response=await fetch(path,{method:'POST',signal,credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/x-ndjson, application/json'},body:JSON.stringify(body)});}
+  catch{if(signal?.aborted)throw new DOMException('Anfrage beendet','AbortError');throw new RequestError('Der Server ist nicht erreichbar. Ihre Eingaben bleiben erhalten. Bitte prüfen Sie die Verbindung.');}
+  const fail=(result:any,status:number)=>{const error=result?.error||{};return new RequestError(typeof error==='string'?error:error.message||result?.message||`Die Anfrage konnte nicht abgeschlossen werden (${status}).`,typeof error==='object'?error:{});};
+  if(!response.headers.get('content-type')?.includes('application/x-ndjson')||!response.body){
+    const result=await response.json().catch(()=>null);
+    if(!response.ok||result?.ok===false||result?.error)throw fail(result,response.status);
+    if(trace)recordFeedbackStep(trace.kind,trace.action,'succeeded');
+    return result?.result??result;
+  }
+  const reader=response.body.pipeThrough(new TextDecoderStream()).getReader();let buffer='';
+  const handle=(line:string)=>{if(!line.trim())return undefined;const event=JSON.parse(line);if(event.type==='progress'){onProgress({stage:event.stage,label:event.label});return undefined;}if(event.type==='error')throw fail(event,event.status??500);if(event.type==='result')return {value:event.result};return undefined;};
+  try{
+    while(true){
+      const {done,value}=await reader.read();
+      if(value)buffer+=value;
+      const lines=buffer.split('\n');buffer=done?'':lines.pop()??'';
+      for(const line of done?[...lines,buffer]:lines){const outcome=handle(line);if(outcome){if(trace)recordFeedbackStep(trace.kind,trace.action,'succeeded');return outcome.value;}}
+      if(done)break;
+    }
+  }catch(error){if(signal?.aborted)throw new DOMException('Anfrage beendet','AbortError');if(error instanceof RequestError)throw error;throw new RequestError('Die Verbindung wurde während der KI-Anfrage unterbrochen. Ihre Eingaben bleiben erhalten.');}
+  throw new RequestError('Die Verbindung wurde während der KI-Anfrage unterbrochen. Ihre Eingaben bleiben erhalten.');
+  }catch(error){if(trace)recordFeedbackStep(trace.kind,trace.action,'failed',error instanceof RequestError?error:{code:'REQUEST_FAILED'});throw error;}
+}
 const pendingKeys=new Map<string,string>();
 function stable(value:any):string{if(value===null||typeof value!=='object')return JSON.stringify(value)??'null';if(Array.isArray(value))return '['+value.map(stable).join(',')+']';return '{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+stable(value[key])).join(',')+'}';}
 export async function command(name:string,id:string|undefined,payload:Row={},expectedVersion?:number,key?:string) {

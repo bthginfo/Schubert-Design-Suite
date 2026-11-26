@@ -20,7 +20,8 @@ import {createHash} from 'node:crypto';
 import {routeModel,compactContext,type AIMode} from './model-routing.js';
 import {normalizeUsage,usageCost,taskType,aggregateTextResponses} from './usage.js';
 import {availableSkills,skillRegistryVersion,skillUsage,type AssistantSkill} from './skills.js';
-import {respondWithOptionalSkills,affordableSkillResponse,inputWithToolEvidence,firstToolRequest,countInputTokens} from './skill-response.js';
+import {respondWithOptionalSkills,affordableSkillResponse,inputWithToolEvidence,firstToolRequest,countInputTokens,type AssistantProgress} from './skill-response.js';
+export type {AssistantProgress} from './skill-response.js';
 import {assistantOutputSchema as outputSchema,assistantResponseFormat} from './response-format.js';
 import {requiredAssistantRead,specialistToolInstructions,suiteToolInstructions,readToolLabels} from './specialist-tools.js';
 import {bindSuiteAction,suiteActionFor} from './suite-actions.js';
@@ -48,7 +49,7 @@ async function settle(ctx:ActorContext,reservation:any,response:any,status='comp
  });
 }
 async function releaseRejected(ctx:ActorContext,reservation:any){return withTenant(ctx,async db=>{const budget=await one<any>(db,'SELECT * FROM ai_budgets WHERE id=$1 FOR UPDATE',[reservation.budgetId]),entry=await one<any>(db,'SELECT * FROM ai_budget_reservations WHERE run_id=$1 FOR UPDATE',[reservation.runId]);if(!entry.settled){await update(db,'ai_budgets',budget.id,{reserved:dec(budget.reserved).minus(reservation.ceiling).toString()},budget.version);await update(db,'ai_budget_reservations',entry.id,{settled:true,status:'rejected'});}await update(db,'ai_runs',reservation.runId,{status:'rejected',cost_actual:'0',cost_basis:'no_charge'});});}
-export async function assistant(ctx:ActorContext,message:string,inputContext:Record<string,unknown>,mode:AIMode='standard',images:{dataUrl:string;documentId:string;documentVersionId:string;sourceHash:string;previewHash:string;pageIndex:number;detail?:'low'|'high'}[]=[],signal?:AbortSignal,readTools?:AssistantReadToolAccess){
+export async function assistant(ctx:ActorContext,message:string,inputContext:Record<string,unknown>,mode:AIMode='standard',images:{dataUrl:string;documentId:string;documentVersionId:string;sourceHash:string;previewHash:string;pageIndex:number;detail?:'low'|'high'}[]=[],signal?:AbortSignal,readTools?:AssistantReadToolAccess,onProgress?:(event:AssistantProgress)=>void){
  signal?.throwIfAborted();
  requireRule(message.length>0&&message.length<=6000,'AI_MESSAGE','Nachricht auf 6.000 Zeichen begrenzen.');
  const config=await integrationConfiguration(ctx,AI_PROVIDER);let context=compactContext(inputContext);
@@ -79,6 +80,7 @@ export async function assistant(ctx:ActorContext,message:string,inputContext:Rec
  });
  signal?.throwIfAborted();if(cached)return cached;
  const api=claudeClient(config.apiKey,profile.review?240000:120000);
+ onProgress?.({stage:'preparing',label:'Kontext und Kostenrahmen werden geprüft'});
  const planRead='inspect_current_plan';
  const evidenceForReview:{name:string;result:unknown}[]=[];
  const preloadedTools:AssistantReadToolUsage[]=[];
@@ -122,7 +124,7 @@ export async function assistant(ctx:ActorContext,message:string,inputContext:Rec
  try{
   const parameters=requestFor(responseStable,responseVolatile,evidenceForReview,estimate.maxOutputTokens);
   const result=await respondWithOptionalSkills({skills:estimate.skills,readTools:estimate.readTools,requiredRead:requestRead,signal,onReadToolRequest:()=>{reservation.readToolAttempts++;},onReadToolsUsed:items=>{reservation.toolsUsed=items;},onRequest:()=>{reservation.attemptedCalls++;},onResponse:item=>{reservation.providerResponses.push(item);},onSkillsLoaded:items=>{reservation.loadedSkills=items;},
-   create:request=>claudeCall(()=>api.beta.messages.create(request,{signal}),signal),parameters});
+   create:request=>claudeCall(()=>api.beta.messages.create(request,{signal}),signal),parameters,onProgress});
   response=result.response;skillsUsed=result.skillsUsed;toolEvidence=[...evidenceForReview,...result.toolEvidence];
  }catch(error:any){
   const failure=providerFailure(error),rejected=!!failure,noPending=reservation.attemptedCalls===reservation.providerResponses.length;
@@ -135,6 +137,7 @@ export async function assistant(ctx:ActorContext,message:string,inputContext:Rec
   }
   await settle(ctx,reservation,null,'outcome_unknown');throw new DomainError('AI_OUTCOME_UNKNOWN','Der KI-Aufruf konnte nicht zuverlässig abgeschlossen werden. Budget bleibt bis zur Klärung reserviert.',502);
  }
+ onProgress?.({stage:'checking',label:'Vorschlag wird gegen den aktuellen Stand geprüft'});
  const actualCost=await settle(ctx,reservation,aggregateTextResponses(reservation.providerResponses));
  let parsed:z.infer<typeof outputSchema>;
  try{parsed=outputSchema.parse(JSON.parse(messageText(response)));}catch(error){await withTenant(ctx,db=>update(db,'ai_runs',reservation.runId,{status:'invalid_response',result:{validationError:'AI_RESPONSE_INVALID',...(error instanceof z.ZodError?{invalidFields:error.issues.map(issue=>issue.path.join('.')).slice(0,20)}:{})}}));throw new DomainError('AI_RESPONSE_INVALID','Die Antwort hatte kein sicheres Vorschlagsformat. Es erfolgt kein automatischer kostenpflichtiger Wiederholungsaufruf.',502);}

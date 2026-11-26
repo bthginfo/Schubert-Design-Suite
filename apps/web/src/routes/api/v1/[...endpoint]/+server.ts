@@ -15,7 +15,7 @@ import {modules,type ActorContext,type DesignSnapshot} from '@schubert/contracts
 import {DomainError,requireRule,assertPermission,assertFreshAuth,rolePermissions} from '@schubert/domain';
 import {executeCommand,auditEvent,hash,getRecord,baseData,assertOrderScope,loadPage,invalidateReads,processPending,portalLogin,portalContext,portalPage,portalMessage,portalDeclaration,portalToken,portalLogout,ingestUpload,readRenderAssetChunk,assertDocumentAccess,documentReadPredicate,portalUpload,publicIntakeContext,receiveWithdrawal,verifyWithdrawalReceipt,sourcePreviewStatus,enqueuePending,uploadIntentTicket,completeUpload} from '@schubert/application';
 import {readPrivate} from '@schubert/adapters';
-import {assistant,transcribe} from '@schubert/ai';
+import {assistant,transcribe,type AssistantProgress} from '@schubert/ai';
 import {createPlanningPdf,reviewPlanningPdf,csvExport,type PlanningPdfMeta} from '@schubert/documents';
 import {validateDesign,renderTechnicalSvg,calculateBOM} from '@schubert/geometry';
 import QRCode from 'qrcode';
@@ -24,6 +24,17 @@ function context(e:any):ActorContext{requireRule(e.locals.context,'AUTH_REQUIRED
 function assertCronAuthorization(e:any){const secret=process.env.CRON_SECRET;requireRule(secret&&timingSafeEqual(Buffer.from(hash(e.request.headers.get('authorization')??'')),Buffer.from(hash('Bearer '+secret))),'SERVICE_AUTH','Dienstzugriff ist nicht freigegeben.',401);}
 async function body(e:any){requireRule(Number(e.request.headers.get('content-length')??0)<=1024*1024,'REQUEST_SIZE','Anfrage überschreitet die zulässige Größe.',413);const text=await e.request.text();requireRule(text.length<=1024*1024,'REQUEST_SIZE','Anfrage überschreitet die zulässige Größe.',413);try{return JSON.parse(text);}catch{throw new DomainError('JSON','Die Anfrage enthält kein gültiges JSON.',400);}}
 function success(result:unknown,status=200){return Response.json({ok:true,result},{status});}
+/** Newline-delimited progress for a long model call: progress events, then exactly one result or error line. */
+function progressStream(e:any,run:(onProgress:(event:AssistantProgress)=>void)=>Promise<unknown>){
+ const encoder=new TextEncoder();
+ const stream=new ReadableStream({async start(controller){
+  const send=(line:unknown)=>{try{controller.enqueue(encoder.encode(JSON.stringify(line)+'\n'));}catch{}};
+  try{send({type:'result',ok:true,result:await run(event=>send({type:'progress',...event}))});}
+  catch(error){const response=failure(e,error);send({type:'error',status:response.status,...await response.json()});}
+  finally{try{controller.close();}catch{}}
+ }});
+ return new Response(stream,{headers:{'content-type':'application/x-ndjson; charset=utf-8','cache-control':'no-store','x-accel-buffering':'no'}});
+}
 async function planningPdfReferences(db: DbClient, ctx: ActorContext, snapshot: DesignSnapshot) {
   const fontIds = [...new Set(snapshot.elements.filter(e=>e.kind==='inscription')
     .map(e=>e.fontVariantVersionId).filter(id=>z.uuid().safeParse(id).success))];
@@ -83,7 +94,7 @@ if(path==='uploads/intents'){await limit(e,'upload-intent:'+ctx.actorId,10);cons
 if(path==='uploads/complete'){const p=z.object({intent_id:z.uuid()}).parse(await body(e));const result=await completeUpload(ctx,p.intent_id);invalidateReads(ctx);kickoff(ctx,result.job_id);return success(result,201);}
 if(path==='uploads'){requireRule(Number(e.request.headers.get('content-length')??0)<=4_400_000,'UPLOAD_LIMIT','Datei ist für den direkten Upload zu groß. Maximal 4 MB verwenden.',413);const form=await e.request.formData(),file=form.get('file');requireRule(file instanceof File&&file.size<=4_000_000,'UPLOAD_FILE','Eine Datei bis 4 MB auswählen.',422);const entityId=form.get('entity_id')?.toString(),entityType=form.get('entity_type')?.toString();const result=await ingestUpload(ctx,new Uint8Array(await file.arrayBuffer()),file.name,file.type,entityType,entityId);invalidateReads(ctx);kickoff(ctx,result.job_id);return success(result,201);}
 const design=path.match(/^designs\/([\w-]+)\/commands$/);if(design){const p=z.object({base_revision_id:z.uuid(),expected_version:z.number().int(),operations:z.array(z.unknown()).min(1).max(200),idempotency_key:z.string().min(8)}).parse(await body(e));const result=await executeCommand(ctx,{name:'planning.design.change',id:design[1],expectedVersion:p.expected_version,idempotencyKey:p.idempotency_key,payload:{base_revision_id:p.base_revision_id,operations:p.operations}});invalidateReads(ctx);kickoff(ctx);return success(result);}
-if(path==='ai/chat'){await limit(e,'ai-chat:'+ctx.actorId,12);const p=assistantInputSchema.parse(await body(e)),prepared=await prepareAssistantContext(ctx,p,e.url.origin);const message=redactAssistantText(p.message);return success(await assistant(ctx,message,prepared.context,p.mode,prepared.images,e.request.signal,createAssistantReadTools(ctx,prepared.context,message)));}
+if(path==='ai/chat'){await limit(e,'ai-chat:'+ctx.actorId,12);const p=assistantInputSchema.parse(await body(e)),prepared=await prepareAssistantContext(ctx,p,e.url.origin);const message=redactAssistantText(p.message);const run=(onProgress?:(event:AssistantProgress)=>void)=>assistant(ctx,message,prepared.context,p.mode,prepared.images,e.request.signal,createAssistantReadTools(ctx,prepared.context,message),onProgress);if(e.request.headers.get('accept')?.includes('application/x-ndjson'))return progressStream(e,run);return success(await run());}
 if(path==='ai/transcribe'){await limit(e,'ai-transcribe:'+ctx.actorId,8);requireRule(Number(e.request.headers.get('content-length')??0)<=3900000,'AUDIO_LIMIT','Aufnahme bis 2,8 MB verwenden.',413);const form=await e.request.formData(),file=form.get('audio');requireRule(file instanceof File&&file.size<=2800000,'AUDIO_REQUIRED','Aufnahme fehlt.');return success(await transcribe(ctx,new Uint8Array(await file.arrayBuffer()),file.type));}
 const proposal=path.match(/^ai\/proposals\/([\w-]+)\/apply$/);if(proposal){const result=await applyAIProposal(ctx,proposal[1]);invalidateReads(ctx);kickoff(ctx);return success(result);}
 if(path==='jobs/run'){assertPermission(ctx.permissions,'system');return success(await processPending(ctx,5));}

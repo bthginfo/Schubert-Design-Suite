@@ -15,7 +15,7 @@
   import { page } from "$app/state";
   import { refreshAll, goto } from "$app/navigation";
   import {queueVisualization} from "#lib/client/visualization-handoff.ts";
-  import { request, permitted, RequestError } from "#lib/client/api.ts";
+  import { request, progressRequest, permitted, RequestError } from "#lib/client/api.ts";
   import { validateVoiceRecording, appendDictation } from "#lib/client/voice-recording.ts";
   import type { AppData, Row } from "#lib/client/types.ts";
   import Icon from "./Icon.svelte";
@@ -232,11 +232,23 @@
     selectionOnly = $state(false),
     compactHelp = $state(false),
     chatPinned = $state(true);
+  // Live progress of a running model call, reported by the server without request content.
+  let progressLabel = $state("");
+  let phaseStarted = $state(0);
+  let clock = $state(0);
+  $effect(() => {
+    if (phase !== "requesting") return;
+    phaseStarted = Date.now();
+    clock = phaseStarted;
+    const timer = setInterval(() => (clock = Date.now()), 1000);
+    return () => clearInterval(timer);
+  });
+  const elapsedSeconds = $derived(phase === "requesting" ? Math.max(0, Math.round((clock - phaseStarted) / 1000)) : 0);
   const phaseLabel = $derived(
     (
       {
         preparing: "Anfrage wird vorbereitet …",
-        requesting: "KI-Anfrage läuft …",
+        requesting: (progressLabel || "Claude arbeitet") + " …",
         applying: "Vorschlag wird übernommen …",
         undoing: "Änderung wird zurückgenommen …",
       } as Record<string, string>
@@ -512,8 +524,9 @@
           ),
         },
       ];
+      progressLabel = "";
       phase = "requesting";
-      const result = await request(
+      const result = await progressRequest(
         "/api/v1/ai/chat",
         {
           message,
@@ -540,7 +553,9 @@
           },
           references,
         },
-        "POST",
+        (event) => {
+          if (run.id === runId) progressLabel = event.label;
+        },
         run.controller.signal,
       );
       if (run.id !== runId || sendingContext !== contextKey) return;
@@ -1174,7 +1189,7 @@
                 </div>{/if}
             </article>{/each}{#if busy}<p class="small muted" role="status">
               <Icon name="refresh" size={14} class="spin" />
-              {phaseLabel}
+              {phaseLabel}{#if phase === "requesting" && elapsedSeconds >= 3}<span class="assistant-elapsed">· {elapsedSeconds} s</span>{/if}
             </p>{/if}{#if error}<div class="notice error" role="alert">
               <Icon name="alert" />
               <div>{error}</div>
@@ -1479,4 +1494,4 @@
     .chat-scope { gap: 4px; }
     .chat-scope .companion-page-context { font-size: 11px; }
   }
-</style>
+.assistant-elapsed{margin-left:6px;font-variant-numeric:tabular-nums;opacity:.8}</style>
