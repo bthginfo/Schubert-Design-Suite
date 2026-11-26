@@ -321,9 +321,6 @@ a{text-underline-offset:3px}
 .time-entry-intro h2{font-size:22px;font-weight:550;letter-spacing:-.025em}
 .time-entry-intro p{max-width:55ch;font-size:14px;line-height:1.7;margin-top:10px}
 .time-entry-intro .btn{flex:none}
-.live-timer summary>span{flex:1}
-.live-timer summary small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:4px}
-.live-timer .timer-panel{border-radius:0 0 12px 12px}
 @media(max-width:760px){.time-entry-intro{flex-direction:column;align-items:stretch;padding-top:4px;gap:18px}
 .time-entry-intro .btn{align-self:flex-start}
 }
