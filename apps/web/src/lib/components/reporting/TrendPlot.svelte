@@ -7,14 +7,16 @@
   const magnitude=$derived(Math.pow(10,Math.floor(Math.log10(Math.max(1,high-low)))));
   const step=$derived(Math.max(magnitude/5,Math.ceil((high-low||1)/4/(magnitude/5))*(magnitude/5)));
   const top=$derived(Math.max(step,Math.ceil(high/step)*step)),bottom=$derived(Math.floor(low/step)*step);
-  const ticks=$derived(Array.from({length:Math.round((top-bottom)/step)+1},(_,index)=>bottom+step*index));
+  // Without any value above or below zero, only the zero line is drawn instead of an invented scale.
+  const allZero=$derived(actual.every(value=>value===0));
+  const ticks=$derived(allZero?[0]:Array.from({length:Math.round((top-bottom)/step)+1},(_,index)=>bottom+step*index));
   const width=920,left=88,right=22,upper=20,lower=248,height=300;
   const slot=$derived((width-left-right)/Math.max(1,points.length));
   function y(value:number){return lower-(value-bottom)/(top-bottom)*(lower-upper);}
   const active=$derived(selected===null?null:points[selected]);
   const missing=$derived(points.filter(point=>point.value===null).length);
 </script>
-{#if actual.every(value=>value===0)}<div class="plot-empty" role="status"><strong>{actual.length?'In diesem Zeitraum noch keine Werte über null.':'Für diesen Zeitraum liegen noch keine bestätigten Werte vor.'}</strong><span>Sobald Belege bestätigt sind, erscheint hier der Verlauf je Monat.</span></div>{:else}<div class="plot-desktop"><div class="plot-readout" aria-live="polite"><span>{active?active.label:label}</span>{#if active}<strong>{active.value===null?'Noch nicht bestätigt':format(active.value)}</strong>{:else}<span class="plot-hint">Balken zeigen oder antippen für den Monatswert</span>{/if}</div>
+{#if allZero}<div class="plot-empty" role="status"><strong>{actual.length?'In diesem Zeitraum noch keine Werte über null.':'Für diesen Zeitraum liegen noch keine bestätigten Werte vor.'}</strong><span>Sobald Belege bestätigt sind, erscheint hier der Verlauf je Monat.</span></div>{/if}<div class="plot-desktop"><div class="plot-readout" aria-live="polite"><span>{active?active.label:label}</span>{#if active}<strong>{active.value===null?'Noch nicht bestätigt':format(active.value)}</strong>{:else}<span class="plot-hint">Balken zeigen oder antippen für den Monatswert</span>{/if}</div>
 <div class="plot-scroll" use:scrollRegion={label}>
   <svg class="trend-plot" viewBox={`0 0 ${width} ${height}`} aria-label={`${label}. Monatsbalken führen zu den zugehörigen Belegen.`}>
     {#each ticks as value}<g aria-hidden="true"><line x1={left} x2={width-right} y1={y(value)} y2={y(value)} class:zero={value===0}/><text x={left-14} y={y(value)+4} text-anchor="end" class="axis-number">{new Intl.NumberFormat('de-DE',{notation:'compact',maximumFractionDigits:1}).format(value)}</text></g>{/each}
@@ -37,7 +39,7 @@
   </a>
  {/each}
 </div>
-<p class="plot-caption">{missing?`${missing} ${missing===1?'Monat ohne bestätigten Wert':'Monate ohne bestätigte Werte'} · offene Kreise kennzeichnen Datenlücken. `:''}Balken beginnen bei null. Wählen Sie einen Monat, um seine Belege zu öffnen.</p>{/if}
+<p class="plot-caption">{missing?`${missing} ${missing===1?'Monat ohne bestätigten Wert':'Monate ohne bestätigte Werte'} · offene Kreise kennzeichnen Datenlücken. `:''}Balken beginnen bei null. Wählen Sie einen Monat, um seine Belege zu öffnen.</p>
 <style>
  .plot-empty{display:flex;flex-direction:column;gap:6px;padding:28px 0 22px;color:var(--muted)}.plot-empty strong{color:var(--ink);font-size:15px;font-weight:600}.plot-hint{font-size:13px;color:var(--muted)}
  .plot-mobile{display:none}@media(max-width:760px){.plot-desktop{display:none}.plot-mobile{display:block}.mobile-plot-label{font-size:13px;margin-bottom:14px;color:var(--muted)}.mobile-plot-row{display:block;padding:10px 0 11px;min-height:53px;border-bottom:1px solid var(--line)}.mobile-plot-row:last-child{border-bottom:0}.mobile-plot-meta{display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}.mobile-plot-meta>span{color:var(--muted)}.mobile-plot-meta strong{font-weight:500;text-align:right}.mobile-plot-track{display:block;position:relative;height:8px;margin-top:7px}.mobile-zero{position:absolute;height:10px;top:-1px;border-left:1px solid var(--muted)}.mobile-plot-bar{position:absolute;height:8px;background:var(--forest);border-radius:3px}.mobile-plot-bar.negative{background:var(--warning)}.mobile-plot-gap{position:absolute;width:7px;height:7px;border:1px solid var(--muted);border-radius:50%;transform:translateX(-50%);background:var(--paper)}.mobile-plot-row:hover{background:var(--wash)}}

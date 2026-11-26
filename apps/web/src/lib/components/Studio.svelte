@@ -1109,4 +1109,4 @@
 @media(min-width:761px){.workbench .studio-workspace{padding:8px}.workbench .floating-toolbar{margin-top:6px}.workbench .view-dock{margin-block:5px}}
 /* Very narrow phones: icon only, the name stays available to assistive technology. */
 @media(max-width:360px){.workbench .heading-actions .save-plan .save-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}}
-</style>
+@media(max-width:760px){.studio-project-title>p{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;overflow:hidden;white-space:nowrap}.studio-project-title>p .revision-chip{display:none}.studio-project-title>p .compact-variant-name{min-width:0;overflow:hidden;text-overflow:ellipsis}}</style>

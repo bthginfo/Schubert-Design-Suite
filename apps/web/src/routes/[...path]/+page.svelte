@@ -60,7 +60,7 @@ import {appearanceStyle,defaultAppearance} from '@schubert/contracts';
     mounted=true;
     const screen=window.matchMedia('(max-width:760px)');const tablet=window.matchMedia('(max-width:1180px)');const tabletResize=()=>tabletViewport=tablet.matches;tabletResize();tablet.addEventListener('change',tabletResize);
     const resize=()=>{const next=screen.matches;if(next&&!mobileViewport&&document.activeElement?.closest('#workspace-sidebar'))menuOpen=true;if(!next)menuOpen=false;mobileViewport=next;railHint=null;};
-    const dismissHint=(event:KeyboardEvent)=>{if(event.key==='Escape'){hideRailHint();if(mobileViewport&&menuOpen&&document.activeElement?.closest('#workspace-sidebar'))closeMobileMenu();}};
+    const dismissHint=(event:KeyboardEvent)=>{if(event.key==='Escape'){hideRailHint();if(mobileViewport&&menuOpen)closeMobileMenu();}};
     resize();screen.addEventListener('change',resize);
     const update=()=>online=navigator.onLine;update();
     window.addEventListener('online',update);window.addEventListener('offline',update);
