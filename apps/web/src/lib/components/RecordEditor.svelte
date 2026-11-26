@@ -14,7 +14,18 @@
   import { createContext } from "#lib/client/create-context.ts";
   import { focusTrap } from "#lib/client/focus-trap.ts";
   import { onMount, onDestroy, tick } from "svelte";
-  import { refreshAll, beforeNavigate, goto } from "$app/navigation";
+  import { refreshAll, beforeNavigate, goto, preloadData } from "$app/navigation";
+  import {
+    canonicalNumber,
+    formatNumberInput,
+    lineNumberKinds,
+    lineNumberProblem,
+    lineProblems,
+    parseNumberInput,
+    payloadNumber,
+    weekdaysBetween,
+    type LineNumberKey,
+  } from "#lib/client/number-input.ts";
   import {
     command,
     RequestError,
@@ -92,16 +103,121 @@
   const frozenOrder = $derived(
     data.module?.slug === "orders" && !!record?.quote_version_id,
   );
-  const sections = $derived(
-    formSections(
+  // Own leave requests: the command always uses the signed-in employee.
+  const ownLeaveOnly = $derived(
+    data.module?.slug === "leave" &&
+      ["Employee", "Workshop"].includes(data.context?.role || ""),
+  );
+  type EditorSection = ReturnType<typeof formSections>[number];
+  const advancedInvoiceTitle = "Erweitert (Steuerberatung / E-Rechnung)";
+  const advancedInvoiceKeys = [
+    "corrects_invoice_id",
+    "planned_transmission_date",
+    "recipient_regime",
+    "tax_category",
+    "tax_exemption_reason",
+    "rule_version_id",
+    "recipient_profile_version_id",
+    "settlement_rule_version_id",
+  ];
+  /** Tax-advisor and e-invoice details stay in one closed disclosure unless the invoice type needs them. */
+  function arrangeInvoiceSections(base: EditorSection[]): EditorSection[] {
+    const kind = String(values.kind || "");
+    const promoted = new Set([
+      ...(kind === "final" ? ["settlement_rule_version_id"] : []),
+      ...(["correction", "credit"].includes(kind) ? ["corrects_invoice_id"] : []),
+    ]);
+    const all = base.flatMap((section) => section.fields);
+    const advanced = advancedInvoiceKeys
+      .filter((key) => !promoted.has(key))
+      .flatMap((key) => all.filter((field) => field.key === key));
+    const moved = new Set(advanced.map((field) => field.key));
+    const settlement = all.filter(
+      (field) => promoted.has(field.key) && field.key === "settlement_rule_version_id",
+    );
+    for (const field of settlement) moved.add(field.key);
+    const arranged = base
+      .map((section, index) => ({
+        ...section,
+        fields: [
+          ...section.fields.filter((field) => !moved.has(field.key)),
+          ...(index === 0 ? settlement : []),
+        ],
+      }))
+      .filter((section) => section.fields.length);
+    if (!advanced.length) return arranged;
+    const disclosure: EditorSection = {
+      title: advancedInvoiceTitle,
+      description:
+        "Nur bei Bedarf, meist nach Rücksprache mit der Steuerberatung. Ohne Angaben gelten die aktuell freigegebene Rechnungsregel und der Kundentyp. Für öffentliche Auftraggeber (XRechnung) hier das Empfängerprofil wählen.",
+      keys: advanced.map((field) => field.key),
+      fields: advanced,
+      optional: true,
+    };
+    const notes = arranged.findIndex((section) => section.optional);
+    return notes < 0
+      ? [...arranged, disclosure]
+      : [...arranged.slice(0, notes), disclosure, ...arranged.slice(notes)];
+  }
+  const sections = $derived.by(() => {
+    const base = formSections(
       data.module?.slug || "",
       (data.module?.fields || []).filter(
         (field) =>
           !(data.module?.slug === "orders" && field.key === "budget_net") &&
-          !(frozenOrder && ["currency", "customer_id"].includes(field.key)),
+          !(frozenOrder && ["currency", "customer_id"].includes(field.key)) &&
+          !(ownLeaveOnly && field.key === "employee_id"),
       ),
-    ),
+    );
+    return data.module?.slug === "invoices" ? arrangeInvoiceSections(base) : base;
+  });
+  // A disclosure keeps the state the person chose; it never closes while a value is cleared.
+  let disclosureOpen: Record<string, boolean> = $state({});
+  function sectionOpen(section: EditorSection) {
+    if (Object.hasOwn(disclosureOpen, section.title))
+      return disclosureOpen[section.title];
+    return section.fields.some(
+      (field) =>
+        !!fieldErrors[field.key] ||
+        (!!values[field.key] &&
+          !(
+            data.module?.slug === "quotes" &&
+            field.key === "currency" &&
+            values.currency === (data.settings?.currency || "EUR")
+          )),
+    );
+  }
+  const quoteHelp: Record<string, string> = {
+    order_id:
+      "Optional mit einem bestehenden Auftrag dieses Kunden verbinden. Für ein neues Vorhaben leer lassen.",
+    service_date:
+      "Nur einen bereits vereinbarten Leistungstermin eintragen. Ist er noch offen, lassen Sie das Feld leer.",
+    due_date:
+      "Nur einen bereits vereinbarten Zahlungstermin eintragen. Für den ersten Entwurf kann er offen bleiben.",
+    valid_until:
+      "Für „Zur Prüfung“ erforderlich. Vorgeschlagen sind 30 Tage ab heute; bei Bedarf anpassen.",
+  };
+  function editorHelp(field: import("#lib/client/types.ts").Field) {
+    const slug = data.module?.slug;
+    if (slug === "quotes") return quoteHelp[field.key];
+    if (slug === "invoices" && field.key === "rule_version_id")
+      return "Meist leer lassen. Ohne Auswahl verwendet die Prüfung automatisch die aktuell freigegebene Rechnungsregel.";
+    if (slug === "leave" && field.key === "days")
+      return "Vorgeschlagen aus den Tagen Montag bis Freitag im Zeitraum. Feiertage ggf. abziehen. Einen halben Urlaubstag als eigenen eintägigen Antrag mit 0,5 Tagen erfassen.";
+    return undefined;
+  }
+  /** Default VAT for new selling positions; a small business keeps the rate as a conscious entry. */
+  const defaultTaxRate = $derived(
+    data.settings?.tax_profile === "small_business" ? "" : "19",
   );
+  function berlinDate(offsetDays = 0) {
+    const today = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Europe/Berlin",
+    }).format(new Date());
+    const date = new Date(today + "T12:00:00Z");
+    date.setUTCDate(date.getUTCDate() + offsetDays);
+    return date.toISOString().slice(0, 10);
+  }
   const missingRequired = $derived(
     sections
       .flatMap((section) => section.fields)
@@ -238,22 +354,39 @@
           !!data.module?.fields.find((f) => f.key === key)?.required,
       ),
     );
-    for (const field of data.module?.fields || [])
+    for (const field of data.module?.fields || []) {
       if (field.type === "datetime-local" && result[field.key])
         result[field.key] = new Date(String(result[field.key])).toISOString();
+      // German entry ("2.400,00", "2,5") becomes the canonical decimal string.
+      if (
+        (field.type === "money" || field.type === "number") &&
+        typeof result[field.key] === "string" &&
+        result[field.key].trim()
+      )
+        result[field.key] =
+          canonicalNumber(result[field.key], numberKind(field)) ??
+          result[field.key];
+    }
     if (frozenOrder)
       for (const key of ["customer_id", "currency", "budget_net"])
         delete result[key];
     if (isDelivery) result.lines = deliveryLinePayload(lines);
     else if (hasLines && lines.length && !frozenOrder)
-      result.lines = lines.map((l) => ({
+      result.lines = lines.map((l) => {
+        // Hidden values of headings, texts and subtotals never block saving.
+        const item = (l.line_type ?? "item") === "item";
+        const number = (key: LineNumberKey, value: unknown, fallback: string) =>
+          item
+            ? payloadNumber(value, lineNumberKinds[key], fallback)
+            : (canonicalNumber(value, lineNumberKinds[key]) ?? "0");
+        return {
         ...(l.id ? { id: l.id } : {}),
         description: l.description,
-        quantity: String(l.quantity ?? "0"),
+        quantity: number("quantity", l.quantity ?? "0", ""),
         unit: l.unit || "piece",
-        unit_price: String(l.unit_price || "0"),
-        tax_rate: String(l.tax_rate || "0"),
-        discount_percent: String(l.discount_percent || "0"),
+        unit_price: number("unit_price", l.unit_price, "0"),
+        tax_rate: number("tax_rate", l.tax_rate, "0"),
+        discount_percent: number("discount_percent", l.discount_percent, "0"),
         line_type: l.line_type,
         optional: !!l.optional,
         selected: !!l.selected,
@@ -262,17 +395,121 @@
         ...(permitted(data, "finance") && l.cost_unit !== undefined
           ? {
               cost_unit:
-                l.cost_unit === null || l.cost_unit === ""
+                l.cost_unit === null || String(l.cost_unit).trim() === ""
                   ? null
-                  : String(l.cost_unit),
+                  : payloadNumber(l.cost_unit, "money", ""),
             }
           : {}),
         ...(l.tax_category ? { tax_category: l.tax_category } : {}),
         ...(l.tax_exemption_reason
           ? { tax_exemption_reason: l.tax_exemption_reason }
           : {}),
-      }));
+      };
+      });
     return result;
+  }
+  function numberKind(field: { type: string }) {
+    return field.type === "money" ? ("money" as const) : ("decimal" as const);
+  }
+  /** Numeric problems the editor can explain before sending anything. */
+  function inputProblems() {
+    const problems: { key: string; message: string; summary: string }[] = [];
+    for (const section of sections)
+      for (const field of section.fields) {
+        if (field.type !== "money" && field.type !== "number") continue;
+        const value = String(values[field.key] ?? "").trim();
+        if (value && !parseNumberInput(value, numberKind(field)).ok)
+          problems.push({
+            key: field.key,
+            message: headerNumberMessage(field),
+            summary: `${field.label} prüfen`,
+          });
+      }
+    if (hasLines && !isDelivery && !frozenOrder)
+      for (const problem of lineProblems(
+        lines,
+        permitted(data, "finance")
+          ? undefined
+          : ["quantity", "unit_price", "tax_rate", "discount_percent"],
+      ))
+        problems.push({
+          key: `lines.${problem.index}.${problem.key}`,
+          message: problem.message,
+          summary: problem.summary,
+        });
+    return problems;
+  }
+  function headerNumberMessage(field: { type: string }) {
+    return field.type === "money"
+      ? "Einen eindeutigen Betrag eingeben, zum Beispiel 2.400,00 oder 2400,50."
+      : "Eine eindeutige Zahl eingeben, zum Beispiel 12,5.";
+  }
+  // Inline messages from blur checks; server messages stay until the person edits the field.
+  let clientErrorKeys = new Set<string>();
+  function setClientError(key: string, message: string) {
+    if (message) {
+      clientErrorKeys.add(key);
+      if (fieldErrors[key] !== message)
+        fieldErrors = { ...fieldErrors, [key]: message };
+    } else if (clientErrorKeys.has(key) && fieldErrors[key]) {
+      clientErrorKeys.delete(key);
+      const next = { ...fieldErrors };
+      delete next[key];
+      fieldErrors = next;
+    }
+  }
+  const lineInputKeys: Record<string, LineNumberKey> = {
+    quantity: "quantity",
+    price: "unit_price",
+    tax: "tax_rate",
+    discount: "discount_percent",
+    cost: "cost_unit",
+  };
+  function validateOnBlur(event: FocusEvent) {
+    const target = event.target as HTMLElement | null;
+    const id = target?.id || "";
+    const line = id.match(/^line-(quantity|price|tax|discount|cost)-(\d+)$/);
+    if (line) {
+      const index = Number(line[2]),
+        key = lineInputKeys[line[1]],
+        current = lines[index];
+      if (!current) return;
+      // An empty required value is reported by the form itself when saving.
+      setClientError(
+        `lines.${index}.${key}`,
+        String(current[key] ?? "").trim() ? lineNumberProblem(current, key) : "",
+      );
+      return;
+    }
+    const field = data.module?.fields.find((item) => "field-" + item.key === id);
+    if (field && (field.type === "money" || field.type === "number")) {
+      const value = String(values[field.key] ?? "").trim();
+      setClientError(
+        field.key,
+        value && !parseNumberInput(value, numberKind(field)).ok
+          ? headerNumberMessage(field)
+          : "",
+      );
+    }
+  }
+  /** "1.000" as a quantity means 1; say so instead of silently guessing. */
+  function quantityHint(value: unknown) {
+    const parsed = parseNumberInput(value, "decimal");
+    return parsed.ok && parsed.ambiguous
+      ? `Verstanden als ${formatNumberInput(parsed.value)}. Tausender bitte ohne Punkt eingeben, zum Beispiel 1000.`
+      : "";
+  }
+  async function focusFirstInvalid() {
+    await tick();
+    const invalid = form?.querySelector<HTMLElement>('[aria-invalid="true"]');
+    revealField(invalid || null);
+    await tick();
+    if (invalid) {
+      const visible = visibleFieldControl(invalid);
+      visible?.focus();
+      visible?.scrollIntoView({ block: "nearest" });
+    } else
+      form?.querySelector(".notice.error")?.scrollIntoView({ block: "nearest" });
   }
   onMount(() => {
     values = Object.fromEntries(

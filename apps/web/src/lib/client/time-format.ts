@@ -34,3 +34,50 @@ export function durationText(seconds: number) {
   const hours = Math.floor(minutes / 60);
   return hours ? `${hours} h ${String(minutes % 60).padStart(2, '0')} min` : `${minutes} min`;
 }
+/** "7:45 h" for compact day summaries. */
+export function hoursText(seconds: number) {
+  const minutes = Math.max(0, Math.round(seconds / 60));
+  return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')} h`;
+}
+const dateTime = new Intl.DateTimeFormat('de-DE', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: zone});
+/** "26.11.2026, 14:05" */
+export function dateTimeText(value: unknown) {
+  const date = valid(value);
+  return date ? dateTime.format(date) : '';
+}
+/** "26.11.2026" for a YYYY-MM-DD business day. */
+export function dayText(day: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day.slice(8, 10) + '.' + day.slice(5, 7) + '.' + day.slice(0, 4) : day;
+}
+/** The calendar day before or after a YYYY-MM-DD business day. */
+export function shiftDay(day: string, days: number) {
+  const date = new Date(day + 'T12:00:00Z');
+  if (!Number.isFinite(date.getTime())) return '';
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+/** German, employee-facing names for session, submission and correction states. */
+const timeStatuses: Record<string, string> = {
+  working: 'Arbeit läuft', work: 'Arbeit läuft', paused: 'Pause', break: 'Pause', finished: 'Beendet',
+  submitted: 'Eingereicht', approved: 'Genehmigt', rejected: 'Zurückgegeben', returned: 'Zurückgegeben',
+  needs_clarification: 'Zurückgegeben', requested: 'Beantragt', cancelled: 'Zurückgezogen'
+};
+export function timeStatusLabel(status: unknown) {
+  return timeStatuses[String(status ?? '')] ?? 'Unbekannt';
+}
+export function timeStatusTone(status: unknown) {
+  const value = String(status ?? '');
+  if (['approved', 'finished'].includes(value)) return 'success';
+  if (['rejected', 'returned', 'needs_clarification'].includes(value)) return 'danger';
+  if (['submitted', 'requested'].includes(value)) return 'warning';
+  return 'neutral';
+}
+/** Order lookups read "AUF-2026-00050 · Titel"; split them for a one-line display. */
+export function orderParts(name: string) {
+  const index = name.indexOf(' · ');
+  return index > 0 ? {number: name.slice(0, index), title: name.slice(index + 3)} : {number: name, title: ''};
+}
+/** Non-empty values once, in first-seen order. */
+export function uniqueText(values: unknown[]) {
+  return [...new Set(values.map(value => String(value ?? '').trim()).filter(Boolean))];
+}
