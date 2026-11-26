@@ -2,7 +2,7 @@
   import { tick } from 'svelte';
   import { goto } from '$app/navigation';
   import type { AppData } from '#lib/client/types.ts';
-  import { permitted } from '#lib/client/api.ts';
+  import { permitted, request } from '#lib/client/api.ts';
   import Icon from './Icon.svelte';
 
   type Destination = { label: string; href: string; icon: string; keywords?: string };
@@ -35,6 +35,40 @@
     return [...unique.values()].slice(0, tokens.length ? 24 : 6);
   });
 
+  // Business records (customers, orders, quotes …) through the permission-checked reference search.
+  type RecordHit = { id: string; name: string; href: string; kind: string; icon: string };
+  const recordSources = $derived([
+    { reference: 'customers', kind: 'Kunde', icon: 'user', permission: 'crm' },
+    { reference: 'orders', kind: 'Auftrag', icon: 'layers', permission: 'orders' },
+    { reference: 'quotes', kind: 'Angebot', icon: 'file', permission: 'sales' },
+    { reference: 'invoices', kind: 'Rechnung', icon: 'file', permission: 'billing' },
+    { reference: 'inquiries', kind: 'Anfrage', icon: 'pen', permission: 'crm' },
+    { reference: 'suppliers', kind: 'Lieferant', icon: 'user', permission: 'purchasing' },
+  ].filter(source => permitted(data, source.permission) || permitted(data, source.permission + '.read')));
+  let records: RecordHit[] = $state([]);
+  let searching = $state(false);
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
+  let searchGeneration = 0;
+  $effect(() => {
+    const text = query.trim();
+    clearTimeout(searchTimer);
+    const current = ++searchGeneration;
+    if (text.length < 2 || !recordSources.length) { records = []; searching = false; return; }
+    searching = true;
+    searchTimer = setTimeout(async () => {
+      const groups = await Promise.all(recordSources.map(async source => {
+        try {
+          const result = await request(`/api/v1/lookups/${source.reference}?q=${encodeURIComponent(text)}`, undefined, 'GET');
+          const items: { id: string; name: string }[] = Array.isArray(result) ? result : result?.items ?? result?.records ?? [];
+          return items.slice(0, 5).map(item => ({ id: item.id, name: item.name, href: `/${source.reference}/${item.id}`, kind: source.kind, icon: source.icon }));
+        } catch { return []; }
+      }));
+      if (current !== searchGeneration) return;
+      records = groups.flat().slice(0, 15);
+      searching = false;
+    }, 250);
+  });
+
   async function open() {
     if (dialog.open) return;
     query = '';
@@ -62,7 +96,7 @@
 
   function submit(event: SubmitEvent) {
     event.preventDefault();
-    const href = results[0]?.href ?? (documents && query.trim() ? '/documents?q=' + encodeURIComponent(query.trim()) : '');
+    const href = records[0]?.href ?? results[0]?.href ?? (documents && query.trim() ? '/documents?q=' + encodeURIComponent(query.trim()) : '');
     if (!href) return;
     dialog.close();
     void goto(href).catch(() => { void open(); });
@@ -83,11 +117,21 @@
   </header>
   <form class="workspace-search-field" onsubmit={submit}>
     <Icon name="search" size={20}/>
-    <label class="sr-only" for="workspace-query">Bereich oder Aufgabe suchen</label>
+    <label class="sr-only" for="workspace-query">Kunden, Vorgänge oder Bereiche suchen</label>
     <input id="workspace-query" type="search" bind:this={field} bind:value={query}
-      placeholder={documents ? 'Bereich, Aufgabe oder Dokument' : 'Bereich oder Aufgabe'} autocomplete="off" maxlength="160"/>
+      placeholder={recordSources.length ? 'Kunde, Belegnummer, Bereich …' : documents ? 'Bereich, Aufgabe oder Dokument' : 'Bereich oder Aufgabe'} autocomplete="off" maxlength="160"/>
   </form>
   <div class="workspace-search-results">
+    {#if records.length}
+      <p class="result-label">Kunden und Vorgänge</p>
+      <ul>
+        {#each records as record (record.href)}
+          <li><a href={record.href} onclick={() => dialog.close()}><Icon name={record.icon} size={17}/><span>{record.name}<small>{record.kind}</small></span><Icon name="chevron" size={15}/></a></li>
+        {/each}
+      </ul>
+    {:else if searching}
+      <p class="result-label" role="status">Kunden und Vorgänge werden gesucht …</p>
+    {/if}
     {#if results.length}
       <p class="result-label">{tokens.length ? 'Bereiche und Aufgaben' : 'Direkt öffnen'}</p>
       <ul>
@@ -95,8 +139,8 @@
           <li><a href={result.href} onclick={() => dialog.close()}><Icon name={result.icon} size={17}/><span>{result.label}</span><Icon name="chevron" size={15}/></a></li>
         {/each}
       </ul>
-    {:else}
-      <p class="no-results" role="status">Kein passender Bereich. Versuchen Sie einen kürzeren Suchbegriff.</p>
+    {:else if !records.length && !searching}
+      <p class="no-results" role="status">Nichts gefunden. Kundenname, Belegnummer (z. B. AUF-2026-00060) oder einen Bereich eingeben.</p>
     {/if}
     {#if documents && query.trim()}
       <a class="document-search" href={'/documents?q=' + encodeURIComponent(query.trim())} onclick={() => dialog.close()}>
@@ -118,7 +162,6 @@
     width: min(37rem, calc(100vw - 28px)); max-width: none; max-height: min(72dvh, 40rem); margin: min(13dvh, 105px) auto auto;
     padding: 0; border: 1px solid var(--glass-border); border-radius: 22px; background: var(--paper); color: var(--ink); box-shadow: var(--overlay-shadow);
   }
-  .workspace-search-dialog::backdrop { background: light-dark(#17283c50,#0408129e); }
   header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 4px 22px; }
   h2 { font-size: 1.2rem; font-weight: 650; }
   header .icon-button { min-width: 44px; min-height: 44px; border-radius: 50%; }
@@ -135,6 +178,7 @@
   .workspace-search-results a { display: flex; align-items: center; gap: 12px; min-height: 47px; padding: 8px; border-radius: 9px; }
   .workspace-search-results a:hover, .workspace-search-results a:focus-visible { background: var(--wash); }
   a span { flex: 1; overflow-wrap: anywhere; }
+  a span small { display: block; margin-top: 1px; color: var(--muted); font-size: .78rem; }
   a :global(svg) { flex: none; color: var(--muted); }
   .document-search { margin-top: 8px; border-top: 1px solid var(--line-soft); color: var(--forest); }
   @media (max-width: 760px) {

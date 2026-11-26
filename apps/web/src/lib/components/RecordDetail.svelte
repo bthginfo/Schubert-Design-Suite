@@ -61,7 +61,7 @@
     actionNotice = "";
     try {
       await command(action.name, data.detail?.id, {}, data.detail?.version);
-      actionNotice = "Der Arbeitsschritt wurde bestätigt.";
+      actionNotice = actionDoneText(action);
       await refreshAll().catch(() => {});
     } catch (e) {
       actionError =
@@ -72,11 +72,24 @@
       actionBusy = false;
     }
   }
+  /** Say what actually happened instead of one generic confirmation for every action. */
+  function actionDoneText(action: { name: string; label: string }, result?: Row) {
+    const name = action.name;
+    const created = result?.number && result.number !== record.number ? ` ${result.number} wurde angelegt.` : "";
+    if (/\.reject$/.test(name)) return "Abgelehnt. Die Begründung ist gespeichert.";
+    if (/\.(approve|approved)$/.test(name)) return "Genehmigt." + created;
+    if (/\.(cancel|cancelled|void)$/.test(name)) return "Storniert. Der Grund ist im Verlauf gespeichert.";
+    if (name === "workforce.dispatch.draft") return "Der Einsatz ist wieder offen. Jetzt bearbeiten und erneut bestätigen.";
+    if (/\.(confirm|confirmed)$/.test(name)) return "Bestätigt." + created;
+    if (/\.(publish|published)$/.test(name)) return "Veröffentlicht." + created;
+    if (/\.(issue|issued)$/.test(name)) return "Ausgestellt." + created;
+    return `Erledigt: ${action.label}.` + created;
+  }
   async function actionSaved(results: Row[]) {
     const name = activeAction?.name || "",
       result = results[0]?.record || results[0],
       id = result?.id;
-    actionNotice = "Der Arbeitsschritt wurde bestätigt.";
+    actionNotice = activeAction ? actionDoneText(activeAction, result) : "Erledigt.";
     if (
       id &&
       id !== data.detail?.id &&
@@ -573,8 +586,8 @@
 {#if protectedStand}<div class="notice info">
     <Icon name="lock" />
     <div>
-      Dieser Stand ist geschützt. Änderungen erfolgen über eine neue Version
-      oder den vorgesehenen Korrekturvorgang.
+      {#if module.slug === "dispatch" && record.status === "confirmed"}Dieser Einsatz ist bestätigt. Zum Ändern „Zur Umplanung öffnen“ wählen, zum Absagen „Einsatz stornieren“.{:else if actionList.length}Dieser Stand ist geschützt. Änderungen erfolgen über die Aktionen oben, zum Beispiel „{actionList[0].label}“.{:else}Dieser Stand ist geschützt. Änderungen erfolgen über eine neue Version
+      oder den vorgesehenen Korrekturvorgang.{/if}
     </div>
   </div>{/if}
 {#if actionError}<div class="notice error" role="alert">
@@ -733,7 +746,7 @@
           <h2>Leistungsumfang</h2>
           <span class="count">{lineRows.length} Positionen</span>
         </header>
-        <div class="table-scroll">
+        <div class="table-scroll line-cards">
           <table class="data-table">
             <thead
               ><tr
@@ -779,13 +792,13 @@
                           Interne Kalkulationsgrundlage nach geänderter Position
                           neu prüfen.
                         </div>{/if}</td
-                    ><td class="number">{display(line.quantity, "quantity")}</td
-                    ><td>{display(line.unit)}</td><td class="number"
+                    ><td class="number" data-label="Menge">{display(line.quantity, "quantity")}</td
+                    ><td data-label="Einheit">{display(line.unit)}</td><td class="number" data-label="Einzelpreis netto"
                       >{currencyAmount(
                         line.unit_price,
                         record.currency || data.settings?.currency || "EUR",
                       )}</td
-                    ><td class="number"
+                    ><td class="number" data-label="Steuer"
                       >{line.tax_rate !== null &&
                       line.tax_rate !== undefined &&
                       line.tax_rate !== ""
@@ -793,7 +806,7 @@
                             maximumFractionDigits: 4,
                           }) + " %"
                         : "—"}</td
-                    ><td class="number"
+                    ><td class="number" data-label="Nettobetrag"
                       >{currencyAmount(
                         line.net_amount ?? line.total_net,
                         record.currency || data.settings?.currency || "EUR",

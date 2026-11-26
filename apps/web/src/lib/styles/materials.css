@@ -136,3 +136,17 @@
 @media (prefers-reduced-motion: reduce) {
   .data-table tbody tr { transition: none; }
 }
+
+/* Field use on phones: readable navigation labels, a compact assistant button and finger-sized targets. */
+@media (max-width: 760px) {
+  .mobile-nav a, .mobile-nav button { color: color-mix(in srgb, var(--ink) 80%, var(--muted)); font-size: .78rem; }
+  .mobile-nav .active { color: var(--forest); }
+  .app-shell .assistant-trigger { width: 52px; min-height: 52px; padding: 0; justify-content: center; }
+  .app-shell .assistant-trigger-label { display: none; }
+  .app-shell .text-link:not(p .text-link, li .text-link) { min-height: 44px; }
+  .app-shell .tab { min-height: 44px; }
+  .app-shell .breadcrumb-back { min-height: 44px; }
+}
+@media (pointer: coarse) {
+  .app-shell .avatar { min-width: 44px; min-height: 44px; }
+}

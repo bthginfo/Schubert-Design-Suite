@@ -48,6 +48,7 @@ const values:unknown[]=[ctx.legalEntityId];const parts=requested.map((slug,i)=>{
 });const sql='SELECT jsonb_build_object('+parts.join(',')+') data';const result=await one<any>(db,sql,sql.includes('$1')?values:[]);return result?.data??{};}
 async function dashboard(db:DbClient,ctx:ActorContext){const finance=has(ctx,'finance');const employee=ctx.employeeId;const data=await one<any>(db,`SELECT jsonb_build_object(
  'activeOrders',${has(ctx,'orders')?"(SELECT count(*) FROM orders o WHERE legal_entity_id=$1 AND status NOT IN('completed','cancelled','deleted') AND ($3::boolean OR EXISTS(SELECT 1 FROM dispatch_assignments d WHERE d.order_id=o.id AND d.employee_id=$2 AND d.status NOT IN('cancelled','deleted'))))":'null'},
+ 'pendingLeave',${has(ctx,'time.approve')?"(SELECT count(*) FROM leave_requests WHERE legal_entity_id=$1 AND status='requested' AND employee_id IS DISTINCT FROM $2)":'null'},
  'openQuotes',${has(ctx,'sales')?"(SELECT count(*) FROM quotes WHERE legal_entity_id=$1 AND status IN('draft','under_review','approved','published'))":'null'},
  'openTasks',(SELECT count(*) FROM tasks WHERE $5::boolean AND status IN('open','in_progress') AND legal_entity_id=$1 AND ($6::boolean OR assigned_to=$2)),
  'approvedHours',${has(ctx,'time')?"(SELECT COALESCE(sum(seconds),0)::numeric/3600 FROM time_account_ledger WHERE employee_id=$2 AND kind IN('work','correction'))":'null'},

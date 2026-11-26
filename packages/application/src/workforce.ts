@@ -92,7 +92,12 @@ register('workforce.leave.approve','time.approve',async r=>{
    COALESCE((SELECT jsonb_agg(x) FROM(SELECT region,year,holidays FROM work_calendars WHERE year=$2 AND status='approved')x),'[]'::jsonb) calendars,
    (SELECT CASE WHEN count(*)>0 THEN sum(days) ELSE NULL END FROM leave_entitlements WHERE employee_id=$1 AND year=$2 AND status='approved') entitlement,
    (SELECT COALESCE(sum(days),0) FROM leave_ledger WHERE employee_id=$1 AND year=$2) ledger`,[request.employee_id,year]);
-  requireRule(data.entitlement!==null&&dec(data.entitlement).add(data.ledger).gte(request.days),'LEAVE_BALANCE','Bestätigter Urlaubsanspruch reicht nicht aus oder fehlt.');const slots=paidLeaveSlots(request,data);
+  if(data.entitlement===null){
+   const draft=await one<any>(r.db,"SELECT count(*)::int drafts FROM leave_entitlements WHERE employee_id=$1 AND year=$2 AND status<>'approved'",[request.employee_id,year]);
+   requireRule(false,'LEAVE_BALANCE',draft?.drafts>0?`Der Urlaubsanspruch ${year} ist noch nicht freigegeben. Unter Team & Dispo → Urlaubsansprüche den Anspruch freigeben und dann erneut genehmigen.`:`Für ${year} ist kein Urlaubsanspruch hinterlegt. Unter Team & Dispo → Urlaubsansprüche den Jahresanspruch anlegen und freigeben, dann erneut genehmigen.`);
+  }
+  const remaining=dec(data.entitlement).add(data.ledger);
+  requireRule(remaining.gte(request.days),'LEAVE_BALANCE',`Resturlaub ${year}: ${remaining.toString().replace('.',',')} Tage, beantragt: ${String(request.days).replace('.',',')} Tage. Den Antrag kürzen oder ablehnen.`);const slots=paidLeaveSlots(request,data);
   await r.insert('leave_ledger',{employee_id:request.employee_id,request_id:request.id,year,days:dec(request.days).neg().toString(),kind:'vacation_taken',reason:'Genehmigter Antrag nach bestätigtem Arbeitsmodell und Feiertagskalender',status:'confirmed'});
   for(const slot of slots)await r.insert('time_account_ledger',{employee_id:request.employee_id,submission_id:null,leave_request_id:request.id,effective_on:slot.on,seconds:slot.seconds,kind:'paid_leave',source_version:request.version,status:'confirmed'});
  }

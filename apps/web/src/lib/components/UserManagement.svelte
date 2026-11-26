@@ -157,7 +157,7 @@
           </h3>
           <div class="action-preview">
             <p class="small">
-              Aktuell {editing.role} · Version {editing.version}
+              Aktuelle Rolle: {roles.find((role) => role.key === editing?.role)?.name ?? editing?.role}
             </p>
           </div>
           <div class="field mb">

@@ -17,5 +17,8 @@ export function calendarAgenda<T extends { starts_at: string | Date; ends_at: st
       agenda.get(day)!.push({ assignment, timeLabel });
     }
   }
+  // Live assignments first; cancelled ones stay visible for context but move to the end of each day.
+  const cancelled = (entry: { assignment: T }) => Number((entry.assignment as { status?: string }).status === 'cancelled');
+  for (const entries of agenda.values()) entries.sort((a, b) => cancelled(a) - cancelled(b));
   return agenda;
 }

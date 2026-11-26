@@ -28,6 +28,17 @@
     onclose: () => void;
     onsaved?: (results: Row[]) => void | Promise<void>;
   } = $props();
+  const rangeFormat = new Intl.DateTimeFormat("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" });
+  const timeOnly = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" });
+  function displayRange(start: unknown, end: unknown) {
+    const from = new Date(String(start)), to = end ? new Date(String(end)) : null;
+    if (!Number.isFinite(from.getTime())) return "—";
+    if (!to || !Number.isFinite(to.getTime())) return rangeFormat.format(from);
+    const sameDay = from.toLocaleDateString("de-DE", { timeZone: "Europe/Berlin" }) === to.toLocaleDateString("de-DE", { timeZone: "Europe/Berlin" });
+    return `${rangeFormat.format(from)} – ${sameDay ? timeOnly.format(to) : rangeFormat.format(to)} Uhr`;
+  }
+  const isMoneyKey = (key: string) => /amount|total/.test(key);
+  const previewLabels: Record<string, string> = { gross_total: "Betrag", total_gross: "Betrag", gross_amount: "Betrag", amount: "Betrag", service_date: "Leistungsdatum", due_date: "Fälligkeit", customer_id: "Kunde", supplier_id: "Lieferant", order_id: "Auftrag" };
   let payload: Row = $state({});
   let reason = $state("");
   let confirmed = $state(false);
@@ -249,36 +260,30 @@
           </div>{/if}{#each records as record, index}<div
             class="action-preview"
           >
-            <h3>{recordName(record)}</h3>
+            <h3>{recordName(record, { lookups: data.lookups, module: data.module })}</h3>
             <dl>
-              <dt>Bearbeitungsstand</dt>
-              <dd>Version {record.version ?? "—"}</dd>
+              {#if record.employee_id}<dt>Person</dt>
+                <dd>{display(record.employee_id, "employee_id", data)}</dd>{/if}
+              {#if record.kind && (record.starts_on || record.starts_at)}<dt>Art</dt>
+                <dd>{display(record.kind, "kind", data)}</dd>{/if}
+              {#if record.starts_on}<dt>Zeitraum</dt>
+                <dd>{display(record.starts_on, "date")}{record.ends_on && record.ends_on !== record.starts_on ? " – " + display(record.ends_on, "date") : ""}{record.days ? ` · ${new Intl.NumberFormat("de-DE", { maximumFractionDigits: 2 }).format(Number(record.days))} Arbeitstage` : ""}</dd>{/if}
+              {#if record.starts_at}<dt>Zeitraum</dt>
+                <dd>{displayRange(record.starts_at, record.ends_at)}</dd>{/if}
+              {#if record.location}<dt>Ort</dt>
+                <dd>{record.location}</dd>{/if}
               {#if record.status || record.legal_status}<dt>Status</dt>
                 <dd>
                   <Status value={record.status || record.legal_status} />
-                </dd>{/if}{#each ["gross_total", "total_gross", "gross_amount", "amount", "service_date", "due_date", "customer_id", "supplier_id", "order_id"] as key}{#if record[key] !== undefined}<dt
-                  >
-                    {key.includes("amount") ||
-                    key === "total_gross" ||
-                    key === "gross_total"
-                      ? "Betrag"
-                      : key === "due_date"
-                        ? "Fälligkeit"
-                        : key === "customer_id"
-                          ? "Kunde"
-                          : key === "supplier_id"
-                            ? "Lieferant"
-                            : "Auftrag"}
-                  </dt>
+                </dd>{/if}{#each ["gross_total", "total_gross", "gross_amount", "amount", "service_date", "due_date", "customer_id", "supplier_id", "order_id"].filter((key, position, keys) => record[key] !== undefined && record[key] !== null && record[key] !== "" && !(["total_gross", "gross_amount", "amount"].includes(key) && keys.slice(0, position).some((earlier) => isMoneyKey(earlier) && record[earlier] != null && record[earlier] !== ""))) as key}<dt>{previewLabels[key]}</dt>
                   <dd>
-                    {key.includes("amount") ||
-                    ["gross_total", "total_gross"].includes(key)
+                    {isMoneyKey(key)
                       ? currencyAmount(
                           record[key],
                           record.currency || data.settings?.currency || "EUR",
                         )
-                      : display(record[key], key, data)}
-                  </dd>{/if}{/each}{#if index < completed}<dt>Ergebnis</dt>
+                      : display(record[key], key.endsWith("_date") ? "date" : key, data)}
+                  </dd>{/each}{#if index < completed}<dt>Ergebnis</dt>
                 <dd>Erfolgreich verarbeitet</dd>{/if}
             </dl>
             {#if documentaryAction}<dl class="mt">
