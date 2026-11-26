@@ -5,15 +5,22 @@
   import { usePlanningUnits } from '#lib/client/planning-units.svelte.ts';
   import {inscriptionCenter, letteringLayout, loadPlanningFont} from './lettering-layout.ts';
   import Icon from '../Icon.svelte';
+  import {stoneAppearance} from './stone-appearance.ts';
 
   let {
-    kind, width, height, depth, thickness, shape, radius, archRise, text, fontKey, color, hostId, snapshot, gap, maxWidth, u, v,
+    kind, width, height, depth, thickness, shape, radius, archRise, text, fontKey, color, hostId, snapshot, gap, maxWidth, u, v, purpose = '', material = null,
   }: {
     kind: string; width: string; height: string; depth: string; thickness: string;
     shape: MemorialShape; radius: string; archRise: string; text: string; fontKey: NonNullable<InscriptionElement['previewFontKey']>; color: string;
     hostId: string; snapshot: DesignSnapshot;
     gap: string; maxWidth: string; u: string; v: string;
+    /** UI purpose of a stone piece (`base` = Sockel) and the stone's material, if any. */
+    purpose?: string; material?: any;
   } = $props();
+  const patternId = $props.id();
+  const upright = $derived(purpose === 'memorial' || purpose === 'base');
+  // Same appearance source as plan, 3D and library; unknown colours stay neutral grey.
+  const appearance = $derived(material || kind === 'inscription' ? stoneAppearance(material) : null);
   const units = usePlanningUnits();
   const format = (value: string | number) => lengthLabel(String(value), units.unit);
   const drawing = $derived.by(() => {
@@ -78,7 +85,8 @@
   <header><Icon name={kind === 'room' ? 'box' : 'pen'} size={16}/><h3>{kind === 'inscription' ? 'Ihre Inschrift' : 'Ihre Maße im Überblick'}</h3></header>
   {#if drawing}
     <svg viewBox={drawing.box} role="img" aria-label={kind === 'room' ? 'Raumform aus den eingegebenen Maßen' : kind === 'inscription' ? 'Inschrift auf der gewählten Fläche' : 'Bauteilform aus den eingegebenen Maßen'}>
-      <path d={drawing.path} fill={kind === 'inscription' ? '#37414a' : 'var(--preview-fill)'} stroke="var(--preview-stroke)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+      {#if appearance}<defs><pattern id={patternId} patternUnits="userSpaceOnUse" width="800" height="800"><rect width="800" height="800" fill={appearance.color}/>{#if appearance.path}<image href={appearance.path} width="800" height="800" opacity=".38" preserveAspectRatio="xMidYMid slice" style="mix-blend-mode:multiply"/>{/if}</pattern></defs>{/if}
+      <path d={drawing.path} fill={appearance ? `url(#${patternId})` : 'var(--preview-fill)'} stroke="var(--preview-stroke)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
       {#if inscription && text}
         <g transform={`translate(${inscription.x} ${inscription.y}) scale(${inscription.layout.scale} 1)`}>
           {#each inscription.layout.rows as row}<text x="0" y={-row.baseline} font-size={inscription.layout.fontSize} font-family={inscription.layout.font.family} text-anchor={inscription.layout.anchor} fill={color}>{row.text}</text>{/each}
@@ -86,10 +94,11 @@
       {/if}
     </svg>
     <dl>
-      <div><dt>{kind === 'room' || snapshot.kind !== 'memorial' ? 'Länge' : 'Breite'}</dt><dd>{format(drawing.w)}</dd></div>
-      <div><dt>{kind === 'room' ? 'Tiefe' : 'Höhe'}</dt><dd>{format(drawing.h)}</dd></div>
-      {#if kind !== 'inscription'}<div><dt>{kind === 'room' ? 'Wandstärke' : 'Materialstärke'}</dt><dd>{thickness ? format(thickness) : 'Noch offen'}</dd></div>{/if}
+      <div><dt>{kind === 'stone_piece' && !upright ? 'Länge' : 'Breite'}</dt><dd>{format(drawing.w)}</dd></div>
+      <div><dt>{kind === 'room' ? 'Tiefe' : kind === 'stone_piece' && !upright ? (purpose === 'wall' ? 'Höhe' : 'Tiefe') : 'Höhe'}</dt><dd>{format(drawing.h)}</dd></div>
+      {#if kind !== 'inscription'}<div><dt>{kind === 'room' ? 'Wandstärke' : purpose === 'base' ? 'Tiefe' : 'Materialstärke'}</dt><dd>{thickness ? format(thickness) : 'Noch offen'}</dd></div>{/if}
     </dl>
+    {#if appearance?.hint}<p>{material ? appearance.hint : 'Material noch nicht gewählt'}. Die Fläche wird neutral grau gezeigt.</p>{/if}
     {#if kind==='inscription'&&fontFailed}<p role="status">Die Entwurfsschrift konnte nicht geladen werden. Die Ersatzschrift ist keine verbindliche Schriftvorschau.</p>{/if}
     <p>{kind === 'inscription' ? 'Typografische Vorschau. Nach dem Einfügen verschieben und gestalten Sie den Text direkt auf dem Stein.' : kind === 'room' ? 'Die Vorschau zeigt das Seitenverhältnis. Innen- und Wandachsmaße werden gemäß Ihrer Auswahl in den Plan übernommen.' : 'Die Form passt sich Ihren Eingaben an. Maße, Material und Kanten bleiben anschließend bearbeitbar.'}</p>
   {:else}

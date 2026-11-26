@@ -26,3 +26,21 @@ export async function prepareStudioAssistant(){
   if(!reportLengthValidity(document.querySelector('.studio-root'),{allowEmptyForms:true}))throw new Error('Bitte das ungültige Maß im Plan korrigieren, bevor die KI den Plan erhält.');
   return prepare();
 }
+
+/**
+ * What the last studio-bound assistant reply offers. The studio states this next to
+ * „KI für diesen Schritt“, so a reply without applicable commands never looks like
+ * a pending change. Assistant.svelte reports each reply via reportStudioAssistantReply.
+ */
+export type StudioAssistantReply={variantId:string;revisionId:string;step:PlanningStep;kind:'proposal'|'notes';commandCount:number;at:number};
+export const studioAssistantReply=writable<StudioAssistantReply|null>(null);
+export function studioReplyKind(result:any):{kind:'proposal'|'notes';commandCount:number}{
+  const proposal=result?.proposal;
+  const commands=proposal?.proposedCommands??proposal?.commands??proposal?.changes;
+  const commandCount=Array.isArray(commands)?commands.length:commands&&typeof commands==='object'?Object.keys(commands).length:0;
+  return{kind:proposal?.id&&commandCount>0?'proposal':'notes',commandCount};
+}
+export function reportStudioAssistantReply(work:Pick<StudioAssistantContext,'variantId'|'revisionId'|'step'>|null,result:any){
+  if(!work)return;
+  studioAssistantReply.set({variantId:work.variantId,revisionId:work.revisionId,step:work.step,...studioReplyKind(result),at:Date.now()});
+}

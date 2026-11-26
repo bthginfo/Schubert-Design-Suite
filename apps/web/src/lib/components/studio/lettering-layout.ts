@@ -30,3 +30,19 @@ export function inscriptionCenter(snapshot:DesignSnapshot,element:InscriptionEle
  const layout=letteringLayout(snapshot,element),centerX=(Math.min(...xs)+Math.max(...xs))/2,centerY=(Math.min(...ys)+Math.max(...ys))/2;
  return{uMm:String(Math.round(centerX*100)/100),vMm:String(Math.round((centerY-(layout.top-layout.bottom)/2)*100)/100)};
 }
+export type InscriptionPreset='top'|'upper_third'|'center';
+export const inscriptionPresets:Array<[InscriptionPreset,string]>=[['top','Oben'],['upper_third','Oberes Drittel'],['center','Mitte']];
+/**
+ * Origin for a named placement. u is the horizontal text centre measured from the
+ * left edge of the stone, v the baseline of the last line measured from its bottom.
+ * „Oben“ keeps a margin of 8 % of the height (at least 40 mm) above the first line,
+ * „Oberes Drittel“ centres the text block on two thirds of the height.
+ */
+export function inscriptionPlacement(snapshot:DesignSnapshot,element:InscriptionElement,preset:InscriptionPreset){
+ if(preset==='center')return inscriptionCenter(snapshot,element);
+ const host=snapshot.elements.find(e=>e.id===element.surfaceElementId),contour=host?.kind==='stone_piece'?host.finishedContour:host?.kind==='surface'?host.contour:null;if(!contour)throw Error('Eine Stein- oder Beschriftungsfläche auswählen.');
+ const points=sampleRing(contour.outer),xs=points.map(p=>Number(p.xMm)),ys=points.map(p=>Number(p.yMm)),minY=Math.min(...ys),maxY=Math.max(...ys),height=maxY-minY;
+ const layout=letteringLayout(snapshot,element),centerX=(Math.min(...xs)+Math.max(...xs))/2;
+ const v=preset==='top'?maxY-Math.max(40,height*.08)-layout.top:minY+height*2/3-(layout.top-layout.bottom)/2;
+ return{uMm:String(Math.round(centerX*100)/100),vMm:String(Math.round(v*100)/100)};
+}

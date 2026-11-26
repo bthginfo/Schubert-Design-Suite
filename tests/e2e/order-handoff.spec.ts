@@ -103,18 +103,16 @@ test('Office to workshop handoff keeps the approval pinned and prefills a person
 
   await page.getByRole('link', { name: 'Zeit nachtragen', exact: true }).click();
   const manual = page.getByRole('dialog', { name: 'Zeit nachtragen', exact: true });
-  await expect(manual.locator('#assignment-date')).toHaveValue(day);
-  await expect(manual.locator('#assignment-end-date')).toHaveValue(day);
-  await expect(manual.locator('#assignment-from')).toHaveValue('');
-  await expect(manual.locator('#assignment-to')).toHaveValue('');
+  await expect(manual.locator('#manual-date')).toHaveValue(day);
+  await expect(manual.locator('#manual-start')).toHaveValue('');
+  await expect(manual.locator('#manual-end')).toHaveValue('');
   await expect(manual.locator('#manual-order')).toHaveValue(order.id);
   const entryDay = berlinDay.format(new Date(Date.now() - (2 + parseInt(marker, 16) % 17) * 86_400_000));
-  await manual.locator('#assignment-date').fill(entryDay);
-  await manual.locator('#assignment-end-date').fill(entryDay);
-  await manual.locator('#assignment-from').fill('08:14');
-  await manual.locator('#assignment-to').fill('08:25');
+  await manual.locator('#manual-date').fill(entryDay);
+  await manual.locator('#manual-start').fill('08:14');
+  await manual.locator('#manual-end').fill('08:25');
+  await manual.getByRole('radio', { name: '0', exact: true }).check();
   await manual.locator('#manual-note').fill('Synthetischer Test · Aufmaß erfasst.');
-  await manual.getByRole('checkbox').check();
   const response = page.waitForResponse(result => result.request().method() === 'POST' &&
     new URL(result.url()).pathname === '/api/v1/commands' &&
     result.request().postDataJSON()?.name === 'workforce.time.manual');

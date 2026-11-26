@@ -6,10 +6,13 @@
 
   type Props = Omit<HTMLInputAttributes, 'value' | 'type' | 'oninput' | 'onchange'> & {
     value?: string;
+    /** Show whole millimetres; the stored value keeps its full precision until the user edits it. */
+    roundMm?: boolean;
     oninput?: (event: Event & {currentTarget: HTMLInputElement}) => void;
     onchange?: (event: Event & {currentTarget: HTMLInputElement}) => void;
   };
-  let {value = $bindable(''), oninput, onchange, ...attributes}: Props = $props();
+  let {value = $bindable(''), roundMm = false, oninput, onchange, ...attributes}: Props = $props();
+  const shown = (mm: string | null | undefined, unit: typeof units.unit) => lengthInput(roundMm && mm !== null && mm !== undefined && mm !== '' && Number.isFinite(Number(mm)) ? String(Math.round(Number(mm))) : mm, unit);
   const units = usePlanningUnits();
   const errorId = $props.id();
   let input: HTMLInputElement;
@@ -19,7 +22,7 @@
     const next = value, unit = units.unit;
     untrack(() => {
       if (!focused || unit !== lastUnit || next !== committed) {
-        draft = lengthInput(next, unit);error = '';committed = next;
+        draft = shown(next, unit);error = '';committed = next;
       }
       lastUnit = unit;
       input?.setCustomValidity(error);
@@ -40,7 +43,7 @@
   function change(event: Event & {currentTarget: HTMLInputElement}) {
     if (!read()) return;
     // Existing geometry handlers receive canonical mm; only this control owns presentation.
-    notify(event, onchange);input.value = draft = lengthInput(value, units.unit);
+    notify(event, onchange);input.value = draft = shown(value, units.unit);
   }
 </script>
 
@@ -48,7 +51,7 @@
   aria-invalid={!!error || attributes['aria-invalid'] === true || attributes['aria-invalid'] === 'true'}
   aria-describedby={[attributes['aria-describedby'], error ? errorId : ''].filter(Boolean).join(' ') || undefined}
   onfocus={() => focused = true} oninput={(event) => {if(read()) notify(event,oninput);}} onchange={change}
-  onblur={() => {focused = false;if (!error) draft = lengthInput(value, units.unit);}}/>
+  onblur={() => {focused = false;if (!error) draft = shown(value, units.unit);}}/>
 <!-- The description is explicitly referenced; it must not become part of an enclosing label. -->
 {#if error}<span id={errorId} class="length-error" aria-hidden="true">{error}</span>{/if}
 

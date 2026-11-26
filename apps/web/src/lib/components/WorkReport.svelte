@@ -6,7 +6,8 @@
   let {data,initialOrderId='',initialWorkPackageId='',activity=''}:{data:AppData;initialOrderId?:string;initialWorkPackageId?:string;activity?:string}=$props();let selectedOrder=$state('');let workPackage=$state(untrack(()=>initialWorkPackageId));let performedOn=$state(new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin'}).format(new Date()));let description=$state('');let quantity=$state('');let unit=$state('piece');let busy=$state(false);let error=$state('');let reportSaved=$state(false);
   // The confirmation stays beside the button until the next entry is started.
   let confirmation=$state('');let fieldErrors=$state<{order?:string;description?:string;quantity?:string}>({});
-  const ownReports=$derived((data.related?.work_reports??[]).filter(report=>report.employee_id===data.context?.employeeId));
+  // The time page lists only the caller's own reports and omits employee_id; other pages keep the filter.
+  const ownReports=$derived((data.related?.work_reports??[]).filter(report=>report.employee_id===undefined||report.employee_id===data.context?.employeeId));
   const units:Record<string,string>={piece:'Stück',m:'m',m2:'m²',m3:'m³',kg:'kg',h:'h',package:'Pauschale'};
   function startEntry(){confirmation='';}
   function firstWords(text:string,count=8){const words=text.trim().split(/\s+/);return words.slice(0,count).join(' ')+(words.length>count?' …':'');}
