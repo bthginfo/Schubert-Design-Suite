@@ -445,7 +445,7 @@
       <div class="heading-actions"><div class="header-history"><button aria-label="Rückgängig" title="Rückgängig · Strg/⌘ Z" onclick={undo} disabled={!history.length||saving||!!outgoing||isHistoric}><Icon name="rotate-ccw" size={17}/></button><button aria-label="Wiederholen" title="Wiederholen · Strg/⌘ Umschalt Z" onclick={redoAction} disabled={!redo.length||saving||!!outgoing||isHistoric}><Icon name="refresh" size={17}/></button></div>
         <button id="studio-project-actions" class="btn" popovertarget="studio-project-menu" aria-label="Projekt: Aktionen öffnen"><Icon name="file" size={15}/><span>Projekt</span><Icon name="down" size={12}/></button>
         <button class="btn fullscreen-button" aria-label={fullscreen?'Vollbild beenden':'Vollbild'} aria-pressed={fullscreen} onclick={toggleFullscreen}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d={fullscreen?"M8 3v5H3m13-5v5h5M3 16h5v5m13-5h-5v5":"M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"}/></svg><span>{fullscreen?'Vollbild beenden':'Vollbild'}</span></button>
-        <button class="btn primary save-plan" class:is-saved={saveState==='saved'} aria-label={saveState==='saved'?'Alle Änderungen gespeichert':'Speichern'} onclick={()=>{saveFailed=false;void save();}} disabled={saving||!pending.length||!!conflict||isHistoric}><Icon name="check" size={16}/><span class="save-label">{saving?'Speichert …':saveState==='saved'?'Gespeichert':'Speichern'}</span></button>
+        <button class="btn primary save-plan" onclick={()=>{saveFailed=false;void save();}} disabled={saving||!pending.length||!!conflict||isHistoric}><Icon name="check" size={16}/><span class="save-label">{saving?'Speichert …':'Speichern'}</span></button>
       </div>
     </div>
   </header>
@@ -1073,12 +1073,12 @@
 .save-chip[data-state=pending],.save-chip[data-state=saving]{background:color-mix(in srgb,var(--warning) 15%,var(--paper));color:var(--ink)}
 .save-chip[data-state=conflict],.save-chip[data-state=failed]{background:color-mix(in srgb,var(--danger) 12%,var(--paper));color:var(--danger)}
 .save-chip button{display:inline-flex;align-items:center;gap:5px;min-height:24px;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
-.workbench .heading-actions .save-plan.is-saved:disabled{opacity:1;background:var(--paper);border-color:color-mix(in srgb,var(--success) 40%,var(--line));color:color-mix(in srgb,var(--success) 72%,var(--ink));cursor:default}
 /* Keep the editor toolbar on one row; it scrolls instead of wrapping when both panels are open. */
 .workbench .floating-toolbar .main-tools{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
 .workbench .floating-toolbar .main-tools::-webkit-scrollbar{display:none}
 .workbench .floating-toolbar .main-tools>*{flex:none}
-@container drawing (max-width:640px){.workbench .editor-toolbar .tool-modes button span,.workbench .editor-toolbar .panel-tools .desktop-panel-label,.workbench .editor-toolbar .panel-tools button>span:not(.mobile-panel-label){display:none}}
+/* Narrow drawing: icon-only tools; the visible names stay in the accessibility tree. */
+@container drawing (max-width:640px){.workbench .editor-toolbar .tool-modes button span,.workbench .editor-toolbar .panel-tools .desktop-panel-label,.workbench .editor-toolbar .panel-tools button>span:not(.mobile-panel-label){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}}
 /* Touch targets of at least 44 × 44 px on coarse pointers. */
 @media(pointer:coarse){
   .workbench .heading-actions .btn,.workbench .header-history button,.mobile-history button{min-height:44px;min-width:44px}
@@ -1095,6 +1095,7 @@
   .studio-root:not([data-compact=true]) .view-dock .zoom-control span,.studio-root[data-sheet=true] .view-dock .zoom-control span{display:none}
 }
 .save-chip .chip-short{display:none}
-@media(max-width:760px){.save-chip .chip-full{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.save-chip .chip-short{display:inline}.workbench .heading-actions .save-plan.is-saved .save-label{display:none}}
-@media(max-width:360px){.workbench .heading-actions .save-plan .save-label{display:none}}
+@media(max-width:760px){.save-chip .chip-full{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.save-chip .chip-short{display:inline}}
+/* Very narrow phones: icon only, the name stays available to assistive technology. */
+@media(max-width:360px){.workbench .heading-actions .save-plan .save-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}}
 </style>

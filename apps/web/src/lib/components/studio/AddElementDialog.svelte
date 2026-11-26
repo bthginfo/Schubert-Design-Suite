@@ -55,13 +55,13 @@
   });
   // The shown distances always match where the text will actually be placed.
   $effect(()=>{if(presetUV){x=presetUV.uMm;z=presetUV.vMm;}});
-  const dialogTitle=$derived(kind==='stone_piece'&&snapshot.kind==='memorial'?(purpose==='base'?'Sockel ergänzen':purpose==='memorial'?'Stein ergänzen':titles.stone_piece):titles[kind]??'Element ergänzen');
-  const defaultLabels=['Natursteinbauteil','Stele','Sockel'];
+  const dialogTitle=$derived(kind==='stone_piece'&&snapshot.kind==='memorial'&&purpose==='base'?'Sockel ergänzen':titles[kind]??'Element ergänzen');
+  const defaultLabels=['Natursteinbauteil','Sockel'];
   let stackEnabled=$state(false),stackPartner=$state('');
   // A new Sockel may carry any free stone; a new stone is only offered Sockel-like bases.
   const stackOptions=$derived(memorialPiece?stackCandidates(snapshot,purpose==='base'?'stone':'base').filter(e=>purpose==='base'||isBaseStone(snapshot,e)):[]);
   function purposeChanged(){
-    if(defaultLabels.includes(label.trim())||!label.trim())label=snapshot.kind==='memorial'&&purpose==='base'?'Sockel':snapshot.kind==='memorial'&&purpose==='memorial'?'Stele':'Natursteinbauteil';
+    if(defaultLabels.includes(label.trim())||!label.trim())label=snapshot.kind==='memorial'&&purpose==='base'?'Sockel':'Natursteinbauteil';
     const options=snapshot.kind==='memorial'&&(purpose==='memorial'||purpose==='base')?stackCandidates(snapshot,purpose==='base'?'stone':'base').filter(e=>purpose==='base'||isBaseStone(snapshot,e)):[];
     // A new Sockel goes under the chosen stone; a new stone stands on an existing Sockel.
     const preferred=purpose==='base'?options.find(e=>e.id===selectedId)??options[0]:options.find(e=>e.id===selectedId&&isBaseStone(snapshot,e))??options.find(e=>isBaseStone(snapshot,e));

@@ -23,14 +23,18 @@
     studioAssistantReply.set(null);
     onai(prompts[step]);
   }
+  /** Compact step word, always a part of the full label (e.g. „Maße“ of „Stein & Maße“). */
+  function shortLabel(item:PlanningStep,label:string){const parts=label.split(' & ');return parts.length<2?label:item==='geometry'?parts[1]:parts[0];}
   const reply=$derived($studioAssistantReply?.variantId===snapshot.variantId&&$studioAssistantReply.step===step?$studioAssistantReply:null);
 </script>
 
 <div class="planning-flow">
   <nav class="planning-steps" aria-label={memorial?'Arbeitsschritte im Grabmalstudio':'Arbeitsschritte im Raumstudio'}>
     {#each steps as item, index}
-      <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={hints[item]} aria-label={`Schritt ${index+1}: ${planningStepLabel(snapshot.kind,item,presetId)}`} onclick={()=>onstep(item)}>
-        <span class="step-number" aria-hidden="true">{index+1}</span><span class="step-long">{planningStepLabel(snapshot.kind,item,presetId)}</span><span class="step-short" aria-hidden="true">{{geometry:'Maße',design:memorial?'Inschrift':'Material',review:'Prüfen',output:'Ausgabe'}[item]}</span>
+      {@const label=planningStepLabel(snapshot.kind,item,presetId)}
+      <!-- The accessible name is the full label; the compact word is part of it and stays visible. -->
+      <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={`${label} · ${hints[item]}`} onclick={()=>onstep(item)}>
+        <span class="step-number" aria-hidden="true">{index+1}</span><span class="sr-only">Schritt {index+1}: </span><span class="step-long">{label}</span><span class="step-short" aria-hidden="true">{shortLabel(item,label)}</span>
       </button>
     {/each}
   </nav>
@@ -65,7 +69,7 @@
   }
   .planning-steps::-webkit-scrollbar { display: none; }
   .planning-steps button {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 0 0 auto; min-height: 38px; padding: 6px 13px;
+    position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 0 0 auto; min-height: 38px; padding: 6px 13px;
     border-radius: 9px; color: var(--muted); font-size: .83rem; line-height: 1.35; white-space: nowrap;
   }
   .step-number {
@@ -97,7 +101,7 @@
     .flow-ai span { display: none; }
   }
   @container planning-flow (max-width: 900px) {
-    .step-long { display: none; }
+    .step-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
     .step-short { display: inline; }
   }
   @container planning-flow (max-width: 620px) {
