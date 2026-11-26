@@ -79,7 +79,7 @@ export async function assistant(ctx:ActorContext,message:string,inputContext:Rec
   return {...result,cached:true,actualCost:'0'};
  });
  signal?.throwIfAborted();if(cached)return cached;
- const api=claudeClient(config.apiKey,profile.review?240000:120000);
+ const api=claudeClient(config.apiKey,profile.review?240000:120000,config.workspaceId);
  onProgress?.({stage:'preparing',label:'Kontext und Kostenrahmen werden geprüft'});
  const planRead='inspect_current_plan';
  const evidenceForReview:{name:string;result:unknown}[]=[];
@@ -238,7 +238,7 @@ export async function generateVisualization(ctx:ActorContext,prompt:string,refer
 
 /** A small paid check with synthetic text: the key, the model and the complete structured-answer path. */
 export async function probeClaude(ctx:ActorContext){
- const config=await integrationConfiguration(ctx,AI_PROVIDER),profile=routeModel(config,'standard',{entityType:'probe'}),api=claudeClient(config.apiKey,30000);
+ const config=await integrationConfiguration(ctx,AI_PROVIDER),profile=routeModel(config,'standard',{entityType:'probe'}),api=claudeClient(config.apiKey,30000,config.workspaceId);
  let model;try{model=await api.models.retrieve(profile.model);}catch(error){const failure=providerFailure(error);if(failure)throw new DomainError(failure.code,failure.message+' Es wurde nichts berechnet.',failure.status);throw error;}
  requireRule(model.id===profile.model||model.id.startsWith(profile.model+'-'),'AI_MODEL_UNAVAILABLE','Das eingestellte Claude-Modell ist für diese Organisation nicht verfügbar.');
  const result=await assistant(ctx,'Dies ist ein synthetischer Verbindungstest ohne Kundendaten. Antworte kurz auf Deutsch, dass die Verbindung funktioniert. Schlage keine Befehle vor.',{entityType:'probe'});

@@ -4,7 +4,7 @@ import {one} from '@schubert/db';
 import {sealConfiguration,openConfiguration,connectionIn} from '@schubert/adapters';
 import {register,hash,type Runtime} from './core.js';
 import {DEFAULT_TEXT_MODEL,DEFAULT_DESIGN_MODEL,DEFAULT_MAX_REQUEST_COST,DEFAULT_DESIGN_MAX_REQUEST_COST,DEFAULT_MONTHLY_BUDGET} from '../../ai/src/model-routing.js';
-import {AI_PROVIDER,MEDIA_PROVIDER,claudeEfforts,claudeModelPrices} from '../../ai/src/claude.js';
+import {AI_PROVIDER,MEDIA_PROVIDER,claudeEfforts,claudeModelPrices,workspaceIdPattern} from '../../ai/src/claude.js';
 const positive=z.string().refine(value=>{try{return dec(value).gt(0);}catch{return false;}},'Positiven Betrag angeben.');
 async function saveConnection(r:Runtime,provider:string,configuration:Record<string,unknown>,secretReference:string|null){
  const prior=await connectionIn(r.db,provider),data={provider,configuration,secret_reference:secretReference,fingerprint:hash(configuration),status:'configured'};
@@ -25,7 +25,8 @@ const anthropicSettings=z.object({apiKey:z.string().trim().min(20).max(500).rege
  textModel:claudeModel.default(DEFAULT_TEXT_MODEL),designModel:claudeModel.default(DEFAULT_DESIGN_MODEL),
  effort:effort.default('low'),planningEffort:effort.default('medium'),designEffort:effort.default('high'),
  inputCostPerMillion:positive.optional(),outputCostPerMillion:positive.optional(),designInputCostPerMillion:positive.optional(),designOutputCostPerMillion:positive.optional(),
- maxRequestCost:positive.default(DEFAULT_MAX_REQUEST_COST),designMaxRequestCost:positive.default(DEFAULT_DESIGN_MAX_REQUEST_COST),monthlyBudget:positive.default(DEFAULT_MONTHLY_BUDGET)});
+ maxRequestCost:positive.default(DEFAULT_MAX_REQUEST_COST),designMaxRequestCost:positive.default(DEFAULT_DESIGN_MAX_REQUEST_COST),monthlyBudget:positive.default(DEFAULT_MONTHLY_BUDGET),
+ workspaceId:z.union([z.literal(''),z.string().trim().regex(workspaceIdPattern,'Workspace-ID im Format wrkspc_… angeben.')]).optional()});
 /** Optional media provider: concept images and speech input. Text, vision and tools run on Claude. */
 const mediaSettings=z.object({apiKey:z.string().min(20).max(500).optional(),transcriptionModel:z.string().max(150).optional(),imageModel:z.string().max(150).optional(),imageFallbackModel:z.string().max(150).default('gpt-image-2'),imageTextCostPerMillion:positive.default('5'),imageInputCostPerMillion:positive.default('8'),imageOutputCostPerMillion:positive.default('30'),imageMaxRequestCost:positive.default('0.5'),imageMaxOutputTokens:z.number().int().positive().max(100000).default(8192),imageMaxInputTokensPerReference:z.number().int().positive().max(100000).default(8192),transcriptionInputCostPerMillion:positive.default('1.25'),transcriptionOutputCostPerMillion:positive.default('5'),transcriptionMaxRequestCost:positive.default('0.031'),transcriptionMaxInputTokens:z.number().int().positive().max(1000000).default(16000),transcriptionMaxOutputTokens:z.number().int().positive().max(100000).default(2000)});
 register('integrations.smtp.update','admin.integrations',async r=>{assertFreshAuth(r.ctx.reauthenticatedAt);const p=z.object({host:z.string().min(3).max(253).regex(/^[a-zA-Z0-9.-]+$/),port:z.union([z.literal(465),z.literal(587),z.literal(2525)]),user:z.string().min(1).max(320),from:z.email(),password:z.string().min(1).max(500).optional(),replyTo:z.email().optional()}).parse(r.payload);const prior=await connectionIn(r.db,'smtp');const secrets=prior?openConfiguration(r.ctx,'smtp',prior.secret_reference):{};if(p.password)secrets.password=p.password;requireRule(secrets.password,'SMTP_PASSWORD','SMTP-Passwort oder App-Passwort fehlt.');const {password,...configuration}=p;const result=await saveConnection(r,'smtp',configuration,sealConfiguration(r.ctx,'smtp',secrets));return {id:result.id,version:result.version,...configuration,hasPassword:true,configured:true};});
@@ -41,7 +42,7 @@ register('integrations.anthropic.update','admin.integrations',async r=>{
  const prior=await connectionIn(r.db,AI_PROVIDER),secrets=prior?openConfiguration(r.ctx,AI_PROVIDER,prior.secret_reference):{};
  if(p.apiKey)secrets.apiKey=p.apiKey;
  requireRule(secrets.apiKey||process.env.ANTHROPIC_API_KEY,'AI_KEY','Claude-API-Schlüssel fehlt. Ihn in der Claude Console unter API Keys erstellen.');
- const {apiKey,...profile}=p;const configuration={...profile,provider:AI_PROVIDER,automaticEscalation:false,promptVersion:'schubert-design-claude-2026-11-26.1',billingCurrency:'USD'};
+ const {apiKey,workspaceId,...profile}=p;const configuration={...profile,...(workspaceId?{workspaceId}:{}),provider:AI_PROVIDER,automaticEscalation:false,promptVersion:'schubert-design-claude-2026-11-26.1',billingCurrency:'USD'};
  const result=await saveConnection(r,AI_PROVIDER,configuration,secrets.apiKey?sealConfiguration(r.ctx,AI_PROVIDER,secrets):null);
  const period=new Date().toISOString().slice(0,7);const budget=await one<any>(r.db,'SELECT * FROM ai_budgets WHERE period=$1 AND legal_entity_id=$2 FOR UPDATE',[period,r.ctx.legalEntityId]);
  if(budget){requireRule(dec(p.monthlyBudget).gte(dec(budget.spent).add(budget.reserved)),'AI_BUDGET_COMMITTED','Bereits verbrauchte oder reservierte Kosten dürfen nicht unterschritten werden.');await r.update('ai_budgets',budget.id,{limit_amount:p.monthlyBudget},budget.version);}

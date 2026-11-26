@@ -21,11 +21,16 @@ export const claudeModelPrices: Readonly<Record<string, {input: string; output: 
   'claude-fable-5-2': {input: '8', output: '40', cachedInput: '0.2', cacheWrite: '10'},
 };
 
-export function claudeClient(apiKey?: string, timeout = 120000) {
+export const workspaceIdPattern = /^wrkspc_[A-Za-z0-9]{8,64}$/;
+export function claudeClient(apiKey?: string, timeout = 120000, workspaceId?: string) {
   apiKey ??= process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new DomainError('INTEGRATION_UNAVAILABLE', 'Die Claude-Verbindung ist noch nicht eingerichtet. Die übrigen Funktionen bleiben verfügbar.', 503);
+  // Organization-wide keys must name the Workspace whose limits, credits and usage apply.
+  workspaceId ||= process.env.ANTHROPIC_WORKSPACE_ID || undefined;
+  if (workspaceId && !workspaceIdPattern.test(workspaceId))
+    throw new DomainError('AI_PROVIDER_CONFIGURATION', 'Die Claude-Workspace-ID hat kein gültiges Format (wrkspc_…).', 503);
   // No silent paid retries. Overload responses are retried explicitly in claudeCall().
-  return new Anthropic({apiKey, timeout, maxRetries: 0});
+  return new Anthropic({apiKey, timeout, maxRetries: 0, ...(workspaceId ? {defaultHeaders: {'anthropic-workspace-id': workspaceId}} : {})});
 }
 
 const generation = (model: string) => /^claude-(?:opus|sonnet|haiku|fable|mythos)-(\d+)(?:-(\d+))?/.exec(model);
@@ -113,6 +118,8 @@ export function providerFailure(error: unknown): ProviderFailure | null {
   const text = String((error as any).error?.error?.message ?? error.message ?? '');
   if (/credit balance is too low|billing/i.test(text))
     return {status: 402, code: 'AI_PROVIDER_CREDITS', message: 'Das Claude-Guthaben der verbundenen Organisation reicht nicht. In der Claude Console unter Billing Guthaben prüfen oder die API-Credits des Claude-Plans mit genau dieser Organisation verknüpfen.'};
+  if (/scoped to a workspace|workspace-id header|valid workspace ID/i.test(text))
+    return {status: 503, code: 'AI_PROVIDER_WORKSPACE', message: 'Dieser Claude-Schlüssel gilt für die ganze Organisation. Der Superadmin trägt unter Administration → Integrationen → „Claude verbinden“ die Workspace-ID (wrkspc_…) ein oder verwendet einen Schlüssel aus einem Workspace.'};
   if (error.status === 401 || error.status === 403)
     return {status: 503, code: 'AI_PROVIDER_CONFIGURATION', message: 'Der Claude-API-Schlüssel wurde abgelehnt. Der Superadmin kann unter Administration → Integrationen einen gültigen Schlüssel hinterlegen.'};
   if (error.status === 404)

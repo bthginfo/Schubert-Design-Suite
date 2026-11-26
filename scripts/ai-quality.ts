@@ -28,7 +28,7 @@ const cases=allCases.filter(test=>(!caseId||test.id===caseId)&&(assistantMode===
 if(!cases.length)throw Error('No evaluation case matches the requested mode and case ID.');
 if(!/^[a-z0-9-]{1,60}$/.test(label)||!/^0(?:\.\d{1,4})?$/.test(maxCost)||!dec(maxCost).gt(0)||dec(maxCost).gt('0.50'))throw Error('Use a safe report label and a positive test ceiling no greater than 0.50 USD.');
 if(live&&!process.env.ANTHROPIC_API_KEY)throw Error('Live evaluation needs ANTHROPIC_API_KEY in the ignored .env.ai-eval.local. No provider call was made.');
-const api=live?claudeClient(process.env.ANTHROPIC_API_KEY,120000):null;
+const api=live?claudeClient(process.env.ANTHROPIC_API_KEY,120000,process.env.ANTHROPIC_WORKSPACE_ID):null;
 if(api&&new URL(api.baseURL).origin!=='https://api.anthropic.com')throw Error('Real-model evaluation requires the official Claude API endpoint; a local transport fixture is not a model-quality result.');
 const budget=live?await evaluationBudget('work/ai-quality-cost-ledger.json',maxCost):null;
 const report:any={suite:qualitySuiteVersion+(toolSuite?':read-tools-1':''),mode:live?'real_model':'synthetic_contract_controls',assistantMode,started:new Date().toISOString(),currency:'USD',maxCost,priceBasis:'configured_estimate',providerCalls:0,inputTokens:0,outputTokens:0,cost:'0',cases:[]};
