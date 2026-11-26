@@ -80,7 +80,7 @@
   .workbench-drawer{position:fixed;inset:12px;margin:0 0 0 auto;width:min(420px,calc(100% - 24px));height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);max-width:calc(100% - 24px);padding:0;border:1px solid var(--glass-border,var(--line));border-radius:22px;box-shadow:var(--overlay-shadow,0 18px 55px #08111f40);overscroll-behavior:contain}
   .workbench-drawer.left{margin:0 auto 0 0}
   .workbench-drawer:not([open]){display:none}
-  .workbench-drawer::backdrop{background:#08111f80}
+  
   .workbench-drawer .panel-heading{padding:8px 14px}
   .workbench-drawer .panel-heading h2{font-size:15px}
   .workbench-drawer .panel-close{width:48px;height:48px;min-width:48px}

@@ -96,7 +96,7 @@ strong{font-weight:600}
 .bar-chart{display:flex;flex-direction:column;gap:17px}
 .bar-row{display:grid;grid-template-columns:140px 1fr 70px;gap:15px;align-items:center;font-size:11px}
 .bar-track{height:15px;background:var(--wash);border-radius:2px;overflow:hidden}
-.bar-fill{height:100%;background:#658362;border-radius:2px;min-width:2px}
+.bar-fill{height:100%;background:var(--forest);border-radius:2px;min-width:2px}
 .bar-value{text-align:right;font-variant-numeric:tabular-nums}
 .integration-row{display:flex;align-items:flex-start;justify-content:space-between;padding:19px 0;border-bottom:1px solid var(--line);gap:20px}
 .integration-row:first-child{padding-top:0}
@@ -115,7 +115,7 @@ strong{font-weight:600}
 .file-row p{font-size:10px;margin-top:4px}
 .file-row .status{margin-top:5px}
 .timeline-item{padding:0 0 24px 23px;border-left:1px solid var(--line);position:relative}
-.timeline-item:before{content:'';position:absolute;width:7px;height:7px;left:-4px;top:4px;background:#8ba47b;border-radius:50%;border:1px solid var(--line)}
+.timeline-item:before{content:'';position:absolute;width:7px;height:7px;left:-4px;top:4px;background:var(--forest);border-radius:50%;border:1px solid var(--line)}
 .timeline-item:last-child{padding-bottom:0}
 .timeline-item h3{font-size:12px;font-weight:500}
 .timeline-item p{font-size:10px;margin-top:4px}
@@ -941,3 +941,17 @@ select[data-searchable-control][hidden] { display: none !important; }
  body:has(#assistant-drawer:not(.expanded)) .studio-root.workbench:not(.is-fullscreen):not(:fullscreen){margin-right:calc(var(--studio-companion-width) + 12px)}
  .studio-root.workbench.is-fullscreen:has(#assistant-drawer:not(.expanded)),.studio-root.workbench:fullscreen:has(#assistant-drawer:not(.expanded)){padding-right:calc(var(--studio-companion-width) + 24px)}
 }
+
+/* Public pages (login, customer portal, withdrawal) follow the device's light or dark preference. */
+.public-theme { min-height: 100dvh; background: var(--canvas); color: var(--ink); accent-color: var(--forest); caret-color: var(--forest); }
+.public-theme .auth-page, .public-theme .portal-shell { background: var(--wash); }
+.public-theme .auth-art { background: light-dark(#2d483b, #14241d); }
+.public-theme input::placeholder, .public-theme textarea::placeholder { color: var(--muted); opacity: 1; }
+/* The document scrollbar and overscroll area follow the active theme, not only the shell. */
+html:has(.app-shell[data-appearance-mode=dark]) { color-scheme: dark; background: #0d1422; }
+@media (prefers-color-scheme: dark) {
+  html:has(.app-shell[data-appearance-mode=system]), html:has(.public-theme) { color-scheme: dark; background: #0d1422; }
+}
+/* One dimming for every native dialog, matching .modal-backdrop. */
+dialog::backdrop { background: rgb(19 29 40 / .42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+@media (prefers-color-scheme: dark) { dialog::backdrop { background: rgb(3 9 20 / .72); } }
