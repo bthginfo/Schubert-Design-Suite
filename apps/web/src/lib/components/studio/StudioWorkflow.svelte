@@ -24,9 +24,9 @@
 
 <div class="planning-flow">
   <nav class="planning-steps" aria-label={memorial?'Arbeitsschritte im Grabmalstudio':'Arbeitsschritte im Raumstudio'}>
-    {#each steps as item}
-      <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={hints[item]} aria-label={planningStepLabel(snapshot.kind,item,presetId)} onclick={()=>onstep(item)}>
-        <span class="step-long">{planningStepLabel(snapshot.kind,item,presetId)}</span><span class="step-short" aria-hidden="true">{{geometry:'Maße',design:memorial?'Inschrift':'Material',review:'Prüfen',output:'Ausgabe'}[item]}</span>
+    {#each steps as item, index}
+      <button type="button" class:current={step===item} aria-current={step===item?'step':undefined} title={hints[item]} aria-label={`Schritt ${index+1}: ${planningStepLabel(snapshot.kind,item,presetId)}`} onclick={()=>onstep(item)}>
+        <span class="step-number" aria-hidden="true">{index+1}</span><span class="step-long">{planningStepLabel(snapshot.kind,item,presetId)}</span><span class="step-short" aria-hidden="true">{{geometry:'Maße',design:memorial?'Inschrift':'Material',review:'Prüfen',output:'Ausgabe'}[item]}</span>
       </button>
     {/each}
   </nav>
@@ -56,9 +56,14 @@
     border-radius: 12px; background: var(--wash);
   }
   .planning-steps button {
-    display: grid; place-items: center; flex: 1; min-width: 0; min-height: 38px; padding: 6px 13px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1 1 auto; min-width: 0; min-height: 38px; padding: 6px 13px;
     border-radius: 9px; color: var(--muted); font-size: .83rem; line-height: 1.35; white-space: nowrap;
   }
+  .step-number {
+    display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--line-soft, var(--line)); color: var(--muted); font-size: .72rem; font-weight: 650; font-variant-numeric: tabular-nums;
+  }
+  .planning-steps button.current .step-number { background: var(--forest); color: var(--on-accent); }
   .planning-steps button:hover { color: var(--ink); }
   .planning-steps button.current { background: var(--paper); color: var(--forest); font-weight: 650; box-shadow: var(--surface-shadow); }
   .step-short { display: none; }
@@ -77,7 +82,8 @@
   }
   @media (max-width: 760px) {
     .planning-flow { flex-direction: column; align-items: stretch; gap: 0; padding: 5px 8px 2px; }
-    .planning-steps button { min-height: 44px; padding-inline: 4px; }
+    .planning-steps button { min-height: 44px; padding-inline: 4px; gap: 5px; }
+    .step-number { width: 18px; height: 18px; font-size: .68rem; }
     .step-actions { justify-content: space-between; }
     .step-actions button { min-height: 44px; }
     .flow-ai { min-width: 44px; }
