@@ -8,6 +8,7 @@ import {
 } from "@schubert/application";
 import { assistant, planningDraftOperations } from "@schubert/ai";
 import { one, withTenant } from "@schubert/db";
+import { stoneWorldBox } from "@schubert/geometry";
 
 const lookup = (area: AssistantSuiteArea, query: string | null, details = true) =>
   ({ area, query, details, from: null, to: null, status: null });
@@ -76,6 +77,31 @@ export async function assistantSuiteIntegration(
     assert.equal(ambiguous.update, undefined);
     assert.equal(fresh.suite!.reference("customers", customer.id), undefined);
     assert(!JSON.stringify(ambiguous).includes("@example.invalid"));
+  });
+
+  await test("An AI memorial with Sockel stands linked on its base and the server refuses lifting it off", async () => {
+    const stacked = await command("planning.project.create", { name: tag + " Grabmal mit Sockel", kind: "memorial", order_id: order.id });
+    const operations = planningDraftOperations({ snapshot: stacked.revision.snapshot }, { kind: "memorial_assembly", label: "Rundbogen", shape: "round_arch",
+      widthMm: "600", heightMm: "900", thicknessMm: "120", base: { widthMm: "700", heightMm: "140", depthMm: "180" }, inscription: "", materialWish: null });
+    const saved = await command("planning.design.change", { base_revision_id: stacked.revision.id, operations }, stacked.variant);
+    const snapshot = saved.revision.snapshot, stones = snapshot.elements.filter((e: any) => e.kind === "stone_piece");
+    const base = stones.find((e: any) => e.purpose === "base"), stele = stones.find((e: any) => e.purpose === "memorial");
+    assert(base && stele, "Sockel and stele are saved with their own purposes");
+    assert.deepEqual(snapshot.constraints.map((c: any) => [c.kind, c.refs.map((r: any) => [r.elementId, r.feature])]),
+      [["rests_on", [[stele.id, "bottom_center"], [base.id, "top_center"]]]]);
+    const steleBox = stoneWorldBox(snapshot, stele.id)!, baseBox = stoneWorldBox(snapshot, base.id)!;
+    assert.equal(steleBox.minZ, baseBox.maxZ);
+    assert.equal((steleBox.minX + steleBox.maxX) / 2, (baseBox.minX + baseBox.maxX) / 2);
+    assert.equal((steleBox.minY + steleBox.maxY) / 2, (baseBox.minY + baseBox.maxY) / 2);
+    await assert.rejects(() => command("planning.design.change", { base_revision_id: saved.revision.id,
+      operations: [{ type: "move_element", elementId: stele.id, delta: { xMm: "0", yMm: "0", zMm: "30" } }] }, saved.variant),
+      (error: any) => error.code === "DESIGN_INVALID" && /Auflage „Rundbogen“ auf „Rundbogen · Sockel“: Der Stein steht nicht auf dem Sockel\. Unterkante 170 mm, Oberkante Sockel 140 mm/.test(error.message));
+    await assert.rejects(() => command("planning.design.change", { base_revision_id: saved.revision.id,
+      operations: [{ type: "set_design_target", measureId: base.id + ":height", valueMm: "200" }] }, saved.variant),
+      (error: any) => error.code === "DESIGN_INVALID" && /steht nicht auf dem Sockel/.test(error.message));
+    const released = await command("planning.design.change", { base_revision_id: saved.revision.id,
+      operations: [{ type: "remove_constraint", constraintId: snapshot.constraints[0].id }, { type: "move_element", elementId: stele.id, delta: { xMm: "0", yMm: "0", zMm: "30" } }] }, saved.variant);
+    assert.equal(released.revision.snapshot.constraints.length, 0);
   });
 
   const originalFetch = globalThis.fetch, originalKey = process.env.ANTHROPIC_API_KEY, prefix = "msg_suite_" + randomUUID();
