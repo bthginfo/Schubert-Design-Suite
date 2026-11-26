@@ -96,7 +96,8 @@
 
   function submit(event: SubmitEvent) {
     event.preventDefault();
-    const href = records[0]?.href ?? results[0]?.href ?? (documents && query.trim() ? '/documents?q=' + encodeURIComponent(query.trim()) : '');
+    const exactDestination = results.find(item => normalize(item.label) === normalize(query.trim()));
+    const href = exactDestination?.href ?? records[0]?.href ?? results[0]?.href ?? (documents && query.trim() ? '/documents?q=' + encodeURIComponent(query.trim()) : '');
     if (!href) return;
     dialog.close();
     void goto(href).catch(() => { void open(); });

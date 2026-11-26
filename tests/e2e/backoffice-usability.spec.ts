@@ -25,7 +25,7 @@ test('Backoffice: request text survives the quote draft and mobile price errors 
   await expect(dialog.getByRole('link',{name:new RegExp(inquiry.number)})).toHaveAttribute('href','/inquiries/'+inquiry.id);
   const advanced=dialog.locator('details.form-disclosure').filter({hasText:'Weitere Angaben'});
   await expect(advanced).not.toHaveAttribute('open','');
-  await expect(dialog.locator('#field-service_date')).toBeHidden();await expect(dialog.locator('#field-valid_until')).toHaveValue('');
+  await expect(dialog.locator('#field-service_date')).toBeHidden();const validUntil=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin'}).format(new Date(Date.now()+30*86_400_000));await expect(dialog.locator('#field-valid_until')).toHaveValue(validUntil);
   await page.screenshot({path:evidence+'/30-anfrage-angebot-vorbelegt.png',animations:'disabled'});
   await dialog.getByRole('button',{name:'Position hinzufügen',exact:true}).click();
   await dialog.locator('#line-description-0').fill('Bestätigte synthetische QA-Leistung nach Kundenzeichnung');
@@ -42,11 +42,12 @@ test('Backoffice: request text survives the quote draft and mobile price errors 
   await page.getByRole('button',{name:'Bearbeiten',exact:true}).click();await expect(dialog).toBeVisible();
   await expect.poll(()=>dialog.locator('#field-notes').inputValue()).toContain(description);
   const price=dialog.locator('#line-price-0');await price.fill('2400,5,0');
-  const rejected=page.waitForResponse(response=>response.request().method()==='POST'&&new URL(response.url()).pathname==='/api/v1/commands'&&response.request().postDataJSON()?.name==='sales.quote.update');
-  await dialog.getByRole('button',{name:'Speichern',exact:true}).click();const rejection=await rejected;expect(rejection.status()).toBe(422);
-  const failure=await rejection.json();expect(failure.error.fields['lines.0.unit_price']).toContain('2400,50');
+  // An ambiguous amount is caught in the form: nothing is sent, the entry stays and the field explains itself.
+  let updates=0;const countUpdate=(request:import('@playwright/test').Request)=>{if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/v1/commands'&&request.postDataJSON()?.name==='sales.quote.update')updates++;};
+  page.on('request',countUpdate);await dialog.getByRole('button',{name:'Speichern',exact:true}).click();
   await expect(price).toHaveValue('2400,5,0');await expect(price).toHaveAttribute('aria-invalid','true');
-  await expect(price).toHaveAccessibleDescription('Eine eindeutige Zahl eingeben, zum Beispiel 2400,50.');
+  await expect(price).toHaveAccessibleDescription(/Preis als Betrag eingeben, zum Beispiel 2\.400,00 oder 2400,50\./);
+  page.off('request',countUpdate);expect(updates).toBe(0);
   await expect(price).toBeFocused();await expect(price).toBeInViewport();
   await expect(dialog.locator('#line-error-0-unit_price')).toBeVisible();
   await page.screenshot({path:evidence+'/32-betragsfehler-mobil-mit-fokus.png',animations:'disabled'});

@@ -17,7 +17,7 @@ test('Suite search opens a real draft without writing and returns keyboard focus
   };
   const trigger = page.getByRole('button', { name: 'Suite durchsuchen', exact: true });
   const search = page.getByRole('dialog', { name: 'Suite durchsuchen', exact: true });
-  const input = search.getByRole('searchbox', { name: 'Bereich oder Aufgabe suchen' });
+  const input = search.getByRole('searchbox', { name: 'Kunden, Vorgänge oder Bereiche suchen' });
   await trigger.focus();
   await page.keyboard.press('Control+k');
   await expect(input).toBeFocused();
@@ -27,7 +27,8 @@ test('Suite search opens a real draft without writing and returns keyboard focus
   await expect(search.getByRole('link', { name: /in Dokumenten suchen/ })).toHaveAttribute('href', '/documents?q=angebot%20anlegen');
   await input.press('ArrowDown');
   await expect(search.getByRole('link', { name: 'Angebot anlegen', exact: true })).toBeFocused();
-  expect(requests).toEqual([]);
+  // Only the read-only, permission-checked record lookup may run while typing.
+  expect(requests.filter(url => !new URL(url).pathname.startsWith('/api/v1/lookups/'))).toEqual([]);
   page.off('request', observe);
   await page.keyboard.press('Escape');
   await expect(search).toBeHidden();
