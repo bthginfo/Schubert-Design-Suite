@@ -288,7 +288,7 @@
       ><option value="">Alle berechtigten Bereiche</option><option value="bath"
         >Bad & Spa</option
       ><option value="stone">Naturstein & Fliese</option><option
-        value="memorial">Grabdenkmale</option
+        value="memorial">Grabmal</option
       ><option value="service">Service & Pflege</option></select
     >
   </div>
@@ -313,7 +313,7 @@
             {
               bath: "Bad & Spa",
               stone: "Naturstein & Fliese",
-              memorial: "Grabdenkmale",
+              memorial: "Grabmal",
               service: "Service & Pflege",
             } as Record<string, string>
           )[appliedBusiness] || appliedBusiness

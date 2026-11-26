@@ -86,7 +86,7 @@ export async function respondWithOptionalSkills(options: Options) {
     signal?.throwIfAborted();
     return assertCompleted(response);
   };
-  options.onProgress?.({stage:'thinking',label:tools.length?'Claude prüft die Aufgabe und benötigte Daten':'Claude formuliert die Antwort'});
+  options.onProgress?.({stage:'thinking',label:tools.length?'Der Assistent prüft die Aufgabe und benötigte Daten':'Der Assistent formuliert die Antwort'});
   const first = await request(firstRequest);
   const calls = toolUses(first);
   if(requiredRead&&(calls.length!==1||calls[0].name!==requiredRead))throw new DomainError('AI_TOOL_SCOPE','Die beauftragte Datenabfrage wurde nicht ausgeführt. Es wurde nichts geändert und kein weiterer Modellaufruf gestartet.',422);
@@ -128,7 +128,7 @@ export async function respondWithOptionalSkills(options: Options) {
   // Selected instructions arrive as an operator message after the cached prefix where the model supports it.
   const midConversation=!!operatorNote&&supportsMidConversationSystem(parameters.model);
   const operatorMessage={role:'system',content:operatorNote} as unknown as ClaudeRequest['messages'][number];
-  options.onProgress?.({stage:'answering',label:'Claude formuliert die Antwort mit den gefundenen Daten'});
+  options.onProgress?.({stage:'answering',label:'Der Assistent formuliert die Antwort mit den gefundenen Daten'});
   const response = await request({
     ...firstRequest,
     ...(operatorNote&&!midConversation?{system:[...system,{type:'text' as const,text:'\n'+operatorNote}]}:{}),
