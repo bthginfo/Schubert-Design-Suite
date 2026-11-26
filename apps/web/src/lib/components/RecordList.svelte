@@ -64,7 +64,7 @@ import CatalogReferenceBanner from './CatalogReferenceBanner.svelte';
       <div class="search-field">
         <Icon name="search" size={18}/>
         <label class="sr-only" for="record-search">{module.label} durchsuchen</label>
-        <input id="record-search" type="search" bind:value={query} placeholder={`${module.label} durchsuchen`}/>
+        <input id="record-search" type="search" bind:value={query} placeholder={['customers','suppliers'].includes(module.slug)?'Name, Nummer, Ort, Telefon oder E-Mail':`${module.label} durchsuchen`}/>
         <button type="submit" class="record-search-submit">Suchen</button>
       </div>
       <button type="button" class="btn record-filter-toggle" aria-expanded={filtersOpen} aria-controls="record-filters" onclick={()=>filtersOpen=!filtersOpen}>

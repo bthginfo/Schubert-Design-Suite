@@ -249,7 +249,7 @@
     (
       {
         preparing: "Anfrage wird vorbereitet …",
-        requesting: (progressLabel || "Claude arbeitet") + " …",
+        requesting: (progressLabel || "Assistent arbeitet") + " …",
         applying: "Vorschlag wird übernommen …",
         undoing: "Änderung wird zurückgenommen …",
       } as Record<string, string>
@@ -901,7 +901,7 @@
       class:expanded={expandedChat}
       role="dialog"
       aria-modal={mobile || expandedChat ? "true" : undefined}
-      aria-label="Schubert Begleiter"
+      aria-label="Assistent"
       tabindex="-1"
       onkeydown={(e) => {
         if (e.key === "Escape") {
@@ -916,7 +916,7 @@
           <Icon name="spark" size={18} />
         </div>
         <div>
-          <h2>Schubert Begleiter</h2>
+          <h2>Assistent</h2>
         </div>
         <button
           class="icon-button"
@@ -929,7 +929,7 @@
           aria-label="Assistent schließen"><Icon name="close" /></button
         >
       </header>
-      <div class="companion-tabs" aria-label="Begleiteransicht">
+      <div class="companion-tabs" aria-label="Bereiche des Assistenten">
         <button
           aria-pressed={section === "help"}
           onclick={() => (section = "help")}
@@ -1066,7 +1066,7 @@
               data-message-id={message.id}
             >
               <div class="chat-role">
-                {message.role === "user" ? "Sie" : "Schubert Assistent · KI"}
+                {message.role === "user" ? "Sie" : "Assistent · KI"}
               </div>
               {#if message.role === "assistant"}<AssistantReply
                   text={message.text}

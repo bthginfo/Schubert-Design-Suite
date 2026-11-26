@@ -157,7 +157,7 @@ if(design){
     return new Response(renderTechnicalSvg(rev.snapshot,view as any),{headers:{'Content-Type':'image/svg+xml','Content-Disposition':'attachment; filename="Plan.svg"'}});
   }
   const meta:PlanningPdfMeta={title:project.name??project.title??'Planung',revision:String(rev.revision_number),
-    status:variant.status,audience:'internal',contentHash:rev.content_hash,generatedAt:new Date(rev.created_at).toISOString(),...refs};
+    status:variant.status,audience:e.url.searchParams.get('audience')==='customer'?'customer':'internal',contentHash:rev.content_hash,generatedAt:new Date(rev.created_at).toISOString(),...refs};
   if(kind==='pdf-check')return Response.json({ok:true,result:await reviewPlanningPdf(rev.snapshot,meta)},
     {headers:{'Cache-Control':'private, no-store'}});
   const bytes=await createPlanningPdf(rev.snapshot,meta);

@@ -125,7 +125,7 @@ function savedResponse(page: Page) {
   );
 }
 function assistant(page: Page) {
-  return page.getByRole("dialog", { name: "Schubert Begleiter" });
+  return page.getByRole("dialog", { name: "Assistent", exact: true });
 }
 async function openAssistant(page: Page) {
   await page

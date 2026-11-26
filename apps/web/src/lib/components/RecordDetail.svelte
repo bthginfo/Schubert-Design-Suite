@@ -30,6 +30,8 @@
   import FontReference from "./FontReference.svelte";
   import FinancialDetails from "./FinancialDetails.svelte";
   import FieldOrderView from "./FieldOrderView.svelte";
+  import QuoteProgress from "./QuoteProgress.svelte";
+  import QuoteOutput from "./QuoteOutput.svelte";
   let { data }: { data: AppData } = $props();
   let tab = $state("overview");
   let editor = $state(false);
@@ -37,6 +39,7 @@
   let actionBusy = $state(false);
   let actionError = $state("");
   let actionNotice = $state("");
+  let createdOrder: { id: string; number?: string } | null = $state(null);
   function actionBlocked(action: Action) {
     return (
       action.name === "inventory.count.close" &&
@@ -60,6 +63,7 @@
     actionBusy = true;
     actionError = "";
     actionNotice = "";
+    createdOrder = null;
     try {
       await command(action.name, data.detail?.id, {}, data.detail?.version);
       actionNotice = actionDoneText(action);
@@ -91,6 +95,9 @@
       result = results[0]?.record || results[0],
       id = result?.id;
     actionNotice = activeAction ? actionDoneText(activeAction, result) : "Erledigt.";
+    // Acceptance creates the order in the same transaction: name it and offer the way there.
+    createdOrder = name === "sales.quote.accept" && id ? { id, number: result?.number } : null;
+    if (createdOrder) actionNotice = createdOrder.number ? `Annahme dokumentiert. Auftrag ${createdOrder.number} angelegt.` : "Annahme dokumentiert. Der Auftrag wurde angelegt.";
     if (
       id &&
       id !== data.detail?.id &&
@@ -101,6 +108,7 @@
   const module = $derived(data.module!);
   const record = $derived(data.detail || {});
   const isOrder = $derived(module.slug === "orders");
+  const isQuote = $derived(module.slug === "quotes");
   // Field roles get a worker view of the order (place, own assignments, open work, time) instead of the office file.
   const fieldOrder = $derived(isOrder && ["Employee", "Workshop"].includes(data.context?.role ?? ""));
   let shownRecordId = $state("");
@@ -112,6 +120,7 @@
       activeAction = null;
       actionError = "";
       actionNotice = "";
+      createdOrder = null;
     }
   });
   function areaAllowed(slug: string) {
@@ -383,7 +392,16 @@
     notifications: "notifications",
     planning_projects: "studio",
     design_variants: "studio",
+    customers: "customers",
   };
+  /** Inquiry → Quote → Order: say why a link in the chain is still empty instead of a generic dead end. */
+  function relationEmpty(key: string) {
+    if (isQuote && key === "inquiries") return "Dieses Angebot ist mit keiner Anfrage verknüpft.";
+    if (isQuote && key === "orders") return "Der Auftrag entsteht mit der dokumentierten Annahme der veröffentlichten Version.";
+    if (module.slug === "inquiries" && key === "quotes") return "Noch kein Angebot aus dieser Anfrage. „Angebot aus Anfrage anlegen“ übernimmt Kunde und Kundenwunsch.";
+    if (module.slug === "inquiries" && key === "orders") return "Ein Auftrag entsteht, sobald ein Angebot dieser Anfrage angenommen ist.";
+    return "Noch keine verknüpften Einträge vorhanden.";
+  }
   function relationUrl(key: string, item: Row) {
     if (key === "stock_reservations")
       return item.stock_item_id ? "/stock/" + item.stock_item_id : undefined;
@@ -447,6 +465,8 @@
       .slice(0, 6);
   }
   function relationVisible(key: string) {
+    // On the quote overview the progress panel and the reference fields already lead to inquiry, customer and order.
+    if (isQuote && tab === "overview" && ["inquiries", "customers", "orders"].includes(key)) return false;
     if (tab === "linked" || tab === "overview") return true;
     if (tab === "planning")
       return /planning|design|surveys|measurements/.test(key);
@@ -471,6 +491,7 @@
     payables: "Verbindlichkeiten",
     work_packages: "Arbeitspakete",
     inquiries:"Anfragen",quotes:"Angebote",orders:"Aufträge",work_reports:"Arbeitsrückmeldungen",
+    customers: "Kunde",
     change_orders: "Nachträge",
     delivery_notes: "Lieferungen",
     acceptance_reports: "Abnahmen",
@@ -550,9 +571,15 @@
         ? { label: "Arbeitspaket anlegen", href: createHref("work-packages", downstreamContext) }
         : { label: "Übersicht prüfen", href: "#order-details" }) };
   });
+  // The quote progress panel names and offers the one next step; the header and side list do not repeat it.
+  const quoteNextAction = $derived(isQuote && tab === "overview"
+    ? actionList.find(action => action.name === ({draft:"sales.quote.review",under_review:"sales.quote.approve",approved:"sales.quote.publish",published:"sales.quote.accept",rejected:"sales.quote.revise",expired:"sales.quote.revise"} as Record<string,string>)[record.status])
+    : undefined);
   const secondaryActions = $derived(isOrder && tab === "overview"
     ? actionList.filter(action => action.name !== orderStep?.action?.name)
+    : quoteNextAction ? actionList.filter(action => action.name !== quoteNextAction.name)
     : actionList.slice(1));
+  const relationTitle = (key: string) => isQuote ? ({inquiries:"Quelle: Anfrage",orders:"Daraus entstandener Auftrag",customers:"Kunde"} as Record<string,string>)[key] || relationNames[key] || label(key) : relationNames[key] || label(key);
 </script>
 
 {#if fieldOrder}<FieldOrderView {data} />{:else}
@@ -570,7 +597,7 @@
     {#if module.slug === "dispatch" && tab === "overview"}<a class="btn" href={"/assignments/" + record.id}><Icon name="eye" size={16}/>Einsatzansicht öffnen</a>{/if}
     {#if editable}<button class="btn" onclick={() => (editor = true)}
         ><Icon name="edit" size={15} />Bearbeiten</button
-      >{/if}{#if actionList.length && (!isOrder || tab !== "overview")}<button
+      >{/if}{#if actionList.length && (!isOrder || tab !== "overview") && !quoteNextAction}<button
         class="btn primary"
         disabled={actionBusy || actionBlocked(actionList[0])}
         title={actionBlocked(actionList[0])
@@ -587,6 +614,7 @@
       <Icon name="alert" />
       <div>{typeof warning === "string" ? warning : warning.message}</div>
     </div>{/each}{/if}
+{#if isQuote && tab === "overview"}<QuoteProgress {data} actions={actionList} busy={actionBusy} onaction={perform} />{/if}
 {#if module.slug === "team" && record.id && permitted(data, "hr")}<nav class="hr-links" aria-label="Personalangaben zu dieser Person"><a class="btn small" href={`/leave-entitlements?employee_id=${record.id}`}>Urlaubsansprüche</a><a class="btn small" href={`/work-schedules?employee_id=${record.id}`}>Arbeitsmodelle</a><a class="btn small" href={`/leave?employee_id=${record.id}`}>Abwesenheiten</a></nav>{/if}
 {#if protectedStand}<div class="notice info">
     <Icon name="lock" />
@@ -598,7 +626,7 @@
 {#if actionError}<div class="notice error" role="alert">
     {actionError}
   </div>{/if}{#if actionNotice}<div class="notice info" role="status">
-    {actionNotice}
+    {#if createdOrder && areaAllowed("orders")}<div class="created-order"><span>{actionNotice}</span><a class="btn small primary" href={`/orders/${createdOrder.id}`}>Zum Auftrag<Icon name="arrow" size={15} /></a></div>{:else}{actionNotice}{/if}
   </div>{/if}
 {#if isOrder && tab === "overview" && orderStep}
   <section class="panel order-next" aria-labelledby="order-next-heading">
@@ -677,6 +705,7 @@
     {#if tab==='overview'&&module.slug==='tasks'}<TaskContext {record} {data}/>{/if}
     {#if tab==='overview'&&module.slug==='jobs'}<JobDiagnosis {record}/>{/if}
 
+    {#if tab === "overview" && isQuote}<QuoteOutput {data} />{/if}
     {#if tab === "overview"}<FinancialDetails {data} />{/if}
     {#if tab === "overview" && module.slug === "fonts"}<FontReference
         {data}
@@ -936,7 +965,7 @@
           class="panel"
         >
           <header class="panel-header">
-            <h2>{relationNames[key] || label(key)}</h2>
+            <h2>{relationTitle(key)}</h2>
             <span class="count">{items.length}</span>
           </header>
           {#if items.length}<div class="table-scroll">
@@ -963,7 +992,7 @@
                 >
               </table>
             </div>{:else}<div class="empty-state compact">
-              <p>Noch keine verknüpften Einträge vorhanden.</p>
+              <p>{relationEmpty(key)}</p>
             </div>{/if}
         </section>{/each}
       {#if tab === "communication"}{#key record.id}<Communication
@@ -1056,6 +1085,7 @@
   />{/if}
 
 <style>
+  .created-order { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; width: 100%; }
   .order-next { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.15rem 1.3rem; margin-bottom: 1.1rem; }
   .order-next > div { min-width: 0; }
   .order-more { margin: 0 0 1rem; padding: 0 .85rem; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }

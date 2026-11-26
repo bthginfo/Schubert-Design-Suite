@@ -42,6 +42,7 @@
   import SalesPricePicker from "./SalesPricePicker.svelte";
   import FieldInput from "./FieldInput.svelte";
   import Icon from "./Icon.svelte";
+  import { showSavedToast } from "#lib/client/saved-toast.ts";
   let {
     data,
     record = null,
@@ -90,6 +91,8 @@
   let localVersion: number | undefined = $state();
   let savedFingerprint = $state("");
   let autosavePaused = $state(false);
+  // A server-confirmed save in this dialog; closing then shows the save receipt.
+  let savedInSession = false;
   let saveLabel = $state("");
   let previousInputs: { input: Row; lineRevisionId?: string }[] = $state([]);
   let lastSavedInput: Row = {};
@@ -776,6 +779,7 @@
     const fingerprint = JSON.stringify(input);
     if (close && record && fingerprint === savedFingerprint) {
       onclose();
+      if (savedInSession) showSavedToast("Gespeichert.");
       await refreshAll().catch(() => {});
       return;
     }
@@ -806,9 +810,12 @@
       savedFingerprint = JSON.stringify(lastSavedInput);
       saveLabel = "Vom Server bestätigt gespeichert";
       autosavePaused = false;
+      savedInSession = true;
       onsaved?.(result);
       if (close) {
         onclose();
+        const number = result.number ?? result.record?.number;
+        showSavedToast(record ? "Gespeichert." : `Gespeichert. ${data.module.singular}${number ? " " + number : ""} angelegt.`);
         await refreshAll().catch(() => {});
       }
     } catch (e) {
@@ -914,6 +921,7 @@
       await persist(true);
     } else {
       onclose();
+      if (savedInSession) showSavedToast("Gespeichert.");
       if (autosave) await refreshAll().catch(() => {});
     }
   }

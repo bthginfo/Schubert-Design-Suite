@@ -4,8 +4,8 @@ import {requireRule} from '@schubert/domain';
 export function filteredWhere(m:ModuleDefinition,url:URL,params:any[]){
  let sql='';const add=(value:unknown,clause:(n:number)=>string)=>{params.push(value);sql+=' AND '+clause(params.length);};
  const open=['receivables','payables'].includes(m.slug),q=url.searchParams.get('q')?.trim().slice(0,200);
- // Phone numbers stay as typed; a search with separators ("0841 123") also matches the digits alone.
- const digits=q?.replace(/[^0-9]/g,'')??'',phoneDigits=m.table==='parties'&&digits.length>=4&&digits.length<q!.length?digits:'';
+ // Phone numbers stay as typed; digits in the search ("0841 123", "0841123") also match the stored number without separators.
+ const digits=q?.replace(/[^0-9]/g,'')??'',phoneDigits=m.table==='parties'&&digits.length>=4?digits:'';
  if(q)add('%'+q+'%',n=>open?`(COALESCE(name,'') ILIKE $${n} OR COALESCE(title,'') ILIKE $${n} OR COALESCE(number,'') ILIKE $${n} OR EXISTS(SELECT 1 FROM ${m.slug==='receivables'?'invoices':'supplier_invoices'} i JOIN parties p ON p.id=${m.table}.party_id WHERE i.id=${m.table}.invoice_id AND(i.number ILIKE $${n} OR i.title ILIKE $${n} OR p.name ILIKE $${n})))`:`(COALESCE(${m.table}.name,'') ILIKE $${n} OR COALESCE(${m.table}.title,'') ILIKE $${n} OR COALESCE(${m.table}.number,'') ILIKE $${n}${m.table==='parties'?` OR COALESCE(parties.city,'') ILIKE $${n} OR COALESCE(parties.email,'') ILIKE $${n} OR COALESCE(parties.phone,'') ILIKE $${n}${phoneDigits?` OR regexp_replace(COALESCE(parties.phone,''),'[^0-9]','','g') LIKE $${n+1}`:''}`:''}${m.fields.filter(f=>['customer_id','supplier_id','order_id','employee_id','assigned_to'].includes(f.key)).map(f=>` OR EXISTS(SELECT 1 FROM ${['customer_id','supplier_id'].includes(f.key)?'parties':['employee_id','assigned_to'].includes(f.key)?'employees':'orders'} ref WHERE ref.id=${m.table}.${f.key} AND(ref.name ILIKE $${n} OR ref.title ILIKE $${n} OR ref.number ILIKE $${n}))`).join('')})`);
  if(q&&phoneDigits)params.push('%'+phoneDigits+'%');
  for(const key of ['customer_id','supplier_id']){

@@ -70,3 +70,7 @@ export function glyphOutline(preview: PreviewFont, text: string, size: number, x
   });
   return { d: d.trim(), width: advance * unit * xScale };
 }
+
+const labels: Record<string, string> = { notoserif: 'Noto Serif', cinzel: 'Cinzel', lora: 'Lora', cormorantgaramond: 'Cormorant Garamond', greatvibes: 'Great Vibes', montserrat: 'Montserrat' };
+/** Name of a preview font even when its file is not available to the server. */
+export function previewFontLabel(key: string) { return labels[key] ?? key; }

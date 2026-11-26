@@ -1,9 +1,10 @@
-import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
+import { PDFDocument, StandardFonts, degrees, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import {planningFontBase64}from'./planning-fonts.js';
-import type { DesignSnapshot } from '@schubert/contracts';
-import { placeSheetLabels, type PlacedSheetLabel, type SheetLabel, type SheetLine } from './planning-dimensions.js';
-import { calculateBOM, projectDesign, projectDimensions,dimensionTextAnchor, layoutDimension, measureValue, validateDesign,contourParts, type DesignView, type ViewShape } from '@schubert/geometry';
+import { inscriptionPreviewDefaults, type DesignSnapshot, type InscriptionElement } from '@schubert/contracts';
+import { placeSheetLabels, type PlacedSheetLabel, type SheetBox, type SheetLabel, type SheetLine } from './planning-dimensions.js';
+import { glyphOutline, loadPreviewFont, previewFontLabel, type PreviewFont } from './planning-lettering.js';
+import { applyMatrix, calculateBOM, mm, projectDesign, projectDimensions, projectPoint, dimensionTextAnchor, layoutDimension, measureValue, surfaceMatrix, validateDesign,contourParts, type DesignView, type ViewShape } from '@schubert/geometry';
 
 export type PlanningPdfMeta = {
   title: string; revision: string; status: string; audience?: 'internal' | 'customer' | 'supplier';
@@ -39,9 +40,13 @@ function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMeta, in
 async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMeta, inspect: boolean) {
   const review: PlanningPdfReview = {revision: meta.revision, views: []};
   let labelsForReview = 0;
-  const statusLabels:Record<string,string>={draft:'Entwurf',approved:'Freigegeben',released:'Zur Fertigung freigegeben',archived:'Archiviert',under_review:'In Prüfung'},status=statusLabels[meta.status]??meta.status;
+  const statusLabels:Record<string,string>={draft:'Entwurf',approved:'Freigegeben',released:'Zur Fertigung freigegeben',archived:'Archiviert',under_review:'In Prüfung'};
+  // The customer variant („Kundenansicht“) is a presentation for agreement: no internal
+  // check list, no parts list, no supplier or source provenance.
+  const audience=meta.audience??'internal',customer=audience==='customer';
+  const status=customer?'Entwurf zur Abstimmung':statusLabels[meta.status]??meta.status;
   const pdf=await PDFDocument.create();pdf.registerFontkit(fontkit);
-  pdf.setTitle(meta.title);pdf.setAuthor(meta.createdBy??'SCHUBERT');pdf.setSubject(`Planrevision ${meta.revision} · ${status}`);
+  pdf.setTitle(customer?`Entwurf zur Abstimmung · ${meta.title}`:meta.title);pdf.setAuthor(meta.createdBy??'SCHUBERT');pdf.setSubject(`Planrevision ${meta.revision} · ${status}`);
   pdf.setProducer('SCHUBERT technische Planung · pdf-lib');pdf.setCreator(snapshot.geometryEngineVersion);
   const date=new Date(meta.generatedAt??'2000-01-01T00:00:00.000Z');pdf.setCreationDate(date);pdf.setModificationDate(date);
   const fonts:PDFFont[]=[];
@@ -65,13 +70,47 @@ async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMe
     }return rows;
   };
   const label=(page:PDFPage,text:string,x:number,y:number,size:number,maxWidth:number,color=ink)=>{const rows=wrap(text,size,maxWidth);rows.forEach((r,i)=>draw(page,r,x,y-i*size*1.45,size,color));return rows.length*size*1.45;};
+  const bom=calculateBOM(snapshot);
+  // Material names for the title block, from the frozen material versions of this revision.
+  const materialIds=[...new Set(bom.lines.map(line=>line.materialSpecVersionId).filter((id):id is string=>!!id))];
+  const materialNames=[...new Set(materialIds.map(id=>meta.materials?.[id]?.name).filter((name):name is string=>!!name))];
+  const materialName=(id:string|null|undefined)=>id?meta.materials?.[id]?.name??null:null;
+  const parts=snapshot.elements.filter(e=>e.phase!=='demolition'&&(e.kind==='stone_piece'||e.kind==='grave_border')).map(e=>({label:e.label,name:'materialSpecVersionId'in e?materialName(e.materialSpecVersionId):null}));
+  // One material for everything reads as its name; differing parts are named („Stele: …, Sockel: noch offen“).
+  const materialText=parts.length&&parts.length<=4&&new Set(parts.map(part=>part.name)).size>1?parts.map(part=>`${part.label}: ${part.name??'noch offen'}`).join(' · ')
+    :materialNames.length?materialNames.join(' · ')+(materialIds.some(id=>!meta.materials?.[id])?' · weitere noch offen':''):materialIds.length?'noch nicht festgelegt':'—';
+  // Inscriptions in their chosen preview font (only the licensed original file, see planning-lettering).
+  const inscriptions=snapshot.elements.filter((e):e is InscriptionElement=>e.kind==='inscription');
+  const visibleInscriptions=inscriptions.filter(e=>e.phase!=='demolition');
+  const previewFonts=new Map<string,PreviewFont|null>();
+  for(const e of inscriptions){const key=e.previewFontKey??inscriptionPreviewDefaults.fontKey;if(!previewFonts.has(key))previewFonts.set(key,await loadPreviewFont(key));}
+  const fontKey=(e:InscriptionElement)=>e.previewFontKey??inscriptionPreviewDefaults.fontKey;
+  const fontText=[...new Set(visibleInscriptions.map(e=>previewFonts.get(fontKey(e))?.label??previewFontLabel(fontKey(e))))].join(' · ')||'—';
+  const hexColor=(hex:string)=>{const v=/^#([0-9a-f]{6})$/i.exec(hex)?.[1]??'c6a56d';return rgb(parseInt(v.slice(0,2),16)/255,parseInt(v.slice(2,4),16)/255,parseInt(v.slice(4,6),16)/255);};
+  /** Studio lettering layout in millimetres: cap height, line advance and max-width compression. */
+  function lettering(e:InscriptionElement){
+    const preview=previewFonts.get(fontKey(e))??null,metrics=preview??{capRatio:.727,ascender:.969,descender:.242};
+    const height=Number(measureValue(snapshot,e.requestedHeightMeasureId)??40),gap=Number(measureValue(snapshot,e.lineGapMeasureId)??height*.35),maxWidth=Number(measureValue(snapshot,e.requestedMaxWidthMeasureId)??0);
+    const fontSize=Math.max(.01,height)/metrics.capRatio,advance=Math.max(height,fontSize*(metrics.capRatio+metrics.descender))+Math.max(0,gap);
+    const lines=e.exactText.split(/\r?\n/),natural=lines.map(line=>preview?glyphOutline(preview,line,fontSize).width:width(line,fontSize));
+    const scale=maxWidth>0?Math.min(1,maxWidth/Math.max(1,...natural)):1;
+    return{preview,metrics,fontSize,scale,rows:lines.map((text,index)=>({text,baseline:(lines.length-1-index)*advance,width:natural[index]*scale}))};
+  }
+  /** Schriftfeld on every drawing sheet: project, material, lettering, revision. */
+  function titleBlock(page:PDFPage,scale:string){
+    const {width:w}=page.getSize(),x=w-336,top=134;
+    const rows=([['Projekt',meta.title],['Material',materialText],...(visibleInscriptions.length?[['Schrift',fontText]]:[]),['Stand',`Revision ${meta.revision} · ${status}`],['Maßstab',`${scale} · Maße in mm`]] as Array<[string,string]>)
+      .map(([name,value])=>{const lines=wrap(value,8.5,222),shown=lines.slice(0,name==='Material'?2:1);if(lines.length>shown.length)shown[shown.length-1]+=' …';return{name,lines:shown};});
+    const height=rows.reduce((sum,row)=>sum+row.lines.length*10+3,0)+4;page.drawRectangle({x,y:top-height,width:300,height,borderColor:line,borderWidth:.7,color:rgb(1,1,1)});
+    let y=top-10;rows.forEach((row,index)=>{if(index)page.drawLine({start:{x,y:y+9},end:{x:x+300,y:y+9},thickness:.4,color:line});draw(page,row.name.toUpperCase(),x+8,y,6.5,green);row.lines.forEach((text,i)=>draw(page,text,x+70,y-i*10,8.5));y-=row.lines.length*10+3;});
+  }
   const pages:Array<{page:PDFPage;scale:string;title:string}>=[];
   function newPage(title:string,size:[number,number]=A4,scale='—'){
     const page=pdf.addPage(size);pages.push({page,scale,title});const w=size[0],h=size[1];
     draw(page,'SCHUBERT',36,h-42,15,green);draw(page,'PLANUNGSSTUDIO',36,h-58,8,muted);
     draw(page,title,180,h-42,15);const shortTitle=wrap(meta.title,10,w-216)[0]??'';draw(page,shortTitle+(shortTitle.length<meta.title.length?' …':''),180,h-59,10,muted);
     page.drawLine({start:{x:36,y:h-75},end:{x:w-36,y:h-75},thickness:0.7,color:line});
-    draw(page,`${status} · ${{internal:'Intern',customer:'Kunde',supplier:'Lieferant'}[meta.audience??'internal']} · Revision ${meta.revision}`,36,h-94,9,muted);
+    draw(page,customer?`${status} · Revision ${meta.revision}`:`${status} · ${{internal:'Intern',customer:'Kunde',supplier:'Lieferant'}[audience]} · Revision ${meta.revision}`,36,h-94,9,muted);
     return page;
   }
   function stroke(
@@ -114,10 +153,51 @@ async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMe
     const obstacles: SheetLine[] = [], guides: SheetLine[] = [], ticks: SheetLine[] = [];
     const dimensionLabels: SheetLabel[] = [];
     projected.shapes.forEach(shape => stroke(page, shape, p, outlines, obstacles));
-    for (const [index, dimension] of projectDimensions(snapshot, view).entries()) {
-      const d = layoutDimension(dimension, 14/factor);
-      const a = p(d.a.x,d.a.y), end = p(d.b.x,d.b.y), at = p(d.label.x,d.label.y);
-      if (Math.hypot(end.x-a.x,end.y-a.y) < 45) continue;
+    // Inscriptions appear in the chosen preview font wherever the view shows their surface
+    // true to scale and unmirrored (front view of an upright stone, top view of a slab).
+    const letteringBoxes: SheetBox[] = [], drawnInscriptions = new Set<string>();
+    for (const e of visibleInscriptions) {
+      const layout = lettering(e), m = surfaceMatrix(snapshot, e.surfaceElementId), angle = Number(e.rotationDeg) * Math.PI / 180;
+      const u0 = Number(e.originUV.uMm), v0 = Number(e.originUV.vMm), c = Math.cos(angle), s = Math.sin(angle);
+      const at = (x: number, y: number) => { const q = projectPoint(applyMatrix({xMm: mm(u0 + x*c - y*s), yMm: mm(v0 + x*s + y*c), zMm: '0'}, m), view); return p(Number(q.xMm), Number(q.yMm)); };
+      let o: {x:number;y:number}, ax: {x:number;y:number}, ay: {x:number;y:number};
+      try { o = at(0,0); const ex = at(1000,0), ey = at(0,1000); ax = {x:(ex.x-o.x)/1000, y:(ex.y-o.y)/1000}; ay = {x:(ey.x-o.x)/1000, y:(ey.y-o.y)/1000}; } catch { continue; }
+      if (Math.abs(Math.hypot(ax.x,ax.y) - factor) > factor*.01 || Math.abs(Math.hypot(ay.x,ay.y) - factor) > factor*.01 || ax.x*ay.y - ax.y*ay.x <= 0) continue;
+      const rotation = Math.atan2(ax.y, ax.x) * 180 / Math.PI, color = hexColor(e.previewColor ?? inscriptionPreviewDefaults.color);
+      for (const row of layout.rows) {
+        if (!row.text.trim()) continue;
+        const startU = e.alignment === 'center' ? -row.width/2 : e.alignment === 'right' ? -row.width : 0, origin = at(startU, row.baseline);
+        if (layout.preview) page.drawSvgPath(glyphOutline(layout.preview, row.text, layout.fontSize, layout.scale).d, {x: origin.x, y: origin.y, scale: factor, rotate: degrees(rotation), color});
+        else if (Math.abs(rotation) < .5) draw(page, row.text, origin.x, origin.y, layout.fontSize * factor, color);
+        else continue;
+        const corners = [[startU, row.baseline - layout.fontSize*layout.metrics.descender], [startU + row.width, row.baseline - layout.fontSize*layout.metrics.descender],
+          [startU, row.baseline + layout.fontSize*layout.metrics.ascender], [startU + row.width, row.baseline + layout.fontSize*layout.metrics.ascender]].map(([x,y]) => at(x,y));
+        const xs = corners.map(q => q.x), ys = corners.map(q => q.y);
+        letteringBoxes.push({x: Math.min(...xs), y: Math.min(...ys), width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys)});
+      }
+      drawnInscriptions.add(e.id);
+    }
+    // Parallel dimension lines get their own lane, so neighbouring measures (e.g. a
+    // 600 stele on a 700 Sockel) never print their texts on top of one another.
+    const laneGap = 16;
+    const laid = projectDimensions(snapshot, view).map((dimension, index) => {
+      const d = layoutDimension(dimension, 14/factor), a = p(d.a.x,d.a.y), end = p(d.b.x,d.b.y), at = p(d.label.x,d.label.y);
+      return {dimension, index, a, end, at, n: dimension.outward, s: a.x*dimension.outward.x + a.y*dimension.outward.y};
+    }).filter(item => Math.hypot(item.end.x-item.a.x, item.end.y-item.a.y) >= 45).sort((x, y) => x.s - y.s);
+    const lanes: Array<{n: {x:number;y:number}; s: number; lo: number; hi: number}> = [];
+    const sameNormal = (a: {x:number;y:number}, b: {x:number;y:number}) => Math.abs(a.x-b.x) < 1e-6 && Math.abs(a.y-b.y) < 1e-6;
+    for (const item of laid) {
+      const t = {x: -item.n.y, y: item.n.x}, span = [item.a.x*t.x + item.a.y*t.y, item.end.x*t.x + item.end.y*t.y].sort((x, y) => x - y);
+      let lane = item.s;
+      for (let guard = 0; guard < 50; guard++) {
+        const blocking = lanes.find(l => sameNormal(l.n, item.n) && l.lo < span[1] + 24 && l.hi > span[0] - 24 && Math.abs(l.s - lane) < laneGap);
+        if (!blocking) break;
+        lane = blocking.s + laneGap;
+      }
+      const shift = lane - item.s;
+      for (const q of [item.a, item.end, item.at]) { q.x += item.n.x*shift; q.y += item.n.y*shift; }
+      lanes.push({n: item.n, s: lane, lo: span[0], hi: span[1]});
+      const {dimension, index, a, end, at} = item;
       guides.push({start:p(Number(dimension.a.xMm),Number(dimension.a.yMm)),end:a},
         {start:a,end}, {start:end,end:p(Number(dimension.b.xMm),Number(dimension.b.yMm))});
       for (const q of [a,end]) ticks.push({start:{x:q.x-2,y:q.y-2},end:{x:q.x+2,y:q.y+2}});
@@ -127,26 +207,30 @@ async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMe
       const x = anchor === 'start' ? at.x+4 : anchor === 'end' ? at.x-w-4 : at.x-w/2;
       dimensionLabels.push({id:view+'-'+index,description:dimension.label,text,x,y:at.y+4,width:w,size:8,anchor:at});
     }
-    const x0 = origin.x, x1 = x0+drawWidth, y0 = origin.y, y1 = y0+drawHeight, offset = 45;
-    guides.push({start:{x:x0,y:y0-offset},end:{x:x1,y:y0-offset}},
-      {start:{x:x0-offset,y:y0},end:{x:x0-offset,y:y1}});
+    const x0 = origin.x, x1 = x0+drawWidth, y0 = origin.y, y1 = y0+drawHeight;
+    // The overall measure stays outside every element measure on the same side.
+    const beyond = (n: {x:number;y:number}, edge: number) => Math.max(45, ...lanes.filter(l => sameNormal(l.n, n)).map(l => l.s - edge + 18));
+    const bottom = beyond({x:0,y:-1}, -y0), left = beyond({x:-1,y:0}, -x0);
+    guides.push({start:{x:x0,y:y0-bottom},end:{x:x1,y:y0-bottom}},
+      {start:{x:x0-left,y:y0},end:{x:x0-left,y:y1}});
     for (const x of [x0,x1]) {
-      guides.push({start:{x,y:y0-5},end:{x,y:y0-offset-5}});
-      ticks.push({start:{x:x-3,y:y0-offset-3},end:{x:x+3,y:y0-offset+3}});
+      guides.push({start:{x,y:y0-5},end:{x,y:y0-bottom-5}});
+      ticks.push({start:{x:x-3,y:y0-bottom-3},end:{x:x+3,y:y0-bottom+3}});
     }
-    for (const y of [y0,y1]) ticks.push({start:{x:x0-offset-3,y:y-3},end:{x:x0-offset+3,y:y+3}});
-    const externalWidth = `${b.width.toLocaleString('de-DE',{maximumFractionDigits:2})} mm · geometrisches Außenmaß`;
+    for (const y of [y0,y1]) ticks.push({start:{x:x0-left-3,y:y-3},end:{x:x0-left+3,y:y+3}});
+    const externalWidth = `${b.width.toLocaleString('de-DE',{maximumFractionDigits:2})} mm · ${customer ? 'Gesamtbreite' : 'geometrisches Außenmaß'}`;
     const externalHeight = `${b.height.toLocaleString('de-DE',{maximumFractionDigits:2})} mm`;
     const widthLabel = width(externalWidth,9), heightLabel = width(externalHeight,9);
     dimensionLabels.push(
       {id:view+'-outside-width',description:'Geometrisches Außenmaß, Breite',text:externalWidth,
-        x:Math.max(37,(x0+x1-widthLabel)/2),y:y0-offset-15,width:widthLabel,size:9,anchor:{x:(x0+x1)/2,y:y0-offset}},
+        x:Math.max(37,(x0+x1-widthLabel)/2),y:y0-bottom-15,width:widthLabel,size:9,anchor:{x:(x0+x1)/2,y:y0-bottom}},
       {id:view+'-outside-height',description:'Geometrisches Außenmaß, Höhe',text:externalHeight,
-        x:Math.max(37,x0-offset-55),y:y1+10,width:heightLabel,size:9,anchor:{x:x0-offset,y:y1}},
+        x:Math.max(37,x0-left-55),y:y1+10,width:heightLabel,size:9,anchor:{x:x0-left,y:y1}},
     );
-    const markers = projected.texts.map((entry,index)=>({...p(Number(entry.point.xMm),Number(entry.point.yMm)),index:index+1}));
+    const markers = projected.texts.map((entry,index)=>({...p(Number(entry.point.xMm),Number(entry.point.yMm)),index:index+1,elementId:entry.elementId}))
+      .filter(marker=>!drawnInscriptions.has(marker.elementId)).map(({elementId,...marker})=>marker);
     const labels = placeSheetLabels(dimensionLabels, [...obstacles,...guides,...ticks],
-      markers.map(({x,y})=>({x:x-7,y:y-7,width:14,height:14})),
+      [...markers.map(({x,y})=>({x:x-7,y:y-7,width:14,height:14})),...letteringBoxes],
       {x:36,y:127,width:A3[0]-72,height:A3[1]-238});
     labelsForReview += labels.filter(item => item.state === 'review').length;
     for (const segment of guides) page.drawLine({...segment,thickness:.45,color:muted});
@@ -165,12 +249,17 @@ async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMe
     page.drawLine({start:{x:barX,y:barY},end:{x:barX+40,y:barY},thickness:2,color:ink});
     for(const x of [barX,barX+40])page.drawLine({start:{x,y:barY-4},end:{x,y:barY+4},thickness:1,color:ink});
     draw(page,`${barMm.toLocaleString('de-DE',{maximumFractionDigits:2})} mm · Maßstab 1:${scale}`,barX,barY-18,9);
-    label(page,snapshot.kind==='memorial'?'Maße in mm. Planmaße sind kein bestätigtes Aufmaß. Schrift wird nicht durch ähnliche Zeichensätze ersetzt. Wortlaut und Herstellerreferenz stehen im Inschriftenplan. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.':'Maße in mm. „Achse“ bezeichnet die Wandachse; „innen“ das modellierte lichte Innenmaß. Planmaße sind kein bestätigtes Aufmaß. Wandaufbau und Einbaumaße vor Ort prüfen. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.',310,110,10,800);
-    label(page,`Höhenbezug: ${snapshot.frames.map(f=>f.datumLabel).join(' · ')}`,45,70,9,A3[0]-90,muted);
+    const note = customer
+      ? 'Maße in mm. Entwurf zur Abstimmung von Form, Maßen, Material und Inschrift. Maße, Material und Schrift werden vor der Fertigung vor Ort und fachlich geprüft; dieser Entwurf ist keine Fertigungsfreigabe.'
+      : snapshot.kind==='memorial'?'Maße in mm. Planmaße sind kein bestätigtes Aufmaß. Schrift wird nicht durch ähnliche Zeichensätze ersetzt. Wortlaut und Herstellerreferenz stehen im Inschriftenplan. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.':'Maße in mm. „Achse“ bezeichnet die Wandachse; „innen“ das modellierte lichte Innenmaß. Planmaße sind kein bestätigtes Aufmaß. Wandaufbau und Einbaumaße vor Ort prüfen. Speicherpräzision 0,01 mm ist keine Fertigungstoleranz.';
+    label(page,note,310,116,9,A3[0]-310-356);
+    titleBlock(page,`1:${scale}`);
+    label(page,`Höhenbezug: ${snapshot.frames.map(f=>f.datumLabel).join(' · ')}`,45,70,9,A3[0]-90-336,muted);
   }
   if(inspect) return review;
-  let page=newPage('Stück- und Bearbeitungsliste'),y=A4[1]-125;
-  const bom=calculateBOM(snapshot);
+  let page:PDFPage=pages[pages.length-1].page,y=A4[1]-125;
+  if(!customer){
+  page=newPage('Stück- und Bearbeitungsliste');
   const decimalLabel=(value:string)=>value.replace('.',',');
   const tableHead=()=>{page.drawRectangle({x:36,y:y-24,width:A4[0]-72,height:24,color:warm});draw(page,'BAUTEIL / AUSFÜHRUNG',44,y-16,9,green);draw(page,'MENGE',389,y-16,9,green);draw(page,'EINHEIT',460,y-16,9,green);y-=42;};
   tableHead();
@@ -186,18 +275,43 @@ async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMe
   }
   if(y<135){page=newPage('Mengengrundlage');y=A4[1]-125;}
   label(page,'Mengen entstehen aus dieser Revision. Kein pauschaler Verschnitt, keine erfundenen Einkaufsdaten, keine Gewichtsannahme ohne belegte Materialdichte. Modellierte Ausschnitte werden explizit abgezogen. Flächenregeln für die Abrechnung separat fachlich bestätigen.',36,y-10,10,A4[0]-72);
-  for(const inscription of snapshot.elements.filter(e=>e.kind==='inscription')){
-    if(inscription.kind!=='inscription')continue;
-    page=newPage(`Inschriftenplan · ${inscription.label}`);y=A4[1]-130;
-    draw(page,'WÖRTLICHE PRÜFANSICHT',36,y,10,green);y-=32;
-    for(const row of wrap(inscription.exactText,16,A4[0]-90)){
+  }
+  for(const inscription of inscriptions){
+    page=newPage(customer?`Inschrift · ${inscription.label}`:`Inschriftenplan · ${inscription.label}`);y=A4[1]-130;
+    const layout=lettering(inscription),key=fontKey(inscription),fontName=layout.preview?.label??previewFontLabel(key);
+    // Design in the chosen preview font, drawn from the licensed original outlines.
+    draw(page,customer?'GESTALTUNG IN DER GEWÄHLTEN SCHRIFT':'GESTALTUNG IN DER VORSCHAUSCHRIFT',36,y,10,green);y-=17;
+    y-=label(page,layout.preview?`${fontName} · Darstellung in der gewählten Schrift${customer?'; die Herstellerschrift wird vor der Fertigung bestätigt.':'; keine Herstellerkontur.'}`:`${fontName}: Die Schriftdatei ist auf dem Server nicht verfügbar. Der Wortlaut steht unten in Leseschrift; es wird keine ähnliche Schrift ersetzt.`,36,y,9,A4[0]-72,muted)+14;
+    if(layout.preview){
+      const maxWidth=A4[0]-110,widths=layout.rows.map(row=>glyphOutline(layout.preview!,row.text,1).width);
+      const size=Math.max(8,Math.min(30,maxWidth/Math.max(.001,...widths)));
+      for(const [index,row] of layout.rows.entries()){
+        if(y-size*1.4<100){page=newPage(`Inschrift · ${inscription.label} · Fortsetzung`);y=A4[1]-125;}
+        y-=size*layout.preview.ascender;
+        const rowWidth=widths[index]*size,x=inscription.alignment==='center'?(A4[0]-rowWidth)/2:inscription.alignment==='right'?A4[0]-55-rowWidth:55;
+        if(row.text.trim())page.drawSvgPath(glyphOutline(layout.preview,row.text,size).d,{x,y,color:ink});
+        y-=size*(layout.preview.descender+.25);
+      }
+      y-=16;
+    }
+    draw(page,customer?'WORTLAUT ZUR BESTÄTIGUNG':'WÖRTLICHE PRÜFANSICHT',36,y,10,green);y-=28;
+    for(const row of wrap(inscription.exactText,customer?14:16,A4[0]-90)){
       if(y<100){page=newPage(`Inschrift · ${inscription.label} · Fortsetzung`);y=A4[1]-125;}
-      draw(page,row,45,y,16);y-=26;
+      draw(page,row,45,y,customer?14:16);y-=customer?22:26;
+    }
+    if(customer){
+      y-=14;
+      const length=(id:string|null)=>{const value=measureValue(snapshot,id);return value===null?'offen':String(value).replace('.',',')+' mm';};
+      const notes=[`Schrift: ${fontName} (Vorschauschrift)`,`Zeichenhöhe: ${length(inscription.requestedHeightMeasureId)} · Zeilenabstand: ${length(inscription.lineGapMeasureId)}`,
+        `Ausrichtung: ${{left:'linksbündig',center:'zentriert',right:'rechtsbündig'}[inscription.alignment]} · Ausführung: ${{individual_letters:'Einzelbuchstaben',wording:'Schriftzug',engraved:'graviert',other:'nach Absprache'}[inscription.supplyForm]}`,
+        'Bitte prüfen Sie Schreibweise, Daten und Zeichen. Nach Ihrer Bestätigung wird die Inschrift mit der Herstellerschrift abgestimmt.'];
+      for(const note of notes){const h=wrap(note,10,A4[0]-72).length*15+8;if(y-h<75){page=newPage(`Inschrift · ${inscription.label} · Fortsetzung`);y=A4[1]-125;}y-=label(page,note,36,y,10,A4[0]-72)+8;}
+      continue;
     }
     y-=20;
     const ref=meta.fontReferences?.[inscription.fontVariantVersionId];
     const length=(id:string|null,empty='offen')=>{const value=measureValue(snapshot,id);return value===null?empty:String(value).replace('.',',')+' mm';};
-    const specifications=[`Herstellerschrift: ${meta.fontLabels?.[inscription.fontVariantVersionId]??'noch nicht zugeordnet – nur Entwurf'}`,
+    const specifications=[`Vorschauschrift: ${fontName}${layout.preview?'':' (Schriftdatei auf dem Server nicht verfügbar)'}`,`Herstellerschrift: ${meta.fontLabels?.[inscription.fontVariantVersionId]??'noch nicht zugeordnet – nur Entwurf'}`,
       `Lieferform: ${{individual_letters:'Einzelbuchstaben',wording:'Schriftzug',engraved:'graviert',other:'andere'}[inscription.supplyForm]}`,
       `Gewünschte Zeichenhöhe: ${length(inscription.requestedHeightMeasureId)}`,
       `Kleinbuchstabenhöhe: ${length(inscription.requestedLowercaseHeightMeasureId,'nicht festgelegt')}`,
@@ -220,6 +334,7 @@ async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMe
     if(image){const embedded=image.mime==='image/png'?await pdf.embedPng(image.bytes):await pdf.embedJpg(image.bytes);const dimensions=embedded.scaleToFit(A4[0]-90,100);
       if(y-dimensions.height<90){page=newPage(`Herstellerbildreferenz · ${inscription.label}`);y=A4[1]-125;}draw(page,'Originalreferenz · keine maßhaltige Fertigungskontur',36,y,9,muted);y-=20+dimensions.height;page.drawImage(embedded,{x:45,y,width:dimensions.width,height:dimensions.height});}
   }
+  if(!customer){
   for(const reference of snapshot.elements)if(reference.kind==='plan_reference'){
     page=newPage(`Quellenbezug · ${reference.label}`);y=A4[1]-130;
     const details=[`Originalversion: ${reference.sourceDocumentVersionId}`,`Original-SHA-256: ${reference.sourceHash}`,`Seite ${reference.pageIndex+1} · Quelle ${reference.sourceKind} · ${reference.widthPx} × ${reference.heightPx} Rasterpixel`,`Vorschauversion: ${reference.previewDocumentVersionId??'nicht erzeugt'}`,`Vorschau-SHA-256: ${reference.previewHash??'offen'}`,'QUELLENREFERENZ / IMPORTVORSCHLAG: Diese Kalibrierung bestätigt kein Aufmaß. Perspektivische Fotos sind ohne belegte Projektion kein maßhaltiger Grundriss.',`Kontrolltoleranz: ${reference.calibration.toleranceMm} mm; keine Fertigungstoleranz.`,...reference.calibration.segments.map(s=>`${s.axis.toUpperCase()}: (${s.a.xPx}, ${s.a.yPx}) bis (${s.b.xPx}, ${s.b.yPx}) px · abgelesen ${measureValue(snapshot,s.lengthMeasureId)??'offen'} mm · ungeprüft`)];
@@ -236,6 +351,10 @@ async function buildPlanningOutput(snapshot: DesignSnapshot, meta: PlanningPdfMe
   for(const notice of [...new Set(notices)]){const rows=wrap(notice,10,A4[0]-89);if(y-rows.length*15<78){page=newPage('Prüfstand · Fortsetzung');y=A4[1]-125;}draw(page,'•',37,y,11,green);y-=label(page,notice,52,y,10,A4[0]-89)+12;}
   const unsupported=[...new Set(snapshot.elements.filter(e=>e.kind==='inscription').flatMap(e=>e.kind==='inscription'?Array.from(e.exactText).filter(c=>c!=='\n'&&!sets.some(s=>s.has(c.codePointAt(0)!))):[]))];
   if(unsupported.length){if(y<160){page=newPage('Zeichensatzprüfung');y=A4[1]-125;}label(page,`Nicht im eingebetteten Leseschriftbestand: ${unsupported.map(c=>'U+'+c.codePointAt(0)!.toString(16).toUpperCase()).join(', ')}. In der Prüfansicht stehen dafür ausdrücklich Codepoints; diese Ausgabe ist bis zur Bereitstellung geeigneter lizenzierter Schriftdateien nicht als wörtliche Freigabe verwendbar.`,36,y,10,A4[0]-72);}
-  pages.forEach(({page,scale},index)=>{const {width:w}=page.getSize();page.drawLine({start:{x:36,y:48},end:{x:w-36,y:48},thickness:.6,color:line});draw(page,`Revision ${meta.revision} · ${status} · mm · Maßstab ${scale}`,36,32,8,muted);draw(page,`${index+1} / ${pages.length}`,w-70,32,8,muted);if(meta.contentHash)draw(page,`Modellhash ${meta.contentHash}`,36,18,6,muted);});
+  }else{
+    const unsupported=[...new Set(visibleInscriptions.flatMap(e=>Array.from(e.exactText).filter(c=>c!=='\n'&&!sets.some(s=>s.has(c.codePointAt(0)!)))))];
+    if(unsupported.length){if(y<160){page=newPage('Zeichenprüfung');y=A4[1]-125;}label(page,`Einige Zeichen der Inschrift (${unsupported.map(c=>'U+'+c.codePointAt(0)!.toString(16).toUpperCase()).join(', ')}) sind in dieser Ausgabe als Codepunkte dargestellt. Bitte die Schreibweise gemeinsam mit uns prüfen.`,36,y-10,10,A4[0]-72);}
+  }
+  pages.forEach(({page,scale},index)=>{const {width:w}=page.getSize();page.drawLine({start:{x:36,y:48},end:{x:w-36,y:48},thickness:.6,color:line});draw(page,customer&&scale==='—'?`Revision ${meta.revision} · ${status}`:`Revision ${meta.revision} · ${status} · mm · Maßstab ${scale}`,36,32,8,muted);draw(page,`${index+1} / ${pages.length}`,w-70,32,8,muted);if(meta.contentHash&&!customer)draw(page,`Modellhash ${meta.contentHash}`,36,18,6,muted);});
   return pdf.save();
 }

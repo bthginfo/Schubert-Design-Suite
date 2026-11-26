@@ -2,6 +2,14 @@ import {afterEach,describe,expect,it,vi} from 'vitest';
 import {command,RequestError,request,display} from './api';
 
 afterEach(()=>vi.unstubAllGlobals());
+describe('value labels match the option chosen in the form',()=>{
+  it('shows the business area and invoice kind as selected, without changing other fields',()=>{
+    expect(display('memorial','business_unit')).toBe('Grabmal');
+    expect(display('normal','kind')).toBe('Rechnung');
+    expect(display('normal','priority')).toBe('Normal');
+    expect(display('advance','kind')).toBe('Anzahlung');
+  });
+});
 describe('confirmed browser command transport',()=>{
   it('formats dates delivered as Date objects by SvelteKit instead of hiding them',()=>{
     expect(display(new Date('2026-10-17T08:30:00Z'),'created_at')).toContain('17.10.2026');

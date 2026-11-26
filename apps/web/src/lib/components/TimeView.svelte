@@ -143,8 +143,8 @@
     <div class="finish-actions">
     {#if submissionIds.length}<button class="btn primary" disabled={busy} onclick={()=>submitReview=true}>Jetzt Tag prüfen & abgeben<Icon name="arrow" size={16}/></button>
     {:else if submissionBadge}<p class="submission-badge {submissionBadge.tone}" tabindex="-1"><Icon name={submissionBadge.icon} size={16}/><span>{submissionBadge.text}</span></p>{/if}
-    <button class="btn" disabled={busy||!ready} aria-describedby="finish-continue-help" onclick={continueWork}><Icon name="play" size={16}/>Doch weiterarbeiten</button>
-    <p class="finish-help" id="finish-continue-help">Startet ab jetzt eine neue Erfassung{timerState?.order_id?' für '+orderName(timerState.order_id):''} mit derselben Tätigkeit. Der beendete Zeitraum bleibt unverändert.</p>
+    {#if !data.summary?.preselectedOrder||data.summary.preselectedOrder===timerState?.order_id}<button class="btn" disabled={busy||!ready} aria-describedby="finish-continue-help" onclick={continueWork}><Icon name="play" size={16}/>Doch weiterarbeiten</button>
+    <p class="finish-help" id="finish-continue-help">Startet ab jetzt eine neue Erfassung{timerState?.order_id?' für '+orderName(timerState.order_id):''} mit derselben Tätigkeit. Der beendete Zeitraum bleibt unverändert.</p>{/if}
     </div>
   </section>{/if}
   <section class="timer-panel timer-hero" aria-labelledby="timer-title"><h2 id="timer-title" class="sr-only">Stoppuhr für die Arbeitszeit</h2>

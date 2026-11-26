@@ -16,11 +16,12 @@
   const navigable = (slug: string) => (data.navigation || []).some((item: { slug: string }) => item.slug === slug);
 
   const done = ['done', 'completed', 'closed', 'cancelled', 'deleted', 'archived'];
+  const dispatched = $derived(new Set(assignments.map(item => item.work_package_id).filter(Boolean)));
+  const rank = (item: Row) => (item.assigned_to === employeeId ? 2 : 0) + (dispatched.has(item.id) ? 1 : 0);
   const workPackages = $derived(
     (data.related?.work_packages || [])
       .filter((item: Row) => !done.includes(item.status))
-      .toSorted((a: Row, b: Row) =>
-        Number(b.assigned_to === employeeId) - Number(a.assigned_to === employeeId) ||
+      .toSorted((a: Row, b: Row) => rank(b) - rank(a) ||
         Number(b.status === 'in_progress') - Number(a.status === 'in_progress')),
   );
   const defects = $derived((data.related?.defects || []).filter((item: Row) => !done.includes(item.status)));
@@ -122,7 +123,7 @@
       {@const mine = !!employeeId && item.assigned_to === employeeId}
       <svelte:element this={navigable('work-packages') ? 'a' : 'div'} class="field-order-row" href={navigable('work-packages') ? '/work-packages/' + item.id : undefined}>
         <Icon name="briefcase" size={18} />
-        <span><strong>{recordName(item)}</strong>{#if packageFacts(item)}<small>{packageFacts(item)}</small>{/if}<small>{mine ? 'Ihnen zugeteilt' : item.assigned_name ? 'Zuständig: ' + item.assigned_name : 'Zuständigkeit offen'}</small></span>
+        <span><strong>{recordName(item)}</strong>{#if packageFacts(item)}<small>{packageFacts(item)}</small>{/if}<small>{mine ? 'Ihnen zugeteilt' : dispatched.has(item.id) ? 'Für Ihren Einsatz' : item.assigned_name ? 'Zuständig: ' + item.assigned_name : 'Zuständigkeit offen'}</small></span>
         {#if navigable('work-packages')}<Icon name="chevron" size={16} />{/if}
       </svelte:element>
     {:else}
@@ -162,7 +163,6 @@
       {/each}
       {#if assignments.length && !plans.length}<p class="field-order-hint">Freigegebene Pläne finden Sie im jeweiligen Einsatz.</p>{/if}
     </section>
-    {#if permitted(data, 'documents.upload')}<UploadPanel {data} entityType="orders" entityId={record.id} />{/if}
   {/if}
 
   {#if scope.length}
@@ -178,6 +178,8 @@
       </ul>
     </details>
   {/if}
+
+  {#if documentsLoaded && permitted(data, 'documents.upload')}<UploadPanel {data} entityType="orders" entityId={record.id} />{/if}
 </div>
 
 <style>
@@ -191,7 +193,7 @@
   .field-order-facts dt { display: flex; align-items: center; gap: .5rem; font-size: .85rem; color: var(--muted); }
   .field-order-facts dd { margin: .35rem 0 0; overflow-wrap: anywhere; font-weight: 550; }
   .field-order-facts dd > span { display: block; margin-top: .2rem; font-weight: 400; font-size: .88rem; }
-  .field-order-facts dd > a { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; margin-top: .1rem; }
+  .field-order-facts dd > a { display: flex; width: fit-content; align-items: center; gap: .4rem; min-height: 44px; margin-top: .1rem; }
   .field-order-notes { padding: 1rem 1.25rem; }
   .field-order-notes h3 { font-size: .85rem; font-weight: 600; color: var(--muted); }
   .field-order-notes p { margin-top: .35rem; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .92rem; }

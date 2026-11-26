@@ -81,8 +81,8 @@ export async function fieldOrderBrief(db:DbClient,ctx:ActorContext,orderId:strin
 async function processChain(db:DbClient,ctx:ActorContext,slug:string,record:any,related:any){
  const crm=has(ctx,'crm'),sales=has(ctx,'sales'),orders=has(ctx,'orders')&&!['Employee','Workshop'].includes(ctx.role),entity=ctx.legalEntityId;
  if(slug==='quotes'){
-  if(crm)related.inquiries=record.inquiry_id?await rows(db,'SELECT id,number,title,status,business_unit,created_at FROM inquiries WHERE id=$1 AND(legal_entity_id=$2 OR legal_entity_id IS NULL)',[record.inquiry_id,entity]):[];
   if(crm)related.customers=await rows(db,'SELECT id,number,name,city,status FROM parties WHERE id=$1 AND is_customer AND(legal_entity_id=$2 OR legal_entity_id IS NULL)',[record.customer_id,entity]);
+  if(crm)related.inquiries=record.inquiry_id?await rows(db,'SELECT id,number,title,status,business_unit,created_at FROM inquiries WHERE id=$1 AND(legal_entity_id=$2 OR legal_entity_id IS NULL)',[record.inquiry_id,entity]):[];
   if(orders)related.orders=await rows(db,'SELECT o.id,o.number,o.title,o.status,o.due_date FROM orders o WHERE(o.id=$1 OR o.quote_version_id IN(SELECT v.id FROM quote_versions v WHERE v.quote_id=$2)) AND o.legal_entity_id=$3 ORDER BY o.created_at DESC LIMIT 10',[record.order_id??null,record.id,entity]);
  }
  if(slug==='orders'){

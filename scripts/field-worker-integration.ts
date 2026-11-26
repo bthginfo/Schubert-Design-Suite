@@ -51,7 +51,10 @@ export async function fieldWorkerIntegration(actor:(role:string)=>ActorContext, 
       assert.equal((await page(employee,'time?order=kein-auftrag')).summary.preselectedOrder,undefined);
     }finally{
       // Leave the synthetic employee's day as it was.
-      await withTenant(owner,db=>db.query("UPDATE dispatch_assignments SET status='cancelled' WHERE id=$1",[assignment.id]));
+      await withTenant(owner,async db=>{
+        await db.query("UPDATE dispatch_assignments SET status='cancelled' WHERE id=$1",[assignment.id]);
+        await db.query("UPDATE work_packages SET status='done' WHERE id=ANY($1::uuid[])",[[mine.id,open.id,colleague.id,elsewhere.id]]);
+      });
     }
   });
 }
