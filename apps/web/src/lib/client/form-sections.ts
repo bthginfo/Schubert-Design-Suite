@@ -14,7 +14,7 @@ const sales:Section[]=[
   {title:'Bedingungen & Notizen',keys:['terms','notes'],optional:true}
 ];
 const quote:Section[]=[
-  {title:'Angebot',description:'Kunde und Vorhaben festlegen. Die Leistungen und Preise ergänzen Sie unter Positionen.',keys:['title','customer_id']},
+  {title:'Angebot',description:'Kunde und Vorhaben festlegen. Die Leistungen und Preise ergänzen Sie unter Positionen.',keys:['title','customer_id','inquiry_id']},
   {title:'Angebotsgültigkeit',keys:['valid_until']},
   {title:'Bedingungen & Notizen',description:'Übernommene Kundenwünsche können Sie hier prüfen und bearbeiten.',keys:['terms','notes'],optional:true},
   {title:'Weitere Angaben',description:'Nur bei Bedarf: Währung, ein bestehender Auftrag oder bereits vereinbarte Leistungs- und Zahlungstermine. Für einen ersten Angebotsentwurf können Auftrag und Termine leer bleiben.',keys:['currency','order_id','service_date','due_date'],optional:true}

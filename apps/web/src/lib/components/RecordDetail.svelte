@@ -29,6 +29,7 @@
   import ImportReview from "./ImportReview.svelte";
   import FontReference from "./FontReference.svelte";
   import FinancialDetails from "./FinancialDetails.svelte";
+  import FieldOrderView from "./FieldOrderView.svelte";
   let { data }: { data: AppData } = $props();
   let tab = $state("overview");
   let editor = $state(false);
@@ -100,6 +101,8 @@
   const module = $derived(data.module!);
   const record = $derived(data.detail || {});
   const isOrder = $derived(module.slug === "orders");
+  // Field roles get a worker view of the order (place, own assignments, open work, time) instead of the office file.
+  const fieldOrder = $derived(isOrder && ["Employee", "Workshop"].includes(data.context?.role ?? ""));
   let shownRecordId = $state("");
   $effect(() => {
     if (record.id !== shownRecordId) {
@@ -552,6 +555,7 @@
     : actionList.slice(1));
 </script>
 
+{#if fieldOrder}<FieldOrderView {data} />{:else}
 <a class="text-link mb" href={`/${module.slug}`}
   ><Icon name="back" size={16} />{module.label}</a
 >
@@ -1038,6 +1042,7 @@
       />{/if}
   </aside>
 </div>
+{/if}
 {#if editor}<RecordEditor
     {data}
     {record}

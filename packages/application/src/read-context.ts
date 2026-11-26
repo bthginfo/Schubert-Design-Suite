@@ -41,7 +41,9 @@ export async function recordRelations(db:DbClient,ctx:ActorContext,m:ModuleDefin
   if(has(ctx,'orders'))related.work_reports=await rows(db,'SELECT id,order_id,work_package_id,employee_id,description,performed_on,status FROM work_reports WHERE order_id=$1 AND legal_entity_id=$2 ORDER BY created_at DESC LIMIT 50',[orderId,ctx.legalEntityId]);
 
  }
- if(has(ctx,'documents')){const orderId=slug==='orders'?id:record.order_id??null;related.documents=await rows(db,`SELECT d.id,d.name,d.original_name,d.current_version_id,d.status,d.mime_type,d.created_at FROM documents d WHERE(d.entity_id=$1 OR d.entity_id=$2 OR EXISTS(SELECT 1 FROM document_links dl WHERE dl.document_id=d.id AND((dl.entity_type=$3 AND dl.entity_id=$1)OR(dl.entity_type IN('orders','order') AND dl.entity_id=$2)))) AND ${documentReadPredicate(ctx,'d')} ORDER BY d.created_at DESC LIMIT 50`,[id,orderId,slug]);}
+ if(slug==='inquiries')specs.push({slug:'quotes',key:'quotes',where:'inquiry_id',columns:'id,number,title,status,created_at'});
+ if(['quotes','orders','inquiries'].includes(slug))await processChain(db,ctx,slug,record,related);
+ if(has(ctx,'documents')){const orderId=slug==='orders'?id:record.order_id??null;related.documents=await rows(db,`SELECT d.id,d.name,d.original_name,d.current_version_id,d.status,d.mime_type,d.created_at FROM documents d WHERE(d.entity_id=$1 OR d.entity_id=$2 OR($3='quotes' AND d.entity_type='quote_version' AND d.entity_id IN(SELECT v.id FROM quote_versions v WHERE v.quote_id=$1)) OR EXISTS(SELECT 1 FROM document_links dl WHERE dl.document_id=d.id AND((dl.entity_type=$3 AND dl.entity_id=$1)OR(dl.entity_type IN('orders','order') AND dl.entity_id=$2)))) AND ${documentReadPredicate(ctx,'d')} ORDER BY d.created_at DESC LIMIT 50`,[id,orderId,slug]);}
  if(['stock','orders'].includes(slug)){
   if(has(ctx,'inventory'))related.stock_reservations=await rows(db,`SELECT r.id,s.name,r.order_id,r.quantity,s.unit,r.status,r.created_at FROM stock_reservations r JOIN stock_items s ON s.id=r.stock_item_id WHERE r.${slug==='stock'?'stock_item_id':'order_id'}=$1 AND r.legal_entity_id=$2 ORDER BY r.created_at DESC LIMIT 50`,[id,ctx.legalEntityId]);
  }
@@ -73,6 +75,32 @@ export async function fieldOrderBrief(db:DbClient,ctx:ActorContext,orderId:strin
  LEFT JOIN cemeteries c ON c.id=g.cemetery_id AND(c.legal_entity_id=o.legal_entity_id OR c.legal_entity_id IS NULL)
  WHERE o.id=$1 AND o.legal_entity_id=$2
   AND EXISTS(SELECT 1 FROM dispatch_assignments own WHERE own.order_id=o.id AND own.employee_id=$3 AND own.status NOT IN('cancelled','deleted'))`,[orderId,ctx.legalEntityId,ctx.employeeId]);
+}
+
+/** Inquiry → Quote → Order chain around one record. Each link needs the target's read permission; nothing beyond the parent scope is added. */
+async function processChain(db:DbClient,ctx:ActorContext,slug:string,record:any,related:any){
+ const crm=has(ctx,'crm'),sales=has(ctx,'sales'),orders=has(ctx,'orders')&&!['Employee','Workshop'].includes(ctx.role),entity=ctx.legalEntityId;
+ if(slug==='quotes'){
+  if(crm)related.inquiries=record.inquiry_id?await rows(db,'SELECT id,number,title,status,business_unit,created_at FROM inquiries WHERE id=$1 AND(legal_entity_id=$2 OR legal_entity_id IS NULL)',[record.inquiry_id,entity]):[];
+  if(crm)related.customers=await rows(db,'SELECT id,number,name,city,status FROM parties WHERE id=$1 AND is_customer AND(legal_entity_id=$2 OR legal_entity_id IS NULL)',[record.customer_id,entity]);
+  if(orders)related.orders=await rows(db,'SELECT o.id,o.number,o.title,o.status,o.due_date FROM orders o WHERE(o.id=$1 OR o.quote_version_id IN(SELECT v.id FROM quote_versions v WHERE v.quote_id=$2)) AND o.legal_entity_id=$3 ORDER BY o.created_at DESC LIMIT 10',[record.order_id??null,record.id,entity]);
+ }
+ if(slug==='orders'){
+  if(sales)related.quotes=await rows(db,'SELECT q.id,q.number,q.title,q.status,q.created_at FROM quotes q WHERE(q.order_id=$1 OR q.accepted_version_id=$2) AND q.legal_entity_id=$3 ORDER BY q.created_at DESC LIMIT 10',[record.id,record.quote_version_id??null,entity]);
+  if(crm)related.inquiries=await rows(db,'SELECT i.id,i.number,i.title,i.status,i.created_at FROM inquiries i WHERE i.id IN(SELECT q.inquiry_id FROM quotes q WHERE q.order_id=$1 OR q.accepted_version_id=$2) AND(i.legal_entity_id=$3 OR i.legal_entity_id IS NULL) LIMIT 10',[record.id,record.quote_version_id??null,entity]);
+ }
+ if(slug==='inquiries'&&orders&&sales)related.orders=await rows(db,'SELECT o.id,o.number,o.title,o.status,o.due_date FROM orders o WHERE o.id IN(SELECT q.order_id FROM quotes q WHERE q.inquiry_id=$1) AND o.legal_entity_id=$2 ORDER BY o.created_at DESC LIMIT 10',[record.id,entity]);
+}
+
+/** The generated customer PDF of the current quote version and its processing state; download still checks document access. */
+export async function quoteOutputIn(db:DbClient,ctx:ActorContext,quote:any){
+ const versionId=quote.accepted_version_id??quote.published_version_id;if(!uuid(versionId))return null;
+ const version=await one<any>(db,`SELECT v.id version_id,v.revision,v.valid_until,
+  (SELECT jsonb_build_object('id',j.id,'status',j.status,'updated_at',j.updated_at) FROM job_runs j WHERE j.job_type='quote.pdf' AND j.payload->>'quoteVersionId'=v.id::text ORDER BY j.created_at DESC LIMIT 1) job
+  FROM quote_versions v WHERE v.id=$1 AND v.quote_id=$2`,[versionId,quote.id]);
+ if(!version)return null;
+ const document=has(ctx,'documents')?await one<any>(db,`SELECT d.id,d.name,d.current_version_id,d.status FROM documents d JOIN job_runs j ON j.id=d.source_job_id WHERE d.entity_type='quote_version' AND d.entity_id=$1 AND j.job_type='quote.pdf' AND d.status='available' AND ${documentReadPredicate(ctx,'d')} ORDER BY d.created_at DESC LIMIT 1`,[version.version_id]):null;
+ return {versionId:version.version_id,revision:version.revision,validUntil:version.valid_until,document:document?{id:document.id,name:document.name,versionId:document.current_version_id,href:'/api/v1/documents/'+document.id+'/download?version='+document.current_version_id}:null,job:version.job?{id:version.job.id,status:version.job.status}:null,documentsReadable:has(ctx,'documents')};
 }
 
 export async function currentTimeSession(db:DbClient,ctx:ActorContext){

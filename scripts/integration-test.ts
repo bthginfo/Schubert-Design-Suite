@@ -1,4 +1,5 @@
 import {dashboardRoleIntegration} from './dashboard-role-integration.js';
+import {fieldWorkerIntegration} from './field-worker-integration.js';
 import {aiToolsIntegration} from './ai-tools-integration.js';
 import {assistantSuiteIntegration} from './assistant-suite-integration.js';
 import {usabilityDocumentIntegration} from './usability-document-integration.js';
@@ -123,6 +124,7 @@ await test('Personal onboarding is persisted, optimistic and cannot target anoth
 await usabilityDocumentIntegration(actor,test);
 await planningRoleIntegration(actor,test);
 await dashboardRoleIntegration(actor,test);
+await fieldWorkerIntegration(actor,test);
 await backofficeUsabilityIntegration(actor,test);
 await feedbackIntegration(actor,test);
 await appearanceIntegration(actor,test);
