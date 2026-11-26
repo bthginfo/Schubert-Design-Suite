@@ -23,4 +23,7 @@
   button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none; min-height: 40px; min-width: 40px; padding: 7px 10px; border-radius: 10px; color: var(--muted); background: transparent; font: inherit; font-size: 12px; }
   button:hover:not(:disabled) { background: var(--paper); color: var(--forest); }
   @media(max-width:760px) { button { min-height:44px; min-width:44px; padding:7px; } button:not(:first-of-type) span { display:none; } .selection-label { font-size:11px; padding-inline:4px; } }
+  /* Narrow drawing (e.g. tablet with a side sheet): icons only, so the selected part's name stays readable. */
+  @container drawing (max-width:620px) { button { padding:7px; } button span { display:none; } }
+  @media(pointer:coarse) { button { min-height:44px; min-width:44px; } }
 </style>

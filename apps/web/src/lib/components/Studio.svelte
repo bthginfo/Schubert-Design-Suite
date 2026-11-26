@@ -10,7 +10,7 @@
   import {planningPadding} from '#lib/client/studio-viewport.ts';
   import {feedbackFetch} from "#lib/client/feedback-context.ts";
   import {onMount,onDestroy,tick,untrack,type Component} from 'svelte';
-  import {goto,invalidateAll,beforeNavigate} from '$app/navigation';
+  import {goto,invalidateAll,beforeNavigate,replaceState} from '$app/navigation';
   import {page} from '$app/state';
   import {designSnapshotSchema,type DesignSnapshot,type DesignElement,type DesignOperation,type Point3,type Point2} from '@schubert/contracts';
   import{createDesign,applyOperations,inverseOperations,validateDesign,calculateBOM,projectDesign,projectDimensions,dimensionTextAnchor,layoutDimension,measureValue,parseMillimetres,rectangleContour,hasAssetUsage,mm,D,worldMatrix,sourceSvgMatrix,buildDesignSnapTargets,designSnapOrigin,findDesignSnap,movingSnapElementIds,selectionMoveOperations,type DesignView,type ViewShape}from'@schubert/geometry';
@@ -51,8 +51,11 @@
   }
   function readStepPreference(id:string){try{return sessionStorage.getItem('schubert:studio-step:'+id);}catch{return null;}}
   function askForStep(prompt:string){window.dispatchEvent(new CustomEvent('schubert:assistant:open',{detail:{prompt}}));}
-  $effect(()=>{if(!mounted||!snapshot)return;if(stepVariant!==snapshot.variantId){stepVariant=snapshot.variantId;const saved=planningStepSchema.safeParse(readStepPreference(stepVariant));planningStep=saved.success?saved.data:'geometry';if(!compactWorkbench&&!snapshot.elements.length){leftPanel=false;rightPanel=false;}}});
-  $effect(()=>{if(!mounted||!snapshot)return;studioAssistantContext.set(studioContext());try{sessionStorage.setItem('schubert:studio-step:'+snapshot.variantId,planningStep);}catch{/* Optional navigation preference only. */}});
+  $effect(()=>{if(!mounted||!snapshot)return;if(stepVariant!==snapshot.variantId){stepVariant=snapshot.variantId;
+    // The step survives reloads, new tabs and shared links (?step=), with the tab's last choice as fallback.
+    const linked=planningStepSchema.safeParse(untrack(()=>page.url.searchParams.get('step'))),saved=planningStepSchema.safeParse(readStepPreference(stepVariant));planningStep=linked.success?linked.data:saved.success?saved.data:'geometry';
+    if(!compactWorkbench&&!snapshot.elements.length){leftPanel=false;rightPanel=false;}else if((planningStep==='review'||planningStep==='output')&&(!compactWorkbench||sheetPanels))openInspector(planningStep==='review'?'checks':'images');}});
+  $effect(()=>{if(!mounted||!snapshot)return;studioAssistantContext.set(studioContext());try{sessionStorage.setItem('schubert:studio-step:'+snapshot.variantId,planningStep);}catch{/* Optional navigation preference only. */}const step=planningStep;untrack(()=>{try{const url=new URL(page.url.href);if((url.searchParams.get('step')??'geometry')!==step){if(step==='geometry')url.searchParams.delete('step');else url.searchParams.set('step',step);replaceState(url,page.state);}}catch{/* The router may not be ready yet; the session fallback still applies. */}});});
 
   import {searchableSelect} from '#lib/client/searchable-select.ts';
   import WorkbenchPanel from './studio/WorkbenchPanel.svelte';
@@ -438,7 +441,7 @@
   <header class="studio-heading">
     <div class="studio-breadcrumb"><a href={projectListHref}>Planungsstudio</a><Icon name="chevron" size={12}/><span>{snapshot.kind==='memorial'?'Grabmal':'Raum & Naturstein'}</span>{#if data.detail.order_id&&canViewOrders}<Icon name="chevron" size={12}/><a href={`/orders/${data.detail.order_id}`}>Zum Auftrag</a>{/if}</div>
     <div class="studio-title-row">
-      <div class="studio-project-title"><h1 title={data.detail.name??data.detail.title??'Planung'}>{data.detail.name??data.detail.title??'Planung'}</h1><p aria-live="polite"><span class="save-chip" data-state={saveState}>{#if saveState==='failed'}<button type="button" onclick={()=>{saveFailed=false;error='';void save();}}><Icon name="refresh" size={13}/>Speichern fehlgeschlagen – erneut versuchen</button>{:else}<span class="sync-dot" class:unsaved={saveState==='pending'||saveState==='saving'} class:has-conflict={saveState==='conflict'}></span><span class="sync-label">{saveState==='conflict'?'Konflikt prüfen':saveState==='saving'?'Wird gespeichert …':saveState==='pending'?'Änderungen ausstehend …':'Alle Änderungen gespeichert'}{saveState==='saved'&&lastSaved?' · '+lastSaved:''}</span>{/if}</span><span class="compact-variant-name">{variant?.name??'Variante'}</span><span class="revision-chip">Rev. {sourceRevision?.revision_number??sourceRevision?.version??baseVersion}</span></p></div>
+      <div class="studio-project-title"><h1 title={data.detail.name??data.detail.title??'Planung'}>{data.detail.name??data.detail.title??'Planung'}</h1><p aria-live="polite"><span class="save-chip" data-state={saveState}>{#if saveState==='failed'}<button type="button" onclick={()=>{saveFailed=false;error='';void save();}}><Icon name="refresh" size={13}/><span class="chip-full">Speichern fehlgeschlagen – erneut versuchen</span><span class="chip-short" aria-hidden="true">Erneut speichern</span></button>{:else}<span class="sync-dot" class:unsaved={saveState==='pending'||saveState==='saving'} class:has-conflict={saveState==='conflict'}></span><span class="sync-label"><span class="chip-full">{saveState==='conflict'?'Konflikt prüfen':saveState==='saving'?'Wird gespeichert …':saveState==='pending'?'Änderungen ausstehend …':'Alle Änderungen gespeichert'}{saveState==='saved'&&lastSaved?' · '+lastSaved:''}</span><span class="chip-short" aria-hidden="true">{saveState==='conflict'?'Konflikt':saveState==='saving'?'Speichert …':saveState==='pending'?'Ausstehend …':'Gespeichert'}</span></span>{/if}</span><span class="compact-variant-name">{variant?.name??'Variante'}</span><span class="revision-chip">Rev. {sourceRevision?.revision_number??sourceRevision?.version??baseVersion}</span></p></div>
       <div class="heading-actions"><div class="header-history"><button aria-label="Rückgängig" title="Rückgängig · Strg/⌘ Z" onclick={undo} disabled={!history.length||saving||!!outgoing||isHistoric}><Icon name="rotate-ccw" size={17}/></button><button aria-label="Wiederholen" title="Wiederholen · Strg/⌘ Umschalt Z" onclick={redoAction} disabled={!redo.length||saving||!!outgoing||isHistoric}><Icon name="refresh" size={17}/></button></div>
         <button id="studio-project-actions" class="btn" popovertarget="studio-project-menu" aria-label="Projekt: Aktionen öffnen"><Icon name="file" size={15}/><span>Projekt</span><Icon name="down" size={12}/></button>
         <button class="btn fullscreen-button" aria-label={fullscreen?'Vollbild beenden':'Vollbild'} aria-pressed={fullscreen} onclick={toggleFullscreen}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d={fullscreen?"M8 3v5H3m13-5v5h5M3 16h5v5m13-5h-5v5":"M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"}/></svg><span>{fullscreen?'Vollbild beenden':'Vollbild'}</span></button>
@@ -1066,7 +1069,7 @@
 }
 /* Save state: a clear chip instead of a faded button. */
 .save-chip{display:inline-flex;align-items:center;gap:6px;min-width:0;padding:2px 9px 2px 7px;border-radius:999px;background:var(--wash);color:var(--muted);font-size:11px;font-weight:550;line-height:1.6}
-.save-chip[data-state=saved]{background:color-mix(in srgb,var(--success) 13%,var(--paper));color:color-mix(in srgb,var(--success) 72%,var(--ink))}
+.save-chip[data-state=saved]{background:color-mix(in srgb,var(--success) 20%,var(--paper));color:color-mix(in srgb,var(--success) 80%,var(--ink))}
 .save-chip[data-state=pending],.save-chip[data-state=saving]{background:color-mix(in srgb,var(--warning) 15%,var(--paper));color:var(--ink)}
 .save-chip[data-state=conflict],.save-chip[data-state=failed]{background:color-mix(in srgb,var(--danger) 12%,var(--paper));color:var(--danger)}
 .save-chip button{display:inline-flex;align-items:center;gap:5px;min-height:24px;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
@@ -1083,5 +1086,15 @@
   .floating-toolbar .studio-help-tool,.floating-toolbar button{min-height:44px;min-width:44px}
   .save-chip button{min-height:44px}
 }
+
+/* Narrow drawing on tablet or desktop: keep the view dock on one row instead of wrapping into the canvas height. */
+@container drawing (max-width:640px){
+  .studio-root:not([data-compact=true]) .view-dock,.studio-root[data-sheet=true] .view-dock{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;gap:4px}
+  .studio-root:not([data-compact=true]) .view-dock .view-tools,.studio-root[data-sheet=true] .view-dock .view-tools{flex-wrap:nowrap;gap:3px;flex:none}
+  .studio-root:not([data-compact=true]) .view-dock .zoom-control,.studio-root[data-sheet=true] .view-dock .zoom-control{flex:none;width:auto;padding-left:4px;gap:3px}
+  .studio-root:not([data-compact=true]) .view-dock .zoom-control span,.studio-root[data-sheet=true] .view-dock .zoom-control span{display:none}
+}
+.save-chip .chip-short{display:none}
+@media(max-width:760px){.save-chip .chip-full{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.save-chip .chip-short{display:inline}.workbench .heading-actions .save-plan.is-saved .save-label{display:none}}
 @media(max-width:360px){.workbench .heading-actions .save-plan .save-label{display:none}}
 </style>

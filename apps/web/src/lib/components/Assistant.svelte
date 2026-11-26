@@ -7,6 +7,7 @@
     studioAssistantContext,
     prepareStudioAssistant,
     adoptStudioAssistantResult,
+    reportStudioAssistantReply,
   } from "#lib/client/studio-assistant.ts";
   import { assistantPrivateScreen, canSearchPlanningProducts, moduleBySlug, planningStepLabel, type AssistantRecordLink } from "@schubert/contracts";
   import { focusTrap } from "#lib/client/focus-trap.ts";
@@ -586,6 +587,7 @@
           boundaries,
         },
       ].slice(-20);
+      reportStudioAssistantReply(work, result);
       input = "";
       return true;
     } catch (cause) {
@@ -981,7 +983,7 @@
               ? " + " + (studioWork.selectedLabels.length - 2) + " weitere"
               : ""}
           </p>
-          <small>Sie prüfen vorgeschlagene Änderungen vor dem Übernehmen.</small><button
+          <small>Vorschläge erscheinen mit „Übernehmen“ und „Verwerfen“. Ohne Vorschlag gibt es nur Hinweise.</small><button
               type="button"
               class="assistant-scope-link"
               aria-label="Bearbeitungsgrenzen ändern"

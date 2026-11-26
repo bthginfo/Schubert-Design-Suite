@@ -58,10 +58,11 @@
   const dialogTitle=$derived(kind==='stone_piece'&&snapshot.kind==='memorial'?(purpose==='base'?'Sockel ergänzen':purpose==='memorial'?'Stein ergänzen':titles.stone_piece):titles[kind]??'Element ergänzen');
   const defaultLabels=['Natursteinbauteil','Stele','Sockel'];
   let stackEnabled=$state(false),stackPartner=$state('');
-  const stackOptions=$derived(memorialPiece?stackCandidates(snapshot,purpose==='base'?'stone':'base'):[]);
+  // A new Sockel may carry any free stone; a new stone is only offered Sockel-like bases.
+  const stackOptions=$derived(memorialPiece?stackCandidates(snapshot,purpose==='base'?'stone':'base').filter(e=>purpose==='base'||isBaseStone(snapshot,e)):[]);
   function purposeChanged(){
     if(defaultLabels.includes(label.trim())||!label.trim())label=snapshot.kind==='memorial'&&purpose==='base'?'Sockel':snapshot.kind==='memorial'&&purpose==='memorial'?'Stele':'Natursteinbauteil';
-    const options=snapshot.kind==='memorial'&&(purpose==='memorial'||purpose==='base')?stackCandidates(snapshot,purpose==='base'?'stone':'base'):[];
+    const options=snapshot.kind==='memorial'&&(purpose==='memorial'||purpose==='base')?stackCandidates(snapshot,purpose==='base'?'stone':'base').filter(e=>purpose==='base'||isBaseStone(snapshot,e)):[];
     // A new Sockel goes under the chosen stone; a new stone stands on an existing Sockel.
     const preferred=purpose==='base'?options.find(e=>e.id===selectedId)??options[0]:options.find(e=>e.id===selectedId&&isBaseStone(snapshot,e))??options.find(e=>isBaseStone(snapshot,e));
     stackPartner=preferred?.id??options[0]?.id??'';stackEnabled=!!preferred;

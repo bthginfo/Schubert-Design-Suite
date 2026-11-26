@@ -45,10 +45,10 @@
       {:else}
         <button type="button" class="flow-action" onclick={()=>oninspect('images')}><Icon name="image" size={15}/>Ausgaben öffnen</button>
       {/if}
-      {#if reply}<span class="ai-reply" class:proposal={reply.kind==='proposal'} role="status"><Icon name={reply.kind==='proposal'?'spark':'help'} size={14}/><span>{reply.kind==='proposal'?`Änderungsvorschlag (${reply.commandCount}) im Assistenten prüfen`:'Kein Änderungsvorschlag – nur Hinweise'}</span><button type="button" aria-label="Hinweis zur KI-Antwort ausblenden" onclick={()=>studioAssistantReply.set(null)}><Icon name="close" size={12}/></button></span>{/if}
       <button type="button" class="flow-ai" aria-label="KI für diesen Schritt" title="KI für diesen Schritt · schlägt nur vor, Sie entscheiden" onclick={ask}><Icon name="spark" size={15}/><span>KI für diesen Schritt</span></button>
     </div>
   </div>
+  <div class="ai-reply-row" role="status">{#if reply}<p class="ai-reply" class:proposal={reply.kind==='proposal'}><Icon name={reply.kind==='proposal'?'spark':'help'} size={14}/><span><strong>{reply.kind==='proposal'?`Änderungsvorschlag (${reply.commandCount})`:'Kein Änderungsvorschlag – nur Hinweise'}</strong> {reply.kind==='proposal'?'Im Assistenten prüfen und ausdrücklich übernehmen oder verwerfen.':'Die KI-Antwort enthält keine anwendbare Änderung. Der Plan bleibt unverändert.'}</span><button type="button" aria-label="Hinweis zur KI-Antwort ausblenden" onclick={()=>studioAssistantReply.set(null)}><Icon name="close" size={12}/></button></p>{/if}</div>
 </div>
 
 <style>
@@ -82,10 +82,16 @@
   .flow-action { color: var(--forest); font-weight: 600; }
   .flow-action:hover, .flow-ai:hover { background: var(--accent-wash); }
   .flow-ai { color: var(--forest); }
-  .ai-reply { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 280px; padding: 3px 4px 3px 9px; border-radius: 999px; background: var(--wash); color: var(--ink); font-size: .76rem; line-height: 1.35; }
-  .ai-reply.proposal { background: var(--accent-wash); color: var(--forest); }
-  .ai-reply > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .step-actions .ai-reply button { min-height: 28px; min-width: 28px; padding: 0; border-radius: 50%; color: var(--muted); }
+  .planning-flow { flex-wrap: wrap; row-gap: 0; }
+  .ai-reply-row { flex: 1 0 100%; min-width: 0; }
+  .ai-reply-row:empty { display: none; }
+  .ai-reply { display: flex; align-items: center; gap: 8px; margin: 6px 0 1px; padding: 4px 4px 4px 11px; border-radius: 10px; background: var(--wash); color: var(--ink); font-size: .78rem; line-height: 1.45; }
+  .ai-reply.proposal { background: var(--accent-wash); }
+  .ai-reply > span { flex: 1; min-width: 0; }
+  .ai-reply strong { font-weight: 650; }
+  .ai-reply.proposal strong { color: var(--forest); }
+  .ai-reply button { display: grid; place-items: center; flex: none; min-height: 32px; min-width: 32px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+  .ai-reply button:hover { background: var(--paper); }
   @container planning-flow (max-width: 1040px) {
     .planning-steps button { padding-inline: 9px; }
     .flow-ai span { display: none; }
@@ -93,7 +99,6 @@
   @container planning-flow (max-width: 900px) {
     .step-long { display: none; }
     .step-short { display: inline; }
-    .ai-reply { max-width: 190px; }
   }
   @container planning-flow (max-width: 620px) {
     .planning-steps button { padding-inline: 7px; gap: 5px; }
@@ -107,7 +112,7 @@
     .step-actions button { min-height: 44px; }
     .flow-ai { min-width: 44px; }
     .flow-ai span { display: inline; }
-    .ai-reply { order: 3; max-width: none; flex: 1 1 100%; }
+    .ai-reply button { min-height: 44px; min-width: 44px; }
   }
   @media (max-width: 360px) {
     .flow-ai span { display: none; }
