@@ -546,8 +546,7 @@
   <div>
     <h1>{recordName(record,data)}</h1>
     <p>
-      {module.singular}{record.number ? ` · ${record.number}` : ""} · {record.description ||
-        module.description}
+      {module.singular}{record.number ? ` · ${record.number}` : ""}{typeof record.description === "string" && record.description.trim() && record.description.length <= 160 ? ` · ${record.description}` : ""}
     </p>
   </div>
   <div class="page-heading-actions">

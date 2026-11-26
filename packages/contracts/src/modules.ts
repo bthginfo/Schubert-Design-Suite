@@ -12,7 +12,45 @@ const sel=(key:string,label:string,values:string[],required=false):Field=>({...f
 const labels:Record<string,string>={new:'Neu',qualifying:'In Klärung',planning:'In Planung',quoted:'Angebot erstellt',won:'Gewonnen',lost:'Verloren',paused:'Pausiert',draft:'Entwurf',under_review:'In Prüfung',approved:'Freigegeben',published:'Veröffentlicht',accepted:'Angenommen',rejected:'Abgelehnt',expired:'Abgelaufen',superseded:'Ersetzt',confirmed:'Bestätigt',completed:'Abgeschlossen',cancelled:'Storniert',open:'Offen',in_progress:'In Bearbeitung',done:'Erledigt',normal:'Rechnung',advance:'Anzahlung',progress:'Abschlag',partial:'Teilleistung',final:'Schlussrechnung',correction:'Berichtigung',credit:'Gutschrift',incoming:'Eingang',outgoing:'Ausgang',memorial:'Grabmal',room_plan:'Raum / Bad',piece:'Stück',m2:'m²',m3:'m³',mm:'mm',m:'m',h:'Stunden',kg:'kg',day:'Tag',package:'Paket',invoice:'Rechnung',stock_purchase:'Lagerkauf',direct_service:'Direkte Fremdleistung',machine:'Maschinenleistung',transport:'Transport',overhead:'Gemeinkosten',available:'Verfügbar',blocked:'Gesperrt',slab:'Rohplatte',remnant:'Reststück',quantity:'Mengenartikel',person:'Person',organization:'Organisation'};
 export const statusLabels=labels;
 const states=(prefix:string,transitions:[string,string,string[],boolean?][]):Action[]=>transitions.map(([target,label,from,reason])=>({name:`${prefix}.${target}`,label,statuses:from,targetStatus:target,requiresReason:reason,confirmation:true}));
-function mod(slug:string,table:string,label:string,singular:string,prefix:string,permission:string,fields:Field[],actions:Action[]=[],extra:Partial<ModuleDefinition>={}):ModuleDefinition{return {slug,table,label,singular,description:`${label} verwalten und Vorgänge nachvollziehen.`,commandPrefix:prefix,permission,fields,columns:['number',fields[0]?.key??'name','status','updated_at'],actions,...extra};}
+/** One plain sentence per area: what people find and do there. */
+const moduleDescriptions:Record<string,string>={
+ customers:'Personen und Firmen mit Kontaktdaten, Anfragen, Angeboten und Aufträgen.',
+ suppliers:'Lieferanten mit Ansprechpartnern, Bestellungen und Rechnungen.',
+ inquiries:'Neue Kundenwünsche aufnehmen, Beratung planen und daraus ein Angebot machen.',
+ quotes:'Angebote entwerfen, prüfen und an Kunden senden.',
+ orders:'Laufende Aufträge mit Planung, Terminen, Material und Abrechnung.',
+ 'work-packages':'Konkrete Arbeitsschritte für Werkstatt und Montage.',
+ 'change-orders':'Zusätzliche oder geänderte Leistungen zu einem Auftrag festhalten.',
+ deliveries:'Lieferscheine für ausgelieferte Bauteile und Materialien.',
+ acceptances:'Abnahmen beim Kunden dokumentieren und bestätigen lassen.',
+ defects:'Mängel erfassen, zuordnen und bis zur Behebung verfolgen.',
+ invoices:'Rechnungen aus Aufträgen erstellen, prüfen und versenden.',
+ payments:'Zahlungseingänge erfassen und offenen Rechnungen zuordnen.',
+ 'supplier-invoices':'Eingangsrechnungen prüfen, Bestellungen zuordnen und freigeben.',
+ 'purchase-orders':'Material und Leistungen bei Lieferanten bestellen und Liefertermine verfolgen.',
+ products:'Leistungen und Artikel mit Preisen für Angebote und Rechnungen.',
+ 'price-imports':'Preislisten von Lieferanten einlesen, prüfen und übernehmen.',
+ stock:'Natursteinplatten, Reststücke und Material im Lager.',
+ 'stock-locations':'Lagerplätze und Bereiche, in denen Material liegt.',
+ inventory:'Bestände zählen und Abweichungen nachvollziehbar klären.',
+ documents:'Pläne, Fotos und Unterlagen sicher ablegen und Vorgängen zuordnen.',
+ cutovers:'Den Wechsel aus dem bisherigen System geprüft abschließen.',
+ imports:'Daten aus Tabellen oder dem bisherigen System übernehmen.',
+ team:'Mitarbeitende mit Rollen, Arbeitszeitmodellen und Personalakten.',
+ dispatch:'Wer wann an welchem Auftrag arbeitet: Einsätze planen und Überschneidungen sehen.',
+ leave:'Urlaub und Abwesenheiten beantragen, prüfen und genehmigen.',
+ tasks:'Aufgaben und Rückfragen mit Zuständigkeit und Fälligkeit.',
+ resources:'Fahrzeuge, Maschinen und Geräte mit Verfügbarkeit.',
+ sites:'Einsatzorte, Gebäude und Räume Ihrer Kundschaft.',
+ cemeteries:'Friedhöfe mit ihren Vorgaben aus der Friedhofssatzung.',
+ graves:'Grabstätten mit Lage, Maßen und Bezug zum Auftrag.',
+ fonts:'Schriften für Inschriften mit Herstellerbezug.',
+ rules:'Fachregeln und Freigaben in nachvollziehbaren Fassungen.',
+ audit:'Lückenloses Protokoll aller verbindlichen Änderungen.',
+ jobs:'Hintergrundverarbeitung, ihr Stand und mögliche Hinweise.',
+ notifications:'Mitteilungen und Hinweise an Sie.',
+};
+function mod(slug:string,table:string,label:string,singular:string,prefix:string,permission:string,fields:Field[],actions:Action[]=[],extra:Partial<ModuleDefinition>={}):ModuleDefinition{return {slug,table,label,singular,description:moduleDescriptions[slug]??`${label} ansehen, bearbeiten und nachvollziehen.`,commandPrefix:prefix,permission,fields,columns:['number',fields[0]?.key??'name','status','updated_at'],actions,...extra};}
 const name=f('name','Bezeichnung','text',true), note=f('notes','Notizen','textarea');
 const unit=sel('unit','Einheit',['piece','mm','m','m2','m3','kg','h','day','package'],true);
 const partyFields=[f('name','Name / Firma','text',true),sel('party_type','Kundentyp',['person','organization']),f('email','E-Mail','email'),f('phone','Telefon','tel'),f('street','Straße'),f('postal_code','Postleitzahl'),f('city','Ort'),f('country','Land'),f('vat_id','USt-ID'),f('payment_days','Zahlungsziel (Tage)','number'),note];
