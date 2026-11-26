@@ -10,6 +10,7 @@ export function filteredWhere(m:ModuleDefinition,url:URL,params:any[]){
   if(m.slug==='documents'&&key==='customer_id')add(value,n=>customerDocumentScope('documents','$'+n,'$1'));
   else {requireRule(m.fields.some(field=>field.key===key),'FILTER_PARTY','Dieser Bereich kann nicht nach diesem Bezug gefiltert werden.');add(value,n=>`${m.table}.${key}=$${n}`);}
  }
+ const employeeId=url.searchParams.get('employee_id');if(employeeId&&m.fields.some(field=>field.key==='employee_id')){requireRule(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(employeeId),'FILTER_EMPLOYEE','Eine gültige Person auswählen.');add(employeeId,n=>`${m.table}.employee_id=$${n}`);}
  const status=url.searchParams.get('status');if(status){if(open&&status==='open')sql+=' AND open_amount<>0';else add(status,n=>`status=$${n}`);}
  const orderId=url.searchParams.get('order_id')||url.searchParams.get('order');if(orderId){requireRule(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(orderId),'FILTER_ORDER','Einen gültigen konkreten Auftrag auswählen.');if(m.slug==='orders')add(orderId,n=>`id=$${n}`);else if(m.fields.some(field=>field.key==='order_id'))add(orderId,n=>`order_id=$${n}`);else if(open)add(orderId,n=>`EXISTS(SELECT 1 FROM ${m.slug==='receivables'?'invoices':'supplier_invoices'} i WHERE i.id=${m.table}.invoice_id AND i.order_id=$${n})`);}
  const metric=url.searchParams.get('metric');

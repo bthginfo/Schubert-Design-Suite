@@ -11,6 +11,10 @@ describe('Companion draft planning',()=>{
   expect(stones).toHaveLength(2);expect(snapshot.elements).toEqual([]);
   expect(contourBounds(stones[1].finishedContour)).toMatchObject({width:'600',height:'900'});
   expect(stones[1].transform.position).toEqual({xMm:'50',yMm:'30',zMm:'140'});
+  // The base is a real Sockel and the stele is linked to it with the domain „steht auf“ relation.
+  expect(stones.map(stone=>stone.purpose)).toEqual(['base','memorial']);
+  expect(after.constraints).toEqual([{id:expect.stringMatching(/^stack:/),kind:'rests_on',refs:[{elementId:stones[1].id,feature:'bottom_center'},{elementId:stones[0].id,feature:'top_center'}],measureId:null,ruleVersionId:null}]);
+  expect(()=>applyOperations(after,[{type:'move_element',elementId:stones[1].id,delta:{xMm:'0',yMm:'0',zMm:'10'}}])).toThrow(/steht nicht auf dem Sockel/);
   expect(projectDesign({...after,elements:stones},'front').bounds).toMatchObject({width:700,height:1040});
   expect(projectDesign({...after,elements:stones},'side').bounds).toMatchObject({minX:0,maxX:180,width:180,height:1040});
   const stoneSide=projectDesign({...after,elements:[stones[1]]},'side').bounds;

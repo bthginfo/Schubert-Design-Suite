@@ -583,6 +583,7 @@
       <Icon name="alert" />
       <div>{typeof warning === "string" ? warning : warning.message}</div>
     </div>{/each}{/if}
+{#if module.slug === "team" && record.id && permitted(data, "hr")}<nav class="hr-links" aria-label="Personalangaben zu dieser Person"><a class="btn small" href={`/leave-entitlements?employee_id=${record.id}`}>Urlaubsansprüche</a><a class="btn small" href={`/work-schedules?employee_id=${record.id}`}>Arbeitsmodelle</a><a class="btn small" href={`/leave?employee_id=${record.id}`}>Abwesenheiten</a></nav>{/if}
 {#if protectedStand}<div class="notice info">
     <Icon name="lock" />
     <div>
@@ -988,7 +989,7 @@
       <div class="panel-body">
         <dl class="definition-list" style="grid-template-columns:1fr">
           {#each statusKeys as key}<div>
-              <dt>{label(key)}</dt>
+              <dt>{key === "artifact_status" && module.slug === "supplier-invoices" ? "Eingangsbeleg" : label(key)}</dt>
               <dd><Status value={record[key]} /></dd>
             </div>{/each}{#if !statusKeys.length}<p class="small muted">
               Noch kein gesonderter Arbeitsstatus.
@@ -1060,4 +1061,4 @@
   .order-next-owner { display: flex; align-items: center; gap: .4rem; margin-top: .5rem; font-size: .88rem; }
   .order-next .btn { min-height: 44px; }
   @media(max-width: 560px) { .order-next { flex-direction: column; align-items: stretch; } }
-</style>
+.hr-links{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}</style>

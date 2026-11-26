@@ -10,6 +10,7 @@ export * from './catalog.js';
 export * from './slope.js';
 export * from './references.js';
 export * from './constraints.js';
+export * from './stacking.js';
 export * from './borders.js';
 export * from './walls.js';
 export * from './machining.js';

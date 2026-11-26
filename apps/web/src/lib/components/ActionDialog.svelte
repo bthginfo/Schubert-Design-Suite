@@ -40,6 +40,15 @@
   const isMoneyKey = (key: string) => /amount|total/.test(key);
   const previewLabels: Record<string, string> = { gross_total: "Betrag", total_gross: "Betrag", gross_amount: "Betrag", amount: "Betrag", service_date: "Leistungsdatum", due_date: "Fälligkeit", customer_id: "Kunde", supplier_id: "Lieferant", order_id: "Auftrag" };
   let payload: Row = $state({});
+  // Allocating a single payment starts from its direction and full amount; both stay editable.
+  let paymentDefaults = false;
+  $effect(() => {
+    if (paymentDefaults || action.name !== "billing.payment.allocate" || records.length !== 1) return;
+    paymentDefaults = true;
+    const payment = records[0];
+    if (!payload.target_kind) payload.target_kind = payment.direction === "outgoing" ? "payable" : "receivable";
+    if (!payload.amount && payment.amount != null) payload.amount = String(payment.amount).replace(".", ",");
+  });
   let reason = $state("");
   let confirmed = $state(false);
   let password = $state("");

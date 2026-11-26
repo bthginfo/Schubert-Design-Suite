@@ -17,6 +17,7 @@ import {
   mm,
   IDENTITY_TRANSFORM,
   validateDesign,
+  restingFollowUps,
 } from "@schubert/geometry";
 import { DomainError, requireRule } from "@schubert/domain";
 import { planningDraftOperations } from "./planning-draft.js";
@@ -256,7 +257,13 @@ export function normalizePlanningEdits(
         delete e.type;
         delete e.measurements;
       } else if (e.kind === "stone_piece") {
-        if (current.kind === 'memorial' && typeof e.purpose === 'string' && ['base','plinth','pedestal','sockel','stele','headstone','gravestone'].includes(e.purpose.trim().toLowerCase())) e.purpose = 'memorial';
+        if (current.kind === 'memorial' && typeof e.purpose === 'string') {
+          const named = e.purpose.trim().toLowerCase();
+          if (['base','plinth','pedestal','sockel'].includes(named)) e.purpose = 'base';
+          else if (['stele','headstone','gravestone','grabstein'].includes(named)) e.purpose = 'memorial';
+        }
+        // A memorial part labelled as Sockel is the base, unless a purpose was given.
+        if (current.kind === 'memorial' && !e.purpose && typeof e.label === 'string' && /sockel/i.test(e.label)) e.purpose = 'base';
         if (!e.finishedContour) {
           requireRule(
             e.widthMm && e.heightMm,
@@ -473,6 +480,13 @@ export function normalizePlanningEdits(
     current = applyOperations(current, [lock], { validate: false });
     operations.push(lock);
   }
+  // Stones linked with „steht auf“ follow a changed base with an explicit,
+  // visible move in the same proposal (as in the studio); no hidden solver.
+  const settle = restingFollowUps(current, operations);
+  if (settle.length) {
+    current = applyOperations(current, settle, { validate: false });
+    operations.push(...settle);
+  }
   const report = validateDesign(current);
   requireRule(
     !report.blocking.length,
@@ -563,7 +577,7 @@ const elementFields = designElementSchema.options.map(
       .join(", "),
 );
 export const planningEditInstructions =
-  'Verbindliche Werte und Koordinaten: stone_piece.purpose ist einer von '+stonePieceElementSchema.shape.purpose.options.join('|')+'. Grabstein, Stele und Sockel haben alle purpose:"memorial"; die Bezeichnung "Sockel" ist label, keine neue Kategorie. inscription.previewFontKey ist einer von '+inscriptionElementSchema.shape.previewFontKey.unwrap().options.join('|')+'. Vorschau-Schrift weglassen, wenn keine konkrete verlangt wurde; niemals erfundene Schriftkennungen oder "serif" verwenden. inscription.originUV hat exakt {uMm:"300",vMm:"600"}, lokale waagerechte/senkrechte Position auf dem Stein in mm. Keine Felder x/y/u/v. Ohne Positionswunsch originUV weglassen; der Server platziert den Text mittig. transform ist {position:{xMm:"0",yMm:"0",zMm:"0"},rotationDeg:{x:"90",y:"0",z:"0"}}. Konturen bestehen aus outer und holes; eine Linie ist {kind:"line",from:{xMm:"0",yMm:"0"},to:{xMm:"600",yMm:"0"}}, ein Bogen {kind:"circular_arc",from:{xMm:"600",yMm:"600"},to:{xMm:"0",yMm:"600"},center:{xMm:"300",yMm:"600"},clockwise:false}. Ein Rundbogen liegt oberhalb seiner waagerechten Kämpferlinie; Radius und Bauteilgesamthöhe aus den angegebenen Maßen ableiten. Alle Koordinaten, Winkel und Maße sind Dezimalstrings. ' +
+  'Verbindliche Werte und Koordinaten: stone_piece.purpose ist einer von '+stonePieceElementSchema.shape.purpose.options.join('|')+'. Grabstein und Stele haben purpose:"memorial", ein Sockel purpose:"base". Ein Stein auf einem Sockel ist über constraints kind:"rests_on" verbunden (refs [Stein bottom_center, Sockel top_center]); ändert sich der Sockel, ergänzt der Server die Folgeverschiebung des Steins selbst. Einen verbundenen Stein nicht vom Sockel wegbewegen, ohne die Bindung mit remove_constraint zu lösen. inscription.previewFontKey ist einer von '+inscriptionElementSchema.shape.previewFontKey.unwrap().options.join('|')+'. Vorschau-Schrift weglassen, wenn keine konkrete verlangt wurde; niemals erfundene Schriftkennungen oder "serif" verwenden. inscription.originUV hat exakt {uMm:"300",vMm:"600"}, lokale waagerechte/senkrechte Position auf dem Stein in mm. Keine Felder x/y/u/v. Ohne Positionswunsch originUV weglassen; der Server platziert den Text mittig. transform ist {position:{xMm:"0",yMm:"0",zMm:"0"},rotationDeg:{x:"90",y:"0",z:"0"}}. Konturen bestehen aus outer und holes; eine Linie ist {kind:"line",from:{xMm:"0",yMm:"0"},to:{xMm:"600",yMm:"0"}}, ein Bogen {kind:"circular_arc",from:{xMm:"600",yMm:"600"},to:{xMm:"0",yMm:"600"},center:{xMm:"300",yMm:"600"},clockwise:false}. Ein Rundbogen liegt oberhalb seiner waagerechten Kämpferlinie; Radius und Bauteilgesamthöhe aus den angegebenen Maßen ableiten. Alle Koordinaten, Winkel und Maße sind Dezimalstrings. ' +
   'Du kannst den gesamten berechtigten Entwurf bearbeiten: Elemente hinzufügen, ändern, entfernen, duplizieren, Material/Form/Text/Schrift/Kanten/Ausschnitte bearbeiten, Räume/Wände/Öffnungen verändern. Der aktuelle Studioschritt ist Orientierung, keine Bearbeitungssperre. Setze ausdrückliche Gestaltungswünsche direkt als konkreten Vorschlag um. Vorhandene IDs aus dem Kontext verwenden. Neue Elemente und Maße mit lokalen Kennungen new:... anlegen; der Server vergibt eigene IDs. Neue Maße sind ungeprüfte Entwurfsziele, keine Bestandsbestätigung. Für neue Inschrift genügt {type:"add_inscription",surfaceElementId,exactText,label?,heightMm?,lineGapMm?,previewFontKey?,previewColor?,originUV?}; vorhandene Gestaltung wird übernommen, ansonsten editierbare Entwurfsdarstellung. Nicht nach optionaler Schriftgröße/Farbe fragen, wenn eine vorhandene Gestaltung oder ein sinnvoller Entwurf möglich ist. Für neue Steinplatte add_element mit element:{kind:"stone_piece",id:"new:stein",widthMm,heightMm,thicknessMm?,purpose?,...}; alternativ vollständige Kontur. Für eine Skizzenvorlage add_element mit element:{kind:"plan_reference",id:"new:vorlage",sourceDocumentId,label?}; Original/Hash bindet der Server. Maße in measurements können kompakt {valueMm:"40"} sein. Bestehende Inschrift bei gewünschter Gestaltung als neue geplante Fassung weiterbearbeiten; historische Originalrevision bleibt erhalten. set_inscription_text für den genauen neuen Wortlaut; Geburtszeichen * und Sterbezeichen † sind die üblichen gewünschten Zeichen, keine Rückfrage dazu. Für gleiche Eigenschaft an mehreren Elementen {type:"apply_to_elements",elementIds:[...IDs] oder "all_inscriptions",operation:{type:...,weitereFelder...}}. Zulässige Operationen mit Feldern: ' +
   operationFields.join("; ") +
   ". Bauteilfelder (Basisfelder ergänzt der Server): " +

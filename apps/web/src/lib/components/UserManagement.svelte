@@ -11,6 +11,21 @@
   let name = $state("");
   let email = $state("");
   let password = $state("");
+  let showPassphrase = $state(false);
+  let copied = $state(false);
+  // Five random words from a fixed list plus a four-digit number (~43 bits): long, typeable and easy to read aloud.
+  const passphraseWords = ["Granit","Marmor","Meissel","Sockel","Stele","Werkbank","Kiesel","Quader","Gneis","Basalt","Fliese","Kante","Schliff","Lasur","Ahorn","Linde","Birke","Wiese","Hafen","Bruecke","Garten","Sonne","Morgen","Brunnen","Turm","Feder","Laterne","Kompass","Anker","Pinsel","Hobel","Winkel","Felsen","Quelle","Wolke","Regen","Nebel","Sommer","Winter","Herbst","Fruehling","Flamme","Kerze","Spiegel","Fenster","Treppe","Balkon","Pfeiler","Bogen","Kuppel","Mosaik","Relief","Patina","Ocker","Silber","Bronze","Kupfer","Zinn","Lehm","Sand","Kreide","Schiefer"];
+  function generatePassphrase() {
+    const random = new Uint32Array(6);
+    crypto.getRandomValues(random);
+    const words = Array.from(random.slice(0, 5), (value) => passphraseWords[value % passphraseWords.length]);
+    password = `${words.join("-")}-${1000 + (random[5] % 9000)}`;
+    showPassphrase = true;
+    copied = false;
+  }
+  async function copyPassphrase() {
+    try { await navigator.clipboard.writeText(password); copied = true; } catch { copied = false; }
+  }
   let role = $state("Office");
   let ownPassword = $state("");
   let busy = $state(false);
@@ -253,16 +268,17 @@
         >
       </div>
       <div class="field mb">
-        <label for="new-user-password">Initiale Passphrase *</label><input
+        <label for="new-user-password">Initiale Passphrase *</label><div class="passphrase-row"><input
           id="new-user-password"
-          type="password"
+          type={showPassphrase ? "text" : "password"}
           bind:value={password}
           autocomplete="new-password"
           minlength="15"
           maxlength="128"
           required
-        /><span class="field-help"
-          >Mindestens 15 Zeichen. Den persönlichen Zugang nicht mit einem
+          aria-describedby="new-user-password-help"
+        /><button type="button" class="btn small" onclick={generatePassphrase}>Vorschlag erzeugen</button>{#if password}<button type="button" class="btn small" onclick={copyPassphrase}>{copied ? "Kopiert" : "Kopieren"}</button>{/if}</div><span class="field-help" id="new-user-password-help"
+          >Mindestens 15 Zeichen. Übergeben Sie die Passphrase persönlich oder telefonisch, nicht per E-Mail oder Chat. Die Person ändert sie nach der ersten Anmeldung unter „Meine Einstellungen“. Den persönlichen Zugang nicht mit einem
           Portalzugang verwechseln.</span
         >
       </div>
@@ -286,3 +302,5 @@
     </form>
   </section>
 </div>
+
+<style>.passphrase-row{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}.passphrase-row input{flex:1 1 220px;min-width:0}</style>

@@ -617,18 +617,18 @@
     orderPrefillError = "";
     const before = JSON.stringify(payload());
     try {
-      // The order page is an existing read; it applies the same order scope as opening the order.
-      const result = await preloadData("/orders/" + orderId);
+      // Billing reads the agreed positions through the invoice workspace, also without access to the order page.
+      const result = await preloadData(`/invoices?source=order&order_id=${encodeURIComponent(orderId)}`);
       const page = result.type === "loaded" ? result.data : null;
-      const order =
-        page?.view === "detail" ? (page.detail as Row | null) : null;
+      const orderSource = page?.summary?.orderSource as { order: Row; lines: Row[] } | undefined;
+      const order = orderSource?.order ?? null;
       if (!page || !order || order.id !== orderId)
         throw new Error("Auftrag nicht lesbar");
       // The person may have chosen another order or started positions meanwhile.
       if (values.order_id !== orderId || lines.length) return;
       const untouched =
         before === savedFingerprint && JSON.stringify(payload()) === before;
-      const source = (page.related?.lines ?? []) as Row[];
+      const source = orderSource?.lines ?? [];
       if (!String(values.title ?? "").trim() && order.title)
         values.title = String(order.title);
       if (typeof order.currency === "string" && /^[A-Z]{3}$/.test(order.currency))
@@ -1071,7 +1071,9 @@
                 helpText={editorHelp(field)}
                 referenceParentId={field.reference === "purchase-order-lines"
                   ? values.purchase_order_id || record?.purchase_order_id
-                  : undefined}
+                  : field.reference === "work-packages"
+                    ? values.order_id || record?.order_id || undefined
+                    : undefined}
                 referenceKind={data.module?.slug === "invoices" &&
                 field.reference === "finance-rules"
                   ? field.key === "settlement_rule_version_id"

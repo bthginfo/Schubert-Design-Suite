@@ -44,7 +44,7 @@ export const roomElementSchema = z.strictObject({ ...base, kind: z.literal('room
   boundary: z.array(z.strictObject({ wallId: idSchema, side: z.enum(['left','right']) })).max(1000),
   floorLayers: z.array(materialLayerSchema).max(100), finishedFloorLevelMeasureId: idSchema });
 export const stonePieceElementSchema = z.strictObject({ ...base, kind: z.literal('stone_piece'), transform: transformSchema,
-  purpose: z.enum(['floor','wall','sill','step','countertop','memorial','other']), finishedContour: contourSchema,
+  purpose: z.enum(['floor','wall','sill','step','countertop','memorial','base','other']), finishedContour: contourSchema,
   thicknessMeasureId: idSchema, materialSpecVersionId: idSchema, stockItemId: idSchema.nullable(), grainDirectionDeg: decimalAngleSchema.nullable(),
   edgeTreatments: z.array(z.strictObject({ edgeIndex: z.number().int().nonnegative(), treatmentVersionId: idSchema })).max(10000),
   machiningFeatureIds: z.array(idSchema).max(1000),finishSpecVersionId:idSchema.nullable().optional(),roughWidthMeasureId:idSchema.nullable().optional(),roughHeightMeasureId:idSchema.nullable().optional(),roughThicknessMeasureId:idSchema.nullable().optional() });
@@ -99,7 +99,7 @@ export const designElementSchema = z.discriminatedUnion('kind', [nodeElementSche
   roomElementSchema, stonePieceElementSchema, catalogElementSchema, inscriptionElementSchema, groupElementSchema, surfaceElementSchema,
   machiningElementSchema, connectionElementSchema, clearanceElementSchema, slopeElementSchema, noteElementSchema, graveBorderElementSchema, dimensionElementSchema,planReferenceElementSchema]);
 export const constraintSchema = z.strictObject({ id: idSchema,
-  kind: z.enum(['coincident','horizontal','vertical','parallel','perpendicular','distance','centered','fixed','minimum_clearance']),
+  kind: z.enum(['coincident','horizontal','vertical','parallel','perpendicular','distance','centered','fixed','minimum_clearance','rests_on']),
   refs: z.array(z.strictObject({ elementId: idSchema, feature: z.string().min(1).max(200) })).min(1).max(100),
   measureId: idSchema.nullable(), ruleVersionId: idSchema.nullable() });
 export const assetManifestEntrySchema = z.strictObject({ assetVersionId: idSchema, contentHash: z.string().min(1).max(200),

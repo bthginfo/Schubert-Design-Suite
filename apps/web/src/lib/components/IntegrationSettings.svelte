@@ -6,7 +6,6 @@
   import Icon from './Icon.svelte';
   import Status from './Status.svelte';
   import ArchiveSettings from './ArchiveSettings.svelte';
-  import AiUsage from './AiUsage.svelte';
 
   let {data}:{data:AppData}=$props();
   let smtp:Row=$state({host:'',port:'',user:'',from:'',replyTo:''});
@@ -28,6 +27,11 @@
   let fieldErrors:Record<string,string>=$state({});
   const allowed=$derived(permitted(data,'admin.integrations'));
   const config=$derived((data.related?.integration_settings as unknown as Row)||{});
+  type IntegrationSection='smtp'|'claude'|'media';
+  // One service at a time keeps the page short; links to #…-setup still open the right one.
+  let section=$state<IntegrationSection>('claude');
+  function showSection(next:IntegrationSection){section=next;}
+  onMount(()=>{const fromHash=/^#(smtp|claude|media)-setup$/.exec(location.hash)?.[1] as IntegrationSection|undefined;if(fromHash)section=fromHash;});
   onMount(()=>{
     for(const key of Object.keys(smtp))smtp[key]=config.smtp?.[key]??'';
     for(const key of Object.keys(claude))claude[key]=config.anthropic?.[key]??claude[key];
@@ -65,11 +69,11 @@
 </script>
 
 {#if allowed}
-<div class="integration-settings stack"><nav class="inline-actions" aria-label="Dienste einrichten"><a class="btn" href="#smtp-setup">E-Mail einrichten<Icon name="mail" size={16}/></a><a class="btn" href="#claude-setup">Claude verbinden<Icon name="spark" size={16}/></a><a class="btn" href="#media-setup">Bilder & Sprache<Icon name="image" size={16}/></a></nav>
+<div class="integration-settings stack"><nav class="tabs integration-tabs" aria-label="Dienste einrichten">{#each [["claude","Claude","spark"],["smtp","E-Mail","mail"],["media","Bilder & Sprache","image"]] as [key,label,icon]}<button type="button" class="tab" class:active={section===key} aria-pressed={section===key} aria-controls={key+"-setup"} onclick={()=>showSection(key as IntegrationSection)}><Icon name={icon} size={15}/>{label}</button>{/each}</nav>
   <div class="notice info"><Icon name="lock"/><div>Hier richten Sie E-Mail und KI für Ihren Betrieb ein. Gespeicherte Passwörter und Schlüssel werden nicht wieder angezeigt. Ein leeres Geheimnisfeld behält den vorhandenen Wert.</div></div>
   {#if error}<div class="notice error" role="alert"><Icon name="alert"/><div>{error}</div></div>{/if}
   {#if notice}<div class="notice info" role="status"><Icon name="check"/><div>{notice}</div></div>{/if}
-  <section id="smtp-setup" class="panel">
+  <section id="smtp-setup" class="panel" hidden={section!=='smtp'}>
     <header class="panel-header"><div><h2>E-Mail-Versand einrichten</h2><p>Die Angaben erhalten Sie von Ihrem E-Mail-Anbieter oder Ihrer IT.</p></div><Status value={config.smtp?.configured?'available':'needs_review'}/></header>
     <form class="panel-body" onsubmit={event=>save('smtp',event)}>
       <div class="field-grid">
@@ -85,7 +89,7 @@
     </form>
     <form class="integration-test" onsubmit={test}><div class="stack" style="flex:1;gap:16px"><div class="field"><label for="smtp-test-recipient">Testmail an Ihre Adresse</label><input id="smtp-test-recipient" type="email" bind:value={recipient} required/><span class="field-help">Versendet genau eine Testmail mit den zuletzt gespeicherten Einstellungen.</span></div><div class="field"><label for="smtp-test-password">Ihr eigenes Suite-Passwort bestätigen *</label><input id="smtp-test-password" type="password" bind:value={ownPassword} autocomplete="current-password" required/></div></div><button class="btn" disabled={!!busy||!config.smtp?.configured}>{busy==='test'?'Wird eingereiht …':'Testmail senden'}<Icon name="mail" size={16}/></button></form>
   </section>
-  <section id="claude-setup" class="panel">
+  <section id="claude-setup" class="panel" hidden={section!=='claude'}>
     <header class="panel-header"><div><h2>Claude verbinden</h2><p>Assistent, Planungsstudio, Unterlagen und Bürohilfe arbeiten mit Claude von Anthropic.</p></div><Status value={config.anthropic?.configured?'available':'needs_review'}/></header>
     <div class="panel-body integration-instructions"><ol>
       <li><strong>Plan-Credits verknüpfen.</strong> Max-, Ultra- und Team-Pläne enthalten monatliche API-Credits. Auf <a class="text-link" href="https://claude.ai/settings/billing" target="_blank" rel="noreferrer">claude.ai → Einstellungen → Abrechnung</a> den Plan einmalig mit der Claude-Console-Organisation verknüpfen, die die Suite nutzt. Die Verknüpfung lässt sich später nur über den Support ändern. <a class="text-link" href="https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers" target="_blank" rel="noreferrer">Regeln von Anthropic</a></li>
@@ -126,7 +130,7 @@
       <button class="btn primary mt" disabled={!!busy}>{busy==='anthropic'?'Wird gespeichert …':'Claude-Einstellungen speichern'}</button>
     </form>
   </section>
-  <section id="media-setup" class="panel">
+  <section id="media-setup" class="panel" hidden={section!=='media'}>
     <header class="panel-header"><div><h2>Konzeptbilder & Spracheingabe · optional</h2><p>Claude erzeugt keine Bilder und keine Sprachaufnahmen. Dafür kann ein OpenAI-Projekt ergänzt werden.</p></div><Status value={config.openai?.configured?'available':'needs_review'}/></header>
     <form class="panel-body integration-ai-form" onsubmit={event=>save('openai',event)}>
       <div class="field-grid">
@@ -148,11 +152,11 @@
       <button class="btn mt" disabled={!!busy}>{busy==='openai'?'Wird gespeichert …':'Bild- und Sprachdienst speichern'}</button>
     </form>
   </section>
-  <AiUsage {data} configured={!!config.anthropic?.configured}/>
+  <section class="panel usage-link-card"><div class="panel-body"><div><h2>KI-Verbrauch & Kosten</h2><p>Monatsbudget, Kosten je Aufgabe und der kostenpflichtige Verbindungstest stehen gesammelt unter „KI-Verbrauch“.</p></div><a class="btn" href="/settings?tab=usage">KI-Verbrauch öffnen<Icon name="arrow" size={15}/></a></div></section>
 </div>
 {/if}
 
 <style>
   .integration-settings{margin-top:28px}.integration-test{display:flex;align-items:center;gap:24px;padding:24px 28px;border-top:1px solid var(--line);background:var(--paper)}.integration-test .field{flex:1}.integration-instructions{padding-bottom:0}.integration-instructions ol{margin:0;padding-left:21px;max-width:78ch}.integration-instructions li{font-size:14px;line-height:1.8;padding-left:6px;margin-bottom:15px}.integration-instructions strong{font-weight:600}.integration-instructions .text-link{font-size:inherit}.integration-ai-form{padding-top:20px}@media(max-width:760px){.integration-test{padding:22px 20px;align-items:stretch;flex-direction:column;gap:16px}.integration-instructions li{font-size:14px}.integration-test .btn{width:100%}}
-.integration-advanced{grid-column:1/-1;border:1px solid var(--line);padding:17px 20px;border-radius:5px}.integration-advanced>summary{color:var(--forest);font-size:13px;cursor:pointer;min-height:35px;padding-top:7px}.integration-model-policy h3{font-size:16px;font-weight:550;margin-bottom:9px}.integration-model-policy p{line-height:1.7}@media(max-width:760px){.integration-advanced{padding:16px}.integration-advanced>summary{font-size:14px;min-height:44px}}</style>
+.integration-advanced{grid-column:1/-1;border:1px solid var(--line);padding:17px 20px;border-radius:5px}.integration-advanced>summary{color:var(--forest);font-size:13px;cursor:pointer;min-height:35px;padding-top:7px}.integration-model-policy h3{font-size:16px;font-weight:550;margin-bottom:9px}.integration-model-policy p{line-height:1.7}@media(max-width:760px){.integration-advanced{padding:16px}.integration-advanced>summary{font-size:14px;min-height:44px}}.integration-settings>section[hidden]{display:none}.integration-tabs{margin-bottom:0}.integration-tabs .tab{display:inline-flex;align-items:center;gap:7px}.usage-link-card .panel-body{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.usage-link-card h2{font-size:16px}.usage-link-card p{margin-top:4px;font-size:13px}</style>
 <ArchiveSettings {data}/>

@@ -3,6 +3,7 @@ import{D,mm,decimalString}from'./precision.js';
 import{worldPoint,worldMatrix,applyMatrix}from'./transforms.js';
 import{contourBounds,contourParts,contourEdges,polygonContour,edgeDistanceMm,edgeSetDistanceMm,pointInContour}from'./contours.js';
 import{wallCoreEnds,wallCoreFootprint}from'./walls.js';
+import{restsOnIssue}from'./stacking.js';
 type Ref=DesignSnapshot['constraints'][number]['refs'][number];
 const distance=(a:Point3,b:Point3)=>decimalString(new D(a.xMm).minus(b.xMm).pow(2).plus(new D(a.yMm).minus(b.yMm).pow(2)).plus(new D(a.zMm).minus(b.zMm).pow(2)).sqrt());
 
@@ -40,6 +41,7 @@ export function validateConstraints(snapshot:DesignSnapshot,unresolved:(message:
  for(const c of snapshot.constraints){const prefix=`Bindung ${c.id}: `;if(c.refs.some(r=>!elements.has(r.elementId))){blocking.push(prefix+'Ein Bezugselement fehlt.');continue;}
   if(c.measureId&&!snapshot.measurements[c.measureId]){blocking.push(prefix+'Das gebundene Maß fehlt.');continue;}
   if(c.measureId){const measure=snapshot.measurements[c.measureId];if(measure?.valueMm!==null&&measure?.reviewStatus!=='confirmed')unresolved(prefix+'Das gebundene Maß ist noch nicht fachlich festgelegt.');if(measure?.isEstimated)unresolved(prefix+'Das gebundene Maß ist geschätzt.');}
+  if(c.kind==='rests_on'){const issue=restsOnIssue(snapshot,c);if(issue)blocking.push(issue);continue;}
   if(c.kind==='fixed'){if(c.refs.some(r=>!locked(snapshot,r.elementId)))blocking.push(prefix+'Der feste Bezug muss selbst oder über seine Gruppe gesperrt sein.');continue;}
   if(c.kind==='minimum_clearance'){
     const value=c.measureId?snapshot.measurements[c.measureId]?.valueMm:null;if(c.refs.length!==2||!c.measureId){blocking.push(prefix+'Mindestabstand braucht zwei konkrete Bezüge und ein eigenes Maß.');continue;}if(value===null||value===undefined){unresolved(prefix+'Der Mindestabstand ist noch unbekannt.');continue;}if(new D(value).lt(0)){blocking.push(prefix+'Mindestabstand darf nicht negativ sein.');continue;}

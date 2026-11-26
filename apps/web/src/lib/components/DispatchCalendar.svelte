@@ -45,6 +45,14 @@
   .calendar-event.cancelled :global(*) { color: var(--muted); }
   .calendar-event.cancelled strong { text-decoration: line-through; }
   .event-state { color: var(--danger); }
+  /* On phones the week starts right below the date controls: no duplicate date field or search hint. */
+  @media (max-width: 760px) {
+    .calendar-filters .field:has(#calendar-date) { display: none; }
+    .calendar-filters .field { flex: 1 1 100%; }
+    .calendar-filters :global(.field-help) { display: none; }
+    :global(.app-shell:has(.calendar-panel) .workflow-guide) { display: none; }
+    :global(.app-shell:has(.calendar-panel) .page-heading p) { display: none; }
+  }
   @media (max-width: 760px) {
     /* The week reads as a vertical agenda on phones instead of seven cut-off columns. */
     .calendar-grid:not(.month):not(.day) { grid-template-columns: 1fr; }

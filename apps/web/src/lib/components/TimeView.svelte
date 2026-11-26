@@ -54,6 +54,13 @@
   async function manualSync(){try{await synchronize();await refreshAll();await tick();if(data.user){await reconcileTimeCorrections(data.user.id,data.related?.time_corrections||[]);await reload();}notice='Der aktuelle Übertragungs- und Klärungsstand wurde geladen.';}catch(e){error=e instanceof Error?e.message:'Der Stand konnte nicht aktualisiert werden.';}}
   async function synchronize(){if(!data.user||syncing)return;syncing=true;try{const local=await syncTime(data.user.id);timerState=local.state;receipts=local.commands;online=true;syncIssue='';}catch(e){syncIssue=e instanceof Error?e.message:'Übertragung ausstehend.';throw e;}finally{syncing=false;}}
   async function operate(operation:TimeOperation){if(!data.user||busy||!ready)return;busy=true;error='';notice='';try{const result=await enqueueTime(data.user.id,operation,['start','switch'].includes(operation)?{order_id:orderId||null,activity}:{order_id:timerState?.order_id||null,activity:timerState?.activity||activity});timerState=result.state;now=Date.now();await reload();showSwitch=false;if(operation==='finish')void tick().then(()=>{finishCard?.focus({preventScroll:true});finishCard?.scrollIntoView({block:'nearest'});});await synchronize().then(()=>refreshAll()).catch(()=>{});}catch(e){error=e instanceof Error?e.message:'Die Zeit wurde nicht gespeichert. Bitte versuchen Sie es erneut oder erfassen Sie sie manuell.';}finally{busy=false;}}
+  /** After an accidental „Feierabend“: the finished session stays closed (the server rejects
+   * changes to it), so this starts a new session on the same order and activity, exactly like
+   * choosing that order and tapping „Arbeit starten“. */
+  function continueWork(){if(timerState?.status!=='finished')return;orderId=timerState.order_id||'';activity=display(timerState.activity||'general','activity');void operate('start');}
+  // „Zeit für diesen Auftrag starten“ (?order=) only preselects a server-checked order; starting stays an explicit tap.
+  let preselectedApplied='';
+  $effect(()=>{const requested=data.summary?.preselectedOrder;if(!ready||!requested||requested===preselectedApplied)return;preselectedApplied=requested;untrack(()=>{if(!orders.some((o:Row)=>o.id===requested))return;orderId=requested;const running=['work','break'].includes(timerState?.status||'');notice=running?(timerState?.order_id===requested?'Für diesen Auftrag läuft Ihre Zeit bereits.':`„${orderName(requested)}“ ist vorgemerkt. Über „Wechseln“ ordnen Sie die laufende Zeit diesem Auftrag zu.`):`„${orderName(requested)}“ ist ausgewählt. Die Zeit beginnt erst mit „Arbeit starten“.`;});});
   async function persist(){try{storagePersistent=await navigator.storage.persist();notice=storagePersistent?'Dauerhafter Browserspeicher wurde gewährt.':'Der Browser hat dauerhaften Speicher nicht gewährt. Übertragen Sie Zeiten zeitnah.';}catch{notice='Die Speichereinstellung wird von diesem Browser nicht unterstützt.';}}
   async function submitDay(){if(!data.user||busy)return;busy=true;error='';try{if(pending.length){await synchronize();if((await getLocalTime(data.user.id)).commands.some(c=>!['confirmed','resolved'].includes(c.sync_status)))throw new Error('Bitte klären oder synchronisieren Sie zuerst die ausstehenden Aufzeichnungen.');}await command('workforce.time.submit',undefined,{date:day,session_ids:submissionIds});submitReview=false;submittedAt={...submittedAt,[day]:new Date().toISOString()};const refreshed=await refreshAll().then(()=>true,()=>false);await tick();const badge=finishCard?.querySelector<HTMLElement>('.submission-badge')??dayBadge;if(refreshed&&badge){badge.focus({preventScroll:true});badge.scrollIntoView({block:'nearest'});}else notice='Der Tag wurde zur Prüfung eingereicht.';}catch(e){error=e instanceof Error?e.message:'Einreichen fehlgeschlagen.';}finally{busy=false;}}
   function localInput(value:any){if(!value)return '';const date=new Date(value);return Number.isFinite(date.getTime())?new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,19):'';}
@@ -133,8 +140,12 @@
 {#if page.url.searchParams.get('tab')==='review'&&data.context?.permissions.includes('time.approve')}<TimeReview {data}/>{:else}<div class="time-grid"><div class="stack">
   {#if finishedToday}<section class="finish-card" aria-labelledby="finish-title" tabindex="-1" bind:this={finishCard}>
     <div class="finish-text"><h2 id="finish-title">Feierabend</h2><p>Heute <strong>{hoursText(dayWorkSeconds)}</strong> gearbeitet, <strong>{hoursText(dayBreakSeconds)}</strong> Pause</p></div>
+    <div class="finish-actions">
     {#if submissionIds.length}<button class="btn primary" disabled={busy} onclick={()=>submitReview=true}>Jetzt Tag prüfen & abgeben<Icon name="arrow" size={16}/></button>
     {:else if submissionBadge}<p class="submission-badge {submissionBadge.tone}" tabindex="-1"><Icon name={submissionBadge.icon} size={16}/><span>{submissionBadge.text}</span></p>{/if}
+    <button class="btn" disabled={busy||!ready} aria-describedby="finish-continue-help" onclick={continueWork}><Icon name="play" size={16}/>Doch weiterarbeiten</button>
+    <p class="finish-help" id="finish-continue-help">Startet ab jetzt eine neue Erfassung{timerState?.order_id?' für '+orderName(timerState.order_id):''} mit derselben Tätigkeit. Der beendete Zeitraum bleibt unverändert.</p>
+    </div>
   </section>{/if}
   <section class="timer-panel timer-hero" aria-labelledby="timer-title"><h2 id="timer-title" class="sr-only">Stoppuhr für die Arbeitszeit</h2>
     <div class="timer-topline"><span class="eyebrow">{timerState?.status==='work'?'Arbeit läuft':timerState?.status==='break'?'Sie machen Pause':timerState?.status==='finished'?'Arbeitstag beendet':'Bereit für Ihren Arbeitstag'}</span><p class="sync-line {syncView.tone}" role="status" title={timerState?.last_server_at?`Letzter Abgleich ${new Intl.DateTimeFormat('de-DE',{hour:'2-digit',minute:'2-digit'}).format(new Date(timerState.last_server_at))}`:undefined}><Icon name={syncView.icon} size={14} class={syncView.icon==='refresh'?'spin':''}/><span>{syncView.text}</span></p></div>
@@ -191,6 +202,8 @@
 .finish-card{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 20px;padding:18px 20px;border:1px solid color-mix(in srgb,var(--forest) 30%,var(--line));border-radius:16px;background:var(--accent-wash,var(--wash))}
 .finish-card:focus-visible{outline:2px solid var(--forest);outline-offset:3px}
 .finish-card h2{font-size:18px;margin:0}.finish-card p{margin:4px 0 0;font-size:14px}.finish-card strong{font-variant-numeric:tabular-nums}
+.finish-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px;max-width:100%}.finish-actions .btn{min-height:44px}
+.finish-card .finish-help{flex-basis:100%;margin:0;font-size:12px;line-height:1.5;color:var(--muted);text-align:right}
 .submission-badge{display:inline-flex;align-items:flex-start;gap:8px;margin:0;padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;font-weight:550;background:var(--wash);color:var(--ink)}
 .submission-badge :global(svg){flex:none;margin-top:2px}
 .submission-badge small{display:block;font-weight:400;font-size:12px;color:var(--ink)}
@@ -226,7 +239,7 @@
   @container scroll-state(stuck: bottom){.timer-actions::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;box-shadow:0 -10px 22px -12px light-dark(rgb(20 34 56 / .38),rgb(0 0 0 / .7));pointer-events:none}}
   .timer-actions .btn.primary,.timer-actions .btn:only-child,.timer-actions .btn:last-child:nth-child(2){grid-column:1/-1}
   .timer-actions .btn:not(.primary){min-height:50px}
-  .finish-card{padding:16px}.finish-card .btn{width:100%}
+  .finish-card{padding:16px}.finish-card .btn{width:100%}.finish-actions{width:100%}.finish-card .finish-help{text-align:left}
   .day-footer .btn{width:100%}
   :global(.app-shell:has(.time-view) .assistant-trigger){display:none}
 }

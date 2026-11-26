@@ -55,13 +55,24 @@ describe("Complete editable AI drafts", () => {
     expect(stones.map(e=>after.measurements[e.thicknessMeasureId].valueMm)).toEqual(['120','180']);
     expect(stones[0].thicknessMeasureId).not.toBe(stones[1].thicknessMeasureId);
   });
-  it.each(['base','plinth','pedestal','Sockel'])('keeps the memorial purpose of a %s without inventing a new manufacturing category', purpose => {
+  it.each(['base','plinth','pedestal','Sockel'])('maps a %s to the Sockel purpose of the stone-piece schema', purpose => {
     const snapshot=createDesign('memorial');
     const operations=normalizePlanningEdits({snapshot},[{type:'add_element',element:{id:'new:base',kind:'stone_piece',label:'Sockel',purpose,widthMm:'700',heightMm:'140',thicknessMm:'180'}}]);
     const saved=applyOperations(snapshot,operations);
-    expect(saved.elements.find(e=>e.kind==='stone_piece')).toMatchObject({label:'Sockel',purpose:'memorial'});
+    expect(saved.elements.find(e=>e.kind==='stone_piece')).toMatchObject({label:'Sockel',purpose:'base'});
     expect(planningEditInstructions).toContain('originUV hat exakt {uMm:');
     expect(planningEditInstructions).toContain('notoserif|cinzel|lora|cormorantgaramond|greatvibes|montserrat');
+  });
+
+  it('keeps an AI-drafted stele resting on its Sockel when an AI edit raises the Sockel', () => {
+    const empty=createDesign('memorial');
+    const draft=applyOperations(empty,planningDraftOperations({snapshot:empty},{kind:'memorial_assembly',label:'Stele',shape:'rectangle',widthMm:'600',heightMm:'900',thicknessMm:'120',base:{widthMm:'700',heightMm:'140',depthMm:'180'},inscription:'',materialWish:null}));
+    const base=draft.elements.find(e=>e.kind==='stone_piece'&&e.purpose==='base')!,stele=draft.elements.find(e=>e.kind==='stone_piece'&&e.purpose==='memorial')!;
+    const heightId=draft.elements.find(e=>e.kind==='dimension'&&e.refs[0].elementId===base.id&&e.refs[0].feature==='height')!;
+    const operations=normalizePlanningEdits({snapshot:draft},[{type:'set_design_target',measureId:(heightId as any).measureId,valueMm:'200'}]);
+    expect(operations.at(-1)).toMatchObject({type:'set_element_position',elementId:stele.id,position:{zMm:'200'}});
+    const saved=applyOperations(draft,operations);
+    expect((saved.elements.find(e=>e.id===stele.id) as any).transform.position).toEqual({xMm:'50',yMm:'30',zMm:'200'});
   });
 
   it('preserves an untouched draft and offers plain German recovery for unsupported model fields', () => {

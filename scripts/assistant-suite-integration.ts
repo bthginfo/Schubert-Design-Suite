@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import type { ActorContext, AssistantSuiteArea } from "@schubert/contracts";
 import {
   applyAIProposal, assistantInputSchema, assistantProposalPlan, createAssistantReadTools, executeCommand, prepareAssistantContext,
+  orderInvoiceContext,
 } from "@schubert/application";
 import { assistant, planningDraftOperations } from "@schubert/ai";
 import { one, withTenant } from "@schubert/db";
@@ -140,6 +141,25 @@ export async function assistantSuiteIntegration(
       const available = await createAssistantReadTools(owner, suiteContext).execute("find_suite_records",
         { ...lookup("team", worker.id), from: "2031-07-10", to: "2031-07-10" }) as any;
       assert.equal(available.items[0].no_registered_conflict, false);
+    });
+
+    await test("Billing drafts an invoice from an order's agreed positions without access to the order workspace", async () => {
+      const finance = actor("Finance");
+      assert.equal(finance.permissions.includes("orders"), false);
+      const url = new URL(`http://localhost/invoices?source=order&order_id=${order.id}`);
+      const context = await withTenant(finance, db => orderInvoiceContext(db, finance, url));
+      assert.equal(context?.order.id, order.id);
+      assert.equal(context?.lines.length, 1);
+      assert.equal(context?.lines[0].description, "Natursteinzuschnitt");
+      assert.equal(Number(context?.lines[0].unit_price), 100);
+      await assert.rejects(() => withTenant(actor("Employee"), db => orderInvoiceContext(db, actor("Employee"), url)), (error: any) => error.code === "FORBIDDEN");
+    });
+
+    await test("A second leave request for an overlapping period is refused with the existing period named", async () => {
+      await command("workforce.leave.create", { employee_id: worker.id, kind: "vacation", starts_on: "2031-08-04", ends_on: "2031-08-08", days: "5" });
+      await assert.rejects(() => command("workforce.leave.create", { employee_id: worker.id, kind: "vacation", starts_on: "2031-08-07", ends_on: "2031-08-11", days: "3" }),
+        (error: any) => error.code === "LEAVE_OVERLAP" && /04\.08\.2031 bis 08\.08\.2031/.test(error.message));
+      await command("workforce.leave.create", { employee_id: worker.id, kind: "vacation", starts_on: "2031-08-11", ends_on: "2031-08-12", days: "2" });
     });
 
     await test("A confirmed assignment can be reopened for re-planning and cancelled, each with a documented reason", async () => {

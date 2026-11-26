@@ -54,6 +54,27 @@ export async function recordRelations(db:DbClient,ctx:ActorContext,m:ModuleDefin
  related.audit_events=(await rows<any>(db,'SELECT a.action,a.aggregate_version,a.created_at,u.name actor_name FROM audit_events a LEFT JOIN "user" u ON u.id=a.actor_id WHERE a.aggregate_id=$1 AND(a.legal_entity_id=$2 OR a.legal_entity_id IS NULL) ORDER BY a.created_at DESC,a.audit_sequence DESC LIMIT 50',[id,ctx.legalEntityId])).map(event=>({...event,label:actionLabels.get(event.action)??'Vorgang aktualisiert'}));
 }
 
+/** Field view of an order: customer contact, the place of work and the reader's own
+ * upcoming assignments. Only for assigned field roles; the order must carry one of their
+ * live assignments, so the read never widens the existing order scope. */
+export async function fieldOrderBrief(db:DbClient,ctx:ActorContext,orderId:string){
+ if(!['Employee','Workshop'].includes(ctx.role)||!ctx.employeeId||!uuid(orderId))return null;
+ return one(db,`SELECT p.name customer_name,p.phone customer_phone,
+  s.name site_name,nullif(concat_ws(', ',s.street,nullif(concat_ws(' ',s.postal_code,s.city),'')),'') site_address,
+  nullif(concat_ws(', ',p.street,nullif(concat_ws(' ',p.postal_code,p.city),'')),'') customer_address,
+  nullif(concat_ws(', ',c.name,c.city),'') cemetery_location,g.grave_number,
+  COALESCE((SELECT jsonb_agg(a ORDER BY a.starts_at,a.id) FROM(SELECT d.id,d.title,d.status,d.starts_at,d.ends_at,d.location,d.work_package_id FROM dispatch_assignments d
+   WHERE d.order_id=o.id AND d.legal_entity_id=o.legal_entity_id AND d.employee_id=$3 AND d.status NOT IN('cancelled','deleted')
+    AND d.ends_at>(date_trunc('day',now() AT TIME ZONE 'Europe/Berlin') AT TIME ZONE 'Europe/Berlin') ORDER BY d.starts_at,d.id LIMIT 10)a),'[]'::jsonb) assignments
+ FROM orders o
+ LEFT JOIN parties p ON p.id=o.customer_id AND(p.legal_entity_id=o.legal_entity_id OR p.legal_entity_id IS NULL)
+ LEFT JOIN sites s ON s.id=o.site_id AND(s.legal_entity_id=o.legal_entity_id OR s.legal_entity_id IS NULL)
+ LEFT JOIN grave_plots g ON g.id=o.grave_plot_id AND(g.legal_entity_id=o.legal_entity_id OR g.legal_entity_id IS NULL)
+ LEFT JOIN cemeteries c ON c.id=g.cemetery_id AND(c.legal_entity_id=o.legal_entity_id OR c.legal_entity_id IS NULL)
+ WHERE o.id=$1 AND o.legal_entity_id=$2
+  AND EXISTS(SELECT 1 FROM dispatch_assignments own WHERE own.order_id=o.id AND own.employee_id=$3 AND own.status NOT IN('cancelled','deleted'))`,[orderId,ctx.legalEntityId,ctx.employeeId]);
+}
+
 export async function currentTimeSession(db:DbClient,ctx:ActorContext){
  if(!ctx.employeeId||!has(ctx,'time'))return null;
  return one(db,'SELECT id,version,active,started_at,ended_at,status FROM time_sessions WHERE employee_id=$1 AND active ORDER BY started_at DESC LIMIT 1',[ctx.employeeId]);

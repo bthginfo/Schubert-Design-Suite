@@ -58,3 +58,4 @@ export * from './assistant-tools.js';
 
 export * from './catalog-search.js';
 export { manufacturerCatalogAdoptionCommand, registerManufacturerCatalogAdoption } from './manufacturer-catalog-adoption.js';
+export * from './order-invoice-context.js';
