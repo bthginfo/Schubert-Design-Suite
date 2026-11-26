@@ -68,11 +68,15 @@ test('Representative memorial and room: persisted dimensions, drawings, camera a
       expect(strokes.length).toBeGreaterThan(0);expect(Math.min(...strokes)).toBeGreaterThanOrEqual(1);
     }
     await page.getByRole('button',{name:kind==='memorial'?'Front':'Grundriss',exact:true}).click();
-    const dimensions=page.locator('.dimension-annotation');await expect(dimensions).toHaveCount(kind==='memorial'?2:6);
+    const dimensions=page.locator('.dimension-annotation');await expect(dimensions).toHaveCount(kind==='memorial'?2:4);
     if(kind==='room_plan'){
-      // Four wall axes plus two usable interior spans, with their distinct labels.
+      // Overall wall-axis measures once (bottom and left) plus two usable interior spans, with their distinct labels.
       await expect(dimensions.filter({hasText:'4.200 · innen'})).toHaveCount(1);await expect(dimensions.filter({hasText:'3.200 · innen'})).toHaveCount(1);
+      await expect(dimensions.filter({hasText:'4.400 · Achse'})).toHaveCount(1);await expect(dimensions.filter({hasText:'3.400 · Achse'})).toHaveCount(1);
+      // On request every wall shows its axis measure.
+      await setDisplayOption(page,'Wandmaße auf allen Seiten',true);await expect(dimensions).toHaveCount(6);
       await expect(dimensions.filter({hasText:'4.400 · Achse'})).toHaveCount(2);await expect(dimensions.filter({hasText:'3.400 · Achse'})).toHaveCount(2);
+      await setDisplayOption(page,'Wandmaße auf allen Seiten',false);await expect(dimensions).toHaveCount(4);
     }
     await setDisplayOption(page,'Maße',false);await expect(page.locator('.dimension-annotation')).toHaveCount(0);await setDisplayOption(page,'Maße',true);
     const revision=await page.locator('.revision-chip').innerText();

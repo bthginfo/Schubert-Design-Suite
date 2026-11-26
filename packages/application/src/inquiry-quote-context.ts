@@ -24,5 +24,5 @@ export async function inquiryQuoteContext(db:DbClient,ctx:ActorContext,url:URL){
   let notes=[sourceNote,description].filter(Boolean).join('\n\n');
   const truncated=notes.length>20000;
   if(truncated){const suffix=`\n\n[Fortsetzung in der ursprünglichen Anfrage: /inquiries/${inquiry.id}]`;notes=notes.slice(0,20000-suffix.length)+suffix;}
-  return {values:{customer_id:inquiry.customer_id,inquiry_id:inquiry.id,title:inquiry.title,notes},customer:{id:inquiry.customer_id,name:inquiry.customer_name},source:{id:inquiry.id,version:inquiry.version,title:inquiry.title,number:inquiry.number,href:'/inquiries/'+inquiry.id,truncated}};
+  return {values:{customer_id:inquiry.customer_id,title:inquiry.title,notes},customer:{id:inquiry.customer_id,name:inquiry.customer_name},source:{id:inquiry.id,version:inquiry.version,title:inquiry.title,number:inquiry.number,href:'/inquiries/'+inquiry.id,truncated}};
 }

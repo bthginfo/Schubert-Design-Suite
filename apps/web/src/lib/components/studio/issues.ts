@@ -57,7 +57,7 @@ export function groupStudioIssues(snapshot:DesignSnapshot|null,draft:Validation,
         return m.valueMm!==null&&m.reviewStatus!=='confirmed'&&Number(m.valueMm)===Number(match[3].replace(',','.'));});
       if(fit)used.add(fit.id);
       const measure=fit?snapshot.measurements[fit.id]:null;
-      const baseDepth=fit?.key==='thicknessMeasureId'&&host.kind==='stone_piece'&&sockel.test(host.label);
+      const baseDepth=fit?.key==='thicknessMeasureId'&&host.kind==='stone_piece'&&(host.purpose==='base'||sockel.test(host.label));
       const name=baseDepth?'Tiefe':fit&&fit.key==='thicknessMeasureId'?'Materialstärke':generic.has(match[2])&&fit?fields[fit.key]??match[2]:match[2];
       const value=kind==='unconfirmed'?` ${match[3]} mm`:'';
       const state=kind==='unknown'?'Maß noch unbekannt':kind==='estimated'?'Maß nur geschätzt':measure?.semantic==='design_target'?'Wunschmaß noch nicht fachlich bestätigt':'noch nicht fachlich bestätigt';

@@ -394,12 +394,9 @@
     design_variants: "studio",
     customers: "customers",
   };
-  /** Inquiry → Quote → Order: say why a link in the chain is still empty instead of a generic dead end. */
+  /** Quote → Order: say why the resulting order is still missing instead of a generic dead end. */
   function relationEmpty(key: string) {
-    if (isQuote && key === "inquiries") return "Dieses Angebot ist mit keiner Anfrage verknüpft.";
     if (isQuote && key === "orders") return "Der Auftrag entsteht mit der dokumentierten Annahme der veröffentlichten Version.";
-    if (module.slug === "inquiries" && key === "quotes") return "Noch kein Angebot aus dieser Anfrage. „Angebot aus Anfrage anlegen“ übernimmt Kunde und Kundenwunsch.";
-    if (module.slug === "inquiries" && key === "orders") return "Ein Auftrag entsteht, sobald ein Angebot dieser Anfrage angenommen ist.";
     return "Noch keine verknüpften Einträge vorhanden.";
   }
   function relationUrl(key: string, item: Row) {
@@ -465,8 +462,8 @@
       .slice(0, 6);
   }
   function relationVisible(key: string) {
-    // On the quote overview the progress panel and the reference fields already lead to inquiry, customer and order.
-    if (isQuote && tab === "overview" && ["inquiries", "customers", "orders"].includes(key)) return false;
+    // On the quote overview the progress panel and the reference fields already lead to customer and order.
+    if (isQuote && tab === "overview" && ["customers", "orders"].includes(key)) return false;
     if (tab === "linked" || tab === "overview") return true;
     if (tab === "planning")
       return /planning|design|surveys|measurements/.test(key);
@@ -579,7 +576,7 @@
     ? actionList.filter(action => action.name !== orderStep?.action?.name)
     : quoteNextAction ? actionList.filter(action => action.name !== quoteNextAction.name)
     : actionList.slice(1));
-  const relationTitle = (key: string) => isQuote ? ({inquiries:"Quelle: Anfrage",orders:"Daraus entstandener Auftrag",customers:"Kunde"} as Record<string,string>)[key] || relationNames[key] || label(key) : relationNames[key] || label(key);
+  const relationTitle = (key: string) => isQuote ? ({orders:"Daraus entstandener Auftrag",customers:"Kunde"} as Record<string,string>)[key] || relationNames[key] || label(key) : relationNames[key] || label(key);
 </script>
 
 {#if fieldOrder}<FieldOrderView {data} />{:else}
